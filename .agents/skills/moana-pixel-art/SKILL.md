@@ -15,3 +15,10 @@ Lee [MOANA.md](../../../MOANA.md) §§7–10 y 19, y el [flujo artístico](../..
 6. En animación comprueba volumen, suelo, pivote y estabilidad de patrones. Muestra antes/después y región afectada.
 
 La rúbrica humana es evidencia aparte de los tests. Si no hubo revisión humana, indícala pendiente. Pillow/NumPy no garantizan arte profesional.
+
+Elige sólo la referencia pertinente:
+
+- [Clusters, silueta y composición](references/pixel-clusters.md) cuando falle lectura o jerarquía.
+- [Contornos y selective outlining](references/outlines.md) para separación, grosor y color de borde.
+- [Rampas y hue shifting](references/palettes.md) para contraste, temperatura y recolor.
+- [Sombreado y dithering](references/shading.md) para volumen, materiales, banding y fase temporal.

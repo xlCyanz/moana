@@ -17,6 +17,8 @@ flowchart LR
   A[Timeline] --> R
 ```
 
+Este diseño es **planificado**; consulta la [visión general](overview.md) y los [contratos por módulo](module-contracts.md).
+
 ## Fronteras
 
 El dominio mantiene datos inmutables y enteros. Los adaptadores raster intercambian máscaras y buffers con propiedad clara. El orquestador resuelve dependencias y presupuesto una sola vez por solicitud. La capa de exportación no cambia el documento y no necesita conocer el editor. La capa de proyecto puede usar la API de edición para historial, pero el editor no depende de disco.
@@ -33,6 +35,10 @@ Evitar «god modules» de dibujo y un registro dinámico de plugins ejecutables.
 - [ADR-002: rasterización entera](ADR-002-pixel-contract.md).
 - [ADR-003: dependencias y entornos](ADR-003-toolchain.md).
 - [ADR-004: alcance de agentes y automatización](ADR-004-agent-infrastructure.md).
+- [ADR-005: backends y fronteras](decisions/ADR-005-backends-and-boundaries.md).
+- [ADR-006: identidad y ciclo del backlog](decisions/ADR-006-backlog-identity-and-lifecycle.md).
+- [ADR-007: clarificaciones de contratos](decisions/ADR-007-contract-clarifications.md).
+- [ADR-008: tooling portable](decisions/ADR-008-portable-tooling.md).
 - [Modelo de amenazas](SECURITY_MODEL.md).
 
 Un ADR nuevo registra contexto, decisión, alternativas, consecuencias y evidencia. Cambiar un ADR aceptado se hace mediante otro que lo sustituya y actualizando el contrato principal.

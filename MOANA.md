@@ -1,8 +1,8 @@
 # MOANA — Especificación técnica
 
-Versión del contrato: **0.1.0-draft** · Fecha: **2026-11-16** · Estado: especificación inicial para implementación; motor todavía no implementado.
+Versión del contrato: **0.1.1-draft** · Fecha: **2026-11-17** · Estado: especificación inicial para implementación; motor todavía no implementado.
 
-Este archivo es la fuente de verdad del producto. «DEBE» expresa una condición verificable; «DEBERÍA», una recomendación artística o de diseño. Los contratos aquí descritos son objetivos futuros, no APIs disponibles en el paquete inicial. Los cambios de contrato requieren actualizar este documento, los ejemplos, los issues y una decisión de arquitectura cuando afecten compatibilidad. El catálogo de requisitos y su trazabilidad vive en `docs/requirements.json` y `docs/TRACEABILITY.md`.
+Este archivo es la fuente de verdad del producto. «DEBE» expresa una condición verificable; «DEBERÍA», una recomendación artística o de diseño. Los contratos aquí descritos son objetivos futuros, no APIs disponibles en el paquete inicial. Los cambios de contrato requieren actualizar este documento, los ejemplos, los issues y una decisión de arquitectura cuando afecten compatibilidad. El catálogo de requisitos y su trazabilidad vive en `docs/requirements.json` y `docs/issues/traceability.md`.
 
 ## 1. Visión y objetivos
 
@@ -72,7 +72,7 @@ Cada operación tiene `id`, `type` discriminador y parámetros explícitos. La p
 
 Para `line`, ordenar lexicográficamente los extremos antes del Bresenham simétrico: dx=abs(x1-x0), dy=-abs(y1-y0), err=dx+dy; calcular e2=2*err antes de cada paso; avanzar x si e2>=dy y avanzar y si e2<=dx. Esto fija empates y la simetría al invertir extremos. Grosor inicial: 1 píxel; los trazos gruesos se derivan de dilatación explícita, no de opciones variables de Pillow.
 
-Para `ellipse`, w=x1-x0, h=y1-y0, A=2*x+1-x0-x1 y B=2*y+1-y0-y1; incluir si A²*h²+B²*w²<=w²*h². Usar enteros Python para esta evaluación o demostrar que el tipo elegido no desborda. Para `polygon`, descartar aristas horizontales en el cálculo de cruces; activar cada arista en `min(y0,y1)<=py<max(y0,y1)`, py=y+1/2; incluir un centro cuando el número de intersecciones estrictamente a su derecha sea impar. Las comparaciones se hacen con racionales/enteros. Se permiten autointersecciones bajo even-odd; vértices repetidos consecutivos se normalizan y polígonos de área nula producen máscara vacía documentada.
+Para `ellipse`, w=x1-x0, h=y1-y0, A=2*x+1-x0-x1 y B=2*y+1-y0-y1; incluir si A²*h²+B²*w²<=w²*h². Usar enteros Python para esta evaluación o demostrar que el tipo elegido no desborda. Para `polygon`, descartar aristas horizontales en el cálculo de cruces; activar cada arista en `min(y0,y1)<=py<max(y0,y1)`, py=y+1/2; incluir un centro cuando el número de intersecciones estrictamente a su derecha sea impar. Las comparaciones se hacen con racionales/enteros. Se permiten autointersecciones bajo even-odd; vértices repetidos consecutivos se normalizan y una máscara es vacía sólo cuando no contiene centros de píxel en el interior even-odd. No se descarta un polígono por área algebraica (shoelace) cero: una figura autointersectada tipo bow-tie puede tener relleno válido aunque sus áreas firmadas se cancelen.
 
 `path` acepta M/L/Q/C/Z en coordenadas de punto fijo 1/256, sin SVG, fuentes ni recursos externos. El adaptador AggDraw genera cobertura a escala nativa, umbral >=128, y normaliza a 0/255. Se etiqueta `aggdraw-v1`: reproducibilidad sólo con versiones/plataformas ensayadas; no se presenta como equivalente al backend entero. No es necesario para completar el MVP. Flood fill utiliza cola iterativa acotada, nunca recursión Python.
 
@@ -153,7 +153,7 @@ Ejemplo mínimo normativo del primer hito (diseño, no ejecución disponible):
 }
 ```
 
-El JSON Schema se generará desde Pydantic (issue MOA-002), versionado en `schemas/` al implementarlo; no se mantiene un segundo validador de producto a mano. Los ejemplos de `examples/specs/` son contratos de diseño hasta ese hito. La extensión futura de operaciones exige registrar modelo, resolución, coste, raster, pruebas y documentación; no se admiten imports dinámicos desde JSON.
+El JSON Schema se generará desde Pydantic (issue MOANA-002), versionado en `schemas/` al implementarlo; no se mantiene un segundo validador de producto a mano. Los ejemplos de `examples/specs/` son contratos de diseño hasta ese hito. La gramática de schema 1.0 corresponde al MVP implementado por MOANA-002: primitivas estáticas, paleta y capas simples; las colecciones de capacidades futuras sólo se aceptan vacías hasta definir sus modelos. Grupos, máscaras, materiales, paths y animaciones requieren ampliar explícitamente el schema y documentar payloads junto al issue correspondiente, sin anunciar una gramática ejecutable que aún no existe. La extensión futura de operaciones exige registrar modelo, resolución, coste, raster, pruebas y documentación; no se admiten imports dinámicos desde JSON.
 
 ## 13. API pública de Python
 
@@ -169,7 +169,8 @@ edited = apply_edit(
     document,
     {
         "schema_version": "1.0",
-        "base_revision": 0,
+        "base_revision": document.revision,
+        "base_snapshot": document.snapshot_digest,
         "commands": [{"type": "set_color", "target_id": "body_fill", "color": "ink"}],
     },
 )
@@ -191,15 +192,15 @@ Cachés son optimización: activadas/desactivadas deben dar igualdad exacta. No 
 
 ## 15. Edición no destructiva
 
-El documento es el artefacto editable primario; el PNG es derivado. Un batch contiene `schema_version`, `base_revision` y comandos tipados. Catálogo inicial: `set_color(target_id,color)`, `set_geometry(target_id,geometry)`, `translate(target_id,dx,dy)`, `set_visibility(target_id,visible)`, `replace_palette_color(target_id,rgba)`, `insert_operation(layer_id,after_id|null,operation)`, `remove(target_id)`, `reorder(target_id,after_id|null)`. `after_id=null` inserta al principio del contenedor. Sólo se reordena dentro del mismo contenedor; traslado entre capas será comando explícito posterior.
+El documento es el artefacto editable primario; el PNG es derivado. Un batch contiene `schema_version`, `base_revision`, `base_snapshot` y comandos tipados. `base_snapshot` es `sha256:` seguido del digest hexadecimal del documento normalizado de origen (§14), expuesto por la futura propiedad `Document.snapshot_digest`; no se serializa esa propiedad dentro del propio documento. Se verifican ambas precondiciones para distinguir ramas con el mismo número de revisión. Catálogo inicial: `set_color(target_id,color)`, `set_geometry(target_id,geometry)`, `translate(target_id,dx,dy)`, `set_visibility(target_id,visible)`, `replace_palette_color(target_id,rgba)`, `insert_operation(layer_id,after_id|null,operation)`, `remove(target_id)`, `reorder(target_id,after_id|null)`. `after_id=null` inserta al principio del contenedor. Sólo se reordena dentro del mismo contenedor; traslado entre capas será comando explícito posterior.
 
-Una revisión obsoleta produce EditConflict. Validar todos los comandos y la escena resultante antes de aceptar; un fallo revierte todo. No se admiten cambios directos de id, schema_version ni revision. Rechazar borrado con referencias vivas, edición de capa bloqueada y comandos ambiguos. Batch exitoso incrementa revision exactamente en 1, incluso si el resultado visual no cambia. Se preservan IDs existentes, bytes fuente de assets y orden de nodos no afectados.
+Una revisión o un digest de snapshot que no coincide con el documento actual produce EditConflict. Validar todos los comandos y la escena resultante antes de aceptar; un fallo revierte todo. No se admiten cambios directos de id, schema_version ni revision. Rechazar borrado con referencias vivas, edición de capa bloqueada y comandos ambiguos. Batch exitoso incrementa revision exactamente en 1, incluso si el resultado visual no cambia. Se preservan IDs existentes, bytes fuente de assets y orden de nodos no afectados.
 
-Historial: snapshots inmutables con digest y batch canónico, padre y revisión; undo/redo selecciona estados existentes, mientras un nuevo edit sobre estado anterior crea rama lógica y descarta sólo el cursor redo activo, no los archivos guardados. Un cambio local puede modificar sombra/contorno dependiente; el manifiesto indica IDs afectados y bbox de diferencia, evitando prometer que ninguna dependencia cambia. Se informa el diff antes/después y se conserva el archivo anterior al guardar con sobreescritura explícita.
+Historial: snapshots inmutables identificados por digest, con batch canónico, digest del padre y revisión numérica local a la rama; undo/redo selecciona estados existentes, mientras un nuevo edit sobre estado anterior crea rama lógica y descarta sólo el cursor redo activo, no los archivos guardados. Un cambio local puede modificar sombra/contorno dependiente; el manifiesto indica IDs afectados y bbox de diferencia, evitando prometer que ninguna dependencia cambia. Se informa el diff antes/después y se conserva el archivo anterior al guardar con sobreescritura explícita.
 
 ## 16. Formato de proyectos
 
-Formato base `.moana.json` autocontenido para geometría. Proyecto con assets: directorio con `project.moana.json`, `assets/`, `history/` opcional y `previews/` derivado. Manifiesto de assets declara ID, ruta POSIX relativa, mime, byte_length y sha256. Únicos assets iniciales: PNG RGBA decodificado; no Python, pickle, fuentes, SVG externo ni URL. `save_project` escribe a temporal hermano, fsync cuando sea viable y reemplaza atómicamente; los assets se verifican antes del commit del manifiesto.
+Formato base `.moana.json` autocontenido para geometría. Proyecto con assets: directorio con `project.moana.json`, `assets/`, `history/` opcional y `previews/` derivado. `project.moana.json` es un sobre ProjectManifest separado de Document: `{kind: "moana-project", project_version: "1.0", document: Document, assets: [AssetRef], history: []}`. `history` es opcional y vacío por defecto; el resto de campos es obligatorio. El lector distingue el sobre por `kind` y aplica su modelo propio con extra=forbid; no agrega `assets` como campo desconocido de Document. Cada AssetRef declara id, path POSIX relativa, mime, byte_length y sha256; los IDs de assets son únicos en el sobre y no colisionan con IDs del documento. Únicos assets iniciales: PNG RGBA decodificado; no Python, pickle, fuentes, SVG externo ni URL. `save_project` escribe a temporal hermano, fsync cuando sea viable y reemplaza atómicamente; los assets se verifican antes del commit del manifiesto. Assets y snapshots se guardan bajo rutas inmutables derivadas del hash; actualizar el proyecto nunca reemplaza sus bytes antes del commit del nuevo manifiesto. Los assets sobrantes tras un fallo son huérfanos recuperables, no corrupción del proyecto previo; su recolección es una acción explícita posterior.
 
 Contenedor `.moana` ZIP opcional usa esas mismas rutas; se inspecciona antes de extracción: no rutas absolutas, `..`, symlinks, duplicados, nombres normalizados en colisión ni ratios de expansión excesivos. Máximo 256 entradas, 64 MiB comprimidos, 256 MiB descomprimidos, ratio 100:1 por entrada y total. Prohibir resolver enlaces fuera de la raíz. Los perfiles en memoria conservan límites aunque no se use ZIP.
 
@@ -219,7 +220,7 @@ PNG RGBA es formato maestro: transparente normalizado, escala entera opcional, c
 
 GIF admite paleta compartida <=256, alfa binario y transparencia reservada; si hay alfa intermedio exigir background de aplanado o rechazar. Duración debe ser múltiplo de 10 ms; por defecto rechazar pérdidas, con modo de redondeo explícito que devuelve duraciones efectivas. Exportar frames completos con disposal configurado, comprobar composición decodificada y preservación de tiempo; duplicados que el encoder fusione se verifican por timeline equivalente. Reservar el índice transparente reduce a 255 colores opacos.
 
-WebP lossless y APNG son entregas posteriores, condicionadas a capacidad real del build de Pillow y pruebas roundtrip. Si un encoder no existe, UnsupportedOperation; no fallback oculto. Atlas PNG+JSON es el intercambio adicional prioritario. La creación de archivos es atómica y por defecto no sobrescribe. Cada export devuelve path, media_type, dimensiones, frames, hashes y advertencias. No se confunde un preview escalado con el sprite maestro.
+WebP lossless y APNG son entregas posteriores, condicionadas a capacidad real del build de Pillow y pruebas roundtrip. Si un encoder no existe, UnsupportedOperation; no fallback oculto. Atlas PNG+JSON es el intercambio adicional prioritario. La creación de archivos es atómica y por defecto no sobrescribe. `overwrite=False` requiere un commit sin reemplazo atómico en el filesystem de destino; un exists() seguido de replace() no es suficiente por la carrera entre procesos. Si esa garantía no está disponible, fallar explícitamente; con overwrite=True puede usarse reemplazo atómico de temporal hermano. Cada export devuelve path, media_type, dimensiones, frames, hashes y advertencias. No se confunde un preview escalado con el sprite maestro.
 
 ## 19. Control de calidad gráfico
 
@@ -262,7 +263,7 @@ Medir antes de vectorizar. Recortar máscaras a bbox, reutilizar buffers interno
 | P4 — persistencia/animación | proyectos, migraciones, timeline, GIF y atlas | roundtrip, frames y tiempos correctos |
 | P5 — evaluación/release | corpus, diagnóstico, seguridad, rendimiento y documentación | DoD y release candidate validado |
 
-`docs/ROADMAP.md` fija issues y gates; `docs/DEPENDENCIES.md` muestra el DAG derivado de `docs/issues/catalog.json`. P0 es el único alcance de esta ejecución. No hay fechas prometidas ni fases marcadas completas antes de disponer de evidencia. El siguiente módulo es MOA-001: tipos, errores, límites y coordenadas; MOA-002 implementa el contrato estructurado sobre esa base.
+`docs/issues/roadmap.md` fija issues y gates; `docs/issues/dependency-map.md` muestra el DAG derivado de `docs/issues/catalog.json`. P0 es el único alcance de esta ejecución. No hay fechas prometidas ni fases marcadas completas antes de disponer de evidencia. El siguiente módulo es MOANA-001: tipos, errores, límites y coordenadas; MOANA-002 implementa el contrato estructurado sobre esa base.
 
 ## 24. Criterios de aceptación
 

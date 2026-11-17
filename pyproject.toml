@@ -25,7 +25,6 @@ classifiers = [
 
 [dependency-groups]
 dev = [
-  "build>=1.2,<2",
   "hatchling>=1.27,<2",
   "hypothesis>=6.120,<7",
   "mypy>=1.14,<2",

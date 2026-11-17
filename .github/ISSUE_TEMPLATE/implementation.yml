@@ -1,23 +1,48 @@
 name: Implementación de un módulo
 description: Trasladar un issue local a trabajo de implementación
-title: "[MOA-XXX] "
+title: "[MOANA-XXX] "
 body:
+  - type: markdown
+    attributes:
+      value: El catálogo local es la fuente de verdad; enlázalo sin duplicar su mantenimiento.
   - type: input
     id: local_issue
     attributes:
-      label: Issue local y dependencias
-      description: Referencia docs/issues/MOA-XXX.md y estado de sus dependencias.
+      label: Issue local
+      description: Referencia docs/issues/MOANA-XXX.md y requisitos Rxxx.
+    validations:
+      required: true
+  - type: textarea
+    id: metadata
+    attributes:
+      label: Fase, prioridad, estado, complejidad y módulos
+      description: P0–P5; prioridad P0–P3; estados del ciclo local; complejidad S/M/L/XL.
+    validations:
+      required: true
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencias y bloqueos
+      description: IDs canónicos, estado y condición de desbloqueo.
     validations:
       required: true
   - type: textarea
     id: scope
     attributes:
-      label: Alcance y requisitos técnicos
+      label: Contexto, objetivo y alcance
+      description: Incluye exclusiones y requisitos técnicos.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Propuesta, entregables y riesgos
     validations:
       required: true
   - type: textarea
     id: acceptance
     attributes:
       label: Criterios de aceptación y pruebas
+      description: Criterios observables, comandos y evidencia AC/T para cerrar el issue.
     validations:
       required: true

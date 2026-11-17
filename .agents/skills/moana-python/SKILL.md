@@ -14,3 +14,5 @@ Lee [MOANA.md](../../../MOANA.md) §§3–5 y el issue asignado. Usa el estado r
 - Ejecuta Ruff, mypy y pruebas del contrato modificado; termina con `uv run python scripts/validate.py`. Describe comportamiento y límites, no sólo nombres de archivos.
 
 Para cambios de arquitectura consulta [ADR](../../../docs/architecture/README.md). No crees stubs gráficos durante trabajo de infraestructura.
+
+En tooling, usa UTF-8 explícito para leer/escribir documentación y catálogos; prueba bajo un locale no UTF-8. Verifica `uv build` y una instalación aislada al cambiar packaging. Una excepción mypy debe limitarse al adaptador sin stubs y nunca convertirse en ignore_errors global.

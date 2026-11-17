@@ -1,8 +1,8 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "issues": [
     {
-      "id": "MOA-000",
+      "id": "MOANA-000",
       "title": "Inicializar infraestructura y planificación",
       "phase": "P0",
       "status": "done",
@@ -37,17 +37,49 @@
         "2026-11-16: scripts/validate.py aprobó lock, Ruff, mypy, checker, 20 tests y build en macOS arm64 / Python 3.12.16.",
         "Wheel construido desde sdist e instalado fuera del checkout; metadata y py.typed verificados.",
         "Siete skills aprobadas por quick_validate.py; roles/config TOML verificados y ajustes aceptados por CLI Codex.",
-        "pre-commit instalado y ejecutado sobre todos los archivos nuevos. Ver docs/INITIALIZATION_REPORT.md para límites y versiones."
-      ]
+        "pre-commit instalado y ejecutado sobre todos los archivos nuevos. Ver docs/INITIALIZATION_REPORT.md para límites y versiones.",
+        "2026-11-17: refinamiento validado localmente con 26 tests, gate completo, uv build, wheel aislado y siete skills descubiertas por Codex; docs/BOOTSTRAP_REPORT.md. Sin push de esta revisión."
+      ],
+      "aliases": [
+        "MOA-000"
+      ],
+      "complexity": "L",
+      "modules": [
+        "tooling",
+        "docs",
+        "agents"
+      ],
+      "context": "Un checkout vacío no ofrecía contrato ni herramientas de desarrollo.",
+      "objective": "Conservar una base reproducible y ampliar su planificación sin crear motor.",
+      "proposed_implementation": [
+        "Auditar archivos y capacidades existentes; resolver divergencias con ADR",
+        "Generar documentación desde un catálogo validado y ejecutar comandos reales"
+      ],
+      "deliverables": [
+        "Entorno uv, paquete mínimo tipado, gate y workflow CI verificables.",
+        "AGENTS.md, siete skills, ocho roles, contratos, backlog generado y reporte de evidencia."
+      ],
+      "risks": [
+        "Confundir configuración guardada con una capacidad activa; registrar evidencia por superficie."
+      ],
+      "blocking_reason": null,
+      "acceptance_evidence": {
+        "AC1": "2026-11-17: scripts.check_repository y planning.py --check validan 36 IDs canónicos, DAG acíclico, 40 requisitos y 25 secciones; docs/BOOTSTRAP_REPORT.md.",
+        "AC2": "2026-11-17: validate.py aprobado; check_wheel.py verificó import/metadata/py.typed en venv aislado; skills/list devolvió siete skills habilitadas de scope repo sin errores."
+      },
+      "test_evidence": {
+        "T1": "2026-11-17: Ruff, formato, mypy (10 archivos), checker y pytest (26 aprobados) en macOS arm64/Python 3.12.16; artifacts/validation.log.",
+        "T2": "2026-11-17: uv build y build del gate generaron sdist/wheel; instalación aislada aprobada y quick_validate.py aprobó las siete skills."
+      }
     },
     {
-      "id": "MOA-001",
+      "id": "MOANA-001",
       "title": "Definir tipos, coordenadas, errores y límites",
       "phase": "P1",
-      "status": "planned",
+      "status": "ready",
       "priority": "P0",
       "dependencies": [
-        "MOA-000"
+        "MOANA-000"
       ],
       "requirements": [
         "R002",
@@ -68,16 +100,39 @@
         "Parametrizar extremos de rango, cajas negativas, bordes y tamaños 1/128/2048",
         "Propiedades de intersección: conmutatividad, contención y ausencia de expansión"
       ],
-      "evidence": []
+      "evidence": [],
+      "aliases": [
+        "MOA-001"
+      ],
+      "complexity": "M",
+      "modules": [
+        "core"
+      ],
+      "context": "Las decisiones de coordenadas y errores condicionan todos los módulos raster.",
+      "objective": "Proveer tipos y errores que expresen las reglas exactas de límites.",
+      "proposed_implementation": [
+        "Definir tipos inmutables para Point, Box y Dimensions y errores de dominio",
+        "Implementar intersecciones y validación con enteros Python antes de buffers"
+      ],
+      "deliverables": [
+        "Tipos Point/Box/Dimensions, configuración de límites y jerarquía de errores en moana/core.",
+        "Fixtures de bordes y propiedades de intersección; documentación de cajas vacías y errores."
+      ],
+      "risks": [
+        "Los bool son subclase de int; distinguirlos y definir el resultado vacío sin bbox inválida."
+      ],
+      "blocking_reason": null,
+      "acceptance_evidence": {},
+      "test_evidence": {}
     },
     {
-      "id": "MOA-002",
+      "id": "MOANA-002",
       "title": "Implementar documento Pydantic y JSON Schema",
       "phase": "P1",
-      "status": "planned",
+      "status": "blocked",
       "priority": "P0",
       "dependencies": [
-        "MOA-001"
+        "MOANA-001"
       ],
       "requirements": [
         "R013",
@@ -97,17 +152,41 @@
         "Tabla de entradas válidas/inválidas y equivalencia mapping/bytes",
         "Roundtrip modelo-JSON-modelo, fuzz acotado de profundidad y golden del schema con revisión de compatibilidad"
       ],
-      "evidence": []
+      "evidence": [],
+      "aliases": [
+        "MOA-002"
+      ],
+      "complexity": "L",
+      "modules": [
+        "schema",
+        "core"
+      ],
+      "context": "La IA necesita entradas predecibles y errores localizables sin ejecutar código.",
+      "objective": "Validar y normalizar el MVP generando un JSON Schema a partir de una sola fuente.",
+      "proposed_implementation": [
+        "Separar lectura acotada de bytes, modelos sintácticos y resolución semántica",
+        "Registrar capacidades del MVP y documentar extensiones mediante versiones explícitas"
+      ],
+      "deliverables": [
+        "Modelos Pydantic estrictos del documento MVP y JSON Schema generado con versión explícita.",
+        "Fixtures válidas/inválidas, errores con JSON pointer y roundtrip normalizado."
+      ],
+      "risks": [
+        "Un esquema demasiado permisivo oculta instrucciones desconocidas; uno anticipado sin gramática inventa soporte."
+      ],
+      "blocking_reason": "Dependencias pendientes: MOANA-001",
+      "acceptance_evidence": {},
+      "test_evidence": {}
     },
     {
-      "id": "MOA-003",
+      "id": "MOANA-003",
       "title": "Aplicar presupuesto de trabajo y recursos",
       "phase": "P1",
-      "status": "planned",
+      "status": "blocked",
       "priority": "P0",
       "dependencies": [
-        "MOA-001",
-        "MOA-002"
+        "MOANA-001",
+        "MOANA-002"
       ],
       "requirements": [
         "R026",
@@ -127,17 +206,41 @@
         "Instrumentar allocators falsos para comprobar ausencia de reservas al rechazar",
         "Casos de coordenadas enormes, capas profundas, muchos frames y overflow de productos"
       ],
-      "evidence": []
+      "evidence": [],
+      "aliases": [
+        "MOA-003"
+      ],
+      "complexity": "L",
+      "modules": [
+        "core",
+        "render"
+      ],
+      "context": "Límites por operación no impiden costes acumulados o temporales enormes.",
+      "objective": "Rechazar trabajo excesivo antes de asignar memoria o entrar a librerías nativas.",
+      "proposed_implementation": [
+        "Crear estimadores por operación y acumulador de presupuesto de plan",
+        "Introducir checkpoints cooperativos y documentar límite duro del proceso anfitrión"
+      ],
+      "deliverables": [
+        "Estimador de trabajo, memoria y temporales con rechazo previo a reservas.",
+        "Pruebas de límites y diagnósticos de presupuesto por operación/documento."
+      ],
+      "risks": [
+        "Un timeout cooperativo no interrumpe una llamada C bloqueada; nunca presentarlo como aislamiento."
+      ],
+      "blocking_reason": "Dependencias pendientes: MOANA-001, MOANA-002",
+      "acceptance_evidence": {},
+      "test_evidence": {}
     },
     {
-      "id": "MOA-004",
+      "id": "MOANA-004",
       "title": "Crear lienzo RGBA y propiedad de buffers",
       "phase": "P1",
-      "status": "planned",
+      "status": "blocked",
       "priority": "P1",
       "dependencies": [
-        "MOA-001",
-        "MOA-003"
+        "MOANA-001",
+        "MOANA-003"
       ],
       "requirements": [
         "R002",
@@ -157,17 +260,40 @@
         "Fixtures 1×1 y 128×128, transparentes con RGB residual y roundtrip NumPy/Pillow",
         "Pruebas de aliasing, dtype/shape inválidos, límite de memoria y acceso fuera de rango"
       ],
-      "evidence": []
+      "evidence": [],
+      "aliases": [
+        "MOA-004"
+      ],
+      "complexity": "M",
+      "modules": [
+        "core"
+      ],
+      "context": "NumPy y Pillow difieren en ownership, índices y representación de datos.",
+      "objective": "Proveer un buffer RGBA seguro con adaptadores sin alias públicos mutables.",
+      "proposed_implementation": [
+        "Reservar buffers sólo tras presupuesto y validar shape/dtype/contigüidad",
+        "Añadir copias de frontera y normalizar transparencia al importar/exportar"
+      ],
+      "deliverables": [
+        "Canvas RGBA y adaptadores con reglas de ownership/copia documentadas.",
+        "Fixtures de canal alfa, clipping, buffers no compartidos y dimensiones extremas."
+      ],
+      "risks": [
+        "Vistas writeable=false pueden reabrirse si el propietario se filtra; probar ownership real."
+      ],
+      "blocking_reason": "Dependencias pendientes: MOANA-001, MOANA-003",
+      "acceptance_evidence": {},
+      "test_evidence": {}
     },
     {
-      "id": "MOA-005",
+      "id": "MOANA-005",
       "title": "Implementar paletas y rampas",
       "phase": "P1",
-      "status": "planned",
+      "status": "blocked",
       "priority": "P1",
       "dependencies": [
-        "MOA-001",
-        "MOA-002"
+        "MOANA-001",
+        "MOANA-002"
       ],
       "requirements": [
         "R007"
@@ -186,17 +312,41 @@
         "Casos de colores duplicados por valor pero IDs diferentes y IDs duplicados inválidos",
         "Pruebas de límites 256/4096, transparencia y remapeo explícito sin colores ocultos"
       ],
-      "evidence": []
+      "evidence": [],
+      "aliases": [
+        "MOA-005"
+      ],
+      "complexity": "M",
+      "modules": [
+        "palette",
+        "schema"
+      ],
+      "context": "Una paleta por referencia permite recolor coherente y edición local intencional.",
+      "objective": "Mantener colores y rampas con IDs estables y perfiles explícitos.",
+      "proposed_implementation": [
+        "Crear índice de IDs y canonicalización RGBA",
+        "Validar rampas/perfiles y separar advertencias de luminancia de rechazos"
+      ],
+      "deliverables": [
+        "Modelos y resolución de paletas/rampas por ID, con remapeo explícito.",
+        "Fixtures de cardinalidad, perfil de color, referencias y estabilidad de índices."
+      ],
+      "risks": [
+        "La transparencia normalizada puede cambiar RGB residual; definirla antes de comparar pertenencia."
+      ],
+      "blocking_reason": "Dependencias pendientes: MOANA-001, MOANA-002",
+      "acceptance_evidence": {},
+      "test_evidence": {}
     },
     {
-      "id": "MOA-006",
+      "id": "MOANA-006",
       "title": "Rasterizar primitivas enteras y flood fill",
       "phase": "P1",
-      "status": "planned",
+      "status": "blocked",
       "priority": "P1",
       "dependencies": [
-        "MOA-004",
-        "MOA-005"
+        "MOANA-004",
+        "MOANA-005"
       ],
       "requirements": [
         "R003"
@@ -213,20 +363,45 @@
       ],
       "tests": [
         "Octantes de línea, degenerados, bordes semiabiertos y autointersecciones even-odd",
-        "Flood fill de un píxel/todo canvas, coincidencia de color, contención y rechazo por presupuesto"
+        "Flood fill de un píxel/todo canvas, coincidencia de color, contención y rechazo por presupuesto",
+        "Bow-tie con área firmada cero pero interior even-odd no vacío; verificar máscara manual y no usar shoelace como descarte."
       ],
-      "evidence": []
+      "evidence": [],
+      "aliases": [
+        "MOA-006"
+      ],
+      "complexity": "L",
+      "modules": [
+        "geometry",
+        "layers"
+      ],
+      "context": "Defaults de raster de bibliotecas producen diferencias de un píxel.",
+      "objective": "Producir máscaras de primitivas que cumplan fixtures exactas del contrato.",
+      "proposed_implementation": [
+        "Implementar primitivas en orden pixel/rect/line/ellipse/polygon con oráculos manuales",
+        "Incorporar flood fill iterativo a partir de snapshot de capa recibido como entrada"
+      ],
+      "deliverables": [
+        "Rasterizadores enteros de primitivas y flood fill acotado.",
+        "Máscaras manuales de bordes, degenerados, polígonos even-odd y relleno."
+      ],
+      "risks": [
+        "Even-odd de autointersecciones no se puede descartar por área firmada cero."
+      ],
+      "blocking_reason": "Dependencias pendientes: MOANA-004, MOANA-005",
+      "acceptance_evidence": {},
+      "test_evidence": {}
     },
     {
-      "id": "MOA-007",
+      "id": "MOANA-007",
       "title": "Añadir adaptador de paths AggDraw",
       "phase": "P3",
-      "status": "planned",
+      "status": "blocked",
       "priority": "P2",
       "dependencies": [
-        "MOA-006",
-        "MOA-010",
-        "MOA-028"
+        "MOANA-006",
+        "MOANA-010",
+        "MOANA-028"
       ],
       "requirements": [
         "R004",
@@ -246,16 +421,40 @@
         "Fixtures de curvas pequeñas, joins, cierres y curvas fuera de lienzo",
         "Repetición con entorno fijado y comparación backend por plataforma sin prometer equivalencia al raster entero"
       ],
-      "evidence": []
+      "evidence": [],
+      "aliases": [
+        "MOA-007"
+      ],
+      "complexity": "M",
+      "modules": [
+        "geometry",
+        "render"
+      ],
+      "context": "Curvas complementarias requieren backend explícito sin diluir el contrato entero.",
+      "objective": "Añadir paths con cobertura binaria y garantía de compatibilidad limitada.",
+      "proposed_implementation": [
+        "Definir el payload de comandos fijo 1/256 en schema junto al adaptador",
+        "Validar segmentos, rasterizar con AggDraw y aplicar threshold/documentar provenance"
+      ],
+      "deliverables": [
+        "Adaptador AggDraw para paths con política explícita de muestreo y cuantización.",
+        "Fixtures de curvas y uniones; evaluación RGBA y de errores del adaptador."
+      ],
+      "risks": [
+        "No asumir que AggDraw comparte píxeles entre versiones o plataformas no ensayadas."
+      ],
+      "blocking_reason": "Dependencias pendientes: MOANA-006, MOANA-010, MOANA-028",
+      "acceptance_evidence": {},
+      "test_evidence": {}
     },
     {
-      "id": "MOA-008",
+      "id": "MOANA-008",
       "title": "Añadir transformaciones pixel-perfect",
       "phase": "P1",
-      "status": "planned",
+      "status": "blocked",
       "priority": "P1",
       "dependencies": [
-        "MOA-006"
+        "MOANA-006"
       ],
       "requirements": [
         "R040"
@@ -274,20 +473,43 @@
         "Propiedades de composición/inversas sobre máscaras no cuadradas y pivotes negativos",
         "Clipping de objetos parcialmente fuera y rechazo de escala no entera o rotación arbitraria en strict"
       ],
-      "evidence": []
+      "evidence": [],
+      "aliases": [
+        "MOA-008"
+      ],
+      "complexity": "M",
+      "modules": [
+        "geometry"
+      ],
+      "context": "El escalado o giro implícito puede alterar clusters y pivotes.",
+      "objective": "Transformar píxeles y máscaras con reglas enteras reversibles.",
+      "proposed_implementation": [
+        "Implementar transformaciones sobre índices y pivote/origen declarado",
+        "Componer orden, calcular bbox resultante y recortar sólo según contrato"
+      ],
+      "deliverables": [
+        "Transformaciones enteras y escala nearest-neighbor con pivote/clipping definidos.",
+        "Fixtures de rotaciones, flips, traslaciones y propiedades inversas."
+      ],
+      "risks": [
+        "Giro de cajas geométricas no equivale a giro de índices; probar dimensiones pares e impares."
+      ],
+      "blocking_reason": "Dependencias pendientes: MOANA-006",
+      "acceptance_evidence": {},
+      "test_evidence": {}
     },
     {
-      "id": "MOA-009",
+      "id": "MOANA-009",
       "title": "Implementar capas, grupos y composición",
       "phase": "P2",
-      "status": "planned",
+      "status": "blocked",
       "priority": "P1",
       "dependencies": [
-        "MOA-002",
-        "MOA-004",
-        "MOA-005",
-        "MOA-006",
-        "MOA-008"
+        "MOANA-002",
+        "MOANA-004",
+        "MOANA-005",
+        "MOANA-006",
+        "MOANA-008"
       ],
       "requirements": [
         "R011"
@@ -306,19 +528,42 @@
         "Casos alpha 0/1/127/255 y normalización RGB en transparente",
         "Grupos anidados, profundidad límite, capa invisible y strict que rechaza opacidad intermedia"
       ],
-      "evidence": []
+      "evidence": [],
+      "aliases": [
+        "MOA-009"
+      ],
+      "complexity": "L",
+      "modules": [
+        "layers"
+      ],
+      "context": "La composición define la relación entre colores, visibilidad y grupos aislados.",
+      "objective": "Componer capas ordenadas usando una sola fórmula entera source-over.",
+      "proposed_implementation": [
+        "Crear árbol de capas/grupos con ownership de buffer",
+        "Componer hijos y aplicar opacidad del grupo una sola vez"
+      ],
+      "deliverables": [
+        "Árbol de capas/grupos y composición RGBA con opacidad de grupo aplicada una vez.",
+        "Fixtures de orden, visibilidad, alfa parcial y aislamiento de grupos."
+      ],
+      "risks": [
+        "La opacidad por hijo cambia la imagen; el bloqueo afecta edición, no render."
+      ],
+      "blocking_reason": "Dependencias pendientes: MOANA-002, MOANA-004, MOANA-005, MOANA-006, MOANA-008",
+      "acceptance_evidence": {},
+      "test_evidence": {}
     },
     {
-      "id": "MOA-010",
+      "id": "MOANA-010",
       "title": "Construir pipeline de render determinista",
       "phase": "P2",
-      "status": "planned",
+      "status": "blocked",
       "priority": "P0",
       "dependencies": [
-        "MOA-002",
-        "MOA-003",
-        "MOA-006",
-        "MOA-009"
+        "MOANA-002",
+        "MOANA-003",
+        "MOANA-006",
+        "MOANA-009"
       ],
       "requirements": [
         "R015",
@@ -338,16 +583,39 @@
         "Variar PYTHONHASHSEED, orden de claves de objeto y repetir en subprocesos",
         "Entradas no soportadas, references inválidas, cancelación entre operaciones y límites previos al render"
       ],
-      "evidence": []
+      "evidence": [],
+      "aliases": [
+        "MOA-010"
+      ],
+      "complexity": "L",
+      "modules": [
+        "render"
+      ],
+      "context": "La reproducibilidad necesita orden explícito y normalización compartida.",
+      "objective": "Producir RenderResult sin modificar documentos ni acceder a disco.",
+      "proposed_implementation": [
+        "Resolver/costear el documento y construir plan estable",
+        "Ejecutar operaciones y calcular digest dimensional/versiones/RNG por identidad"
+      ],
+      "deliverables": [
+        "Pipeline documento→validación→presupuesto→render y RenderResult inmutable.",
+        "Escenas de integración y manifiesto de decisiones/versiones para reproducción."
+      ],
+      "risks": [
+        "hash(), reloj o estado global rompen reproducibilidad aunque el primer test pase."
+      ],
+      "blocking_reason": "Dependencias pendientes: MOANA-002, MOANA-003, MOANA-006, MOANA-009",
+      "acceptance_evidence": {},
+      "test_evidence": {}
     },
     {
-      "id": "MOA-011",
+      "id": "MOANA-011",
       "title": "Exportar PNG y manifiesto de salida",
       "phase": "P2",
-      "status": "planned",
+      "status": "blocked",
       "priority": "P1",
       "dependencies": [
-        "MOA-010"
+        "MOANA-010"
       ],
       "requirements": [
         "R022"
@@ -364,19 +632,43 @@
       ],
       "tests": [
         "Roundtrip RGBA e indexado, transparencia y escala nearest 1/2/4",
-        "Paleta 256/257, destino existente, permiso denegado y fallo simulado durante escritura"
+        "Paleta 256/257, destino existente, permiso denegado y fallo simulado durante escritura",
+        "Carrera de dos escritores con overwrite=false: uno gana y el otro falla sin reemplazar; no usar exists+replace como exclusión."
       ],
-      "evidence": []
+      "evidence": [],
+      "aliases": [
+        "MOA-011"
+      ],
+      "complexity": "M",
+      "modules": [
+        "export"
+      ],
+      "context": "Exportar no debe perder píxeles ni sobrescribir archivos por accidente.",
+      "objective": "Escribir PNG maestro y manifiesto con roundtrip y atomicidad comprobados.",
+      "proposed_implementation": [
+        "Separar encode en memoria del commit a filesystem",
+        "Validar formato/indexado/escala y escribir temporal hermano antes del commit"
+      ],
+      "deliverables": [
+        "Exportador PNG y manifiesto de salida con escritura atómica sin sobrescritura accidental.",
+        "Roundtrips RGBA, pruebas de fallo de I/O y carrera entre escritores."
+      ],
+      "risks": [
+        "Una comprobación exists seguida de replace puede sobreescribir por carrera; usar commit sin reemplazo cuando overwrite=false."
+      ],
+      "blocking_reason": "Dependencias pendientes: MOANA-010",
+      "acceptance_evidence": {},
+      "test_evidence": {}
     },
     {
-      "id": "MOA-012",
+      "id": "MOANA-012",
       "title": "Exponer API pública y CLI estático",
       "phase": "P2",
-      "status": "planned",
+      "status": "blocked",
       "priority": "P1",
       "dependencies": [
-        "MOA-010",
-        "MOA-011"
+        "MOANA-010",
+        "MOANA-011"
       ],
       "requirements": [
         "R014",
@@ -396,17 +688,41 @@
         "Integración CLI en directorio ajeno al repo con paths con espacios",
         "Tests de exit codes, no traceback por defecto, stdout parseable y error de operación futura"
       ],
-      "evidence": []
+      "evidence": [],
+      "aliases": [
+        "MOA-012"
+      ],
+      "complexity": "M",
+      "modules": [
+        "api",
+        "cli"
+      ],
+      "context": "Los agentes y programas deben usar la misma interfaz de producto.",
+      "objective": "Ofrecer funciones tipadas y comandos estáticos con errores/capacidades reales.",
+      "proposed_implementation": [
+        "Componer servicios en fachada y registrar entrypoint sólo cuando funcione",
+        "Traducir errores de dominio a exit codes y probar desde wheel aislado"
+      ],
+      "deliverables": [
+        "API pública y CLI estático documentados con contratos de retorno/error.",
+        "Ejemplos ejecutables, pruebas de argumentos, códigos de salida e integración."
+      ],
+      "risks": [
+        "Help o ejemplos no deben exponer operaciones aún no implementadas como disponibles."
+      ],
+      "blocking_reason": "Dependencias pendientes: MOANA-010, MOANA-011",
+      "acceptance_evidence": {},
+      "test_evidence": {}
     },
     {
-      "id": "MOA-013",
+      "id": "MOANA-013",
       "title": "Añadir máscaras y regiones semánticas",
       "phase": "P3",
-      "status": "planned",
+      "status": "blocked",
       "priority": "P1",
       "dependencies": [
-        "MOA-009",
-        "MOA-010"
+        "MOANA-009",
+        "MOANA-010"
       ],
       "requirements": [
         "R012"
@@ -425,17 +741,41 @@
         "Álgebra de conjuntos en fixtures 1/8/128 píxeles y máscaras vacías",
         "Ciclos directos/indirectos, máscara fuera del canvas y grupos transformados"
       ],
-      "evidence": []
+      "evidence": [],
+      "aliases": [
+        "MOA-013"
+      ],
+      "complexity": "L",
+      "modules": [
+        "layers",
+        "schema"
+      ],
+      "context": "La edición por región necesita identidad semántica independiente del PNG.",
+      "objective": "Resolver máscaras DAG y regiones estables para clipping y targeting.",
+      "proposed_implementation": [
+        "Definir modelos de máscaras/regiones y booleanas con coordenadas de canvas",
+        "Resolver dependencias antes de render y aplicar clipping al destino"
+      ],
+      "deliverables": [
+        "Modelos y resolución de máscaras/regiones semánticas por IDs estables.",
+        "Fixtures de referencias, ciclos, clipping y selección de una región editable."
+      ],
+      "risks": [
+        "Un grupo transformado requiere semántica clara de máscara en canvas frente a geometría local."
+      ],
+      "blocking_reason": "Dependencias pendientes: MOANA-009, MOANA-010",
+      "acceptance_evidence": {},
+      "test_evidence": {}
     },
     {
-      "id": "MOA-014",
+      "id": "MOANA-014",
       "title": "Crear contornos y análisis de clusters",
       "phase": "P3",
-      "status": "planned",
+      "status": "blocked",
       "priority": "P1",
       "dependencies": [
-        "MOA-013",
-        "MOA-005"
+        "MOANA-013",
+        "MOANA-005"
       ],
       "requirements": [
         "R006",
@@ -455,17 +795,41 @@
         "Máscaras con huecos, contactos de esquina, diagonal y borde de canvas",
         "Componentes conocidos, outline de ancho 1/2 y operación editable que reproduce la máscara"
       ],
-      "evidence": []
+      "evidence": [],
+      "aliases": [
+        "MOA-014"
+      ],
+      "complexity": "L",
+      "modules": [
+        "techniques",
+        "quality"
+      ],
+      "context": "Los contornos y clusters deben admitir excepciones artísticas locales.",
+      "objective": "Generar outlines editables y diagnósticos de componentes sin limpieza automática.",
+      "proposed_implementation": [
+        "Implementar dilatación/erosión acotada y análisis 4/8 conectado",
+        "Representar resultado como operaciones y advertencias con bbox/región"
+      ],
+      "deliverables": [
+        "Operaciones de contorno y análisis de clusters con conectividad explícita.",
+        "Máscaras de referencia para bordes/huecos/diagonales y ejemplos ampliados."
+      ],
+      "risks": [
+        "No eliminar ojos o partículas por ser singletons; las métricas no inferirán intención."
+      ],
+      "blocking_reason": "Dependencias pendientes: MOANA-013, MOANA-005",
+      "acceptance_evidence": {},
+      "test_evidence": {}
     },
     {
-      "id": "MOA-015",
+      "id": "MOANA-015",
       "title": "Añadir bandas de sombreado e iluminación",
       "phase": "P3",
-      "status": "planned",
+      "status": "blocked",
       "priority": "P1",
       "dependencies": [
-        "MOA-005",
-        "MOA-013"
+        "MOANA-005",
+        "MOANA-013"
       ],
       "requirements": [
         "R008"
@@ -484,17 +848,41 @@
         "Bandas vacías, solapamientos, clamp y cambios de orientación",
         "Fixtures manuales con rampa de 3/5 tonos y píxeles de frontera"
       ],
-      "evidence": []
+      "evidence": [],
+      "aliases": [
+        "MOA-015"
+      ],
+      "complexity": "M",
+      "modules": [
+        "techniques",
+        "palette"
+      ],
+      "context": "La iluminación estilizada depende de rampas y máscaras authored.",
+      "objective": "Seleccionar tonos de forma explícita y consistente al editar sombras.",
+      "proposed_implementation": [
+        "Registrar luz discreta y bandas ordenadas",
+        "Resolver rampas, prioridad de solapamiento y clamp sin inventar normales"
+      ],
+      "deliverables": [
+        "Operaciones de bandas y sombreado que conservan rampas y máscaras editables.",
+        "Fixtures de orientación, número de tonos, clipping y evaluación visual de iluminación."
+      ],
+      "risks": [
+        "La estética de una rampa puede contradecir luminancia monótona; emitir advertencia configurable."
+      ],
+      "blocking_reason": "Dependencias pendientes: MOANA-005, MOANA-013",
+      "acceptance_evidence": {},
+      "test_evidence": {}
     },
     {
-      "id": "MOA-016",
+      "id": "MOANA-016",
       "title": "Implementar dithering ordenado",
       "phase": "P3",
-      "status": "planned",
+      "status": "blocked",
       "priority": "P1",
       "dependencies": [
-        "MOA-005",
-        "MOA-013"
+        "MOANA-005",
+        "MOANA-013"
       ],
       "requirements": [
         "R009"
@@ -513,18 +901,41 @@
         "Todos los thresholds, coberturas y posiciones del período",
         "Máscaras no rectangulares, costuras entre tiles y repetición temporal sin parpadeo"
       ],
-      "evidence": []
+      "evidence": [],
+      "aliases": [
+        "MOA-016"
+      ],
+      "complexity": "M",
+      "modules": [
+        "techniques"
+      ],
+      "context": "Un patrón mal anclado produce costuras y parpadeo.",
+      "objective": "Aplicar Bayer exacto con coverage entera y fase estable.",
+      "proposed_implementation": [
+        "Implementar tablas normativas y módulo matemático",
+        "Aplicar la selección A/B sobre máscara y origen compartido"
+      ],
+      "deliverables": [
+        "Dithering ordenado con patrón/anclaje documentado y máscara de aplicación.",
+        "Fixtures exactas de patrones, transparencia y estabilidad ante recortes."
+      ],
+      "risks": [
+        "El módulo negativo y los overrides temporales deben tener tests propios."
+      ],
+      "blocking_reason": "Dependencias pendientes: MOANA-005, MOANA-013",
+      "acceptance_evidence": {},
+      "test_evidence": {}
     },
     {
-      "id": "MOA-017",
+      "id": "MOANA-017",
       "title": "Crear presets de materiales versionados",
       "phase": "P3",
-      "status": "planned",
+      "status": "blocked",
       "priority": "P1",
       "dependencies": [
-        "MOA-014",
-        "MOA-015",
-        "MOA-016"
+        "MOANA-014",
+        "MOANA-015",
+        "MOANA-016"
       ],
       "requirements": [
         "R010",
@@ -544,19 +955,43 @@
         "Fixtures pequeñas por material con máscara y límites de densidad/escala",
         "Pruebas de estabilidad entre frames y revisión visual a 1×/4× documentada como humana o pendiente"
       ],
-      "evidence": []
+      "evidence": [],
+      "aliases": [
+        "MOA-017"
+      ],
+      "complexity": "L",
+      "modules": [
+        "techniques",
+        "schema"
+      ],
+      "context": "Un material repetible debe exponer parámetros y conservar paleta/IDs.",
+      "objective": "Entregar cinco recetas de material editables con versión y procedencia.",
+      "proposed_implementation": [
+        "Definir presets como composición de bandas, ramps y patrones existentes",
+        "Añadir controles de rango, semillas y ejemplos propios por material"
+      ],
+      "deliverables": [
+        "Presets de materiales versionados con parámetros y semilla local explícitos.",
+        "Ejemplos editables, fixtures de repetibilidad y límites de cada material."
+      ],
+      "risks": [
+        "Una receta reproducible puede seguir siendo visualmente mala; separar evaluación humana."
+      ],
+      "blocking_reason": "Dependencias pendientes: MOANA-014, MOANA-015, MOANA-016",
+      "acceptance_evidence": {},
+      "test_evidence": {}
     },
     {
-      "id": "MOA-018",
+      "id": "MOANA-018",
       "title": "Implementar batches de edición atómica",
       "phase": "P3",
-      "status": "planned",
+      "status": "blocked",
       "priority": "P0",
       "dependencies": [
-        "MOA-002",
-        "MOA-010",
-        "MOA-012",
-        "MOA-013"
+        "MOANA-002",
+        "MOANA-010",
+        "MOANA-012",
+        "MOANA-013"
       ],
       "requirements": [
         "R016",
@@ -566,7 +1001,8 @@
       "out_of_scope": "No protocolo JSON Patch arbitrario ni colaboración en tiempo real.",
       "technical": [
         "Validar lote completo y escena final; sin cambios parciales ni mutación del documento fuente",
-        "Rechazar revisión vieja, capa bloqueada, borrado referenciado e IDs mutados; incrementar revisión una vez"
+        "Rechazar revisión vieja, capa bloqueada, borrado referenciado e IDs mutados; incrementar revisión una vez",
+        "Exigir base_revision y base_snapshot (digest del documento) en cada batch; rechazar mismatches incluso con revisión numérica igual."
       ],
       "acceptance": [
         "Recolor de body_fill modifica únicamente su referencia y la revisión preservando toda otra estructura",
@@ -574,18 +1010,43 @@
       ],
       "tests": [
         "Cada comando con caso válido/negativo, reorder al principio y dependencias vivas",
-        "Comparar documento original byte a byte, render antes/después y batch sin cambio visual"
+        "Comparar documento original byte a byte, render antes/después y batch sin cambio visual",
+        "Dos ramas con revision=1 y contenidos distintos rechazan el batch de la otra rama mediante base_snapshot."
       ],
-      "evidence": []
+      "evidence": [],
+      "aliases": [
+        "MOA-018"
+      ],
+      "complexity": "L",
+      "modules": [
+        "editing",
+        "api"
+      ],
+      "context": "Un cambio local necesita ser atómico y comprobar la revisión exacta de origen.",
+      "objective": "Crear documentos nuevos mediante batches tipados con conflictos verificables.",
+      "proposed_implementation": [
+        "Resolver targets y locks, aplicar batch a una copia y validar el resultado completo",
+        "Aceptar una sola nueva revisión y reportar IDs/dependencias/bbox afectados"
+      ],
+      "deliverables": [
+        "Modelos de batch y aplicación transaccional que verifica revisión y snapshot base.",
+        "Pruebas de rollback, preservación de IDs y conflicto entre ramas con igual revisión."
+      ],
+      "risks": [
+        "Tras undo pueden existir revisiones numéricas iguales en ramas distintas; verificar también identidad del snapshot."
+      ],
+      "blocking_reason": "Dependencias pendientes: MOANA-002, MOANA-010, MOANA-012, MOANA-013",
+      "acceptance_evidence": {},
+      "test_evidence": {}
     },
     {
-      "id": "MOA-019",
+      "id": "MOANA-019",
       "title": "Añadir undo/redo e historial inmutable",
       "phase": "P3",
-      "status": "planned",
+      "status": "blocked",
       "priority": "P1",
       "dependencies": [
-        "MOA-018"
+        "MOANA-018"
       ],
       "requirements": [
         "R017"
@@ -594,7 +1055,8 @@
       "out_of_scope": "No persistir todavía un contenedor de proyecto ni fusionar ramas automáticamente.",
       "technical": [
         "No reconstruir estados con operaciones inversas aproximadas",
-        "Limitar memoria/historial y separar selección de revisión de la edición que crea nueva revisión"
+        "Limitar memoria/historial y separar selección de revisión de la edición que crea nueva revisión",
+        "Identidad del snapshot por digest; número revision local a cada rama, nunca usado como clave global."
       ],
       "acceptance": [
         "Undo y redo recuperan documento y RGBA exactos",
@@ -604,18 +1066,41 @@
         "Secuencias de 1/10/100 ediciones y navegación a límites",
         "Fallo de batch no agrega snapshot; ramas, revisiones y budget de historial"
       ],
-      "evidence": []
+      "evidence": [],
+      "aliases": [
+        "MOA-019"
+      ],
+      "complexity": "L",
+      "modules": [
+        "editing"
+      ],
+      "context": "Undo/redo debe recuperar el documento y sus píxeles, no aproximarlos.",
+      "objective": "Mantener snapshots persistentes y ramas sin pérdida silenciosa de estados.",
+      "proposed_implementation": [
+        "Indexar snapshots por digest y guardar padre/batch con cursor separado",
+        "Implementar navegación y nueva rama con presupuesto explícito"
+      ],
+      "deliverables": [
+        "Historial inmutable con undo/redo y relación entre snapshots mediante digest.",
+        "Fixtures de ramificación, invalidez de redo y restauración exacta del documento."
+      ],
+      "risks": [
+        "No usar el número de revisión como identidad global del historial."
+      ],
+      "blocking_reason": "Dependencias pendientes: MOANA-018",
+      "acceptance_evidence": {},
+      "test_evidence": {}
     },
     {
-      "id": "MOA-020",
+      "id": "MOANA-020",
       "title": "Persistir proyectos y assets seguros",
       "phase": "P4",
-      "status": "planned",
+      "status": "blocked",
       "priority": "P1",
       "dependencies": [
-        "MOA-018",
-        "MOA-019",
-        "MOA-011"
+        "MOANA-018",
+        "MOANA-019",
+        "MOANA-011"
       ],
       "requirements": [
         "R018",
@@ -625,7 +1110,8 @@
       "out_of_scope": "No soporte PSD/Aseprite ni assets remotos o ejecutables.",
       "technical": [
         "Confinar rutas y rechazar symlinks, duplicados y traversal antes de extracción",
-        "Limitar entradas, expansión/ratio, bytes y decode Pillow; guardar temporal y conservar destino al fallar"
+        "Limitar entradas, expansión/ratio, bytes y decode Pillow; guardar temporal y conservar destino al fallar",
+        "Modelar ProjectManifest separado de Document y persistir assets/snapshots bajo rutas inmutables por hash antes del commit del manifiesto."
       ],
       "acceptance": [
         "Guardar/cargar preserva IDs, revisiones, historial y RGBA",
@@ -633,18 +1119,42 @@
       ],
       "tests": [
         "Roundtrip proyecto geométrico y con PNG; fallo simulado de disco",
-        "ZIP con ../, rutas absolutas, symlink, nombres en colisión, ratio excesivo y bomba de imagen"
+        "ZIP con ../, rutas absolutas, symlink, nombres en colisión, ratio excesivo y bomba de imagen",
+        "Fallo después de escribir nuevos assets conserva manifiesto y assets previos; el envelope rechaza campos extra sin alterar el schema de Document."
       ],
-      "evidence": []
+      "evidence": [],
+      "aliases": [
+        "MOA-020"
+      ],
+      "complexity": "L",
+      "modules": [
+        "project"
+      ],
+      "context": "Los assets y archivos de proyecto atraviesan una frontera de datos no confiables.",
+      "objective": "Guardar/cargar documentos y assets de forma confinada, íntegra y atómica.",
+      "proposed_implementation": [
+        "Definir manifiesto separado del documento y almacenamiento content-addressed de assets",
+        "Inspeccionar ZIP/paths/tamaños antes de escribir y comprometer manifiesto al final"
+      ],
+      "deliverables": [
+        "ProjectManifest, persistencia de assets verificados y guardado con commit final atómico.",
+        "Roundtrips, rechazo de rutas/archivos peligrosos y fallos durante la escritura."
+      ],
+      "risks": [
+        "Guardar el mismo asset path in-place antes del manifiesto rompe atomicidad; versiones inmutables necesarias."
+      ],
+      "blocking_reason": "Dependencias pendientes: MOANA-018, MOANA-019, MOANA-011",
+      "acceptance_evidence": {},
+      "test_evidence": {}
     },
     {
-      "id": "MOA-021",
+      "id": "MOANA-021",
       "title": "Versionar y migrar formatos de proyecto",
       "phase": "P4",
-      "status": "planned",
+      "status": "blocked",
       "priority": "P1",
       "dependencies": [
-        "MOA-020"
+        "MOANA-020"
       ],
       "requirements": [
         "R019"
@@ -663,18 +1173,42 @@
         "Fixtures de migración, migración repetida/idempotencia del destino y versión futura",
         "Simular fallo intermedio y comprobar que el original permanece intacto"
       ],
-      "evidence": []
+      "evidence": [],
+      "aliases": [
+        "MOA-021"
+      ],
+      "complexity": "M",
+      "modules": [
+        "project",
+        "schema"
+      ],
+      "context": "La evolución de datos no debe corromper originales ni aceptar versiones desconocidas.",
+      "objective": "Migrar versiones soportadas mediante transformaciones puras y copia preservada.",
+      "proposed_implementation": [
+        "Registrar rutas explícitas origen/destino y fixtures de versiones reales",
+        "Probar migración y guardado por separado; mantener backup antes de commit"
+      ],
+      "deliverables": [
+        "Registro explícito de versiones/migraciones y política de incompatibilidad.",
+        "Fixtures de formatos soportados, errores de versiones futuras y migración preservando IDs."
+      ],
+      "risks": [
+        "No inventar un formato histórico publicado; una fixture de prueba debe identificarse como tal."
+      ],
+      "blocking_reason": "Dependencias pendientes: MOANA-020",
+      "acceptance_evidence": {},
+      "test_evidence": {}
     },
     {
-      "id": "MOA-022",
+      "id": "MOANA-022",
       "title": "Implementar timeline y evaluación de frames",
       "phase": "P4",
-      "status": "planned",
+      "status": "blocked",
       "priority": "P1",
       "dependencies": [
-        "MOA-018",
-        "MOA-019",
-        "MOA-010"
+        "MOANA-018",
+        "MOANA-019",
+        "MOANA-010"
       ],
       "requirements": [
         "R020"
@@ -693,17 +1227,41 @@
         "Frame único, 256 frames, límite de duración/área y loops",
         "Overrides de geometría/color/visibilidad y textura estable entre frames"
       ],
-      "evidence": []
+      "evidence": [],
+      "aliases": [
+        "MOA-022"
+      ],
+      "complexity": "L",
+      "modules": [
+        "animation",
+        "schema"
+      ],
+      "context": "Evaluar frames incrementalmente introduce dependencia del orden y deriva temporal.",
+      "objective": "Evaluar cada frame contra la misma base con tiempos/pivotes verificables.",
+      "proposed_implementation": [
+        "Definir timeline y overrides limitados sin revision persistente",
+        "Presupuestar todos los frames y evaluar cada uno independientemente"
+      ],
+      "deliverables": [
+        "Timeline con evaluación de frames/overrides y reglas de duración/composición.",
+        "Fixtures de límites temporales, estabilidad de IDs y determinismo por frame."
+      ],
+      "risks": [
+        "Un bucle infinito de playback no autoriza un render infinito; exportar secuencia finita."
+      ],
+      "blocking_reason": "Dependencias pendientes: MOANA-018, MOANA-019, MOANA-010",
+      "acceptance_evidence": {},
+      "test_evidence": {}
     },
     {
-      "id": "MOA-023",
+      "id": "MOANA-023",
       "title": "Exportar spritesheets y manifest reversible",
       "phase": "P4",
-      "status": "planned",
+      "status": "blocked",
       "priority": "P1",
       "dependencies": [
-        "MOA-022",
-        "MOA-011"
+        "MOANA-022",
+        "MOANA-011"
       ],
       "requirements": [
         "R021"
@@ -722,18 +1280,42 @@
         "Columnas 1/N, último renglón incompleto, margen/padding y canvas no cuadrado",
         "Atlas excesivo, manifest corrupto y roundtrip recortes/tiempos"
       ],
-      "evidence": []
+      "evidence": [],
+      "aliases": [
+        "MOA-023"
+      ],
+      "complexity": "M",
+      "modules": [
+        "export",
+        "animation"
+      ],
+      "context": "Un atlas sin manifest íntegro pierde pivotes, duración o tamaño fuente.",
+      "objective": "Exportar un grid reversible que reconstruya exactamente sus frames.",
+      "proposed_implementation": [
+        "Calcular layout desde columnas/margen/padding y presupuesto",
+        "Serializar manifest versionado y verificar recortes contra originales"
+      ],
+      "deliverables": [
+        "Exportador de spritesheets y manifiesto reversible con pivotes/duraciones.",
+        "Reconstrucción exacta de frames desde atlas y pruebas de packing/límites."
+      ],
+      "risks": [
+        "Confundir rect xywh con bbox semiabierta causa offsets; especificar ambos claramente."
+      ],
+      "blocking_reason": "Dependencias pendientes: MOANA-022, MOANA-011",
+      "acceptance_evidence": {},
+      "test_evidence": {}
     },
     {
-      "id": "MOA-024",
+      "id": "MOANA-024",
       "title": "Exportar GIF con política de pérdidas",
       "phase": "P4",
-      "status": "planned",
+      "status": "blocked",
       "priority": "P1",
       "dependencies": [
-        "MOA-022",
-        "MOA-005",
-        "MOA-011"
+        "MOANA-022",
+        "MOANA-005",
+        "MOANA-011"
       ],
       "requirements": [
         "R023"
@@ -752,17 +1334,41 @@
         "Paleta llena, 255 colores más transparente, alpha intermedio y disposal",
         "Frames duplicados fusionados, loop, duraciones cortas y decode acumulado en Pillow"
       ],
-      "evidence": []
+      "evidence": [],
+      "aliases": [
+        "MOA-024"
+      ],
+      "complexity": "L",
+      "modules": [
+        "export",
+        "animation"
+      ],
+      "context": "GIF no representa alfa parcial, colores arbitrarios ni todos los tiempos.",
+      "objective": "Exportar una timeline equivalente con pérdidas explícitas y controladas.",
+      "proposed_implementation": [
+        "Preparar paleta compartida/reserva transparente y política de duración",
+        "Codificar frames/disposal y reconstruir timeline decodificada"
+      ],
+      "deliverables": [
+        "Exportador GIF con política explícita de pérdidas, paleta y duración efectiva.",
+        "Pruebas de timeline decodificado, transparencia, límites y rechazos sin pérdida autorizada."
+      ],
+      "risks": [
+        "Los encoders pueden fusionar frames idénticos; comparar tiempo/imagen, no sólo count."
+      ],
+      "blocking_reason": "Dependencias pendientes: MOANA-022, MOANA-005, MOANA-011",
+      "acceptance_evidence": {},
+      "test_evidence": {}
     },
     {
-      "id": "MOA-025",
+      "id": "MOANA-025",
       "title": "Añadir APNG y WebP lossless opcionales",
       "phase": "P4",
-      "status": "planned",
+      "status": "blocked",
       "priority": "P2",
       "dependencies": [
-        "MOA-022",
-        "MOA-011"
+        "MOANA-022",
+        "MOANA-011"
       ],
       "requirements": [
         "R024"
@@ -781,18 +1387,41 @@
         "Pruebas condicionadas a capacidades con skip explicado y reporte del build",
         "Mock de codec ausente y casos multi-frame, alfa parcial y duración"
       ],
-      "evidence": []
+      "evidence": [],
+      "aliases": [
+        "MOA-025"
+      ],
+      "complexity": "M",
+      "modules": [
+        "export"
+      ],
+      "context": "APNG/WebP dependen de capacidades del build y no justifican fallbacks ocultos.",
+      "objective": "Exponer formatos adicionales sólo con codecs y roundtrip comprobados.",
+      "proposed_implementation": [
+        "Detectar capacidades y registrar opciones lossless",
+        "Probar formatos disponibles y rechazar ausentes antes de crear destino"
+      ],
+      "deliverables": [
+        "Adaptadores APNG/WebP lossless con detección de capacidades del codec.",
+        "Roundtrips de timeline y errores verificables cuando una capacidad no está disponible."
+      ],
+      "risks": [
+        "Un skip de codec no equivale a soporte probado; publicar capability matrix."
+      ],
+      "blocking_reason": "Dependencias pendientes: MOANA-022, MOANA-011",
+      "acceptance_evidence": {},
+      "test_evidence": {}
     },
     {
-      "id": "MOA-026",
+      "id": "MOANA-026",
       "title": "Crear informes de calidad gráfica",
       "phase": "P5",
-      "status": "planned",
+      "status": "blocked",
       "priority": "P1",
       "dependencies": [
-        "MOA-014",
-        "MOA-015",
-        "MOA-022"
+        "MOANA-014",
+        "MOANA-015",
+        "MOANA-022"
       ],
       "requirements": [
         "R025",
@@ -812,19 +1441,42 @@
         "Corpus sintético con defectos conocidos y versiones corregidas",
         "Tests de no mutación, orden estable, regiones superpuestas y estabilidad temporal"
       ],
-      "evidence": []
+      "evidence": [],
+      "aliases": [
+        "MOA-026"
+      ],
+      "complexity": "L",
+      "modules": [
+        "quality"
+      ],
+      "context": "Heurísticas artísticas y errores de contrato tienen distinta severidad.",
+      "objective": "Producir informes reproducibles y accionables sin modificar el sprite.",
+      "proposed_implementation": [
+        "Implementar hard checks primero y métricas sobre fixtures sintéticas",
+        "Añadir heurísticas/supresiones y orden estable por regla/región/posición"
+      ],
+      "deliverables": [
+        "Reporte estructurado de calidad con hard checks y warnings identificables.",
+        "Fixtures positivas/negativas por regla y separación entre métricas y juicio artístico."
+      ],
+      "risks": [
+        "Un score no debe presentarse como garantía profesional ni como aprobación humana."
+      ],
+      "blocking_reason": "Dependencias pendientes: MOANA-014, MOANA-015, MOANA-022",
+      "acceptance_evidence": {},
+      "test_evidence": {}
     },
     {
-      "id": "MOA-027",
+      "id": "MOANA-027",
       "title": "Construir corpus artístico y rúbrica humana",
       "phase": "P5",
-      "status": "planned",
+      "status": "blocked",
       "priority": "P1",
       "dependencies": [
-        "MOA-017",
-        "MOA-022",
-        "MOA-026",
-        "MOA-028"
+        "MOANA-017",
+        "MOANA-022",
+        "MOANA-026",
+        "MOANA-028"
       ],
       "requirements": [
         "R005",
@@ -845,16 +1497,40 @@
         "Render de todo el corpus y cambio localizado por región con diff",
         "Inspección visual documentada, estabilidad de animación y auditoría de procedencia"
       ],
-      "evidence": []
+      "evidence": [],
+      "aliases": [
+        "MOA-027"
+      ],
+      "complexity": "L",
+      "modules": [
+        "examples",
+        "quality"
+      ],
+      "context": "Las técnicas requieren un corpus editable y evaluación de lectura real.",
+      "objective": "Demostrar cinco categorías con fuentes propias y rúbrica documentada.",
+      "proposed_implementation": [
+        "Crear brief/JSON/semilla por ejemplo y renders reproducibles",
+        "Registrar procedencia y revisión humana con categorías y justificación"
+      ],
+      "deliverables": [
+        "Corpus propio de personaje, criatura, objeto, tile y animación con fuentes editables.",
+        "Previews 1×/4×, procedencia/licencia y rúbrica humana con evidencia de evaluación."
+      ],
+      "risks": [
+        "No marcar como aprobada la calidad artística mientras falte una persona revisora."
+      ],
+      "blocking_reason": "Dependencias pendientes: MOANA-017, MOANA-022, MOANA-026, MOANA-028",
+      "acceptance_evidence": {},
+      "test_evidence": {}
     },
     {
-      "id": "MOA-028",
+      "id": "MOANA-028",
       "title": "Crear harness de regresión visual",
       "phase": "P1",
-      "status": "planned",
+      "status": "blocked",
       "priority": "P1",
       "dependencies": [
-        "MOA-004"
+        "MOANA-004"
       ],
       "requirements": [
         "R027"
@@ -873,18 +1549,41 @@
         "Tests del harness con píxel cambiado, dimensiones distintas y alfa cero",
         "Archivos de diagnóstico válidos y baseline intacto tras fallo; manejo de ruta con espacios"
       ],
-      "evidence": []
+      "evidence": [],
+      "aliases": [
+        "MOA-028"
+      ],
+      "complexity": "M",
+      "modules": [
+        "tests.visual"
+      ],
+      "context": "Comparar bytes PNG confunde codecs con diferencias de píxel.",
+      "objective": "Construir diagnósticos exactos de regresión sin actualizar baselines en CI.",
+      "proposed_implementation": [
+        "Crear comparador de dimensiones/RGBA y diferencias por bbox/conteo",
+        "Guardar expected/actual/diff y metadata sólo al fallar"
+      ],
+      "deliverables": [
+        "Harness visual de comparación RGBA exacta con expected/actual/diff y bbox.",
+        "Fixtures independientes y procedimiento revisable para aceptar cambios de baseline."
+      ],
+      "risks": [
+        "El harness no puede usar el renderer como oráculo de sus propias pruebas."
+      ],
+      "blocking_reason": "Dependencias pendientes: MOANA-004",
+      "acceptance_evidence": {},
+      "test_evidence": {}
     },
     {
-      "id": "MOA-029",
+      "id": "MOANA-029",
       "title": "Verificar determinismo entre procesos y plataformas",
       "phase": "P2",
-      "status": "planned",
+      "status": "blocked",
       "priority": "P1",
       "dependencies": [
-        "MOA-010",
-        "MOA-011",
-        "MOA-028"
+        "MOANA-010",
+        "MOANA-011",
+        "MOANA-028"
       ],
       "requirements": [
         "R015",
@@ -905,19 +1604,43 @@
         "Fixtures de diagonales, alpha, grupos, transparencias y clipping",
         "Subprocesos con semillas distintas, orden de claves y export/decode frente a RGBA maestro"
       ],
-      "evidence": []
+      "evidence": [],
+      "aliases": [
+        "MOA-029"
+      ],
+      "complexity": "M",
+      "modules": [
+        "ci",
+        "tests.integration"
+      ],
+      "context": "El determinismo local no demuestra igualdad entre procesos y plataformas.",
+      "objective": "Comparar digests de fixtures enteras en la matriz de soporte.",
+      "proposed_implementation": [
+        "Ejecutar subprocesses limpios variando PYTHONHASHSEED",
+        "Agregar fixtures y registrar backend/lock/plataforma en fallos"
+      ],
+      "deliverables": [
+        "Pruebas de determinismo en procesos nuevos, seeds, caché y matriz de plataformas.",
+        "Manifiestos/hashes RGBA y diagnóstico reproducible de divergencias."
+      ],
+      "risks": [
+        "Identidad del perfil entero y de AggDraw son garantías separadas."
+      ],
+      "blocking_reason": "Dependencias pendientes: MOANA-010, MOANA-011, MOANA-028",
+      "acceptance_evidence": {},
+      "test_evidence": {}
     },
     {
-      "id": "MOA-030",
+      "id": "MOANA-030",
       "title": "Ejercitar amenazas y entradas adversarias",
       "phase": "P5",
-      "status": "planned",
+      "status": "blocked",
       "priority": "P0",
       "dependencies": [
-        "MOA-003",
-        "MOA-020",
-        "MOA-021",
-        "MOA-022"
+        "MOANA-003",
+        "MOANA-020",
+        "MOANA-021",
+        "MOANA-022"
       ],
       "requirements": [
         "R026",
@@ -937,18 +1660,41 @@
         "Duplicados JSON, nesting, ciclos, NaN, tamaños enormes y ZIP traversal/bomb",
         "Monkeypatch de asignación/IO, mutación parcial de batch, decode enorme y fallo de checksum"
       ],
-      "evidence": []
+      "evidence": [],
+      "aliases": [
+        "MOA-030"
+      ],
+      "complexity": "L",
+      "modules": [
+        "tests.security"
+      ],
+      "context": "Los límites nominales pueden saltarse con combinaciones maliciosas.",
+      "objective": "Demostrar rechazo previo a buffers/IO para las fronteras del threat model.",
+      "proposed_implementation": [
+        "Construir corpus adversario acotado y generadores de propiedades",
+        "Instrumentar allocation/IO y límites del proceso de tests"
+      ],
+      "deliverables": [
+        "Suite adversaria de documentos, assets, rutas y presupuestos del motor.",
+        "Casos que verifican rechazo antes de asignación/efectos y resumen de amenazas cubiertas."
+      ],
+      "risks": [
+        "Las pruebas hostiles deben ser acotadas y nunca desactivar protecciones de Pillow."
+      ],
+      "blocking_reason": "Dependencias pendientes: MOANA-003, MOANA-020, MOANA-021, MOANA-022",
+      "acceptance_evidence": {},
+      "test_evidence": {}
     },
     {
-      "id": "MOA-031",
+      "id": "MOANA-031",
       "title": "Medir rendimiento y memoria de referencia",
       "phase": "P5",
-      "status": "planned",
+      "status": "blocked",
       "priority": "P1",
       "dependencies": [
-        "MOA-010",
-        "MOA-022",
-        "MOA-027"
+        "MOANA-010",
+        "MOANA-022",
+        "MOANA-027"
       ],
       "requirements": [
         "R028"
@@ -967,17 +1713,40 @@
         "Benchmark estático 32 capas/500 rects y animación 16 frames",
         "Comprobar contadores, ausencia de trabajo eliminado por caché y comparabilidad de versiones"
       ],
-      "evidence": []
+      "evidence": [],
+      "aliases": [
+        "MOA-031"
+      ],
+      "complexity": "M",
+      "modules": [
+        "benchmarks"
+      ],
+      "context": "No hay objetivos de rendimiento verificados antes de medir corpus real.",
+      "objective": "Publicar latencia/memoria reproducibles y contexto de hardware.",
+      "proposed_implementation": [
+        "Separar render de I/O y medir warmups/muestras de §22",
+        "Registrar mediana/p95/pico y comparar la misma carga sin caché engañosa"
+      ],
+      "deliverables": [
+        "Benchmarks reproducibles con warmups, muestras, mediana/p95 y memoria.",
+        "Corpus y reporte de entorno/lock, diferenciando coste de render e I/O."
+      ],
+      "risks": [
+        "No usar fluctuaciones de runners compartidos como gate rígido sin estabilizar entorno."
+      ],
+      "blocking_reason": "Dependencias pendientes: MOANA-010, MOANA-022, MOANA-027",
+      "acceptance_evidence": {},
+      "test_evidence": {}
     },
     {
-      "id": "MOA-032",
+      "id": "MOANA-032",
       "title": "Optimizar caché y render incremental acotados",
       "phase": "P5",
-      "status": "planned",
+      "status": "blocked",
       "priority": "P2",
       "dependencies": [
-        "MOA-018",
-        "MOA-031"
+        "MOANA-018",
+        "MOANA-031"
       ],
       "requirements": [
         "R029",
@@ -998,19 +1767,42 @@
         "Comparar render completo/incremental para cambios de paleta, máscara, grupo y orden",
         "Evicción LRU, versiones distintas, mutación externa impedida y benchmark antes/después"
       ],
-      "evidence": []
+      "evidence": [],
+      "aliases": [
+        "MOA-032"
+      ],
+      "complexity": "L",
+      "modules": [
+        "render"
+      ],
+      "context": "La optimización debe conservar semántica, presupuesto e inmutabilidad.",
+      "objective": "Reducir trabajo sólo donde exista beneficio medido sin cambiar RGBA.",
+      "proposed_implementation": [
+        "Elegir caché/dirty regions después del benchmark y documentar decisión",
+        "Probar invalidación transitiva, LRU por bytes y equivalencia on/off"
+      ],
+      "deliverables": [
+        "Caché e invalidación incremental acotadas por snapshot, parámetros y recursos.",
+        "Comparaciones cold/warm y caché on/off con igualdad RGBA y mediciones de coste."
+      ],
+      "risks": [
+        "Si no hay beneficio, documentar decisión de no introducir caché y su evidencia."
+      ],
+      "blocking_reason": "Dependencias pendientes: MOANA-018, MOANA-031",
+      "acceptance_evidence": {},
+      "test_evidence": {}
     },
     {
-      "id": "MOA-033",
+      "id": "MOANA-033",
       "title": "Documentar flujos IA y previews editables",
       "phase": "P5",
-      "status": "planned",
+      "status": "blocked",
       "priority": "P1",
       "dependencies": [
-        "MOA-012",
-        "MOA-018",
-        "MOA-020",
-        "MOA-026"
+        "MOANA-012",
+        "MOANA-018",
+        "MOANA-020",
+        "MOANA-026"
       ],
       "requirements": [
         "R014",
@@ -1031,19 +1823,43 @@
         "Ejecutar snippets/tutorial en entorno wheel limpio",
         "Validar ejemplos JSON contra schema y comprobar sólo región prevista cambia salvo dependencias declaradas"
       ],
-      "evidence": []
+      "evidence": [],
+      "aliases": [
+        "MOA-033"
+      ],
+      "complexity": "M",
+      "modules": [
+        "docs",
+        "api"
+      ],
+      "context": "Las sesiones futuras no conservarán el contexto de esta conversación.",
+      "objective": "Ofrecer un tutorial ejecutable del flujo crear/mostrar/editar con el motor real.",
+      "proposed_implementation": [
+        "Escribir ejemplos sobre API/CLI implementados y validar schema vigente",
+        "Ejecutar tutorial desde wheel limpio y actualizar skills/capabilities"
+      ],
+      "deliverables": [
+        "Guía de flujos IA para crear, inspeccionar y editar documentos por IDs.",
+        "Ejemplos ejecutables de preview/cambio localizado y recuperación de errores."
+      ],
+      "risks": [
+        "No documentar una API de diseño como importable antes de completar sus dependencias."
+      ],
+      "blocking_reason": "Dependencias pendientes: MOANA-012, MOANA-018, MOANA-020, MOANA-026",
+      "acceptance_evidence": {},
+      "test_evidence": {}
     },
     {
-      "id": "MOA-034",
+      "id": "MOANA-034",
       "title": "Añadir ejemplos de tiles y escenarios modulares",
       "phase": "P5",
-      "status": "planned",
+      "status": "blocked",
       "priority": "P2",
       "dependencies": [
-        "MOA-008",
-        "MOA-016",
-        "MOA-020",
-        "MOA-023"
+        "MOANA-008",
+        "MOANA-016",
+        "MOANA-020",
+        "MOANA-023"
       ],
       "requirements": [
         "R037",
@@ -1063,26 +1879,50 @@
         "Costuras horizontal/vertical, espejos y traslación por múltiplos de tile",
         "Editar un prop por ID y verificar regiones; inspección de legibilidad a escala nativa"
       ],
-      "evidence": []
+      "evidence": [],
+      "aliases": [
+        "MOA-034"
+      ],
+      "complexity": "M",
+      "modules": [
+        "examples",
+        "geometry"
+      ],
+      "context": "Tiles y escenarios requieren continuidad entre elementos y edición por identidad.",
+      "objective": "Componer escenas/props y tiles con paleta compartida sin costuras.",
+      "proposed_implementation": [
+        "Usar operaciones/transformaciones existentes con grid/origen de patrón común",
+        "Exportar atlas y reconstruir escena para comparar píxeles"
+      ],
+      "deliverables": [
+        "Ejemplos editables de tiles y escenarios modulares con composición documentada.",
+        "Pruebas de uniones, repetibilidad, procedencia y previews de ensamblaje."
+      ],
+      "risks": [
+        "Repetición horizontal/vertical necesita fixtures de costura y revisión a escala nativa."
+      ],
+      "blocking_reason": "Dependencias pendientes: MOANA-008, MOANA-016, MOANA-020, MOANA-023",
+      "acceptance_evidence": {},
+      "test_evidence": {}
     },
     {
-      "id": "MOA-035",
+      "id": "MOANA-035",
       "title": "Preparar release y comprobar Definition of Done",
       "phase": "P5",
-      "status": "planned",
+      "status": "blocked",
       "priority": "P1",
       "dependencies": [
-        "MOA-007",
-        "MOA-021",
-        "MOA-023",
-        "MOA-024",
-        "MOA-025",
-        "MOA-027",
-        "MOA-029",
-        "MOA-030",
-        "MOA-032",
-        "MOA-033",
-        "MOA-034"
+        "MOANA-007",
+        "MOANA-021",
+        "MOANA-023",
+        "MOANA-024",
+        "MOANA-025",
+        "MOANA-027",
+        "MOANA-029",
+        "MOANA-030",
+        "MOANA-032",
+        "MOANA-033",
+        "MOANA-034"
       ],
       "requirements": [
         "R031",
@@ -1103,7 +1943,31 @@
         "Instalación desde ambos artefactos, smoke CLI y migraciones en entorno limpio",
         "Revisión final de traceability, CI remoto real, corpus, seguridad y benchmark archivados"
       ],
-      "evidence": []
+      "evidence": [],
+      "aliases": [
+        "MOA-035"
+      ],
+      "complexity": "L",
+      "modules": [
+        "release",
+        "docs"
+      ],
+      "context": "Una release necesita evidencias de alcance, compatibilidad y licencia además de un wheel.",
+      "objective": "Preparar un candidato instalable con DoD y pendientes explícitos.",
+      "proposed_implementation": [
+        "Auditar requisitos/evidencias y generar matriz de capacidades",
+        "Probar wheel/sdist, tutorial, migraciones y dejar publicación como acción autorizada separada"
+      ],
+      "deliverables": [
+        "Checklist de release con decisión de licencia, compatibilidad y documentación pública.",
+        "Wheel/sdist auditados, instalación limpia y evidencia de todos los gates de entrega."
+      ],
+      "risks": [
+        "No declarar CI remoto de cambios locales ni licencia decidida sin evidencia del propietario."
+      ],
+      "blocking_reason": "Dependencias pendientes: MOANA-007, MOANA-021, MOANA-023, MOANA-024, MOANA-025, MOANA-027, MOANA-029, MOANA-030, MOANA-032, MOANA-033, MOANA-034",
+      "acceptance_evidence": {},
+      "test_evidence": {}
     }
   ]
 }

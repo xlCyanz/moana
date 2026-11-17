@@ -15,3 +15,5 @@ Consulta [MOANA.md](../../../MOANA.md) §§5–6, 11, 14 y 22 antes de elegir un
 - Optimiza con benchmark y equivalencia on/off. No añadas SIMD/GPU/threads por intuición.
 
 Entrega algoritmo, coste, casos límite y evidencia visual pertinente. La precisión raster no prueba calidad artística.
+
+Escala previews y sprites por vecino más cercano con factor entero. Inspecciona shape/dtype, alfa, límites y pertenencia a paleta al cruzar adaptadores. Las máscaras están en coordenadas de canvas: aclara su relación con grupos transformados y prueba un borde recortado. Un polígono even-odd no es vacío sólo porque su área firmada sea cero.

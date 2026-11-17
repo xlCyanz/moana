@@ -2,14 +2,14 @@
 
 Base de un motor Python de Pixel Art programático, determinista y editable, orientado a sprites de 128 × 128. **Estado: infraestructura y diseño; el motor todavía no está implementado.** El paquete sólo expone `moana.__version__`. No existe aún un CLI de dibujo.
 
-La fuente de verdad es [MOANA.md](MOANA.md). Consulta el [roadmap](docs/ROADMAP.md), los [issues](docs/issues/README.md) y la [trazabilidad](docs/TRACEABILITY.md). Pillow y NumPy son herramientas; la calidad artística requerirá algoritmos, dirección y evaluación.
+La fuente de verdad es [MOANA.md](MOANA.md). Consulta el [roadmap](docs/issues/roadmap.md), los [issues](docs/issues/README.md), las [dependencias](docs/issues/dependency-map.md) y la [trazabilidad](docs/issues/traceability.md). Pillow y NumPy son herramientas; la calidad artística requerirá algoritmos, dirección y evaluación.
 
 ## Inicio rápido
 
 Con `uv` instalado:
 
 ```sh
-uv python install 3.12
+uv python install 3.12.16
 uv sync --locked
 uv run python scripts/validate.py
 ```
@@ -28,16 +28,18 @@ El bootstrap guarda uv, Python administrado y cachés dentro de `.tools/` y `.ca
 ```sh
 uv run ruff check .
 uv run ruff format --check .
+uv run mypy src/
 uv run mypy
 uv run pytest
 uv run python -m scripts.check_repository
 uv run python scripts/planning.py --check
-uv run python -m build --no-isolation
+uv build
+uv run python scripts/check_wheel.py
 uv run pre-commit install
 uv run pre-commit run --all-files
 ```
 
-`scripts/validate.py` agrupa lock, lint, formato, tipos, estructura, tests y build; no modifica baselines. Los hooks Git se instalan por checkout. CI ejecuta Python 3.12–3.14 en Linux, macOS y Windows. Publicar el repositorio y ejecutar Actions remoto son pasos posteriores.
+`scripts/validate.py` agrupa lock, lint, formato, tipos, estructura, tests con cobertura y build con Hatchling del lock; guarda diagnósticos en `artifacts/`. Los hooks Git se instalan por checkout. CI está configurado para Python 3.12–3.14 en Linux, macOS y Windows. El [informe actual](docs/BOOTSTRAP_REPORT.md) distingue validación local de ejecuciones observadas en GitHub.
 
 ## Organización
 
@@ -50,9 +52,9 @@ uv run pre-commit run --all-files
 | `docs/issues/` | catálogo y especificaciones de trabajo |
 | `examples/specs/` | JSON de diseño, aún no renderizable por Moana |
 | `.agents/skills/` | siete skills propias del proyecto |
-| `.codex/` | configuración y roles de agentes locales |
+| `.codex/` | configuración y ocho roles de agentes locales |
 | `.github/` | CI, actualización de acciones y plantillas |
 
-Lee [CONTRIBUTING.md](CONTRIBUTING.md) y [AGENTS.md](AGENTS.md) antes de implementar. Primer issue: [MOA-001](docs/issues/MOA-001.md). La [auditoría de entorno](docs/CODEX.md) distingue configuraciones disponibles de integraciones activas. El [reporte de inicialización](docs/INITIALIZATION_REPORT.md) recoge evidencias y limitaciones.
+Lee [CONTRIBUTING.md](CONTRIBUTING.md) y [AGENTS.md](AGENTS.md) antes de implementar. La [guía de desarrollo](docs/guides/development.md) detalla el entorno y el flujo Git. Primer issue: [MOANA-001](docs/issues/MOANA-001.md). La [auditoría de entorno](docs/CODEX.md) distingue configuraciones disponibles de integraciones activas. El [reporte de inicialización](docs/INITIALIZATION_REPORT.md) conserva evidencias históricas.
 
 La licencia de distribución queda pendiente de decisión del propietario; no se autoriza una publicación automática ni se asigna una licencia por suposición.

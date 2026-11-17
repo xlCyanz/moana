@@ -15,3 +15,5 @@ Lee [arquitectura y ADR](../../../docs/architecture/README.md), [MOANA.md](../..
 - Mantén el DAG de módulos y de issues acíclico. No añadas framework, servicio o GUI para resolver una necesidad local.
 
 Entrega un contrato implementable, los issues afectados y la verificación requerida. Respeta el alcance actual del usuario.
+
+Antes de diseñar una API, identifica su consumidor y errores públicos; conserva compatibilidad de schema/renderer/paquete por separado. Compara dependencias nuevas con los límites de imports y ownership de [module-contracts](../../../docs/architecture/module-contracts.md). No ocultes un ciclo mediante imports tardíos.

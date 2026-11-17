@@ -2,6 +2,11 @@
   "schema_version": "1.0",
   "base_revision": 0,
   "commands": [
-    {"type": "set_color", "target_id": "body_fill", "color": "ink"}
-  ]
+    {
+      "type": "set_color",
+      "target_id": "body_fill",
+      "color": "ink"
+    }
+  ],
+  "base_snapshot": "sha256:f2faa0b919ff3daa701d8e87962415881fa9085f9e28f15f9388da6ffe4e4059"
 }

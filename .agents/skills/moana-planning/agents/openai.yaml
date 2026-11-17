@@ -1,4 +1,0 @@
-interface:
-  display_name: "Moana · Issue Planning"
-  short_description: "Backlog verificable y trazabilidad de Moana"
-  default_prompt: "Usa $moana-planning para trabajar el issue asignado de Moana respetando su contrato y estado real."

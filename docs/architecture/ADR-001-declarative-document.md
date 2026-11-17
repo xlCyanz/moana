@@ -8,8 +8,8 @@ Una imagen plana no conserva la identidad del ojo, la capa o el arma que el usua
 
 ## Decisión
 
-El documento versionado con IDs globales es fuente de verdad. Las operaciones son datos tipados; los comandos de edición producen documentos nuevos de forma atómica. El render es un derivado sin I/O. Pydantic genera JSON Schema cuando MOA-002 exista. IDs no se reasignan al ordenar capas y los frames referencian la base mediante overrides.
+El documento versionado con IDs globales es fuente de verdad. Las operaciones son datos tipados; los comandos de edición producen documentos nuevos de forma atómica. El render es un derivado sin I/O. Pydantic genera JSON Schema cuando MOANA-002 exista. IDs no se reasignan al ordenar capas y los frames referencian la base mediante overrides.
 
 ## Alternativas y consecuencias
 
-Raster como fuente primaria facilita pintar pero pierde semántica; scripts Python arbitrarios dan flexibilidad pero no son un formato seguro ni fácilmente editable. Un scene graph declarativo limita expresividad a cambio de validación, determinismo y trazabilidad. Las extensiones exigirán un contrato y migraciones explícitas. MOA-018/019/020 prueban atomicidad, historial y roundtrip.
+Raster como fuente primaria facilita pintar pero pierde semántica; scripts Python arbitrarios dan flexibilidad pero no son un formato seguro ni fácilmente editable. Un scene graph declarativo limita expresividad a cambio de validación, determinismo y trazabilidad. Las extensiones exigirán un contrato y migraciones explícitas. MOANA-018/019/020 prueban atomicidad, historial y roundtrip.

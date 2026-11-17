@@ -30,8 +30,8 @@ EXPECTED_SKILLS = {
     "moana-pixel-art",
     "moana-architecture",
     "moana-testing",
-    "moana-review",
-    "moana-planning",
+    "moana-code-review",
+    "moana-issue-planning",
 }
 
 
@@ -99,7 +99,9 @@ def check_repository(root: Path = ROOT) -> list[str]:
     issues, requirements = load_catalog(root)
     errors = check_generated(root, generated_documents(issues, requirements))
     errors.extend(check_links(root))
-    sections = re.findall(r"^## (\d+)\. ", (root / "MOANA.md").read_text(), re.MULTILINE)
+    sections = re.findall(
+        r"^## (\d+)\. ", (root / "MOANA.md").read_text(encoding="utf-8"), re.MULTILINE
+    )
     if sections != [str(i) for i in range(1, 26)]:
         errors.append("MOANA.md must contain the 25 numbered sections in order")
     covered_sections = {section for requirement in requirements for section in requirement.sections}
@@ -112,22 +114,24 @@ def check_repository(root: Path = ROOT) -> list[str]:
         check_skill(skill)
     names = []
     for path in (root / ".codex/agents").glob("*.toml"):
-        role = AgentRole.model_validate(tomllib.loads(path.read_text()))
+        role = AgentRole.model_validate(tomllib.loads(path.read_text(encoding="utf-8")))
         names.append(role.name)
-    if len(names) != 7 or len(set(names)) != 7:
-        errors.append("Expected seven distinct Codex roles")
-    config = tomllib.loads((root / ".codex/config.toml").read_text())
+    if len(names) != 8 or len(set(names)) != 8 or "moana_documentation_writer" not in names:
+        errors.append("Expected eight distinct Codex roles including documentation")
+    config = tomllib.loads((root / ".codex/config.toml").read_text(encoding="utf-8"))
     if config != {"agents": {"enabled": True, "max_concurrent_threads_per_session": 3}}:
         errors.append("Codex settings changed; review capability audit and validator together")
     for path in [root / "pyproject.toml", root / "uv.lock"]:
-        tomllib.loads(path.read_text())
+        tomllib.loads(path.read_text(encoding="utf-8"))
     for path in (root / "examples/specs").glob("*.json"):
-        json.loads(path.read_text())
+        json.loads(path.read_text(encoding="utf-8"))
     for path in (root / ".github").rglob("*.yml"):
-        if not isinstance(yaml.safe_load(path.read_text()), dict):
+        if not isinstance(yaml.safe_load(path.read_text(encoding="utf-8")), dict):
             errors.append(f"YAML mapping required: {path}")
     # BaseLoader preserves GitHub's `on` key instead of treating it as a YAML 1.1 boolean.
-    workflow = yaml.load((root / ".github/workflows/ci.yml").read_text(), Loader=yaml.BaseLoader)
+    workflow = yaml.load(
+        (root / ".github/workflows/ci.yml").read_text(encoding="utf-8"), Loader=yaml.BaseLoader
+    )
     if not isinstance(workflow, dict) or not {"on", "jobs", "permissions"} <= workflow.keys():
         errors.append("CI must define triggers, jobs and permissions")
     else:
@@ -137,10 +141,13 @@ def check_repository(root: Path = ROOT) -> list[str]:
         ]
         if (
             len(uv_steps) != 1
-            or uv_steps[0]["with"]["version"] != (root / ".uv-version").read_text().strip()
+            or uv_steps[0]["with"]["version"]
+            != (root / ".uv-version").read_text(encoding="utf-8").strip()
         ):
             errors.append("CI and bootstrap must pin the same uv version")
-    if not isinstance(yaml.safe_load((root / ".pre-commit-config.yaml").read_text()), dict):
+    if not isinstance(
+        yaml.safe_load((root / ".pre-commit-config.yaml").read_text(encoding="utf-8")), dict
+    ):
         errors.append("Invalid pre-commit configuration")
     return errors
 

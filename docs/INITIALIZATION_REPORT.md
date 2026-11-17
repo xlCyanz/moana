@@ -1,5 +1,7 @@
 # Reporte de inicialización
 
+Registro histórico del trabajo inicial incorporado en 9388c57. Las cifras y observaciones siguientes corresponden al 2026-11-16; para el estado actual consultar el [reporte de preparación](BOOTSTRAP_REPORT.md).
+
 Fecha: **2026-11-16**, America/Santo_Domingo. Resultado: **P0 completada**, lista para implementar MOA-001. La carpeta estaba vacía; no había trabajo previo que conservar. No se implementó el motor gráfico.
 
 ## Entregables

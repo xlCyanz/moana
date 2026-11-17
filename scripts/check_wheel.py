@@ -8,7 +8,11 @@ import sys
 import tempfile
 from pathlib import Path
 
-from scripts.validate import ROOT, uv_executable
+# Support the documented direct invocation as well as python -m scripts.check_wheel.
+if __package__ in {None, ""}:
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from scripts.validate import ROOT, tool_environment, uv_executable
 
 
 def main() -> int:
@@ -21,10 +25,15 @@ def main() -> int:
         root = Path(temporary)
         venv = root / "venv"
         uv = uv_executable()
-        subprocess.run([uv, "venv", str(venv), "--python", sys.executable], check=True)
+        subprocess.run(
+            [uv, "venv", str(venv), "--python", sys.executable],
+            env=tool_environment(),
+            check=True,
+        )
         python = venv / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
         subprocess.run(
             [uv, "pip", "install", "--python", str(python), "--no-deps", str(wheels[0])],
+            env=tool_environment(),
             check=True,
         )
         probe = (

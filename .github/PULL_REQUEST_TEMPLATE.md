@@ -1,6 +1,6 @@
 ## Problema y resultado
 
-Issue local MOA-… y requisitos R…:
+Issue local MOANA-… y requisitos R…:
 
 Describir el cambio observable y su alcance.
 

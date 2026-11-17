@@ -15,3 +15,5 @@ Lee [TESTING.md](../../../docs/TESTING.md) y [MOANA.md](../../../MOANA.md) §§2
 - Elige la prueba proporcional al cambio; no escribas tests que sólo repitan textos o detalles de implementación.
 
 Ejecuta el gate común y reporta comandos/resultados reales, casos no cubiertos y por qué. La ausencia de tests visuales en P0 no es evidencia gráfica.
+
+Elige unit para reglas locales, integration para documento→resultado→export o tooling completo, y property-based para invariantes con dominio acotado. Usa fixtures de píxeles independientes en regresión visual. Un benchmark registra CPU/OS/Python/lock, 5 warmups, 30 muestras, mediana/p95 y memoria; no mezcla I/O con render ni impone un umbral rígido sobre un runner no estabilizado. Consulta [testing](../../../docs/standards/testing.md) para cuándo usar cada nivel.
