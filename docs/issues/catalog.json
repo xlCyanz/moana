@@ -529,7 +529,7 @@
       "id": "MOANA-008",
       "title": "Añadir transformaciones pixel-perfect",
       "phase": "P1",
-      "status": "review",
+      "status": "done",
       "priority": "P1",
       "dependencies": [
         "MOANA-006"
@@ -556,7 +556,8 @@
         "Rechazo con ValidationError de rotación arbitraria (arbitrary_rotation), rotación fuera de {0,90,180,270} (out_of_range, allowed), escala no entera o fuera de rango (not_integer/out_of_range) y mirror no booleano (not_boolean).",
         "ADR-016 (docs/architecture/decisions/ADR-016-pixel-transforms.md); contratos de módulos, overview, índice de arquitectura y README actualizados.",
         "Gate: scripts/validate.py y scripts/check_wheel.py verdes; transform.py al 100 % de líneas y ramas.",
-        "Revisión: moana-graphics-engineer (aprobado; oráculo directo independiente en 6000 casos, 8 elementos diedros, escala 1–5, pivotes/offsets negativos, sin discrepancias) y moana-python-engineer (aprobado); corregidos doble copia del origen, máscara vacía con almacenamiento, matriz privada, contextos de error, pivote inverso fuera de rango y pruebas de inversa vacuas."
+        "Revisión: moana-graphics-engineer (aprobado; oráculo directo independiente en 6000 casos, 8 elementos diedros, escala 1–5, pivotes/offsets negativos, sin discrepancias) y moana-python-engineer (aprobado); corregidos doble copia del origen, máscara vacía con almacenamiento, matriz privada, contextos de error, pivote inverso fuera de rango y pruebas de inversa vacuas.",
+        "Aprobado por el propietario el 2026-11-17 tras revisión; PR #46 hacia develop."
       ],
       "aliases": [
         "MOA-008"
@@ -592,7 +593,7 @@
       "id": "MOANA-009",
       "title": "Implementar capas, grupos y composición",
       "phase": "P2",
-      "status": "blocked",
+      "status": "ready",
       "priority": "P1",
       "dependencies": [
         "MOANA-002",
@@ -639,7 +640,7 @@
       "risks": [
         "La opacidad por hijo cambia la imagen; el bloqueo afecta edición, no render."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-008",
+      "blocking_reason": null,
       "acceptance_evidence": {},
       "test_evidence": {}
     },
@@ -2004,7 +2005,7 @@
       "risks": [
         "Repetición horizontal/vertical necesita fixtures de costura y revisión a escala nativa."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-008, MOANA-016, MOANA-020, MOANA-023",
+      "blocking_reason": "Dependencias pendientes: MOANA-016, MOANA-020, MOANA-023",
       "acceptance_evidence": {},
       "test_evidence": {}
     },

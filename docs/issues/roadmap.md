@@ -20,7 +20,7 @@ Estado: 1/1 issues completados.
 
 Puerta de salida: Modelos estrictos, límites y fixtures enteras exactas.
 
-Estado: 7/8 issues completados.
+Estado: 8/8 issues completados.
 
 - [MOANA-001](MOANA-001.md) — Definir tipos, coordenadas, errores y límites (done)
 - [MOANA-002](MOANA-002.md) — Implementar documento Pydantic y JSON Schema (done)
@@ -28,7 +28,7 @@ Estado: 7/8 issues completados.
 - [MOANA-004](MOANA-004.md) — Crear lienzo RGBA y propiedad de buffers (done)
 - [MOANA-005](MOANA-005.md) — Implementar paletas y rampas (done)
 - [MOANA-006](MOANA-006.md) — Rasterizar primitivas enteras y flood fill (done)
-- [MOANA-008](MOANA-008.md) — Añadir transformaciones pixel-perfect (review)
+- [MOANA-008](MOANA-008.md) — Añadir transformaciones pixel-perfect (done)
 - [MOANA-028](MOANA-028.md) — Crear harness de regresión visual (done)
 
 ## P2 — Imagen estática
@@ -37,7 +37,7 @@ Puerta de salida: Render 128 x 128, PNG roundtrip y determinismo en matriz.
 
 Estado: 0/5 issues completados.
 
-- [MOANA-009](MOANA-009.md) — Implementar capas, grupos y composición (blocked)
+- [MOANA-009](MOANA-009.md) — Implementar capas, grupos y composición (ready)
 - [MOANA-010](MOANA-010.md) — Construir pipeline de render determinista (blocked)
 - [MOANA-011](MOANA-011.md) — Exportar PNG y manifiesto de salida (blocked)
 - [MOANA-012](MOANA-012.md) — Exponer API pública y CLI estático (blocked)
@@ -88,4 +88,4 @@ Estado: 0/8 issues completados.
 
 ## Siguiente paso
 
-No hay issues ready. Revisar bloqueos y dependencias antes de iniciar.
+Implementar [MOANA-009](MOANA-009.md): Implementar capas, grupos y composición.
