@@ -47,6 +47,7 @@ El paquete contiene `src/moana/__init__.py`, `py.typed` y `src/moana/core/` (MOA
 - [ADR-014: paletas, lenguajes de ID y luminancia](decisions/ADR-014-palette.md).
 - [ADR-015: primitivas raster enteras, máscaras y flood fill](decisions/ADR-015-raster-primitives.md).
 - [ADR-016: transformaciones pixel-perfect sobre índices](decisions/ADR-016-pixel-transforms.md).
+- [ADR-017: árbol de capas y composición source-over entera](decisions/ADR-017-layers-composition.md).
 - [Modelo de amenazas](SECURITY_MODEL.md).
 
 Un ADR nuevo registra contexto, decisión, alternativas, consecuencias y evidencia. Cambiar un ADR aceptado se hace mediante otro que lo sustituya y actualizando el contrato principal.

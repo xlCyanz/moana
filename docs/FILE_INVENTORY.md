@@ -1,6 +1,6 @@
 # Inventario del repositorio
 
-264 archivos actuales de fuente, documentación, configuración y pruebas al 2026-11-17. Incluye cambios locales todavía sin commit. Excluye entorno virtual, herramientas, cachés, artefactos y metadata Git.
+270 archivos actuales de fuente, documentación, configuración y pruebas al 2026-11-17. Incluye cambios locales todavía sin commit. Excluye entorno virtual, herramientas, cachés, artefactos y metadata Git.
 
 | Archivo |
 | --- |
@@ -98,6 +98,7 @@
 | [docs/architecture/decisions/ADR-014-palette.md](../docs/architecture/decisions/ADR-014-palette.md) |
 | [docs/architecture/decisions/ADR-015-raster-primitives.md](../docs/architecture/decisions/ADR-015-raster-primitives.md) |
 | [docs/architecture/decisions/ADR-016-pixel-transforms.md](../docs/architecture/decisions/ADR-016-pixel-transforms.md) |
+| [docs/architecture/decisions/ADR-017-layers-composition.md](../docs/architecture/decisions/ADR-017-layers-composition.md) |
 | [docs/architecture/module-contracts.md](../docs/architecture/module-contracts.md) |
 | [docs/architecture/overview.md](../docs/architecture/overview.md) |
 | [docs/guides/agent-workflow.md](../docs/guides/agent-workflow.md) |
@@ -219,6 +220,9 @@
 | [src/moana/geometry/mask.py](../src/moana/geometry/mask.py) |
 | [src/moana/geometry/primitives.py](../src/moana/geometry/primitives.py) |
 | [src/moana/geometry/transform.py](../src/moana/geometry/transform.py) |
+| [src/moana/layers/__init__.py](../src/moana/layers/__init__.py) |
+| [src/moana/layers/composite.py](../src/moana/layers/composite.py) |
+| [src/moana/layers/nodes.py](../src/moana/layers/nodes.py) |
 | [src/moana/palette/__init__.py](../src/moana/palette/__init__.py) |
 | [src/moana/palette/colors.py](../src/moana/palette/colors.py) |
 | [src/moana/palette/table.py](../src/moana/palette/table.py) |
@@ -248,6 +252,8 @@
 | [tests/unit/geometry/test_geometry_memory.py](../tests/unit/geometry/test_geometry_memory.py) |
 | [tests/unit/geometry/test_geometry_primitives.py](../tests/unit/geometry/test_geometry_primitives.py) |
 | [tests/unit/geometry/test_geometry_transform.py](../tests/unit/geometry/test_geometry_transform.py) |
+| [tests/unit/layers/test_layers_compose.py](../tests/unit/layers/test_layers_compose.py) |
+| [tests/unit/layers/test_layers_nodes.py](../tests/unit/layers/test_layers_nodes.py) |
 | [tests/unit/palette/test_palette_architecture.py](../tests/unit/palette/test_palette_architecture.py) |
 | [tests/unit/palette/test_palette_colors.py](../tests/unit/palette/test_palette_colors.py) |
 | [tests/unit/palette/test_palette_table.py](../tests/unit/palette/test_palette_table.py) |
