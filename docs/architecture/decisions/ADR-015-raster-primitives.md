@@ -1,0 +1,40 @@
+# ADR-015 — Máscaras enteras de primitivas y flood fill acotado en `geometry`
+
+Estado: aceptado · 2026-11-17 · Issue: [MOANA-006](../../issues/MOANA-006.md). Aplica ADR-012 (presupuestos) y ADR-013 (lienzo) a los rasterizadores.
+
+## Contexto
+
+MOANA.md §6 fija reglas raster exactas para `pixel`, `line`, `rect`, `ellipse` y `polygon`, y añade `flood_fill` como capacidad posterior. Los valores por defecto de Pillow `ImageDraw` o de AggDraw difieren en un píxel en bordes y empates, así que no sirven como implementación. §3 sólo permite a `geometry` depender de `core`. ADR-012 contabiliza cada operación como una máscara de 1 byte por píxel de su caja recortada y exige que los rasterizadores trabajen por filas para no superarla, con una prueba `tracemalloc`. ADR-013 permite a `geometry` usar NumPy internamente siempre que no exponga arrays.
+
+## Decisión
+
+1. **Tipo público `Mask`.** Es un valor inmutable y `final`: guarda una caja `box` (la caja de la operación recortada al lienzo, o `None` si no queda nada) y un array booleano privado de `box.height × box.width`, marcado de sólo lectura y que nadie más referencia. No tiene constructor público. Expone `count`, `is_empty`, `bounds` (caja mínima de los píxeles), `contains(point)`, `points()` (orden fila a fila) y `to_array()`, que devuelve una copia escribible para adaptadores internos como el compositor. La igualdad y el hash comparan el **conjunto de píxeles**: ni `box` ni la forma de `to_array()` forman parte de la identidad del valor. El hash deriva de `hash(bytes)`, que varía entre procesos, así que nunca se usa para ordenar ni sembrar el render (§14). `copy.copy` y `copy.deepcopy` devuelven el mismo objeto. `pickle` reconstruye la máscara mediante una función privada que valida caja, forma, tamaño y valores binarios antes de adoptar los bits como sólo lectura; un estado manipulado lanza `ValidationError`. `Mask.empty()` representa la geometría recortada por completo.
+2. **Firmas.** Las funciones `rasterize_pixel(point, dimensions)`, `rasterize_line(start, end, dimensions)`, `rasterize_rect(box, dimensions)`, `rasterize_ellipse(box, dimensions)` y `rasterize_polygon(points, dimensions)` reciben tipos de `core` (`Point`, `Box`, `Dimensions`), recortan sin wraparound y nunca lanzan error por geometría fuera del lienzo. Un tipo de argumento incorrecto lanza `TypeError`. Un polígono con menos de 3 o más de 4096 vértices lanza `ValidationError` (`out_of_range`); el número de vértices se comprueba con `len` antes de recorrer la secuencia.
+3. **Fórmulas exactas con enteros de Python.**
+   - `line`: los extremos se ordenan lexicográficamente y se aplica el Bresenham de §6 (`dx = |x1 − x0|`, `dy = −|y1 − y0|`, `err = dx + dy`, `e2 = 2·err`; avanza x si `e2 ≥ dy` y avanza y si `e2 ≤ dx`). Incluye ambos extremos y da la misma máscara al invertir la línea. Los pasos se ejecutan antes del recorte, como cuenta el estimador. Como x e y son monótonas, el bucle termina en cuanto la línea sale del lienzo.
+   - `rect`: la caja semiabierta recortada, rellena.
+   - `ellipse`: el píxel se incluye si `A²h² + B²w² ≤ w²h²`. Para cada fila, la condición equivale a `|A| ≤ isqrt(w²(h² − B²) // h²)`, que da un intervalo exacto de columnas; no se materializan productos por píxel.
+   - `polygon`: regla even-odd por centros. Se descartan las aristas horizontales, y una arista está activa en la fila y si `min ≤ y + ½ < max`. Para cada cruce `c = num/d` se calcula el umbral entero `t = ⌈c − ½⌉ = −((d − 2·num) // (2d))`. Un centro `x + ½` tiene un número impar de cruces estrictamente a su derecha si y sólo si es impar el número de umbrales `t ≤ x`. Por eso cada fila se rellena en los tramos `[t₂ₖ, t₂ₖ₊₁)` de los umbrales ordenados. Los vértices repetidos generan aristas horizontales degeneradas y desaparecen solos. Nunca se usa el área firmada: un bow-tie con área cero produce sus dos triángulos.
+4. **Memoria.** Cada máscara reserva exactamente el término de máscara de `budget-v1`: 1 byte por píxel de la caja recortada. Para el polígono, esa caja es `[min x, max x) × [min y, max y)`, la misma que usa `_polygon_bounds` en el estimador. Los temporales son por fila: O(ancho + vértices). `tests/unit/geometry/test_geometry_memory.py` comprueba que el almacenamiento coincide con `mask_bytes`, que el pico de `tracemalloc` no supera `mask_bytes + 64 KiB` y que tampoco supera `buffer_bytes`. El trabajo coincide con el estimador: área recortada, `filas × vértices` y pasos de línea sin recortar. No hace falta cambiar `budget.py` ni `ESTIMATOR_VERSION`.
+5. **Flood fill acotado.** `flood_fill(snapshot: Canvas, seed: Point, *, limits: RenderLimits) -> Mask` lee una copia del lienzo recibido, que nunca modifica.
+   - Compara por igualdad RGBA exacta (el lienzo ya normaliza alfa 0) con conectividad 4.
+   - Antes de copiar nada comprueba la cota `flood_fill_cost`: `A` visitas y `FLOOD_FILL_BYTES_PER_PIXEL × A = 8A` bytes. Si se excede, lanza `BudgetExceeded` (`pixel_visits`, `buffer_bytes`) con el formato de `plan_budget`.
+   - Una semilla fuera del lienzo da una máscara vacía, igual que el resto de la geometría recortada. Es una decisión de recorte que difiere del acceso directo a un píxel de §5 (`OutOfBoundsError`). Debe ratificarse en MOANA.md cuando el schema active `flood_fill`, junto con su fórmula de coste (`budget-v2`: `A` visitas y `8A` bytes).
+   - Algoritmo: compara de forma vectorizada `uint32` contra el color de la semilla y escribe en un `bytearray` de A bytes (pico 4A de copia + A). Después hace un scanline iterativo, no recursivo, cuya pila guarda un `int32` por run pendiente; cada run se reclama al apilarse y sus extremos se buscan con `bytearray.find`.
+   - La máscara resultante cubre todo el lienzo (≤ A bytes). El pico medido en el peor caso (peine de 512 × 512) es ~5A; 8A es la cota declarada.
+6. **Fuera de alcance.** `flood_fill` sigue planificado en schema 1.0 y no se activa. Su fórmula se añadirá a `budget.py`, con nueva versión del estimador, cuando el esquema lo admita. Tampoco se incluyen paths, transformaciones, grosor de trazo, AA ni composición. No se crea `layers`: aplicar una máscara a un lienzo pertenece al compositor (MOANA-010 y siguientes), que usará `Mask.to_array()` y una escritura masiva acotada de `core.canvas`, todavía no implementada.
+
+## Alternativas descartadas
+
+- `ImageDraw` o AggDraw: sus empates y bordes no coinciden con §6 ni son estables entre versiones.
+- Evaluar la elipse con arrays de coordenadas: crea productos por píxel de varias veces la caja, por encima del término de máscara.
+- Recortar la máscara a sus `bounds` al construirla: duplicaría temporalmente la memoria. La igualdad por conjunto de píxeles da el mismo valor canónico sin copiar.
+- BFS por píxel con `deque` de tuplas: unas decenas de bytes por píxel en objetos Python, imposible de acotar en 8A.
+- Devolver una vista NumPy de sólo lectura: el llamador puede volver a activar la escritura (ADR-013).
+
+## Consecuencias
+
+- `import moana.render` y `moana.core.budget` siguen sin cargar NumPy, Pillow ni AggDraw (`tests/unit/render/test_render_budget.py::test_budget_modules_do_not_load_raster_libraries`). Pydantic sí se carga, a través de `schema`, como ya ocurría. El plan de coste no importa `geometry`.
+- `moana.geometry` es la API pública de máscaras. Las únicas dependencias de `geometry/` son la biblioteca estándar, NumPy y `moana.core`; `import moana.geometry` no carga Pillow ni Pydantic.
+- Una línea de millones de pasos que cruza la caja del lienzo sin entrar en él recorre todos sus pasos en Python. El estimador ya cuenta ese coste y el deadline cooperativo actúa entre operaciones.
+- Evidencia: `tests/unit/geometry/` (oráculos manuales de octantes, bordes, recortes, bow-tie y agujeros even-odd; propiedades Hypothesis frente a la evaluación literal por píxel; flood fill frente a un BFS de referencia; arquitectura; `tracemalloc`).

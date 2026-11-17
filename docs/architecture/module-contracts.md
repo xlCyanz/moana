@@ -1,6 +1,6 @@
 # Contratos entre módulos
 
-Estado: **contratos previstos**, salvo `core` (con el lienzo RGBA), `schema`, `palette` y el plan de coste de `render` (implementados, ver abajo). Las firmas públicas objetivo están en [MOANA.md §13](../../MOANA.md); sus fórmulas, límites y formatos prevalecen sobre este resumen. No se añaden abstracciones base ni registros de plugins por anticipación.
+Estado: **contratos previstos**, salvo `core` (con el lienzo RGBA), `schema`, `palette`, `geometry` y el plan de coste de `render` (implementados, ver abajo). Las firmas públicas objetivo están en [MOANA.md §13](../../MOANA.md); sus fórmulas, límites y formatos prevalecen sobre este resumen. No se añaden abstracciones base ni registros de plugins por anticipación.
 
 ## Entradas, salidas y efectos
 
@@ -67,6 +67,18 @@ API pública en `moana.palette`; depende sólo de `core` y no carga NumPy, Pillo
 | `ColorRemap` | Sustitución explícita de un paso entre IDs de la misma paleta; no encadena ni introduce colores; detalles sin pointer (`side`, `position`). |
 
 `editing` no importa `palette` (§3): `replace_palette_color` validará con los modelos de `schema`. La conversión `schema.Palette → palette.Palette` vivirá en `render`.
+
+## `geometry` (implementado en MOANA-006)
+
+API pública en `moana.geometry`; depende sólo de `core` y usa NumPy internamente sin exponer arrays compartidos. `import moana.geometry` no carga Pillow ni Pydantic. Decisiones en [ADR-015](decisions/ADR-015-raster-primitives.md).
+
+| Elemento | Contrato |
+| --- | --- |
+| `Mask` | Valor inmutable sin constructor público: `box` (caja de la operación recortada al lienzo, o `None`), `count`, `is_empty`, `bounds` (caja mínima), `contains(point)`, `points()` (fila a fila) y `to_array()` (copia booleana de `box`). La igualdad y el hash comparan el conjunto de píxeles: `box` y la forma de `to_array()` no forman parte de la identidad. El hash usa `hash(bytes)`, que varía por proceso, y nunca ordena ni siembra el render. `copy`/`deepcopy` devuelven el mismo objeto y `pickle` valida el estado y reconstruye los bits como sólo lectura. `Mask.empty()` es la geometría recortada por completo. |
+| `rasterize_pixel`, `rasterize_line`, `rasterize_rect`, `rasterize_ellipse`, `rasterize_polygon` | Reciben `Point`/`Box`/secuencia de `Point` y `Dimensions`. Aplican las reglas de §6 con enteros de Python: Bresenham ordenado e inclusivo, caja semiabierta, inclusión del centro en la elipse (intervalo exacto por fila con `isqrt`) y even-odd por centros con umbrales enteros. Recortan sin wraparound ni error. La memoria es 1 byte por píxel de la caja recortada (el término de máscara de `budget-v1`) más temporales por fila. Un polígono exige de 3 a 4096 vértices (`ValidationError`). |
+| `flood_fill(snapshot, seed, *, limits)` | Conectividad 4 e igualdad RGBA exacta sobre una copia del `Canvas` recibido, que no se modifica. Antes de copiar comprueba `flood_fill_cost` (`A` visitas, `FLOOD_FILL_BYTES_PER_PIXEL × A` bytes) y, si no cabe, lanza `BudgetExceeded`. Es un scanline iterativo, sin recursión. Una semilla fuera del lienzo da una máscara vacía: es una decisión de recorte, distinta del acceso directo de §5, que se ratificará en MOANA.md cuando el schema active `flood_fill` (`budget-v2`, `8A`). No está activo en schema 1.0. |
+
+Aplicar una máscara a un lienzo corresponde al compositor (`layers`/`render`), que todavía no existe.
 
 ## `schema` (implementado en MOANA-002)
 
