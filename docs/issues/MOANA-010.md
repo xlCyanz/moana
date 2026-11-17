@@ -13,7 +13,7 @@
 - Dependencies: [MOANA-002](MOANA-002.md), [MOANA-003](MOANA-003.md), [MOANA-006](MOANA-006.md), [MOANA-009](MOANA-009.md)
 - Related modules: render
 - Requirements: R015, R030 ([trazabilidad](traceability.md))
-- Bloqueo: Dependencias pendientes: MOANA-006, MOANA-009
+- Bloqueo: Dependencias pendientes: MOANA-009
 
 ## Context
 

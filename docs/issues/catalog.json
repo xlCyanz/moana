@@ -406,7 +406,7 @@
       "id": "MOANA-006",
       "title": "Rasterizar primitivas enteras y flood fill",
       "phase": "P1",
-      "status": "review",
+      "status": "done",
       "priority": "P1",
       "dependencies": [
         "MOANA-004",
@@ -435,7 +435,8 @@
         "flood_fill 4-conectado sobre snapshot Canvas con igualdad RGBA exacta, scanline iterativo sin recursión, BudgetExceeded (pixel_visits, buffer_bytes; A visitas, 8A bytes) antes de copiar; semilla fuera del lienzo → máscara vacía (pendiente de ratificar en MOANA.md cuando el esquema active flood_fill).",
         "ADR-015 (docs/architecture/decisions/ADR-015-raster-primitives.md); contratos de módulos, overview e índice de arquitectura actualizados; memoria de máscaras igual al término mask_bytes de budget-v1 (sin cambio de estimador).",
         "Gate: scripts/validate.py (601 pruebas) y scripts/check_wheel.py verdes; cobertura 100 % de líneas y ramas en moana.geometry.",
-        "Revisión: moana-graphics-engineer (aprobado; fuerza bruta 20 000 líneas, 20 000 elipses, 4 000 polígonos y 1 500 rellenos sin discrepancias) y moana-architect; corregidos deepcopy/pickle escribibles, recuento de vértices antes de iterar, probe de wheel y documentación de identidad/hash de Mask."
+        "Revisión: moana-graphics-engineer (aprobado; fuerza bruta 20 000 líneas, 20 000 elipses, 4 000 polígonos y 1 500 rellenos sin discrepancias) y moana-architect; corregidos deepcopy/pickle escribibles, recuento de vértices antes de iterar, probe de wheel y documentación de identidad/hash de Mask.",
+        "Aprobado por el propietario el 2026-11-17 tras revisión; PR #44 hacia develop."
       ],
       "aliases": [
         "MOA-006"
@@ -520,7 +521,7 @@
       "risks": [
         "No asumir que AggDraw comparte píxeles entre versiones o plataformas no ensayadas."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-006, MOANA-010, MOANA-028",
+      "blocking_reason": "Dependencias pendientes: MOANA-010, MOANA-028",
       "acceptance_evidence": {},
       "test_evidence": {}
     },
@@ -528,7 +529,7 @@
       "id": "MOANA-008",
       "title": "Añadir transformaciones pixel-perfect",
       "phase": "P1",
-      "status": "blocked",
+      "status": "ready",
       "priority": "P1",
       "dependencies": [
         "MOANA-006"
@@ -571,7 +572,7 @@
       "risks": [
         "Giro de cajas geométricas no equivale a giro de índices; probar dimensiones pares e impares."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-006",
+      "blocking_reason": null,
       "acceptance_evidence": {},
       "test_evidence": {}
     },
@@ -626,7 +627,7 @@
       "risks": [
         "La opacidad por hijo cambia la imagen; el bloqueo afecta edición, no render."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-006, MOANA-008",
+      "blocking_reason": "Dependencias pendientes: MOANA-008",
       "acceptance_evidence": {},
       "test_evidence": {}
     },
@@ -681,7 +682,7 @@
       "risks": [
         "hash(), reloj o estado global rompen reproducibilidad aunque el primer test pase."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-006, MOANA-009",
+      "blocking_reason": "Dependencias pendientes: MOANA-009",
       "acceptance_evidence": {},
       "test_evidence": {}
     },
