@@ -35,10 +35,10 @@ Estado: 8/8 issues completados.
 
 Puerta de salida: Render 128 x 128, PNG roundtrip y determinismo en matriz.
 
-Estado: 0/5 issues completados.
+Estado: 1/5 issues completados.
 
-- [MOANA-009](MOANA-009.md) — Implementar capas, grupos y composición (review)
-- [MOANA-010](MOANA-010.md) — Construir pipeline de render determinista (blocked)
+- [MOANA-009](MOANA-009.md) — Implementar capas, grupos y composición (done)
+- [MOANA-010](MOANA-010.md) — Construir pipeline de render determinista (ready)
 - [MOANA-011](MOANA-011.md) — Exportar PNG y manifiesto de salida (blocked)
 - [MOANA-012](MOANA-012.md) — Exponer API pública y CLI estático (blocked)
 - [MOANA-029](MOANA-029.md) — Verificar determinismo entre procesos y plataformas (blocked)
@@ -88,4 +88,4 @@ Estado: 0/8 issues completados.
 
 ## Siguiente paso
 
-No hay issues ready. Revisar bloqueos y dependencias antes de iniciar.
+Implementar [MOANA-010](MOANA-010.md): Construir pipeline de render determinista.

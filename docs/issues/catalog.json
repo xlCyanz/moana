@@ -593,7 +593,7 @@
       "id": "MOANA-009",
       "title": "Implementar capas, grupos y composición",
       "phase": "P2",
-      "status": "review",
+      "status": "done",
       "priority": "P1",
       "dependencies": [
         "MOANA-002",
@@ -624,7 +624,8 @@
         "src/moana/layers/composite.py: kernel source-over entero literal de MOANA.md §11 en uint32 con round_half_up y normalización de alfa 0; grupos en buffer aislado con opacidad aplicada una vez; nodos ocultos sin coste; locked sin efecto; composition_cost puro y comprobación de presupuesto (geometría, frame_pixels, layers, operations, pixel_visits, buffer_bytes) antes de reservar; temporales por bloques de min(4096, A//4) píxeles; deadline por nodo y fill.",
         "ADR-017 (docs/architecture/decisions/ADR-017-layers-composition.md); contratos de módulos, overview, índice de arquitectura, README, guía de desarrollo, AGENTS.md y CLAUDE.md actualizados; probe de check_wheel ampliado.",
         "Gate: scripts/validate.py y scripts/check_wheel.py verdes.",
-        "Revisión: moana-graphics-engineer y moana-python-engineer; corregidos límites de geometría, grupos en el límite de 128, temporales acotados por bloques para respetar budget-v1, deadline por fill, nombre de módulo, UTF-8 estricto, profile en el contexto de errores y pruebas de varios bloques, 1×1 y cota de temporales."
+        "Revisión: moana-graphics-engineer y moana-python-engineer; corregidos límites de geometría, grupos en el límite de 128, temporales acotados por bloques para respetar budget-v1, deadline por fill, nombre de módulo, UTF-8 estricto, profile en el contexto de errores y pruebas de varios bloques, 1×1 y cota de temporales.",
+        "Aprobado por el propietario el 2026-11-17 tras revisión; PR #47 hacia develop."
       ],
       "aliases": [
         "MOA-009"
@@ -660,7 +661,7 @@
       "id": "MOANA-010",
       "title": "Construir pipeline de render determinista",
       "phase": "P2",
-      "status": "blocked",
+      "status": "ready",
       "priority": "P0",
       "dependencies": [
         "MOANA-002",
@@ -707,7 +708,7 @@
       "risks": [
         "hash(), reloj o estado global rompen reproducibilidad aunque el primer test pase."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-009",
+      "blocking_reason": null,
       "acceptance_evidence": {},
       "test_evidence": {}
     },
@@ -866,7 +867,7 @@
       "risks": [
         "Un grupo transformado requiere semántica clara de máscara en canvas frente a geometría local."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-009, MOANA-010",
+      "blocking_reason": "Dependencias pendientes: MOANA-010",
       "acceptance_evidence": {},
       "test_evidence": {}
     },

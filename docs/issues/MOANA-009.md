@@ -8,7 +8,7 @@
 - Aliases históricos: MOA-009
 - Phase: P2
 - Priority: P1
-- Status: review
+- Status: done
 - Complexity: L (relativa, no estimación de tiempo)
 - Dependencies: [MOANA-002](MOANA-002.md), [MOANA-004](MOANA-004.md), [MOANA-005](MOANA-005.md), [MOANA-006](MOANA-006.md), [MOANA-008](MOANA-008.md)
 - Related modules: layers
@@ -43,13 +43,13 @@ No multiply/screen ni máscaras semánticas todavía.
 
 ## Acceptance criteria
 
-- [ ] AC1: Composición de fixture semitransparente coincide con cálculo entero independiente
-- [ ] AC2: Cambiar orden/visibilidad produce diferencia prevista; grupos no aplican opacidad por hijo
+- [x] AC1: Composición de fixture semitransparente coincide con cálculo entero independiente
+- [x] AC2: Cambiar orden/visibilidad produce diferencia prevista; grupos no aplican opacidad por hijo
 
 ## Required tests
 
-- [ ] T1: Casos alpha 0/1/127/255 y normalización RGB en transparente
-- [ ] T2: Grupos anidados, profundidad límite, capa invisible y strict que rechaza opacidad intermedia
+- [x] T1: Casos alpha 0/1/127/255 y normalización RGB en transparente
+- [x] T2: Grupos anidados, profundidad límite, capa invisible y strict que rechaza opacidad intermedia
 
 ## Expected deliverables
 
@@ -66,7 +66,7 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Guía para agentes de IA
 
-**Estado para agentes:** En revisión: sólo correcciones de la revisión; no añadir alcance.
+**Estado para agentes:** Completado; usar sólo como referencia del contrato entregado.
 
 ### 1. Preparación
 
@@ -140,6 +140,7 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 - ADR-017 (docs/architecture/decisions/ADR-017-layers-composition.md); contratos de módulos, overview, índice de arquitectura, README, guía de desarrollo, AGENTS.md y CLAUDE.md actualizados; probe de check_wheel ampliado.
 - Gate: scripts/validate.py y scripts/check_wheel.py verdes.
 - Revisión: moana-graphics-engineer y moana-python-engineer; corregidos límites de geometría, grupos en el límite de 128, temporales acotados por bloques para respetar budget-v1, deadline por fill, nombre de módulo, UTF-8 estricto, profile en el contexto de errores y pruebas de varios bloques, 1×1 y cota de temporales.
+- Aprobado por el propietario el 2026-11-17 tras revisión; PR #47 hacia develop.
 - AC1: tests/unit/layers/test_layers_compose.py::test_ac1_semitransparent_fixture_matches_hand_computation (161,80,90,255 calculado a mano) y ::test_ac1_random_trees_match_the_scalar_oracle (Hypothesis, oráculo escalar independiente con grupos).
 - AC2: tests/unit/layers/test_layers_compose.py::test_ac2_order_decides_which_colour_is_on_top, ::test_ac2_hiding_a_layer_removes_exactly_its_pixels y ::test_ac2_group_opacity_is_applied_once_to_the_group_result (contraejemplo por hijo).
 - T1: tests/unit/layers/test_layers_compose.py::test_t1_alpha_cases_match_hand_values (alfa 0/1/127/255) y ::test_t1_transparent_result_is_normalised_to_zero.

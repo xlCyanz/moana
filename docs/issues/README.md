@@ -8,7 +8,7 @@ Prioridades: P0 fundamento/bloqueante; P1 funcionalidad central; P2 avanzada; P3
 
 [Roadmap](roadmap.md) · [Dependencias](dependency-map.md) · [Trazabilidad](traceability.md) · [Ciclo de vida](../guides/issue-lifecycle.md).
 
-Estados: {'blocked': 26, 'done': 9, 'review': 1}.
+Estados: {'blocked': 25, 'done': 10, 'ready': 1}.
 
 | Issue | Resultado | Fase | Prioridad | Estado | Dependencias directas |
 | --- | --- | --- | --- | --- | --- |
@@ -21,8 +21,8 @@ Estados: {'blocked': 26, 'done': 9, 'review': 1}.
 | [MOANA-006](MOANA-006.md) | Rasterizar primitivas enteras y flood fill | P1 | P1 | done | MOANA-004, MOANA-005 |
 | [MOANA-007](MOANA-007.md) | Añadir adaptador de paths AggDraw | P3 | P2 | blocked | MOANA-006, MOANA-010, MOANA-028 |
 | [MOANA-008](MOANA-008.md) | Añadir transformaciones pixel-perfect | P1 | P1 | done | MOANA-006 |
-| [MOANA-009](MOANA-009.md) | Implementar capas, grupos y composición | P2 | P1 | review | MOANA-002, MOANA-004, MOANA-005, MOANA-006, MOANA-008 |
-| [MOANA-010](MOANA-010.md) | Construir pipeline de render determinista | P2 | P0 | blocked | MOANA-002, MOANA-003, MOANA-006, MOANA-009 |
+| [MOANA-009](MOANA-009.md) | Implementar capas, grupos y composición | P2 | P1 | done | MOANA-002, MOANA-004, MOANA-005, MOANA-006, MOANA-008 |
+| [MOANA-010](MOANA-010.md) | Construir pipeline de render determinista | P2 | P0 | ready | MOANA-002, MOANA-003, MOANA-006, MOANA-009 |
 | [MOANA-011](MOANA-011.md) | Exportar PNG y manifiesto de salida | P2 | P1 | blocked | MOANA-010 |
 | [MOANA-012](MOANA-012.md) | Exponer API pública y CLI estático | P2 | P1 | blocked | MOANA-010, MOANA-011 |
 | [MOANA-013](MOANA-013.md) | Añadir máscaras y regiones semánticas | P3 | P1 | blocked | MOANA-009, MOANA-010 |
