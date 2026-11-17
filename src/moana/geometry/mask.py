@@ -2,7 +2,7 @@
 
 A :class:`Mask` stores one byte per pixel of its :attr:`Mask.box`, the operation
 bounds already clipped to the canvas, so its memory is exactly the mask term of the
-``budget-v1`` estimator. The bit array is private, read-only and never shared:
+document budget estimator. The bit array is private, read-only and never shared:
 :meth:`Mask.to_array` returns a copy for internal adapters (compositor, quality).
 Equality and hashing compare the *set of pixels*: the storage box and the shape of
 :meth:`Mask.to_array` are not part of the value. The hash derives from ``hash(bytes)``,

@@ -1,6 +1,6 @@
 # Moana
 
-Base de un motor Python de Pixel Art programático, determinista y editable, orientado a sprites de 128 × 128. **Estado: infraestructura y diseño; el motor todavía no está implementado.** El paquete expone `moana.__version__`, `moana.core` (coordenadas, cajas, límites y errores de dominio) `moana.schema` (validación estricta y normalización del documento 1.0, JSON Schema en `schemas/`) el plan de coste previo al render (`moana.render.plan_budget`) y el lienzo RGBA con adaptadores NumPy/Pillow (`moana.core.canvas`, `moana.core.pillow_adapter`), paletas/rampas por ID (`moana.palette`) y máscaras raster enteras de primitivas, flood fill y transformaciones pixel-perfect (`moana.geometry`) y composición de capas y grupos source-over entera (`moana.layers`). No existe aún un CLI de dibujo.
+Base de un motor Python de Pixel Art programático, determinista y editable, orientado a sprites de 128 × 128. **Estado: motor raster en construcción; render determinista de documentos 1.0 disponible desde Python, sin CLI ni exportación.** El paquete expone `moana.__version__`, `moana.core` (coordenadas, cajas, límites y errores de dominio) `moana.schema` (validación estricta y normalización del documento 1.0, JSON Schema en `schemas/`) el render determinista con su plan de coste (`moana.render.render`, `moana.render.plan_budget`) y el lienzo RGBA con adaptadores NumPy/Pillow (`moana.core.canvas`, `moana.core.pillow_adapter`), paletas/rampas por ID (`moana.palette`) y máscaras raster enteras de primitivas, flood fill y transformaciones pixel-perfect (`moana.geometry`) y composición de capas y grupos source-over entera (`moana.layers`). No existe aún un CLI de dibujo.
 
 La fuente de verdad es [MOANA.md](MOANA.md). Consulta el [roadmap](docs/issues/roadmap.md), los [issues](docs/issues/README.md), las [dependencias](docs/issues/dependency-map.md) y la [trazabilidad](docs/issues/traceability.md). Pillow y NumPy son herramientas; la calidad artística requerirá algoritmos, dirección y evaluación.
 
@@ -50,7 +50,7 @@ uv run pre-commit run --all-files
 | `scripts/` | bootstrap, validación y generación del backlog |
 | `docs/architecture/` | límites de módulos y decisiones |
 | `docs/issues/` | catálogo y especificaciones de trabajo |
-| `examples/specs/` | JSON de diseño, aún no renderizable por Moana |
+| `examples/specs/` | JSON de diseño; `minimal.moana.json` se renderiza con `moana.render.render` |
 | `.agents/skills/` | siete skills propias del proyecto |
 | `.codex/` | configuración y ocho roles de agentes locales |
 | `.github/` | CI, actualización de acciones y plantillas |

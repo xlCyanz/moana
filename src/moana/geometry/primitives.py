@@ -17,7 +17,7 @@ AggDraw defaults, and every mask is clipped to the canvas without wraparound:
   thresholds, so a self-intersecting polygon is never discarded by signed area.
 
 Memory: each mask holds one byte per pixel of the clipped operation bounds (the
-``budget-v1`` mask term); temporaries are per row (``O(width + vertices)``).
+budget mask term); temporaries are per row (``O(width + vertices)``).
 """
 
 from __future__ import annotations

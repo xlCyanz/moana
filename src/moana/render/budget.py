@@ -1,23 +1,30 @@
 """Cost plan of a validated document, checked before any buffer exists (MOANA-003).
 
-The estimator (``budget-v1``) is pure integer arithmetic over the document: it never
-allocates pixels, imports NumPy or Pillow, or iterates over pixels. It is an upper
-bound that the rasterisers and compositor of later issues must respect; a change in
-their memory or work pattern updates these formulas and :data:`ESTIMATOR_VERSION`.
+The estimator (``budget-v2``, ADR-018) is pure integer arithmetic over the document:
+it never allocates pixels, imports NumPy or Pillow, or iterates over pixels. It is an
+upper bound that the rasterisers and compositor respect; a change in their memory or
+work pattern updates these formulas and :data:`ESTIMATOR_VERSION`.
 
-For a canvas of ``A = width * height`` pixels and ``frames`` frames:
+For a canvas of ``A = width * height`` pixels and ``frames`` frames, every operation
+has a *mask box*, :func:`mask_box`: the storage box of its rasterised mask, clipped
+to the canvas.
 
 * **Operation visits** (MOANA.md section 20: clipped bbox x passes, lines before
-  clipping): ``pixel`` 1 if on the canvas else 0; ``rect`` and ``ellipse`` the area
-  of the box clipped to the canvas; ``polygon`` the clipped area of its pixel-centre
-  bounds plus ``clipped rows x vertices`` for scanline crossings; ``line``
-  ``max(|dx|, |dy|) + 1`` Bresenham steps, *not* clipped.
+  clipping) are raster work plus one paint pass over the mask box. Raster work:
+  ``pixel`` 1 if on the canvas else 0; ``rect`` and ``ellipse`` the mask box area;
+  ``polygon`` the mask box area plus ``clipped rows x vertices`` for scanline
+  crossings; ``line`` ``max(|dx|, |dy|) + 1`` Bresenham steps, *not* clipped.
+  (``budget-v1`` omitted the paint pass, which for a long diagonal line is far more
+  than its steps.)
 * **Frame visits**: ``A`` (clear) + per visible layer ``A`` (clear) + its operation
   visits + ``A`` (composite) + ``A`` (alpha normalisation) + ``A`` (result copy).
   Hidden layers cost nothing. Total visits = ``frames x`` frame visits.
 * **Buffer bytes**: working set ``4A`` canvas + ``4A`` layer + ``32A`` composite
   accumulator (four 64-bit channels) + the largest operation mask (1 byte per
-  clipped bbox pixel), plus ``frames x 4A`` retained results.
+  clipped bbox pixel), plus ``frames x 4A`` retained results. The ``40A`` term is
+  never below the compositor's own bound ``14A + 80 x tile`` (tile =
+  ``min(4096, max(1, A // 4))`` pixels), which only exceeds it on canvases of one or
+  two pixels.
 * **Frame pixels**: ``frames x A``.
 """
 
@@ -45,15 +52,21 @@ __all__ = [
     "CostEstimate",
     "OperationCost",
     "estimate_cost",
+    "mask_box",
     "plan_budget",
 ]
 
-ESTIMATOR_VERSION: Final = "budget-v1"
+ESTIMATOR_VERSION: Final = "budget-v2"
 RGBA_BYTES: Final = 4
 COMPOSITE_BYTES_PER_PIXEL: Final = 32
 MASK_BYTES_PER_PIXEL: Final = 1
 # MOANA.md section 17: at most 256 frames per export.
 MAX_FRAMES: Final = 256
+# Compositor working set without groups (ADR-017, ADR-018): root, layer and result
+# copies, a deferred mask and its copy (14A) and 80 bytes per kernel tile pixel.
+COMPOSITOR_BYTES_PER_PIXEL: Final = 14
+COMPOSITOR_TILE_BYTES: Final = 80
+COMPOSITOR_MAX_TILE: Final = 4096
 # Operations between two cooperative deadline checks.
 CHECKPOINT_EVERY: Final = 256
 
@@ -81,14 +94,6 @@ class CostEstimate:
     operation_costs: tuple[OperationCost, ...]
 
 
-def _clipped_area(box: Box | None, canvas: Box) -> tuple[int, int]:
-    """Area and row count of ``box`` clipped to ``canvas`` (zero when disjoint)."""
-    clipped = box.intersection(canvas) if box is not None else None
-    if clipped is None:
-        return 0, 0
-    return clipped.area, clipped.height
-
-
 def _polygon_bounds(operation: PolygonOperation) -> Box | None:
     """Box of every pixel whose centre can lie inside the polygon, if any."""
     xs = [x for x, _ in operation.points]
@@ -104,25 +109,41 @@ def _line_bounds(operation: LineOperation) -> Box:
     return Box(min(x0, x1), min(y0, y1), max(x0, x1) + 1, max(y0, y1) + 1)
 
 
-def _operation_cost(operation: Operation, canvas: Box, pointer: str) -> OperationCost:
+def mask_box(operation: Operation, dimensions: Dimensions) -> Box | None:
+    """Storage box of the operation's mask clipped to the canvas, ``None`` if empty.
+
+    It equals the box of the mask that :mod:`moana.geometry` returns (a polygon with
+    collinear bounds has none), so ``render`` can declare it before rasterising.
+    """
     match operation:
         case PixelOperation():
-            visits = 1 if canvas.contains(operation.point) else 0
-            return OperationCost(pointer, visits, visits * MASK_BYTES_PER_PIXEL)
+            box: Box | None = Box.from_point(operation.point)
+        case LineOperation():
+            box = _line_bounds(operation)
+        case RectOperation() | EllipseOperation():
+            box = operation.bbox
+        case PolygonOperation():
+            box = _polygon_bounds(operation)
+        case _:  # pragma: no cover - a new operation type must add its box
+            assert_never(operation)
+    return None if box is None else box.clip_to(dimensions)
+
+
+def _operation_cost(operation: Operation, dimensions: Dimensions, pointer: str) -> OperationCost:
+    box = mask_box(operation, dimensions)
+    area = 0 if box is None else box.area
+    match operation:
+        case PixelOperation() | RectOperation() | EllipseOperation():
+            raster = area
         case LineOperation():
             (x0, y0), (x1, y1) = operation.start, operation.end
-            steps = max(abs(x1 - x0), abs(y1 - y0)) + 1
-            area, _ = _clipped_area(_line_bounds(operation), canvas)
-            return OperationCost(pointer, steps, area * MASK_BYTES_PER_PIXEL)
-        case RectOperation() | EllipseOperation():
-            area, _ = _clipped_area(operation.bbox, canvas)
-            return OperationCost(pointer, area, area * MASK_BYTES_PER_PIXEL)
+            raster = max(abs(x1 - x0), abs(y1 - y0)) + 1
         case PolygonOperation():
-            area, rows = _clipped_area(_polygon_bounds(operation), canvas)
-            visits = area + rows * len(operation.points)
-            return OperationCost(pointer, visits, area * MASK_BYTES_PER_PIXEL)
+            rows = 0 if box is None else box.height
+            raster = area + rows * len(operation.points)
         case _:  # pragma: no cover - a new operation type must add its formula
             assert_never(operation)
+    return OperationCost(pointer, raster + area, area * MASK_BYTES_PER_PIXEL)
 
 
 def estimate_cost(
@@ -138,7 +159,6 @@ def estimate_cost(
     require_int(frames, "frames", minimum=1, maximum=MAX_FRAMES)
     dimensions: Dimensions = document.canvas.dimensions
     area = dimensions.area
-    canvas = Box.from_dimensions(dimensions)
     costs: list[OperationCost] = []
     frame_visits = 3 * area  # clear the canvas, normalise alpha, copy the result
     largest_mask = 0
@@ -154,11 +174,14 @@ def estimate_cost(
             if deadline is not None and index % CHECKPOINT_EVERY == CHECKPOINT_EVERY - 1:
                 deadline.checkpoint("estimate_operation")
             pointer = f"/layers/{layer_index}/operations/{index}"
-            cost = _operation_cost(operation, canvas, pointer)
+            cost = _operation_cost(operation, dimensions, pointer)
             costs.append(cost)
             frame_visits += cost.pixel_visits
             largest_mask = max(largest_mask, cost.mask_bytes)
-    working = (2 * RGBA_BYTES + COMPOSITE_BYTES_PER_PIXEL) * area + largest_mask
+    tile = min(COMPOSITOR_MAX_TILE, max(1, area // 4))
+    compositor = COMPOSITOR_BYTES_PER_PIXEL * area + COMPOSITOR_TILE_BYTES * tile
+    working = max((2 * RGBA_BYTES + COMPOSITE_BYTES_PER_PIXEL) * area, compositor)
+    working += largest_mask
     return CostEstimate(
         estimator_version=ESTIMATOR_VERSION,
         frames=frames,

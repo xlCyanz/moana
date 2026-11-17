@@ -1,6 +1,6 @@
 # ADR-017 — Árbol de capas y composición source-over entera
 
-Estado: aceptado · 2026-11-17 · Issue: [MOANA-009](../../issues/MOANA-009.md). Aplica ADR-012 (presupuestos), ADR-013 (lienzo), ADR-014 (paleta) y ADR-015 (máscaras).
+Estado: aceptado · 2026-11-17 · Issue: [MOANA-009](../../issues/MOANA-009.md). Aplica ADR-012 (presupuestos), ADR-013 (lienzo), ADR-014 (paleta) y ADR-015 (máscaras). Ampliado por [ADR-018](ADR-018-render-pipeline.md): `DeferredMask`; `budget-v2` pasa a ser la pasada de pintado y el término de `4A` por nivel de grupo queda para una versión posterior del estimador.
 
 ## Contexto
 

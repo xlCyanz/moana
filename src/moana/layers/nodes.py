@@ -8,11 +8,15 @@ whole tree once: unique IDs, group depth, at most 128 layers and groups, masks i
 the canvas and, in the ``strict`` profile, opacity 255 and fully opaque or
 transparent fill colours. Validation stops at the first problem in bottom-to-top,
 depth-first order (the tree is built by code, not edited as a document).
+
+A fill may carry a :class:`DeferredMask` instead of a mask: a declared box plus a
+builder called during composition, so a caller with thousands of operations never
+holds more than one rasterised mask at a time (ADR-018).
 """
 
 from __future__ import annotations
 
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from dataclasses import dataclass
 from typing import Final, Literal
 
@@ -26,6 +30,7 @@ from moana.palette import ColorProfile, Rgba
 __all__ = [
     "BLEND_MODES",
     "MAX_NAME_BYTES",
+    "DeferredMask",
     "Fill",
     "Group",
     "Layer",
@@ -75,18 +80,43 @@ def _check_node_fields(
     require_int(opacity, "opacity", minimum=0, maximum=255)
 
 
+@dataclass(frozen=True, slots=True, eq=False)
+class DeferredMask:
+    """A mask built only when its fill is painted, inside a declared ``box``.
+
+    ``box`` (``None`` when nothing can be drawn) bounds the storage box of the mask
+    that ``build`` returns; it is what validation and :func:`composition_cost`
+    use. :func:`~moana.layers.compose` calls ``build`` once per visible fill, right
+    before painting it, and rejects a result outside ``box``. Equality is identity.
+    """
+
+    box: Box | None
+    build: Callable[[], Mask]
+
+    def __post_init__(self) -> None:
+        if self.box is not None and not isinstance(self.box, Box):
+            raise TypeError("box must be a Box value or None")
+        if not callable(self.build):
+            raise TypeError("build must be callable")
+
+
 @dataclass(frozen=True, slots=True)
 class Fill:
     """Pixels of ``mask`` painted with ``color`` (source-over at full opacity)."""
 
-    mask: Mask
+    mask: Mask | DeferredMask
     color: Rgba
 
     def __post_init__(self) -> None:
-        if not isinstance(self.mask, Mask):
-            raise TypeError("mask must be a Mask value")
+        if not isinstance(self.mask, Mask | DeferredMask):
+            raise TypeError("mask must be a Mask or DeferredMask value")
         if not isinstance(self.color, Rgba):
             raise TypeError("color must be an Rgba value")
+
+    @property
+    def box(self) -> Box | None:
+        """Storage box of the mask (declared box for a deferred mask)."""
+        return self.mask.box
 
 
 @dataclass(frozen=True, slots=True)
@@ -219,7 +249,7 @@ class LayerTree:
 
     def _check_fills(self, layer: Layer, canvas: Box) -> None:
         for index, fill in enumerate(layer.fills):
-            box = fill.mask.box
+            box = fill.box
             if box is not None and box.intersection(canvas) != box:
                 raise _invalid(
                     "fill mask lies outside the canvas",

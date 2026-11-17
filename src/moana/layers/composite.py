@@ -32,7 +32,8 @@ from moana.core.budget import Deadline, RenderLimits
 from moana.core.canvas import Canvas
 from moana.core.coordinates import Box, Dimensions
 from moana.core.errors import BudgetExceeded, ErrorDetail
-from moana.layers.nodes import Fill, Group, Layer, LayerTree, Node
+from moana.geometry import Mask
+from moana.layers.nodes import DeferredMask, Fill, Group, Layer, LayerTree, Node
 
 __all__ = [
     "COMPOSITE_TEMP_BYTES_PER_PIXEL",
@@ -66,7 +67,7 @@ class CompositionCost:
     """Work and memory of :func:`compose`, computed before any buffer exists.
 
     ``layers`` counts every layer and group and ``operations`` every fill, visible or
-    not, as ``budget-v1`` counts document layers and operations; ``pixel_visits`` and
+    not, as the document budget counts document layers and operations; ``pixel_visits`` and
     ``buffer_bytes`` only count visible nodes.
     """
 
@@ -77,22 +78,25 @@ class CompositionCost:
     group_depth: int
 
 
-def _visible_cost(nodes: tuple[Node, ...], area: int) -> tuple[int, int]:
-    """Visits and deepest visible group nesting of ``nodes`` (depth <= 16)."""
+def _visible_cost(nodes: tuple[Node, ...], area: int) -> tuple[int, int, bool]:
+    """Visits, deepest visible group nesting (<= 16) and whether a deferred mask is built."""
     visits = depth = 0
+    deferred = False
     for node in nodes:
         if not node.visible:
             continue
         visits += 2 * area  # clear the node buffer, composite it onto its parent
         if isinstance(node, Group):
-            inner_visits, inner_depth = _visible_cost(node.children, area)
+            inner_visits, inner_depth, inner_deferred = _visible_cost(node.children, area)
             visits += inner_visits
             depth = max(depth, inner_depth + 1)
+            deferred = deferred or inner_deferred
             continue
         for fill in node.fills:
-            box = fill.mask.box
+            box = fill.box
             visits += 0 if box is None else box.area
-    return visits, depth
+            deferred = deferred or (box is not None and isinstance(fill.mask, DeferredMask))
+    return visits, depth, deferred
 
 
 def composition_cost(tree: LayerTree) -> CompositionCost:
@@ -101,13 +105,15 @@ def composition_cost(tree: LayerTree) -> CompositionCost:
     Visits: ``3A`` for the root (clear, alpha normalisation and copy into the
     result), ``2A`` per visible layer or group, plus each fill's mask box. Bytes: the
     root, one isolated buffer per open group, one layer buffer and the result copy
-    (``(3 + depth) * 4A``), the largest mask copy (``A``) and one kernel tile of
-    temporaries.
+    (``(3 + depth) * 4A``), the largest mask copy (``A``), the built mask itself
+    (``A``) when a visible fill has a :class:`DeferredMask`, and one kernel tile of
+    temporaries. The work of ``DeferredMask.build`` is budgeted by its caller.
     """
     if not isinstance(tree, LayerTree):
         raise TypeError("tree must be a LayerTree value")
     area = tree.dimensions.area
-    visits, depth = _visible_cost(tree.children, area)
+    visits, depth, deferred = _visible_cost(tree.children, area)
+    masks = (2 if deferred else 1) * area
     layers = operations = 0
     for node, _ in tree.walk():
         layers += 1
@@ -116,7 +122,7 @@ def composition_cost(tree: LayerTree) -> CompositionCost:
     temporaries = COMPOSITE_TEMP_BYTES_PER_PIXEL * tile_pixels(tree.dimensions)
     return CompositionCost(
         pixel_visits=3 * area + visits,
-        buffer_bytes=(3 + depth) * RGBA_BYTES * area + area + temporaries,
+        buffer_bytes=(3 + depth) * RGBA_BYTES * area + masks + temporaries,
         layers=layers,
         operations=operations,
         group_depth=depth,
@@ -179,12 +185,31 @@ def _over(dst: Pixels, src_rgb: tuple[_Plane, ...], src_a: _Plane, opacity: int)
     dst[:, :, 3] = alpha
 
 
+def _resolve(fill: Fill) -> Mask:
+    """The fill's mask; a deferred one is built now and checked against its box."""
+    if not isinstance(fill.mask, DeferredMask):
+        return fill.mask
+    declared = fill.mask.box
+    mask = fill.mask.build()
+    if not isinstance(mask, Mask):
+        raise TypeError("DeferredMask.build must return a Mask value")
+    box = mask.box
+    if box is not None and (declared is None or box.intersection(declared) != box):
+        # A caller bug (its declared box is wrong), not invalid user input.
+        raise RuntimeError("deferred mask lies outside its declared box")
+    return mask
+
+
 def _paint(layer_buffer: Pixels, fill: Fill, pixels: int) -> None:
     """Source-over of one fill (opacity 255) restricted to its mask box."""
-    box = fill.mask.box
+    if fill.box is None:
+        return  # nothing to draw: a deferred mask is not even built
+    mask = _resolve(fill)
+    box = mask.box
     if box is None:
         return
-    bits = fill.mask.to_array()
+    bits = mask.to_array()
+    del mask  # a deferred mask lives only while its bits are copied
     color = fill.color
     rgb = tuple(np.uint32(value) for value in (color.r, color.g, color.b))
     for rows, columns in _tiles(box, pixels):
@@ -230,7 +255,8 @@ def compose(tree: LayerTree, *, limits: RenderLimits, deadline: Deadline | None 
     Raises :class:`BudgetExceeded` (resources ``canvas_dimension``, ``canvas_area``,
     ``frame_pixels``, ``layers``, ``operations``, ``pixel_visits``, ``buffer_bytes``)
     from :func:`composition_cost` before any buffer exists. ``deadline`` is checked
-    before each visible node and each fill.
+    before each visible node and each fill; deferred masks are built one at a time,
+    after that check.
     """
     if not isinstance(limits, RenderLimits):
         raise TypeError("limits must be a RenderLimits value")
