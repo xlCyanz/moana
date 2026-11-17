@@ -5,17 +5,22 @@ specification, an optional ``json_pointer`` locating the offending document node
 an immutable ``context``. Context values are scalars (``int``, ``bool``, ``str`` or
 ``None``) or tuples of scalars; strings name fields, reasons or types and never echo
 untrusted input or file paths. Numeric geometry values may appear.
+
+A document can fail in several places at once. Such an error also carries ``details``:
+one :class:`ErrorDetail` per problem, each with its own code and pointer, sorted by
+the reporting module (MOANA-002 orders them by pointer and code).
 """
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Iterable, Mapping
 from types import MappingProxyType
 from typing import Any, ClassVar
 
 __all__ = [
     "BudgetExceeded",
     "EditConflict",
+    "ErrorDetail",
     "ExportError",
     "MoanaError",
     "OutOfBoundsError",
@@ -34,6 +39,82 @@ def _check_context_value(key: str, value: object) -> None:
         raise TypeError(f"error context value for {key!r} must be a scalar or tuple of scalars")
 
 
+def _frozen_context(context: Mapping[str, object] | None) -> Mapping[str, object]:
+    copied = dict(context or {})
+    for key, value in copied.items():
+        _check_context_value(key, value)
+    return MappingProxyType(copied)
+
+
+class ErrorDetail:
+    """One located problem inside an aggregated error; immutable and picklable."""
+
+    __slots__ = ("_code", "_context", "_json_pointer", "_message")
+
+    def __init__(
+        self,
+        code: str,
+        message: str,
+        *,
+        json_pointer: str | None = None,
+        context: Mapping[str, object] | None = None,
+    ) -> None:
+        """Create a detail; ``context`` follows the same rules as :class:`MoanaError`."""
+        self._code = code
+        self._message = message
+        self._json_pointer = json_pointer
+        self._context = _frozen_context(context)
+
+    @property
+    def code(self) -> str:
+        """Stable machine code of this problem (for example ``REFERENCE_ERROR``)."""
+        return self._code
+
+    @property
+    def message(self) -> str:
+        """Human-readable explanation, safe to show to the caller."""
+        return self._message
+
+    @property
+    def json_pointer(self) -> str | None:
+        """Location of the offending node (RFC 6901), when known."""
+        return self._json_pointer
+
+    @property
+    def context(self) -> Mapping[str, object]:
+        """Read-only structured details (field, reason, bounds...)."""
+        return self._context
+
+    def _key(self) -> tuple[object, ...]:
+        return (self._code, self._message, self._json_pointer, tuple(sorted(self._context.items())))
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, ErrorDetail):
+            return NotImplemented
+        return self._key() == other._key()
+
+    def __hash__(self) -> int:
+        return hash(self._key())
+
+    def __repr__(self) -> str:
+        return (
+            f"ErrorDetail(code={self._code!r}, json_pointer={self._json_pointer!r}, "
+            f"message={self._message!r}, context={dict(self._context)!r})"
+        )
+
+    def __reduce__(self) -> tuple[Any, ...]:
+        return (
+            _rebuild_detail,
+            (self._code, self._message, self._json_pointer, dict(self._context)),
+        )
+
+
+def _rebuild_detail(
+    code: str, message: str, json_pointer: str | None, context: dict[str, object]
+) -> ErrorDetail:
+    return ErrorDetail(code, message, json_pointer=json_pointer, context=context)
+
+
 class MoanaError(Exception):
     """Base class for all Moana errors; an unexpected internal failure by default."""
 
@@ -46,20 +127,22 @@ class MoanaError(Exception):
         *,
         json_pointer: str | None = None,
         context: Mapping[str, object] | None = None,
+        details: Iterable[ErrorDetail] = (),
     ) -> None:
         """Create an error.
 
         ``context`` is copied into a read-only mapping; its values must be scalars or
         tuples of scalars so the error stays immutable, picklable and free of
         sensitive payloads. ``json_pointer`` (RFC 6901) is set by document validation.
+        ``details`` lists every located problem when one error reports several.
         """
         super().__init__(message)
-        copied = dict(context or {})
-        for key, value in copied.items():
-            _check_context_value(key, value)
         self._message = message
         self._json_pointer = json_pointer
-        self._context: Mapping[str, object] = MappingProxyType(copied)
+        self._context = _frozen_context(context)
+        self._details = tuple(details)
+        if not all(isinstance(detail, ErrorDetail) for detail in self._details):
+            raise TypeError("error details must be ErrorDetail instances")
 
     @property
     def message(self) -> str:
@@ -76,19 +159,28 @@ class MoanaError(Exception):
         """Read-only structured details (field, reason, bounds...)."""
         return self._context
 
+    @property
+    def details(self) -> tuple[ErrorDetail, ...]:
+        """Every located problem, in reporting order; empty for a single-cause error."""
+        return self._details
+
     def __reduce__(self) -> tuple[Any, ...]:
         # Rebuild through the constructor so subclasses survive pickling between
         # isolated worker processes (MOANA.md section 20) and deepcopy.
         return (
             _rebuild,
-            (type(self), self._message, self._json_pointer, dict(self._context)),
+            (type(self), self._message, self._json_pointer, dict(self._context), self._details),
         )
 
 
 def _rebuild(
-    cls: type[MoanaError], message: str, json_pointer: str | None, context: dict[str, object]
+    cls: type[MoanaError],
+    message: str,
+    json_pointer: str | None,
+    context: dict[str, object],
+    details: tuple[ErrorDetail, ...] = (),
 ) -> MoanaError:
-    return cls(message, json_pointer=json_pointer, context=context)
+    return cls(message, json_pointer=json_pointer, context=context, details=details)
 
 
 class ValidationError(MoanaError):

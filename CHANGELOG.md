@@ -2,6 +2,7 @@
 
 ## Sin publicar
 
+- MOANA-002: `moana.schema` con modelos Pydantic estrictos del documento 1.0, lectura acotada (bytes, profundidad, nodos, claves duplicadas, NaN), registro explícito de capacidades (`UNSUPPORTED_OPERATION`), errores agregados con `ErrorDetail` y pointer, normalización canónica y `snapshot_digest`, y JSON Schema generado en `schemas/` (ADR-011). Contrato MOANA.md 0.1.3-draft.
 - MOANA-001: `moana.core` con `Point`, `Dimensions`, `Box` semiabierta (vacío como `None`), `GeometryLimits` y jerarquía de errores con códigos estables, códigos de salida, `json_pointer` y contexto inmutable picklable (ADR-010). Contrato MOANA.md 0.1.2-draft.
 
 ## Infraestructura — 2026-11-17 (sin nueva versión del paquete)

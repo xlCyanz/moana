@@ -86,3 +86,33 @@ def test_context_accepts_scalars_and_tuples() -> None:
     )
     assert error.context["e"] == (1, "y")
     assert error.json_pointer is None
+
+
+def test_details_aggregate_located_problems_and_survive_pickle() -> None:
+    details = (
+        errors.ErrorDetail("VALIDATION_ERROR", "bad", json_pointer="/a", context={"n": 1}),
+        errors.ErrorDetail("REFERENCE_ERROR", "missing", json_pointer="/b"),
+    )
+    error = errors.ValidationError("two problems", details=iter(details))
+    assert error.details == details
+    for clone in (pickle.loads(pickle.dumps(error)), copy.deepcopy(error)):
+        assert clone.details == details
+        assert clone.details[0].context == {"n": 1}
+    assert errors.MoanaError("single").details == ()
+
+
+def test_error_detail_is_immutable_hashable_and_validated() -> None:
+    detail = errors.ErrorDetail("VALIDATION_ERROR", "bad", context={"field": "x"})
+    same = errors.ErrorDetail("VALIDATION_ERROR", "bad", context={"field": "x"})
+    assert detail == same and hash(detail) == hash(same)
+    assert detail != errors.ErrorDetail("VALIDATION_ERROR", "other")
+    assert detail.__eq__(object()) is NotImplemented
+    assert "VALIDATION_ERROR" in repr(detail)
+    assert (detail.code, detail.message, detail.json_pointer) == ("VALIDATION_ERROR", "bad", None)
+    for name in ("code", "message", "json_pointer", "context"):
+        with pytest.raises(AttributeError):
+            setattr(detail, name, None)
+    with pytest.raises(TypeError):
+        errors.ErrorDetail("VALIDATION_ERROR", "bad", context={"field": [1]})
+    with pytest.raises(TypeError):
+        errors.ValidationError("bad", details=[cast(errors.ErrorDetail, "not a detail")])

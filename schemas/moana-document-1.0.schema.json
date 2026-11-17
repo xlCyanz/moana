@@ -1,0 +1,597 @@
+{
+  "$defs": {
+    "Canvas": {
+      "additionalProperties": false,
+      "description": "Canvas size and colour profile (``strict`` or ``rgba``, MOANA.md section 9).",
+      "properties": {
+        "height": {
+          "maximum": 2048,
+          "minimum": 1,
+          "title": "Height",
+          "type": "integer"
+        },
+        "profile": {
+          "default": "strict",
+          "enum": [
+            "strict",
+            "rgba"
+          ],
+          "title": "Profile",
+          "type": "string"
+        },
+        "width": {
+          "maximum": 2048,
+          "minimum": 1,
+          "title": "Width",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "width",
+        "height"
+      ],
+      "title": "Canvas",
+      "type": "object"
+    },
+    "Color": {
+      "additionalProperties": false,
+      "description": "A palette entry; ``rgba`` is ``#RRGGBBAA`` and is stored upper-case.",
+      "properties": {
+        "id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "rgba": {
+          "pattern": "^#[0-9A-Fa-f]{8}$",
+          "title": "Rgba",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "rgba"
+      ],
+      "title": "Color",
+      "type": "object"
+    },
+    "EllipseOperation": {
+      "additionalProperties": false,
+      "description": "Ellipse inscribed in a half-open box, by pixel-centre inclusion.",
+      "properties": {
+        "box": {
+          "maxItems": 4,
+          "minItems": 4,
+          "prefixItems": [
+            {
+              "maximum": 1048576,
+              "minimum": -1048576,
+              "type": "integer"
+            },
+            {
+              "maximum": 1048576,
+              "minimum": -1048576,
+              "type": "integer"
+            },
+            {
+              "maximum": 1048577,
+              "minimum": -1048575,
+              "type": "integer"
+            },
+            {
+              "maximum": 1048577,
+              "minimum": -1048575,
+              "type": "integer"
+            }
+          ],
+          "title": "Box",
+          "type": "array"
+        },
+        "color": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Color",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "type": {
+          "const": "ellipse",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "color",
+        "type",
+        "box"
+      ],
+      "title": "EllipseOperation",
+      "type": "object"
+    },
+    "Layer": {
+      "additionalProperties": false,
+      "description": "Ordered operations drawn bottom-to-top; ``locked`` affects editing only.",
+      "properties": {
+        "blend": {
+          "const": "normal",
+          "default": "normal",
+          "title": "Blend",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "locked": {
+          "default": false,
+          "title": "Locked",
+          "type": "boolean"
+        },
+        "name": {
+          "maxLength": 4096,
+          "title": "Name",
+          "type": "string"
+        },
+        "opacity": {
+          "default": 255,
+          "maximum": 255,
+          "minimum": 0,
+          "title": "Opacity",
+          "type": "integer"
+        },
+        "operations": {
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "ellipse": "#/$defs/EllipseOperation",
+                "line": "#/$defs/LineOperation",
+                "pixel": "#/$defs/PixelOperation",
+                "polygon": "#/$defs/PolygonOperation",
+                "rect": "#/$defs/RectOperation"
+              },
+              "propertyName": "type"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/PixelOperation"
+              },
+              {
+                "$ref": "#/$defs/LineOperation"
+              },
+              {
+                "$ref": "#/$defs/RectOperation"
+              },
+              {
+                "$ref": "#/$defs/EllipseOperation"
+              },
+              {
+                "$ref": "#/$defs/PolygonOperation"
+              }
+            ]
+          },
+          "maxItems": 10000,
+          "title": "Operations",
+          "type": "array"
+        },
+        "visible": {
+          "default": true,
+          "title": "Visible",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "operations"
+      ],
+      "title": "Layer",
+      "type": "object"
+    },
+    "LineOperation": {
+      "additionalProperties": false,
+      "description": "One-pixel line, inclusive at both ends (MOANA.md section 6).",
+      "properties": {
+        "color": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Color",
+          "type": "string"
+        },
+        "end": {
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "maximum": 1048576,
+              "minimum": -1048576,
+              "type": "integer"
+            },
+            {
+              "maximum": 1048576,
+              "minimum": -1048576,
+              "type": "integer"
+            }
+          ],
+          "title": "End",
+          "type": "array"
+        },
+        "id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "start": {
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "maximum": 1048576,
+              "minimum": -1048576,
+              "type": "integer"
+            },
+            {
+              "maximum": 1048576,
+              "minimum": -1048576,
+              "type": "integer"
+            }
+          ],
+          "title": "Start",
+          "type": "array"
+        },
+        "type": {
+          "const": "line",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "color",
+        "type",
+        "start",
+        "end"
+      ],
+      "title": "LineOperation",
+      "type": "object"
+    },
+    "Metadata": {
+      "additionalProperties": false,
+      "description": "Descriptive metadata; it never changes the rendered pixels.",
+      "properties": {
+        "author": {
+          "maxLength": 4096,
+          "title": "Author",
+          "type": "string"
+        },
+        "description": {
+          "maxLength": 4096,
+          "title": "Description",
+          "type": "string"
+        },
+        "provenance": {
+          "maxLength": 4096,
+          "title": "Provenance",
+          "type": "string"
+        },
+        "tags": {
+          "default": [],
+          "items": {
+            "maxLength": 4096,
+            "type": "string"
+          },
+          "maxItems": 32,
+          "title": "Tags",
+          "type": "array"
+        },
+        "title": {
+          "maxLength": 4096,
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "title": "Metadata",
+      "type": "object"
+    },
+    "Palette": {
+      "additionalProperties": false,
+      "description": "Palette with stable colour IDs and optional authored ramps.",
+      "properties": {
+        "colors": {
+          "items": {
+            "$ref": "#/$defs/Color"
+          },
+          "maxItems": 4096,
+          "minItems": 1,
+          "title": "Colors",
+          "type": "array"
+        },
+        "id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "ramps": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Ramp"
+          },
+          "title": "Ramps",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "colors"
+      ],
+      "title": "Palette",
+      "type": "object"
+    },
+    "PixelOperation": {
+      "additionalProperties": false,
+      "description": "Exactly one pixel at ``at``.",
+      "properties": {
+        "at": {
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "maximum": 1048576,
+              "minimum": -1048576,
+              "type": "integer"
+            },
+            {
+              "maximum": 1048576,
+              "minimum": -1048576,
+              "type": "integer"
+            }
+          ],
+          "title": "At",
+          "type": "array"
+        },
+        "color": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Color",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "type": {
+          "const": "pixel",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "color",
+        "type",
+        "at"
+      ],
+      "title": "PixelOperation",
+      "type": "object"
+    },
+    "PolygonOperation": {
+      "additionalProperties": false,
+      "description": "Even-odd filled polygon of at least three vertices.",
+      "properties": {
+        "color": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Color",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "points": {
+          "items": {
+            "maxItems": 2,
+            "minItems": 2,
+            "prefixItems": [
+              {
+                "maximum": 1048576,
+                "minimum": -1048576,
+                "type": "integer"
+              },
+              {
+                "maximum": 1048576,
+                "minimum": -1048576,
+                "type": "integer"
+              }
+            ],
+            "type": "array"
+          },
+          "maxItems": 4096,
+          "minItems": 3,
+          "title": "Points",
+          "type": "array"
+        },
+        "type": {
+          "const": "polygon",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "color",
+        "type",
+        "points"
+      ],
+      "title": "PolygonOperation",
+      "type": "object"
+    },
+    "Ramp": {
+      "additionalProperties": false,
+      "description": "Ordered colour IDs from shadow to light; at least two distinct entries.",
+      "properties": {
+        "colors": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+            "type": "string"
+          },
+          "maxItems": 4096,
+          "minItems": 2,
+          "title": "Colors",
+          "type": "array"
+        },
+        "id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "colors"
+      ],
+      "title": "Ramp",
+      "type": "object"
+    },
+    "RectOperation": {
+      "additionalProperties": false,
+      "description": "Filled half-open box ``[x0, y0, x1, y1)``.",
+      "properties": {
+        "box": {
+          "maxItems": 4,
+          "minItems": 4,
+          "prefixItems": [
+            {
+              "maximum": 1048576,
+              "minimum": -1048576,
+              "type": "integer"
+            },
+            {
+              "maximum": 1048576,
+              "minimum": -1048576,
+              "type": "integer"
+            },
+            {
+              "maximum": 1048577,
+              "minimum": -1048575,
+              "type": "integer"
+            },
+            {
+              "maximum": 1048577,
+              "minimum": -1048575,
+              "type": "integer"
+            }
+          ],
+          "title": "Box",
+          "type": "array"
+        },
+        "color": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Color",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "type": {
+          "const": "rect",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "color",
+        "type",
+        "box"
+      ],
+      "title": "RectOperation",
+      "type": "object"
+    }
+  },
+  "$id": "moana-document-1.0.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Structural schema of a Moana sprite document. validate_document also rejects duplicate member names, NaN/Infinity, documents over 8 MiB, deeper than 32 or with more than 20000 nodes, repeated IDs, unknown color references, more than 10000 operations, and strict-profile violations (alpha other than 00/FF, layer opacity other than 255, more than 256 colors).",
+  "properties": {
+    "animations": {
+      "default": [],
+      "maxItems": 0,
+      "title": "Animations",
+      "type": "array"
+    },
+    "canvas": {
+      "$ref": "#/$defs/Canvas"
+    },
+    "id": {
+      "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+      "title": "Id",
+      "type": "string"
+    },
+    "layers": {
+      "items": {
+        "$ref": "#/$defs/Layer"
+      },
+      "maxItems": 128,
+      "title": "Layers",
+      "type": "array"
+    },
+    "masks": {
+      "default": [],
+      "maxItems": 0,
+      "title": "Masks",
+      "type": "array"
+    },
+    "materials": {
+      "default": [],
+      "maxItems": 0,
+      "title": "Materials",
+      "type": "array"
+    },
+    "metadata": {
+      "$ref": "#/$defs/Metadata"
+    },
+    "palette": {
+      "$ref": "#/$defs/Palette"
+    },
+    "regions": {
+      "default": [],
+      "maxItems": 0,
+      "title": "Regions",
+      "type": "array"
+    },
+    "revision": {
+      "default": 0,
+      "maximum": 18446744073709551615,
+      "minimum": 0,
+      "title": "Revision",
+      "type": "integer"
+    },
+    "schema_version": {
+      "const": "1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "seed": {
+      "default": 0,
+      "maximum": 18446744073709551615,
+      "minimum": 0,
+      "title": "Seed",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "schema_version",
+    "id",
+    "canvas",
+    "palette",
+    "layers"
+  ],
+  "title": "Moana document 1.0",
+  "type": "object"
+}

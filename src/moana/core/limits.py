@@ -24,7 +24,23 @@ from moana.core.coordinates import (
 )
 from moana.core.errors import ValidationError
 
-__all__ = ["DEFAULT_GEOMETRY_LIMITS", "GeometryLimits"]
+__all__ = [
+    "DEFAULT_GEOMETRY_LIMITS",
+    "MAX_COLORS_RGBA",
+    "MAX_COLORS_STRICT",
+    "MAX_LAYERS",
+    "MAX_OPERATIONS",
+    "MAX_VERTICES",
+    "GeometryLimits",
+]
+
+# Document cardinality limits of MOANA.md section 20, shared by schema, palette and
+# render. Byte, depth and node limits of the reader live in ``moana.schema``.
+MAX_LAYERS: Final = 128
+MAX_OPERATIONS: Final = 10_000
+MAX_VERTICES: Final = 4096
+MAX_COLORS_STRICT: Final = 256
+MAX_COLORS_RGBA: Final = 4096
 
 
 @dataclass(frozen=True, slots=True)

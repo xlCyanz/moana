@@ -141,7 +141,7 @@
       "id": "MOANA-002",
       "title": "Implementar documento Pydantic y JSON Schema",
       "phase": "P1",
-      "status": "ready",
+      "status": "done",
       "priority": "P0",
       "dependencies": [
         "MOANA-001"
@@ -164,7 +164,14 @@
         "Tabla de entradas válidas/inválidas y equivalencia mapping/bytes",
         "Roundtrip modelo-JSON-modelo, fuzz acotado de profundidad y golden del schema con revisión de compatibilidad"
       ],
-      "evidence": [],
+      "evidence": [
+        "Implementación: src/moana/schema/{__init__,capabilities,models,document,_reader,_issues,_pointers}.py; ErrorDetail y MoanaError.details aditivos en core.errors; límites de cardinalidad §20 en core.limits; decisión ADR-011; MOANA.md 0.1.3-draft.",
+        "JSON Schema generado: schemas/moana-document-1.0.schema.json (scripts/generate_schema.py --check).",
+        "uv run python scripts/validate.py: lock, ruff, format, mypy estricto, check_repository, pytest y build verdes; moana.schema con 100 % de ramas cubiertas.",
+        "uv run python scripts/check_wheel.py: wheel aislado incluye moana/schema.",
+        "Revisión por subagentes moana-python-engineer y moana-architect: corregidos TypeError con blend no hashable, puntero del discriminador, orden numérico de duplicados, nombres largos fuera de punteros, límites movidos a core, metadata vacía como ausente, grupos como capacidad prevista, módulos internos privados y ADR ajustado.",
+        "Aprobado por el propietario el 2026-11-17 tras revisión; PR #40 hacia develop."
+      ],
       "aliases": [
         "MOA-002"
       ],
@@ -187,14 +194,20 @@
         "Un esquema demasiado permisivo oculta instrucciones desconocidas; uno anticipado sin gramática inventa soporte."
       ],
       "blocking_reason": null,
-      "acceptance_evidence": {},
-      "test_evidence": {}
+      "acceptance_evidence": {
+        "AC1": "tests/unit/schema/test_schema_document.py::test_minimal_example_normalises_to_published_snapshot (digest igual al base_snapshot de examples/specs/recolor.edit.json; normalizar dos veces es idempotente), ::test_normalisation_materialises_section_12_defaults; test_schema_roundtrip.py::test_schema_is_reproducible_and_versioned y ::test_generated_schema_matches_reviewed_golden ($id moana-document-1.0, generación reproducible igual al archivo versionado).",
+        "AC2": "test_schema_document.py::test_invalid_table_reports_code_pointer_and_reason: casos duplicate_operation_id e id_shared_by_color_and_layer (VALIDATION_ERROR, duplicate_id), unknown_color/layer_id_used_as_color/unknown_ramp_color (REFERENCE_ERROR, unknown_color), bool_as_integer/bool_in_box (int_type), extra_root_member/extra_operation_member (extra_forbidden), cada uno con json_pointer exacto, desde mapping y bytes."
+      },
+      "test_evidence": {
+        "T1": "test_schema_document.py: tabla VALID (8 casos) y INVALID (43 casos con code, pointer y reason esperados) ejecutada desde mapping y desde bytes con resultados y errores idénticos; test_schema_reader.py: límites de bytes/profundidad/nodos inclusivos, claves duplicadas con pointer, NaN/Infinity, BOM, UTF-8 inválido, escaneo lineal ante strings hostiles y equivalencia de profundidad mapping/bytes.",
+        "T2": "test_schema_roundtrip.py: roundtrip modelo→JSON canónico→modelo con Hypothesis (150 documentos), fuzz acotado de profundidad (200 árboles JSON arbitrarios con límite 1–12, sólo errores Moana), golden del JSON Schema con mensaje de revisión de compatibilidad y comprobación de miembros del ejemplo mínimo frente al schema publicado."
+      }
     },
     {
       "id": "MOANA-003",
       "title": "Aplicar presupuesto de trabajo y recursos",
       "phase": "P1",
-      "status": "blocked",
+      "status": "ready",
       "priority": "P0",
       "dependencies": [
         "MOANA-001",
@@ -240,7 +253,7 @@
       "risks": [
         "Un timeout cooperativo no interrumpe una llamada C bloqueada; nunca presentarlo como aislamiento."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-002",
+      "blocking_reason": null,
       "acceptance_evidence": {},
       "test_evidence": {}
     },
@@ -301,7 +314,7 @@
       "id": "MOANA-005",
       "title": "Implementar paletas y rampas",
       "phase": "P1",
-      "status": "blocked",
+      "status": "ready",
       "priority": "P1",
       "dependencies": [
         "MOANA-001",
@@ -346,7 +359,7 @@
       "risks": [
         "La transparencia normalizada puede cambiar RGB residual; definirla antes de comparar pertenencia."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-002",
+      "blocking_reason": null,
       "acceptance_evidence": {},
       "test_evidence": {}
     },
