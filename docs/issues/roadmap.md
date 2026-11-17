@@ -29,7 +29,7 @@ Estado: 5/8 issues completados.
 - [MOANA-005](MOANA-005.md) — Implementar paletas y rampas (done)
 - [MOANA-006](MOANA-006.md) — Rasterizar primitivas enteras y flood fill (ready)
 - [MOANA-008](MOANA-008.md) — Añadir transformaciones pixel-perfect (blocked)
-- [MOANA-028](MOANA-028.md) — Crear harness de regresión visual (ready)
+- [MOANA-028](MOANA-028.md) — Crear harness de regresión visual (review)
 
 ## P2 — Imagen estática
 

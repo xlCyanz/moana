@@ -1,6 +1,6 @@
 # Inventario del repositorio
 
-246 archivos actuales de fuente, documentación, configuración y pruebas al 2026-11-17. Incluye cambios locales todavía sin commit. Excluye entorno virtual, herramientas, cachés, artefactos y metadata Git.
+251 archivos actuales de fuente, documentación, configuración y pruebas al 2026-11-17. Incluye cambios locales todavía sin commit. Excluye entorno virtual, herramientas, cachés, artefactos y metadata Git.
 
 | Archivo |
 | --- |
@@ -249,4 +249,9 @@
 | [tests/unit/test_claude_hooks.py](../tests/unit/test_claude_hooks.py) |
 | [tests/unit/test_github_sync.py](../tests/unit/test_github_sync.py) |
 | [tests/unit/test_portability.py](../tests/unit/test_portability.py) |
+| [tests/visual/README.md](../tests/visual/README.md) |
+| [tests/visual/__init__.py](../tests/visual/__init__.py) |
+| [tests/visual/goldens/harness-reference-4x3.png](../tests/visual/goldens/harness-reference-4x3.png) |
+| [tests/visual/harness.py](../tests/visual/harness.py) |
+| [tests/visual/test_visual_harness.py](../tests/visual/test_visual_harness.py) |
 | [uv.lock](../uv.lock) |

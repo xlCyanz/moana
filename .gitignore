@@ -19,3 +19,4 @@ artifacts/
 !.env.example
 .DS_Store
 .claude/settings.local.json
+.claude/worktrees/
