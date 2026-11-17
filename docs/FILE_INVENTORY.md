@@ -1,6 +1,6 @@
 # Inventario del repositorio
 
-169 archivos actuales de fuente, documentación, configuración y pruebas al 2026-11-17. Incluye cambios locales todavía sin commit. Excluye entorno virtual, herramientas, cachés, artefactos y metadata Git.
+196 archivos actuales de fuente, documentación, configuración y pruebas al 2026-11-17. Incluye cambios locales todavía sin commit. Excluye entorno virtual, herramientas, cachés, artefactos y metadata Git.
 
 | Archivo |
 | --- |
@@ -22,6 +22,28 @@
 | [.agents/skills/moana-python/agents/openai.yaml](../.agents/skills/moana-python/agents/openai.yaml) |
 | [.agents/skills/moana-testing/SKILL.md](../.agents/skills/moana-testing/SKILL.md) |
 | [.agents/skills/moana-testing/agents/openai.yaml](../.agents/skills/moana-testing/agents/openai.yaml) |
+| [.claude/agents/moana-architect.md](../.claude/agents/moana-architect.md) |
+| [.claude/agents/moana-documentation.md](../.claude/agents/moana-documentation.md) |
+| [.claude/agents/moana-graphics-engineer.md](../.claude/agents/moana-graphics-engineer.md) |
+| [.claude/agents/moana-pixel-artist.md](../.claude/agents/moana-pixel-artist.md) |
+| [.claude/agents/moana-python-engineer.md](../.claude/agents/moana-python-engineer.md) |
+| [.claude/agents/moana-qa-engineer.md](../.claude/agents/moana-qa-engineer.md) |
+| [.claude/rules/architecture.md](../.claude/rules/architecture.md) |
+| [.claude/rules/documentation.md](../.claude/rules/documentation.md) |
+| [.claude/rules/issues.md](../.claude/rules/issues.md) |
+| [.claude/rules/pixel-art.md](../.claude/rules/pixel-art.md) |
+| [.claude/rules/python.md](../.claude/rules/python.md) |
+| [.claude/rules/rendering.md](../.claude/rules/rendering.md) |
+| [.claude/rules/security.md](../.claude/rules/security.md) |
+| [.claude/rules/testing.md](../.claude/rules/testing.md) |
+| [.claude/settings.json](../.claude/settings.json) |
+| [.claude/skills/moana-architecture/SKILL.md](../.claude/skills/moana-architecture/SKILL.md) |
+| [.claude/skills/moana-code-review/SKILL.md](../.claude/skills/moana-code-review/SKILL.md) |
+| [.claude/skills/moana-graphics/SKILL.md](../.claude/skills/moana-graphics/SKILL.md) |
+| [.claude/skills/moana-issue-planning/SKILL.md](../.claude/skills/moana-issue-planning/SKILL.md) |
+| [.claude/skills/moana-pixel-art/SKILL.md](../.claude/skills/moana-pixel-art/SKILL.md) |
+| [.claude/skills/moana-python/SKILL.md](../.claude/skills/moana-python/SKILL.md) |
+| [.claude/skills/moana-testing/SKILL.md](../.claude/skills/moana-testing/SKILL.md) |
 | [.codex/agents/architect.toml](../.codex/agents/architect.toml) |
 | [.codex/agents/documentation_writer.toml](../.codex/agents/documentation_writer.toml) |
 | [.codex/agents/graphics_engineer.toml](../.codex/agents/graphics_engineer.toml) |
@@ -43,11 +65,13 @@
 | [.uv-version](../.uv-version) |
 | [AGENTS.md](../AGENTS.md) |
 | [CHANGELOG.md](../CHANGELOG.md) |
+| [CLAUDE.md](../CLAUDE.md) |
 | [CONTRIBUTING.md](../CONTRIBUTING.md) |
 | [MOANA.md](../MOANA.md) |
 | [README.md](../README.md) |
 | [SECURITY.md](../SECURITY.md) |
 | [docs/BOOTSTRAP_REPORT.md](../docs/BOOTSTRAP_REPORT.md) |
+| [docs/CLAUDE_CODE.md](../docs/CLAUDE_CODE.md) |
 | [docs/CODEX.md](../docs/CODEX.md) |
 | [docs/DEPENDENCIES.md](../docs/DEPENDENCIES.md) |
 | [docs/FILE_INVENTORY.md](../docs/FILE_INVENTORY.md) |
@@ -66,6 +90,7 @@
 | [docs/architecture/decisions/ADR-006-backlog-identity-and-lifecycle.md](../docs/architecture/decisions/ADR-006-backlog-identity-and-lifecycle.md) |
 | [docs/architecture/decisions/ADR-007-contract-clarifications.md](../docs/architecture/decisions/ADR-007-contract-clarifications.md) |
 | [docs/architecture/decisions/ADR-008-portable-tooling.md](../docs/architecture/decisions/ADR-008-portable-tooling.md) |
+| [docs/architecture/decisions/ADR-009-claude-code-layer.md](../docs/architecture/decisions/ADR-009-claude-code-layer.md) |
 | [docs/architecture/module-contracts.md](../docs/architecture/module-contracts.md) |
 | [docs/architecture/overview.md](../docs/architecture/overview.md) |
 | [docs/guides/agent-workflow.md](../docs/guides/agent-workflow.md) |
@@ -162,6 +187,7 @@
 | [scripts/bootstrap.sh](../scripts/bootstrap.sh) |
 | [scripts/check_repository.py](../scripts/check_repository.py) |
 | [scripts/check_wheel.py](../scripts/check_wheel.py) |
+| [scripts/claude_hooks.py](../scripts/claude_hooks.py) |
 | [scripts/planning.py](../scripts/planning.py) |
 | [scripts/run_hook.sh](../scripts/run_hook.sh) |
 | [scripts/uv.sh](../scripts/uv.sh) |
@@ -171,5 +197,6 @@
 | [tests/test_environment.py](../tests/test_environment.py) |
 | [tests/test_planning.py](../tests/test_planning.py) |
 | [tests/test_repository_tools.py](../tests/test_repository_tools.py) |
+| [tests/unit/test_claude_hooks.py](../tests/unit/test_claude_hooks.py) |
 | [tests/unit/test_portability.py](../tests/unit/test_portability.py) |
 | [uv.lock](../uv.lock) |

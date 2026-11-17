@@ -1,10 +1,10 @@
-# Flujo de una sesión de Codex
+# Flujo de una sesión de agente (Codex o Claude Code)
 
 El repositorio debe contener todo el contexto necesario para continuar. No depender de conversaciones anteriores ni inferir APIs disponibles a partir de ejemplos de diseño.
 
 ## Recorrido de implementación
 
-1. Leer [AGENTS.md](../../AGENTS.md) y comprobar estado de Git, rama y cambios existentes.
+1. Leer [AGENTS.md](../../AGENTS.md) (Claude Code lo recibe importado desde [CLAUDE.md](../../CLAUDE.md)) y comprobar estado de Git, rama y cambios existentes.
 2. Leer las secciones relevantes de [MOANA.md](../../MOANA.md) y los ADR aplicables.
 3. Consultar [roadmap](../issues/roadmap.md), [dependencias](../issues/dependency-map.md) y [trazabilidad](../issues/traceability.md).
 4. Elegir el siguiente issue cuyas dependencias estén `done`; respetar el alcance solicitado aunque otros issues estén disponibles.
@@ -33,6 +33,17 @@ La instrucción vigente del usuario define el trabajo autorizado. Un issue pendi
 | Revisión | `moana-code-review`: defectos accionables con escenario, ubicación y consecuencia |
 
 El trabajo de documentación transforma contratos y evidencia en guías consistentes; no inventa resultados ni cambia la semántica del producto para resolver una contradicción editorial. Los roles configurados heredan permisos y modelo del host. Que un archivo exista no prueba que una UI o sesión concreta lo haya cargado; registrar la evidencia de descubrimiento disponible.
+
+## Equivalencias por host
+
+| Necesidad | Codex | Claude Code |
+| --- | --- | --- |
+| Instrucciones | `AGENTS.md` | `CLAUDE.md` → `@AGENTS.md` + `.claude/rules/` por ruta |
+| Skills | `.agents/skills/` | envoltorios `.claude/skills/` que remiten a `.agents/skills/` |
+| Roles | `.codex/agents/*.toml` | `.claude/agents/*.md` (revisores de sólo lectura + documentación) |
+| Automatización | pre-commit y CI | lo mismo, más hooks ligeros de `.claude/settings.json` |
+
+En Claude Code, delega revisiones en paralelo a `moana-architect`, `moana-python-engineer`, `moana-graphics-engineer`, `moana-pixel-artist` o `moana-qa-engineer` cuando el cambio lo justifique; integra tú sus hallazgos. Usa `moana-documentation` para regenerar catálogos y documentar decisiones. Validación: rápida (hook), módulo, completa y pre-commit según [CLAUDE.md](../../CLAUDE.md).
 
 ## Coordinación independiente
 

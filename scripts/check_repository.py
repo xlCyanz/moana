@@ -50,6 +50,39 @@ class SkillUI(StrictModel):
     interface: SkillInterface
 
 
+CLAUDE_AGENTS = {
+    "moana-architect",
+    "moana-python-engineer",
+    "moana-graphics-engineer",
+    "moana-pixel-artist",
+    "moana-qa-engineer",
+    "moana-documentation",
+}
+CLAUDE_RULES = {
+    "python",
+    "architecture",
+    "testing",
+    "pixel-art",
+    "rendering",
+    "documentation",
+    "security",
+    "issues",
+}
+CLAUDE_TOOLS = {"Read", "Grep", "Glob", "Bash", "Edit", "Write"}
+WRITE_TOOLS = {"Edit", "Write"}
+FRONTMATTER = re.compile(r"\A---\n(.*?)\n---\n(.+)\Z", re.DOTALL)
+
+
+class ClaudeAgent(StrictModel):
+    name: str = Field(pattern=r"^moana-[a-z-]+$")
+    description: str = Field(min_length=40, max_length=1024)
+    tools: str = Field(min_length=1)
+
+
+class ClaudeRule(StrictModel):
+    paths: list[str] = Field(min_length=1)
+
+
 class AgentRole(StrictModel):
     name: str = Field(pattern=r"^moana_[a-z_]+$")
     description: str = Field(min_length=1)
@@ -58,7 +91,7 @@ class AgentRole(StrictModel):
 
 def check_skill(path: Path) -> None:
     content = path.read_text(encoding="utf-8")
-    match = re.match(r"\A---\n(.*?)\n---\n(.+)\Z", content, re.DOTALL)
+    match = FRONTMATTER.match(content)
     if not match:
         raise ValueError(f"Missing frontmatter or body: {path}")
     metadata = SkillMetadata.model_validate(yaml.safe_load(match[1]))
@@ -73,9 +106,66 @@ def check_skill(path: Path) -> None:
         raise ValueError(f"Default prompt must mention skill: {path}")
 
 
+def frontmatter(path: Path) -> tuple[object, str]:
+    """Split a Markdown file into parsed YAML frontmatter and body."""
+    match = FRONTMATTER.match(path.read_text(encoding="utf-8"))
+    if not match:
+        raise ValueError(f"Missing frontmatter or body: {path}")
+    return yaml.safe_load(match[1]), match[2]
+
+
+def check_claude_config(root: Path) -> list[str]:
+    """Validate the Claude Code layer: memory import, skills, agents, rules and hooks."""
+    errors = []
+    claude_md = root / "CLAUDE.md"
+    if not claude_md.is_file() or "@AGENTS.md" not in claude_md.read_text(encoding="utf-8"):
+        errors.append("CLAUDE.md must exist and import @AGENTS.md")
+    for name in sorted(EXPECTED_SKILLS):
+        wrapper = root / ".claude/skills" / name / "SKILL.md"
+        if not wrapper.is_file():
+            errors.append(f"Missing Claude skill wrapper: {name}")
+            continue
+        canonical, _ = frontmatter(root / ".agents/skills" / name / "SKILL.md")
+        metadata, body = frontmatter(wrapper)
+        if metadata != canonical:
+            errors.append(f"Claude skill metadata differs from canonical skill: {name}")
+        if f".agents/skills/{name}/SKILL.md" not in body:
+            errors.append(f"Claude skill wrapper must point to its canonical source: {name}")
+    agents = {}
+    for path in (root / ".claude/agents").glob("*.md"):
+        metadata, _ = frontmatter(path)
+        agent = ClaudeAgent.model_validate(metadata)
+        tools = {tool.strip() for tool in agent.tools.split(",")}
+        if agent.name != path.stem or not tools <= CLAUDE_TOOLS:
+            errors.append(f"Invalid Claude agent name or tools: {path.name}")
+        if tools & WRITE_TOOLS and agent.name != "moana-documentation":
+            errors.append(f"Only the documentation agent may edit files: {path.name}")
+        agents[agent.name] = agent
+    if set(agents) != CLAUDE_AGENTS:
+        errors.append("Expected six named Claude agents")
+    rules = {path.stem for path in (root / ".claude/rules").glob("*.md")}
+    if rules != CLAUDE_RULES:
+        errors.append("Expected eight named Claude rules")
+    for path in (root / ".claude/rules").glob("*.md"):
+        ClaudeRule.model_validate(frontmatter(path)[0])
+    settings = json.loads((root / ".claude/settings.json").read_text(encoding="utf-8"))
+    commands = [
+        hook["command"]
+        for groups in settings.get("hooks", {}).values()
+        for group in groups
+        for hook in group["hooks"]
+    ]
+    handlers = {"pre-edit", "pre-bash", "post-edit"}
+    if {command.rsplit(" ", 1)[-1] for command in commands} != handlers or not all(
+        "scripts.claude_hooks" in command for command in commands
+    ):
+        errors.append("Claude hooks must call scripts.claude_hooks pre-edit/pre-bash/post-edit")
+    return errors
+
+
 def markdown_files(root: Path) -> list[Path]:
     files = list(root.glob("*.md"))
-    for folder in ("docs", "examples", ".agents", ".github"):
+    for folder in ("docs", "examples", ".agents", ".claude", ".github"):
         files.extend((root / folder).rglob("*.md"))
     return sorted(files)
 
@@ -118,6 +208,7 @@ def check_repository(root: Path = ROOT) -> list[str]:
         names.append(role.name)
     if len(names) != 8 or len(set(names)) != 8 or "moana_documentation_writer" not in names:
         errors.append("Expected eight distinct Codex roles including documentation")
+    errors.extend(check_claude_config(root))
     config = tomllib.loads((root / ".codex/config.toml").read_text(encoding="utf-8"))
     if config != {"agents": {"enabled": True, "max_concurrent_threads_per_session": 3}}:
         errors.append("Codex settings changed; review capability audit and validator together")
@@ -162,7 +253,10 @@ def main() -> int:
         print(error)
     if not errors:
         issues, requirements = load_catalog()
-        print(f"Repository OK: {len(issues)} issues, {len(requirements)} requirements, 7 skills")
+        print(
+            f"Repository OK: {len(issues)} issues, {len(requirements)} requirements, "
+            "7 skills, Claude Code layer"
+        )
     return int(bool(errors))
 
 

@@ -2,6 +2,8 @@
 
 ## Infraestructura — 2026-11-17 (sin nueva versión del paquete)
 
+- Capa Claude Code (ADR-009): `CLAUDE.md`, ocho reglas por ruta, siete envoltorios de skills, seis subagentes, hooks probados en `scripts/claude_hooks.py` y validación en el checker.
+
 - Backlog MOANA con aliases históricos, seis estados, metadatos completos y evidencia por criterio/prueba.
 - Guías, estándares, cuatro ADR adicionales, siete skills revisadas y ocho roles.
 - Lectura/escritura UTF-8 explícita y regresión del fallo observado en CI Windows.

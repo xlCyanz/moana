@@ -50,7 +50,7 @@ Inspecciona estado, rama, diff y remotos antes de modificar. Usa una rama de iss
 
 Skills locales: `moana-architecture`, `moana-python`, `moana-pixel-art`, `moana-graphics`, `moana-testing`, `moana-issue-planning`, `moana-code-review`. Carga sólo las relevantes desde `.agents/skills/`; sus instrucciones no amplían la autorización del usuario.
 
-Roles en `.codex/agents/`: architect, python_engineer, graphics_engineer, pixel_artist, test_engineer, documentation_writer, reviewer e issue_planner, con prefijo `moana_`. Heredan modelo y permisos. Si se solicita delegación y el host lo permite, asigna contratos y archivos separados; el agente principal integra y valida. En otro caso, utiliza los roles como guía en una sesión. No abras otros chats como sustituto sin solicitud. Sigue el [flujo de sesión](docs/guides/agent-workflow.md).
+Roles en `.codex/agents/`: architect, python_engineer, graphics_engineer, pixel_artist, test_engineer, documentation_writer, reviewer e issue_planner, con prefijo `moana_`. Heredan modelo y permisos. Si se solicita delegación y el host lo permite, asigna contratos y archivos separados; el agente principal integra y valida. En otro caso, utiliza los roles como guía en una sesión. No abras otros chats como sustituto sin solicitud. Sigue el [flujo de sesión](docs/guides/agent-workflow.md). Claude Code usa `CLAUDE.md`, envoltorios de estas skills en `.claude/skills/`, seis subagentes en `.claude/agents/` y hooks en `.claude/settings.json` ([auditoría](docs/CLAUDE_CODE.md)).
 
 ## Ciclo de issues y Definition of Done
 

@@ -39,6 +39,7 @@ Evitar «god modules» de dibujo y un registro dinámico de plugins ejecutables.
 - [ADR-006: identidad y ciclo del backlog](decisions/ADR-006-backlog-identity-and-lifecycle.md).
 - [ADR-007: clarificaciones de contratos](decisions/ADR-007-contract-clarifications.md).
 - [ADR-008: tooling portable](decisions/ADR-008-portable-tooling.md).
+- [ADR-009: capa de Claude Code](decisions/ADR-009-claude-code-layer.md).
 - [Modelo de amenazas](SECURITY_MODEL.md).
 
 Un ADR nuevo registra contexto, decisión, alternativas, consecuencias y evidencia. Cambiar un ADR aceptado se hace mediante otro que lo sustituya y actualizando el contrato principal.

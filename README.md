@@ -55,6 +55,6 @@ uv run pre-commit run --all-files
 | `.codex/` | configuración y ocho roles de agentes locales |
 | `.github/` | CI, actualización de acciones y plantillas |
 
-Lee [CONTRIBUTING.md](CONTRIBUTING.md) y [AGENTS.md](AGENTS.md) antes de implementar. La [guía de desarrollo](docs/guides/development.md) detalla el entorno y el flujo Git. Primer issue: [MOANA-001](docs/issues/MOANA-001.md). La [auditoría de entorno](docs/CODEX.md) distingue configuraciones disponibles de integraciones activas. El [reporte de inicialización](docs/INITIALIZATION_REPORT.md) conserva evidencias históricas.
+Lee [CONTRIBUTING.md](CONTRIBUTING.md) y [AGENTS.md](AGENTS.md) antes de implementar. La [guía de desarrollo](docs/guides/development.md) detalla el entorno y el flujo Git. Primer issue: [MOANA-001](docs/issues/MOANA-001.md). Con Claude Code, [CLAUDE.md](CLAUDE.md) es el punto de entrada y la [auditoría de Claude Code](docs/CLAUDE_CODE.md) describe reglas, skills, subagentes y hooks. La [auditoría de entorno](docs/CODEX.md) distingue configuraciones disponibles de integraciones activas. El [reporte de inicialización](docs/INITIALIZATION_REPORT.md) conserva evidencias históricas.
 
 La licencia de distribución queda pendiente de decisión del propietario; no se autoriza una publicación automática ni se asigna una licencia por suposición.
