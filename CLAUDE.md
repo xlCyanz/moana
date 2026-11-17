@@ -1,6 +1,6 @@
 # Moana — instrucciones para Claude Code
 
-Moana es un motor Python determinista de Pixel Art (128 × 128 de referencia) controlable por agentes. **Estado: P0 completado; `moana.core` (MOANA-001), `moana.schema` (MOANA-002) y plan de coste (MOANA-003), lienzo RGBA (MOANA-004) y paletas (MOANA-005) implementados; sin rasterizadores.** El siguiente issue `ready` está en el [roadmap](docs/issues/roadmap.md).
+Moana es un motor Python determinista de Pixel Art (128 × 128 de referencia) controlable por agentes. **Estado: P0 completado; `moana.core` (MOANA-001), `moana.schema` (MOANA-002) y plan de coste (MOANA-003), lienzo RGBA (MOANA-004), paletas (MOANA-005) y primitivas raster con flood fill (MOANA-006) implementados; sin composición ni orquestador de render.** El siguiente issue `ready` está en el [roadmap](docs/issues/roadmap.md).
 
 Las reglas operativas comunes a todos los agentes viven en `AGENTS.md` y se importan aquí; no se duplican:
 
