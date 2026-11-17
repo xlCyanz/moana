@@ -141,7 +141,7 @@
       "id": "MOANA-002",
       "title": "Implementar documento Pydantic y JSON Schema",
       "phase": "P1",
-      "status": "review",
+      "status": "done",
       "priority": "P0",
       "dependencies": [
         "MOANA-001"
@@ -169,7 +169,8 @@
         "JSON Schema generado: schemas/moana-document-1.0.schema.json (scripts/generate_schema.py --check).",
         "uv run python scripts/validate.py: lock, ruff, format, mypy estricto, check_repository, pytest y build verdes; moana.schema con 100 % de ramas cubiertas.",
         "uv run python scripts/check_wheel.py: wheel aislado incluye moana/schema.",
-        "Revisión por subagentes moana-python-engineer y moana-architect: corregidos TypeError con blend no hashable, puntero del discriminador, orden numérico de duplicados, nombres largos fuera de punteros, límites movidos a core, metadata vacía como ausente, grupos como capacidad prevista, módulos internos privados y ADR ajustado."
+        "Revisión por subagentes moana-python-engineer y moana-architect: corregidos TypeError con blend no hashable, puntero del discriminador, orden numérico de duplicados, nombres largos fuera de punteros, límites movidos a core, metadata vacía como ausente, grupos como capacidad prevista, módulos internos privados y ADR ajustado.",
+        "Aprobado por el propietario el 2026-11-17 tras revisión; PR #40 hacia develop."
       ],
       "aliases": [
         "MOA-002"
@@ -206,7 +207,7 @@
       "id": "MOANA-003",
       "title": "Aplicar presupuesto de trabajo y recursos",
       "phase": "P1",
-      "status": "blocked",
+      "status": "ready",
       "priority": "P0",
       "dependencies": [
         "MOANA-001",
@@ -252,7 +253,7 @@
       "risks": [
         "Un timeout cooperativo no interrumpe una llamada C bloqueada; nunca presentarlo como aislamiento."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-002",
+      "blocking_reason": null,
       "acceptance_evidence": {},
       "test_evidence": {}
     },
@@ -313,7 +314,7 @@
       "id": "MOANA-005",
       "title": "Implementar paletas y rampas",
       "phase": "P1",
-      "status": "blocked",
+      "status": "ready",
       "priority": "P1",
       "dependencies": [
         "MOANA-001",
@@ -358,7 +359,7 @@
       "risks": [
         "La transparencia normalizada puede cambiar RGB residual; definirla antes de comparar pertenencia."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-002",
+      "blocking_reason": null,
       "acceptance_evidence": {},
       "test_evidence": {}
     },

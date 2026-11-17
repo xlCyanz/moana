@@ -8,7 +8,7 @@
 - Aliases históricos: MOA-002
 - Phase: P1
 - Priority: P0
-- Status: review
+- Status: done
 - Complexity: L (relativa, no estimación de tiempo)
 - Dependencies: [MOANA-001](MOANA-001.md)
 - Related modules: schema, core
@@ -43,13 +43,13 @@ No rasterizar ni implementar anticipadamente todas las técnicas futuras; amplia
 
 ## Acceptance criteria
 
-- [ ] AC1: El JSON mínimo normaliza de forma idempotente y produce schema versionado reproducible
-- [ ] AC2: IDs duplicados, colores inexistentes, bool como entero y campos extra se rechazan con pointer y código
+- [x] AC1: El JSON mínimo normaliza de forma idempotente y produce schema versionado reproducible
+- [x] AC2: IDs duplicados, colores inexistentes, bool como entero y campos extra se rechazan con pointer y código
 
 ## Required tests
 
-- [ ] T1: Tabla de entradas válidas/inválidas y equivalencia mapping/bytes
-- [ ] T2: Roundtrip modelo-JSON-modelo, fuzz acotado de profundidad y golden del schema con revisión de compatibilidad
+- [x] T1: Tabla de entradas válidas/inválidas y equivalencia mapping/bytes
+- [x] T2: Roundtrip modelo-JSON-modelo, fuzz acotado de profundidad y golden del schema con revisión de compatibilidad
 
 ## Expected deliverables
 
@@ -66,7 +66,7 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Guía para agentes de IA
 
-**Estado para agentes:** En revisión: sólo correcciones de la revisión; no añadir alcance.
+**Estado para agentes:** Completado; usar sólo como referencia del contrato entregado.
 
 ### 1. Preparación
 
@@ -141,6 +141,7 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 - uv run python scripts/validate.py: lock, ruff, format, mypy estricto, check_repository, pytest y build verdes; moana.schema con 100 % de ramas cubiertas.
 - uv run python scripts/check_wheel.py: wheel aislado incluye moana/schema.
 - Revisión por subagentes moana-python-engineer y moana-architect: corregidos TypeError con blend no hashable, puntero del discriminador, orden numérico de duplicados, nombres largos fuera de punteros, límites movidos a core, metadata vacía como ausente, grupos como capacidad prevista, módulos internos privados y ADR ajustado.
+- Aprobado por el propietario el 2026-11-17 tras revisión; PR #40 hacia develop.
 - AC1: tests/unit/schema/test_schema_document.py::test_minimal_example_normalises_to_published_snapshot (digest igual al base_snapshot de examples/specs/recolor.edit.json; normalizar dos veces es idempotente), ::test_normalisation_materialises_section_12_defaults; test_schema_roundtrip.py::test_schema_is_reproducible_and_versioned y ::test_generated_schema_matches_reviewed_golden ($id moana-document-1.0, generación reproducible igual al archivo versionado).
 - AC2: test_schema_document.py::test_invalid_table_reports_code_pointer_and_reason: casos duplicate_operation_id e id_shared_by_color_and_layer (VALIDATION_ERROR, duplicate_id), unknown_color/layer_id_used_as_color/unknown_ramp_color (REFERENCE_ERROR, unknown_color), bool_as_integer/bool_in_box (int_type), extra_root_member/extra_operation_member (extra_forbidden), cada uno con json_pointer exacto, desde mapping y bytes.
 - T1: test_schema_document.py: tabla VALID (8 casos) y INVALID (43 casos con code, pointer y reason esperados) ejecutada desde mapping y desde bytes con resultados y errores idénticos; test_schema_reader.py: límites de bytes/profundidad/nodos inclusivos, claves duplicadas con pointer, NaN/Infinity, BOM, UTF-8 inválido, escaneo lineal ante strings hostiles y equivalencia de profundidad mapping/bytes.
