@@ -27,7 +27,7 @@ Evitar «god modules» de dibujo y un registro dinámico de plugins ejecutables.
 
 ## Estado de carpetas
 
-El paquete contiene `src/moana/__init__.py`, `py.typed` y `src/moana/core/` (MOANA-001) y `src/moana/schema/` (MOANA-002); `schemas/` guarda el JSON Schema generado. Los módulos descritos en MOANA.md se crean al implementar sus issues. `scripts/` contiene herramientas del repositorio y no se distribuye en el wheel. `examples/specs/` expresa diseño, no demuestra render.
+El paquete contiene `src/moana/__init__.py`, `py.typed` y `src/moana/core/` (MOANA-001) `src/moana/schema/` (MOANA-002) y `src/moana/render/budget.py` (MOANA-003); `schemas/` guarda el JSON Schema generado. Los módulos descritos en MOANA.md se crean al implementar sus issues. `scripts/` contiene herramientas del repositorio y no se distribuye en el wheel. `examples/specs/` expresa diseño, no demuestra render.
 
 ## Decisiones
 
@@ -42,6 +42,7 @@ El paquete contiene `src/moana/__init__.py`, `py.typed` y `src/moana/core/` (MOA
 - [ADR-009: capa de Claude Code](decisions/ADR-009-claude-code-layer.md).
 - [ADR-010: contratos de core](decisions/ADR-010-core-contracts.md).
 - [ADR-011: schema 1.0 del documento](decisions/ADR-011-schema-v1.md).
+- [ADR-012: presupuestos de solicitud](decisions/ADR-012-request-budgets.md).
 - [Modelo de amenazas](SECURITY_MODEL.md).
 
 Un ADR nuevo registra contexto, decisión, alternativas, consecuencias y evidencia. Cambiar un ADR aceptado se hace mediante otro que lo sustituya y actualizando el contrato principal.

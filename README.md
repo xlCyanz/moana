@@ -1,6 +1,6 @@
 # Moana
 
-Base de un motor Python de Pixel Art programático, determinista y editable, orientado a sprites de 128 × 128. **Estado: infraestructura y diseño; el motor todavía no está implementado.** El paquete expone `moana.__version__`, `moana.core` (coordenadas, cajas, límites y errores de dominio) y `moana.schema` (validación estricta y normalización del documento 1.0, JSON Schema en `schemas/`). No existe aún un CLI de dibujo.
+Base de un motor Python de Pixel Art programático, determinista y editable, orientado a sprites de 128 × 128. **Estado: infraestructura y diseño; el motor todavía no está implementado.** El paquete expone `moana.__version__`, `moana.core` (coordenadas, cajas, límites y errores de dominio) `moana.schema` (validación estricta y normalización del documento 1.0, JSON Schema en `schemas/`) y el plan de coste previo al render (`moana.render.plan_budget`). No existe aún un CLI de dibujo.
 
 La fuente de verdad es [MOANA.md](MOANA.md). Consulta el [roadmap](docs/issues/roadmap.md), los [issues](docs/issues/README.md), las [dependencias](docs/issues/dependency-map.md) y la [trazabilidad](docs/issues/traceability.md). Pillow y NumPy son herramientas; la calidad artística requerirá algoritmos, dirección y evaluación.
 

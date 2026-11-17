@@ -24,7 +24,7 @@ Estado: 2/8 issues completados.
 
 - [MOANA-001](MOANA-001.md) — Definir tipos, coordenadas, errores y límites (done)
 - [MOANA-002](MOANA-002.md) — Implementar documento Pydantic y JSON Schema (done)
-- [MOANA-003](MOANA-003.md) — Aplicar presupuesto de trabajo y recursos (ready)
+- [MOANA-003](MOANA-003.md) — Aplicar presupuesto de trabajo y recursos (review)
 - [MOANA-004](MOANA-004.md) — Crear lienzo RGBA y propiedad de buffers (blocked)
 - [MOANA-005](MOANA-005.md) — Implementar paletas y rampas (ready)
 - [MOANA-006](MOANA-006.md) — Rasterizar primitivas enteras y flood fill (blocked)
@@ -88,4 +88,4 @@ Estado: 0/8 issues completados.
 
 ## Siguiente paso
 
-Implementar [MOANA-003](MOANA-003.md): Aplicar presupuesto de trabajo y recursos.
+Implementar [MOANA-005](MOANA-005.md): Implementar paletas y rampas.

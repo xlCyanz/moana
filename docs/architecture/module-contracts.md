@@ -1,6 +1,6 @@
 # Contratos entre módulos
 
-Estado: **contratos previstos**, salvo `core` y `schema` (implementados, ver abajo). Las firmas públicas objetivo están en [MOANA.md §13](../../MOANA.md); sus fórmulas, límites y formatos prevalecen sobre este resumen. No se añaden abstracciones base ni registros de plugins por anticipación.
+Estado: **contratos previstos**, salvo `core`, `schema` y el plan de coste de `render` (implementados, ver abajo). Las firmas públicas objetivo están en [MOANA.md §13](../../MOANA.md); sus fórmulas, límites y formatos prevalecen sobre este resumen. No se añaden abstracciones base ni registros de plugins por anticipación.
 
 ## Entradas, salidas y efectos
 
@@ -31,12 +31,18 @@ API pública en `moana.core`, sin dependencias de otros módulos Moana, NumPy ni
 | `Box(x0, y0, x1, y1)` | Semiabierta `[x0,x1) × [y0,y1)`, nunca vacía (`x0 < x1`, `y0 < y1`). `x0`/`y0` en `±1 048 576`; `x1`/`y1` hasta `1 048 577`. Una caja 1 × 1 contiene exactamente un píxel (`Box.from_point`, válido para todo píxel). Puede quedar fuera del lienzo. |
 | `Box.intersection` / `Box.clip_to` | Devuelven la caja común o **`None`** si no queda ningún píxel (incluidas cajas que sólo se tocan en un borde). Nunca se construye una caja vacía o invertida para representar «nada». |
 | `MAX_LAYERS`, `MAX_OPERATIONS`, `MAX_VERTICES`, `MAX_COLORS_STRICT`, `MAX_COLORS_RGBA` | Límites de cardinalidad del documento (§20), compartidos por `schema`, `palette` y `render` (ADR-011). |
-| `GeometryLimits` / `DEFAULT_GEOMETRY_LIMITS` | Máximos geométricos del contrato §5 (eje, área, coordenada), separados de su aplicación (`check_dimensions`, `check_point`, `check_box`). Sólo pueden bajar; el documento no los define. Los presupuestos elevables de §20 serán `RenderLimits` (MOANA-003), que compone este tipo. |
+| `GeometryLimits` / `DEFAULT_GEOMETRY_LIMITS` | Máximos geométricos del contrato §5 (eje, área, coordenada), separados de su aplicación (`check_dimensions`, `check_point`, `check_box`). Sólo pueden bajar; el documento no los define. Los presupuestos elevables de §20 son `RenderLimits`, que compone este tipo. |
+| `RenderLimits` / `DEFAULT_RENDER_LIMITS` | Presupuestos por solicitud de §20 (bytes de buffers con temporales, visitas de píxel, píxeles de frames, operaciones, capas) y `geometry`. Se bajan libremente; elevar un presupuesto exige `host_override=True` del anfitrión; conteos y geometría nunca superan el contrato. ADR-012. |
+| `Deadline` | Comprobación cooperativa entre unidades de trabajo (`checkpoint`), `BudgetExceeded` con recurso `time`; no influye en el resultado ni interrumpe código nativo. |
 | `require_int` | Validación compartida de enteros con rango; `minimum > maximum` es error de programación (`ValueError`). |
 
 Errores (`moana.core.errors`): `MoanaError` (código `INTERNAL_ERROR`, salida 1) y subclases con `code` estable y `exit_code`: `ValidationError` (`VALIDATION_ERROR`, 2), `OutOfBoundsError` (`OUT_OF_BOUNDS`, 2, subclase de validación), `ReferenceError` (`REFERENCE_ERROR`, 2; distinto del builtin homónimo, importar como `errors.ReferenceError`), `UnsupportedVersion` (2), `UnsupportedOperation` (2), `BudgetExceeded` (3), `EditConflict` (4), `ExportError` (5). Atributos de sólo lectura `message`, `json_pointer` (opcional, RFC 6901) y `context`. `context` es inmutable y sólo admite escalares o tuplas: nombres de campo, motivos, tipos y límites numéricos; nunca strings de entrada no confiable ni rutas. Los errores son picklables.
 
 Integración con `schema` (MOANA-002): los errores de `core` no derivan de `ValueError`, así que Pydantic no los convierte en errores de campo. `schema` valida los enteros primitivos con las constantes de `core` (`Field(ge=..., le=...)`) y expone `Point`/`Box`/`Dimensions` como propiedades de los modelos. Un error con varios problemas lleva `details: tuple[ErrorDetail, ...]` (`code`, `json_pointer`, `message`, `context`), añadido de forma compatible por ADR-011.
+
+## `render` — plan de coste (MOANA-003)
+
+`moana.render.estimate_cost(document, *, frames)` calcula con aritmética entera, sin reservar ni recorrer píxeles, las visitas, bytes, píxeles de frames y conteos según las fórmulas `budget-v1` de [ADR-012](decisions/ADR-012-request-budgets.md). `plan_budget(document, limits, *, frames, deadline)` lanza `BudgetExceeded` antes de cualquier buffer, con un detalle por recurso (`resource`, `limit`, `estimated`); una solicitud en el límite se admite. `frames` (≤256) cuenta renders idénticos; una animación suma un plan por frame evaluado. `plan_budget` es la única puerta para los límites del anfitrión: el lienzo (MOANA-004) reserva sólo con un `CostEstimate` aprobado. Rasterizadores y compositor trabajan por filas o tiles dentro de estas cotas, con prueba `tracemalloc`, o actualizan el estimador. El orquestador llega en MOANA-010.
 
 ## `schema` (implementado en MOANA-002)
 

@@ -2,7 +2,7 @@
 
 ## Propósito y fuente de verdad
 
-Moana será un motor Python de Pixel Art determinista y editable. Lee [MOANA.md](MOANA.md), el issue asignado en [docs/issues](docs/issues/README.md) y sus dependencias antes de editar. Estado actual: infraestructura lista y `moana.core` (coordenadas, límites, errores) y `moana.schema` (documento 1.0 y JSON Schema) implementados; no hay render. Implementa únicamente el alcance solicitado. No conviertas ejemplos de diseño en APIs existentes ni marques completado un issue sin pruebas.
+Moana será un motor Python de Pixel Art determinista y editable. Lee [MOANA.md](MOANA.md), el issue asignado en [docs/issues](docs/issues/README.md) y sus dependencias antes de editar. Estado actual: infraestructura lista y `moana.core` (coordenadas, límites, errores) `moana.schema` (documento 1.0 y JSON Schema) y el plan de coste de `moana.render` implementados; no hay raster. Implementa únicamente el alcance solicitado. No conviertas ejemplos de diseño en APIs existentes ni marques completado un issue sin pruebas.
 
 Orden documental: solicitud actual del usuario → contratos de MOANA.md → ADR aplicables → criterios del issue. Si detectas una contradicción, corrige fuente y derivados dentro del alcance o informa el punto concreto. Conserva trabajo existente; no hagas commit, push, publicación ni comunicación externa implícitos.
 
