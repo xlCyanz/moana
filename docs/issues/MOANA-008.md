@@ -8,7 +8,7 @@
 - Aliases históricos: MOA-008
 - Phase: P1
 - Priority: P1
-- Status: ready
+- Status: review
 - Complexity: M (relativa, no estimación de tiempo)
 - Dependencies: [MOANA-006](MOANA-006.md)
 - Related modules: geometry
@@ -66,7 +66,7 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Guía para agentes de IA
 
-**Estado para agentes:** Listo: todas las dependencias están `done`; puede empezarse.
+**Estado para agentes:** En revisión: sólo correcciones de la revisión; no añadir alcance.
 
 ### 1. Preparación
 
@@ -135,4 +135,12 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Evidence
 
-Pendiente de implementación.
+- src/moana/geometry/transform.py: Transform congelado (pivot, mirror, rotation 0/90/180/270, scale 1..2048, offset) sobre índices de píxel con orden fijo espejo → cuartos de vuelta horarios (x, y) → (−y, x) → escala nearest-neighbor por bloques k×k → traslación; transform_mask por recolección inversa recortada al lienzo sin wraparound (memoria: salida recortada + una copia con relleno del origen); transform_box como conjunto de píxeles; inverse() sin escala.
+- Rechazo con ValidationError de rotación arbitraria (arbitrary_rotation), rotación fuera de {0,90,180,270} (out_of_range, allowed), escala no entera o fuera de rango (not_integer/out_of_range) y mirror no booleano (not_boolean).
+- ADR-016 (docs/architecture/decisions/ADR-016-pixel-transforms.md); contratos de módulos, overview, índice de arquitectura y README actualizados.
+- Gate: scripts/validate.py y scripts/check_wheel.py verdes; transform.py al 100 % de líneas y ramas.
+- Revisión: moana-graphics-engineer (aprobado; oráculo directo independiente en 6000 casos, 8 elementos diedros, escala 1–5, pivotes/offsets negativos, sin discrepancias) y moana-python-engineer (aprobado); corregidos doble copia del origen, máscara vacía con almacenamiento, matriz privada, contextos de error, pivote inverso fuera de rango y pruebas de inversa vacuas.
+- AC1: tests/unit/geometry/test_geometry_transform.py::test_ac1_four_quarter_turns_reconstruct_the_mask; fixtures a mano ::test_quarter_turn_clockwise_about_pivot_by_hand y ::test_rotation_180_and_270_by_hand.
+- AC2: tests/unit/geometry/test_geometry_transform.py::test_ac2_double_mirror_is_identity, ::test_ac2_scale_two_replicates_each_pixel_in_a_2x2_block, ::test_mirror_about_pivot_column_by_hand y ::test_vertical_mirror_is_mirror_plus_half_turn.
+- T1: tests/unit/geometry/test_geometry_transform.py::test_t1_matches_independent_forward_oracle (Hypothesis, máscaras no cuadradas, pivotes y offsets negativos, escala 1–3), ::test_t1_storage_wider_than_bounds_gives_the_same_image, ::test_t1_inverse_restores_unclipped_masks, ::test_t1_rotations_compose_additively_with_negative_pivot, ::test_t1_translations_compose_and_mirror_plus_half_turn_is_vertical_mirror, ::test_t1_inverse_of_mirror_is_itself_and_of_turn_is_opposite_turn, ::test_odd_and_even_sized_boxes_transform_as_pixel_sets, ::test_box_image_equals_bounds_of_transformed_pixels.
+- T2: tests/unit/geometry/test_geometry_transform.py::test_t2_partially_off_canvas_is_clipped_without_wraparound, ::test_t2_fully_off_canvas_is_empty_without_wraparound, ::test_t2_large_scale_is_clipped_before_allocating, ::test_image_with_every_pixel_off_canvas_is_the_empty_mask, ::test_peak_memory_is_output_plus_one_source_copy, ::test_t2_rejects_arbitrary_rotation_and_non_integer_scale (13 casos), ::test_scaled_transform_has_no_inverse, ::test_inverse_pivot_out_of_range_is_not_invertible.

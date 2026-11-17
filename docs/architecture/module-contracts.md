@@ -68,15 +68,16 @@ API pública en `moana.palette`; depende sólo de `core` y no carga NumPy, Pillo
 
 `editing` no importa `palette` (§3): `replace_palette_color` validará con los modelos de `schema`. La conversión `schema.Palette → palette.Palette` vivirá en `render`.
 
-## `geometry` (implementado en MOANA-006)
+## `geometry` (implementado en MOANA-006 y MOANA-008)
 
-API pública en `moana.geometry`; depende sólo de `core` y usa NumPy internamente sin exponer arrays compartidos. `import moana.geometry` no carga Pillow ni Pydantic. Decisiones en [ADR-015](decisions/ADR-015-raster-primitives.md).
+API pública en `moana.geometry`; depende sólo de `core` y usa NumPy internamente sin exponer arrays compartidos. `import moana.geometry` no carga Pillow ni Pydantic. Decisiones en [ADR-015](decisions/ADR-015-raster-primitives.md) y [ADR-016](decisions/ADR-016-pixel-transforms.md).
 
 | Elemento | Contrato |
 | --- | --- |
 | `Mask` | Valor inmutable sin constructor público: `box` (caja de la operación recortada al lienzo, o `None`), `count`, `is_empty`, `bounds` (caja mínima), `contains(point)`, `points()` (fila a fila) y `to_array()` (copia booleana de `box`). La igualdad y el hash comparan el conjunto de píxeles: `box` y la forma de `to_array()` no forman parte de la identidad. El hash usa `hash(bytes)`, que varía por proceso, y nunca ordena ni siembra el render. `copy`/`deepcopy` devuelven el mismo objeto y `pickle` valida el estado y reconstruye los bits como sólo lectura. `Mask.empty()` es la geometría recortada por completo. |
 | `rasterize_pixel`, `rasterize_line`, `rasterize_rect`, `rasterize_ellipse`, `rasterize_polygon` | Reciben `Point`/`Box`/secuencia de `Point` y `Dimensions`. Aplican las reglas de §6 con enteros de Python: Bresenham ordenado e inclusivo, caja semiabierta, inclusión del centro en la elipse (intervalo exacto por fila con `isqrt`) y even-odd por centros con umbrales enteros. Recortan sin wraparound ni error. La memoria es 1 byte por píxel de la caja recortada (el término de máscara de `budget-v1`) más temporales por fila. Un polígono exige de 3 a 4096 vértices (`ValidationError`). |
 | `flood_fill(snapshot, seed, *, limits)` | Conectividad 4 e igualdad RGBA exacta sobre una copia del `Canvas` recibido, que no se modifica. Antes de copiar comprueba `flood_fill_cost` (`A` visitas, `FLOOD_FILL_BYTES_PER_PIXEL × A` bytes) y, si no cabe, lanza `BudgetExceeded`. Es un scanline iterativo, sin recursión. Una semilla fuera del lienzo da una máscara vacía: es una decisión de recorte, distinta del acceso directo de §5, que se ratificará en MOANA.md cuando el schema active `flood_fill` (`budget-v2`, `8A`). No está activo en schema 1.0. |
+| `Transform`, `transform_mask(mask, transform, dimensions)`, `transform_box(box, transform)` | Valor congelado `pivot`/`mirror`/`rotation`/`scale`/`offset` sobre índices de píxel. Orden fijo: espejo `x → −x`, cuartos de vuelta horarios `(x, y) → (−y, x)`, escala entera `k` (cada índice pasa a un bloque `k × k`) y traslación. El píxel `p` va a `k·R·(p − pivot) + pivot + offset`. Rotación fuera de {0, 90, 180, 270}, escala no entera o fuera de 1..2048 y `mirror` no booleano lanzan `ValidationError` (`arbitrary_rotation`, `out_of_range`, `not_integer`, `not_boolean`). Las máscaras se recortan al lienzo sin wraparound mediante recolección inversa (memoria: caja de salida recortada + copia del origen). Las cajas se transforman como conjuntos de píxeles. Una imagen sin píxeles visibles es `Mask.empty()`. `inverse()` sólo existe sin escala y con `pivot + offset` en rango (`not_invertible`). La igualdad es estructural. |
 
 Aplicar una máscara a un lienzo corresponde al compositor (`layers`/`render`), que todavía no existe.
 

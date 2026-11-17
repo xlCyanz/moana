@@ -28,7 +28,7 @@ Estado: 7/8 issues completados.
 - [MOANA-004](MOANA-004.md) — Crear lienzo RGBA y propiedad de buffers (done)
 - [MOANA-005](MOANA-005.md) — Implementar paletas y rampas (done)
 - [MOANA-006](MOANA-006.md) — Rasterizar primitivas enteras y flood fill (done)
-- [MOANA-008](MOANA-008.md) — Añadir transformaciones pixel-perfect (ready)
+- [MOANA-008](MOANA-008.md) — Añadir transformaciones pixel-perfect (review)
 - [MOANA-028](MOANA-028.md) — Crear harness de regresión visual (done)
 
 ## P2 — Imagen estática
@@ -88,4 +88,4 @@ Estado: 0/8 issues completados.
 
 ## Siguiente paso
 
-Implementar [MOANA-008](MOANA-008.md): Añadir transformaciones pixel-perfect.
+No hay issues ready. Revisar bloqueos y dependencias antes de iniciar.
