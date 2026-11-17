@@ -2,6 +2,7 @@
 
 ## Sin publicar
 
+- MOANA-008: transformaciones pixel-perfect en `moana.geometry` (`Transform`, `transform_mask`, `transform_box`): espejo, giros 0/90/180/270 sobre índices `(x, y) → (−y, x)` alrededor de un píxel pivote, escala entera nearest-neighbor y traslación explícita; máscaras recortadas sin wraparound por recolección inversa, cajas como conjuntos de píxeles y rechazo de rotación arbitraria o escala no entera (ADR-016).
 - MOANA-028: harness de regresión visual exacta en `tests/visual/`: comparación RGBA con alfa cero normalizado, conteo y bbox de diferencias, diagnósticos expected/actual/diff con manifiesto JSON al fallar, y actualización de goldens sólo explícita con `MOANA_UPDATE_GOLDENS=1` (rechazada en CI).
 - MOANA-006: `moana.geometry` con máscaras enteras inmutables de pixel/line/rect/ellipse/polygon según §6 (sin shoelace ni defaults de ImageDraw) y flood fill 4-conectado sobre snapshot, acotado por presupuesto antes de copiar (ADR-015).
 - MOANA-005: `moana.palette` con `Rgba` canónico `#RRGGBBAA`, `Palette` inmutable por IDs con perfiles `strict`/`rgba` (mismas reglas, códigos y orden de errores que el esquema), edición sin renumerar, `ColorRemap` explícito y advertencias de rampa por luminancia lineal entera (tabla sRGB literal); `moana.core.ids` como dueño de los lenguajes de ID y color, `detail_sort_key` en `core.errors` y `MAX_RAMP_ENTRIES` (ADR-014). Contrato MOANA.md 0.1.6-draft.
