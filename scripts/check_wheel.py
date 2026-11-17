@@ -43,6 +43,7 @@ def main() -> int:
             "assert files('moana').joinpath('py.typed').is_file(); "
             "assert moana.core.Box(0, 0, 1, 1).area == 1; "
             "assert files('moana').joinpath('schema/models.py').is_file(); "
+            "assert files('moana').joinpath('render/budget.py').is_file(); "
             "print('Isolated wheel OK:', moana.__version__)"
         )
         subprocess.run([str(python), "-I", "-c", probe], cwd=root, check=True)

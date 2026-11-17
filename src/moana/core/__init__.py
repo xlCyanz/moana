@@ -3,6 +3,14 @@
 ``moana.core`` imports no other Moana module, NumPy or Pillow (MOANA.md section 3).
 """
 
+from moana.core.budget import (
+    DEFAULT_MAX_BUFFER_BYTES,
+    DEFAULT_MAX_FRAME_PIXELS,
+    DEFAULT_MAX_PIXEL_VISITS,
+    DEFAULT_RENDER_LIMITS,
+    Deadline,
+    RenderLimits,
+)
 from moana.core.coordinates import (
     DEFAULT_SIZE,
     MAX_AREA,
@@ -38,6 +46,10 @@ from moana.core.limits import (
 
 __all__ = [
     "DEFAULT_GEOMETRY_LIMITS",
+    "DEFAULT_MAX_BUFFER_BYTES",
+    "DEFAULT_MAX_FRAME_PIXELS",
+    "DEFAULT_MAX_PIXEL_VISITS",
+    "DEFAULT_RENDER_LIMITS",
     "DEFAULT_SIZE",
     "MAX_AREA",
     "MAX_COLORS_RGBA",
@@ -50,6 +62,7 @@ __all__ = [
     "MIN_DIMENSION",
     "Box",
     "BudgetExceeded",
+    "Deadline",
     "Dimensions",
     "EditConflict",
     "ErrorDetail",
@@ -59,6 +72,7 @@ __all__ = [
     "OutOfBoundsError",
     "Point",
     "ReferenceError",
+    "RenderLimits",
     "UnsupportedOperation",
     "UnsupportedVersion",
     "ValidationError",

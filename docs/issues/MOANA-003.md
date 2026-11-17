@@ -8,7 +8,7 @@
 - Aliases históricos: MOA-003
 - Phase: P1
 - Priority: P0
-- Status: ready
+- Status: done
 - Complexity: L (relativa, no estimación de tiempo)
 - Dependencies: [MOANA-001](MOANA-001.md), [MOANA-002](MOANA-002.md)
 - Related modules: core, render
@@ -43,13 +43,13 @@ No construir un servicio aislado ni tratar el timeout cooperativo como límite d
 
 ## Acceptance criteria
 
-- [ ] AC1: Una solicitud que exceda cualquier límite falla antes de crear un buffer raster
-- [ ] AC2: Se informa recurso, límite y coste estimado; una solicitud justo en el límite se admite
+- [x] AC1: Una solicitud que exceda cualquier límite falla antes de crear un buffer raster
+- [x] AC2: Se informa recurso, límite y coste estimado; una solicitud justo en el límite se admite
 
 ## Required tests
 
-- [ ] T1: Instrumentar allocators falsos para comprobar ausencia de reservas al rechazar
-- [ ] T2: Casos de coordenadas enormes, capas profundas, muchos frames y overflow de productos
+- [x] T1: Instrumentar allocators falsos para comprobar ausencia de reservas al rechazar
+- [x] T2: Casos de coordenadas enormes, capas profundas, muchos frames y overflow de productos
 
 ## Expected deliverables
 
@@ -66,7 +66,7 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Guía para agentes de IA
 
-**Estado para agentes:** Listo: todas las dependencias están `done`; puede empezarse.
+**Estado para agentes:** Completado; usar sólo como referencia del contrato entregado.
 
 ### 1. Preparación
 
@@ -136,4 +136,12 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Evidence
 
-Pendiente de implementación.
+- Implementación: src/moana/core/budget.py (RenderLimits, Deadline), src/moana/render/{__init__,budget}.py (estimador budget-v1, plan_budget); decisión ADR-012; MOANA.md 0.1.4-draft.
+- uv run python scripts/validate.py: lock, ruff, format, mypy estricto, check_repository, pytest y build verdes; core/budget.py y render/budget.py con 100 % de ramas cubiertas.
+- uv run python scripts/check_wheel.py: wheel aislado incluye moana/render/budget.py.
+- Revisión por subagentes moana-python-engineer y moana-architect (incluye preguntas gráficas de cotas de raster/composición): corregidos tipado de la prueba de arquitectura, exhaustividad con assert_never, rechazo de conteos antes de costear, checkpoints cada 256 operaciones, validación de clock/stage, MAX_FRAMES=256 (§17) y ADR con temporales por filas/tiles, puerta única de límites y prohibición de host_override desde la petición.
+- Aprobado por el propietario el 2026-11-17 tras revisión; PR #41 hacia develop.
+- AC1: tests/unit/render/test_render_budget.py::test_rejection_happens_without_allocating_raster_buffers (numpy.empty/zeros/ones/full/*_like/ndarray y PIL.Image.new sustituidos por allocators falsos: cero llamadas; pico tracemalloc < 1 MiB rechazando 2048×2048 × 4 frames), ::test_counts_are_rejected_before_costing_operations y ::test_budget_modules_do_not_load_raster_libraries.
+- AC2: test_render_budget.py::test_one_unit_over_a_limit_reports_resource_limit_and_estimate (pixel_visits, buffer_bytes, frame_pixels, operations, layers con resource/limit/estimated y pointer) y ::test_request_exactly_at_each_limit_is_admitted (85 376 visitas y 724 352 bytes calculados a mano); ::test_many_frames_accumulate_until_the_frame_budget admite exactamente 16 777 216 píxeles.
+- T1: test_render_budget.py::test_rejection_happens_without_allocating_raster_buffers con allocators falsos de NumPy y Pillow más tracemalloc; test_core_budget.py cubre RenderLimits (bajar libre, subir sólo con host_override) y Deadline con reloj falso.
+- T2: test_render_budget.py: ::test_huge_coordinates_cost_their_unclipped_segments (48 líneas de ±1 048 576 rechazadas, 47 admitidas), ::test_deep_layer_stacks_exceed_visits_before_any_raster (128 capas a 2048², admitidas sólo con host_override), ::test_many_frames_accumulate_until_the_frame_budget y ::test_frame_count_follows_section_17, ::test_operation_costs (rect de ±1 048 576 recortado a A, enteros Python sin overflow) y oráculo Hypothesis de conjuntos de píxeles para rect.

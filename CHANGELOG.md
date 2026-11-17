@@ -2,6 +2,7 @@
 
 ## Sin publicar
 
+- MOANA-003: `RenderLimits` y `Deadline` cooperativo en `moana.core`; `moana.render.estimate_cost`/`plan_budget` con el estimador `budget-v1` que rechaza con `BudgetExceeded` (recurso, límite y estimación por detalle) antes de reservar buffers (ADR-012). Contrato MOANA.md 0.1.4-draft.
 - MOANA-002: `moana.schema` con modelos Pydantic estrictos del documento 1.0, lectura acotada (bytes, profundidad, nodos, claves duplicadas, NaN), registro explícito de capacidades (`UNSUPPORTED_OPERATION`), errores agregados con `ErrorDetail` y pointer, normalización canónica y `snapshot_digest`, y JSON Schema generado en `schemas/` (ADR-011). Contrato MOANA.md 0.1.3-draft.
 - MOANA-001: `moana.core` con `Point`, `Dimensions`, `Box` semiabierta (vacío como `None`), `GeometryLimits` y jerarquía de errores con códigos estables, códigos de salida, `json_pointer` y contexto inmutable picklable (ADR-010). Contrato MOANA.md 0.1.2-draft.
 
