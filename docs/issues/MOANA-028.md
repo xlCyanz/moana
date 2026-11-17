@@ -8,12 +8,12 @@
 - Aliases históricos: MOA-028
 - Phase: P1
 - Priority: P1
-- Status: blocked
+- Status: ready
 - Complexity: M (relativa, no estimación de tiempo)
 - Dependencies: [MOANA-004](MOANA-004.md)
 - Related modules: tests.visual
 - Requirements: R027 ([trazabilidad](traceability.md))
-- Bloqueo: Dependencias pendientes: MOANA-004
+- Bloqueo: Ninguno
 
 ## Context
 
@@ -66,7 +66,7 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Guía para agentes de IA
 
-**Estado para agentes:** No empezar: estado `blocked`. Esperar a que [MOANA-004](MOANA-004.md) estén `done` y el catálogo marque este issue `ready`.
+**Estado para agentes:** Listo: todas las dependencias están `done`; puede empezarse.
 
 ### 1. Preparación
 
