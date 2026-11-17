@@ -1,6 +1,6 @@
 # MOANA — Especificación técnica
 
-Versión del contrato: **0.1.2-draft** · Fecha: **2026-11-17** · Estado: especificación inicial para implementación; motor todavía no implementado.
+Versión del contrato: **0.1.3-draft** · Fecha: **2026-11-17** · Estado: especificación inicial para implementación; motor todavía no implementado.
 
 Este archivo es la fuente de verdad del producto. «DEBE» expresa una condición verificable; «DEBERÍA», una recomendación artística o de diseño. Los contratos aquí descritos son objetivos futuros, no APIs disponibles en el paquete inicial. Los cambios de contrato requieren actualizar este documento, los ejemplos, los issues y una decisión de arquitectura cuando afecten compatibilidad. El catálogo de requisitos y su trazabilidad vive en `docs/requirements.json` y `docs/issues/traceability.md`.
 
@@ -153,7 +153,7 @@ Ejemplo mínimo normativo del primer hito (diseño, no ejecución disponible):
 }
 ```
 
-El JSON Schema se generará desde Pydantic (issue MOANA-002), versionado en `schemas/` al implementarlo; no se mantiene un segundo validador de producto a mano. Los ejemplos de `examples/specs/` son contratos de diseño hasta ese hito. La gramática de schema 1.0 corresponde al MVP implementado por MOANA-002: primitivas estáticas, paleta y capas simples; las colecciones de capacidades futuras sólo se aceptan vacías hasta definir sus modelos. Grupos, máscaras, materiales, paths y animaciones requieren ampliar explícitamente el schema y documentar payloads junto al issue correspondiente, sin anunciar una gramática ejecutable que aún no existe. La extensión futura de operaciones exige registrar modelo, resolución, coste, raster, pruebas y documentación; no se admiten imports dinámicos desde JSON.
+El JSON Schema se genera desde Pydantic (`moana.schema`, MOANA-002) y se versiona en `schemas/moana-document-1.0.schema.json`; no se mantiene un segundo validador de producto a mano. `examples/specs/minimal.moana.json` se valida con el modelo real. Precisiones de 1.0 (ADR-011): `revision` en 0..2^64-1; los miembros opcionales se omiten y `null` explícito se rechaza; `metadata` vacía equivale a ausente; rampa = `{id, colors}` con 2–4096 IDs de color distintos; el ID del documento y el de la paleta entran en la unicidad global; `name` de capa ≤4096 bytes; perfil `strict` exige alfa 00/FF, opacidad 255 y ≤256 colores. Un error que agrupa varios problemas los lista en `details`. La gramática de schema 1.0 corresponde al MVP implementado por MOANA-002: primitivas estáticas, paleta y capas simples; las colecciones de capacidades futuras sólo se aceptan vacías hasta definir sus modelos. Grupos, máscaras, materiales, paths y animaciones requieren ampliar explícitamente el schema y documentar payloads junto al issue correspondiente, sin anunciar una gramática ejecutable que aún no existe. La extensión futura de operaciones exige registrar modelo, resolución, coste, raster, pruebas y documentación; no se admiten imports dinámicos desde JSON.
 
 ## 13. API pública de Python
 

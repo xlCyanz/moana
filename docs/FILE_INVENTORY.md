@@ -1,6 +1,6 @@
 # Inventario del repositorio
 
-210 archivos actuales de fuente, documentación, configuración y pruebas al 2026-11-17. Incluye cambios locales todavía sin commit. Excluye entorno virtual, herramientas, cachés, artefactos y metadata Git.
+226 archivos actuales de fuente, documentación, configuración y pruebas al 2026-11-17. Incluye cambios locales todavía sin commit. Excluye entorno virtual, herramientas, cachés, artefactos y metadata Git.
 
 | Archivo |
 | --- |
@@ -92,6 +92,7 @@
 | [docs/architecture/decisions/ADR-008-portable-tooling.md](../docs/architecture/decisions/ADR-008-portable-tooling.md) |
 | [docs/architecture/decisions/ADR-009-claude-code-layer.md](../docs/architecture/decisions/ADR-009-claude-code-layer.md) |
 | [docs/architecture/decisions/ADR-010-core-contracts.md](../docs/architecture/decisions/ADR-010-core-contracts.md) |
+| [docs/architecture/decisions/ADR-011-schema-v1.md](../docs/architecture/decisions/ADR-011-schema-v1.md) |
 | [docs/architecture/module-contracts.md](../docs/architecture/module-contracts.md) |
 | [docs/architecture/overview.md](../docs/architecture/overview.md) |
 | [docs/guides/agent-workflow.md](../docs/guides/agent-workflow.md) |
@@ -185,12 +186,14 @@
 | [examples/specs/minimal.moana.json](../examples/specs/minimal.moana.json) |
 | [examples/specs/recolor.edit.json](../examples/specs/recolor.edit.json) |
 | [pyproject.toml](../pyproject.toml) |
+| [schemas/moana-document-1.0.schema.json](../schemas/moana-document-1.0.schema.json) |
 | [scripts/__init__.py](../scripts/__init__.py) |
 | [scripts/agent_guide.py](../scripts/agent_guide.py) |
 | [scripts/bootstrap.sh](../scripts/bootstrap.sh) |
 | [scripts/check_repository.py](../scripts/check_repository.py) |
 | [scripts/check_wheel.py](../scripts/check_wheel.py) |
 | [scripts/claude_hooks.py](../scripts/claude_hooks.py) |
+| [scripts/generate_schema.py](../scripts/generate_schema.py) |
 | [scripts/github_sync.py](../scripts/github_sync.py) |
 | [scripts/planning.py](../scripts/planning.py) |
 | [scripts/run_hook.sh](../scripts/run_hook.sh) |
@@ -203,6 +206,13 @@
 | [src/moana/core/errors.py](../src/moana/core/errors.py) |
 | [src/moana/core/limits.py](../src/moana/core/limits.py) |
 | [src/moana/py.typed](../src/moana/py.typed) |
+| [src/moana/schema/__init__.py](../src/moana/schema/__init__.py) |
+| [src/moana/schema/_issues.py](../src/moana/schema/_issues.py) |
+| [src/moana/schema/_pointers.py](../src/moana/schema/_pointers.py) |
+| [src/moana/schema/_reader.py](../src/moana/schema/_reader.py) |
+| [src/moana/schema/capabilities.py](../src/moana/schema/capabilities.py) |
+| [src/moana/schema/document.py](../src/moana/schema/document.py) |
+| [src/moana/schema/models.py](../src/moana/schema/models.py) |
 | [tests/test_environment.py](../tests/test_environment.py) |
 | [tests/test_planning.py](../tests/test_planning.py) |
 | [tests/test_repository_tools.py](../tests/test_repository_tools.py) |
@@ -210,6 +220,12 @@
 | [tests/unit/core/test_core_coordinates.py](../tests/unit/core/test_core_coordinates.py) |
 | [tests/unit/core/test_core_errors.py](../tests/unit/core/test_core_errors.py) |
 | [tests/unit/core/test_core_limits.py](../tests/unit/core/test_core_limits.py) |
+| [tests/unit/schema/conftest.py](../tests/unit/schema/conftest.py) |
+| [tests/unit/schema/test_schema_architecture.py](../tests/unit/schema/test_schema_architecture.py) |
+| [tests/unit/schema/test_schema_document.py](../tests/unit/schema/test_schema_document.py) |
+| [tests/unit/schema/test_schema_issues.py](../tests/unit/schema/test_schema_issues.py) |
+| [tests/unit/schema/test_schema_reader.py](../tests/unit/schema/test_schema_reader.py) |
+| [tests/unit/schema/test_schema_roundtrip.py](../tests/unit/schema/test_schema_roundtrip.py) |
 | [tests/unit/test_claude_hooks.py](../tests/unit/test_claude_hooks.py) |
 | [tests/unit/test_github_sync.py](../tests/unit/test_github_sync.py) |
 | [tests/unit/test_portability.py](../tests/unit/test_portability.py) |

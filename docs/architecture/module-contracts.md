@@ -1,6 +1,6 @@
 # Contratos entre módulos
 
-Estado: **contratos previstos**, salvo `core` (implementado, ver abajo). Las firmas públicas objetivo están en [MOANA.md §13](../../MOANA.md); sus fórmulas, límites y formatos prevalecen sobre este resumen. No se añaden abstracciones base ni registros de plugins por anticipación.
+Estado: **contratos previstos**, salvo `core` y `schema` (implementados, ver abajo). Las firmas públicas objetivo están en [MOANA.md §13](../../MOANA.md); sus fórmulas, límites y formatos prevalecen sobre este resumen. No se añaden abstracciones base ni registros de plugins por anticipación.
 
 ## Entradas, salidas y efectos
 
@@ -30,12 +30,25 @@ API pública en `moana.core`, sin dependencias de otros módulos Moana, NumPy ni
 | `Dimensions(width, height)` | Cada eje en 1–2048, área ≤ 4 194 304; `Dimensions.default()` es 128 × 128. `check_pixel(point)` lanza `OutOfBoundsError` fuera del lienzo, sin wraparound de índices negativos. |
 | `Box(x0, y0, x1, y1)` | Semiabierta `[x0,x1) × [y0,y1)`, nunca vacía (`x0 < x1`, `y0 < y1`). `x0`/`y0` en `±1 048 576`; `x1`/`y1` hasta `1 048 577`. Una caja 1 × 1 contiene exactamente un píxel (`Box.from_point`, válido para todo píxel). Puede quedar fuera del lienzo. |
 | `Box.intersection` / `Box.clip_to` | Devuelven la caja común o **`None`** si no queda ningún píxel (incluidas cajas que sólo se tocan en un borde). Nunca se construye una caja vacía o invertida para representar «nada». |
+| `MAX_LAYERS`, `MAX_OPERATIONS`, `MAX_VERTICES`, `MAX_COLORS_STRICT`, `MAX_COLORS_RGBA` | Límites de cardinalidad del documento (§20), compartidos por `schema`, `palette` y `render` (ADR-011). |
 | `GeometryLimits` / `DEFAULT_GEOMETRY_LIMITS` | Máximos geométricos del contrato §5 (eje, área, coordenada), separados de su aplicación (`check_dimensions`, `check_point`, `check_box`). Sólo pueden bajar; el documento no los define. Los presupuestos elevables de §20 serán `RenderLimits` (MOANA-003), que compone este tipo. |
 | `require_int` | Validación compartida de enteros con rango; `minimum > maximum` es error de programación (`ValueError`). |
 
 Errores (`moana.core.errors`): `MoanaError` (código `INTERNAL_ERROR`, salida 1) y subclases con `code` estable y `exit_code`: `ValidationError` (`VALIDATION_ERROR`, 2), `OutOfBoundsError` (`OUT_OF_BOUNDS`, 2, subclase de validación), `ReferenceError` (`REFERENCE_ERROR`, 2; distinto del builtin homónimo, importar como `errors.ReferenceError`), `UnsupportedVersion` (2), `UnsupportedOperation` (2), `BudgetExceeded` (3), `EditConflict` (4), `ExportError` (5). Atributos de sólo lectura `message`, `json_pointer` (opcional, RFC 6901) y `context`. `context` es inmutable y sólo admite escalares o tuplas: nombres de campo, motivos, tipos y límites numéricos; nunca strings de entrada no confiable ni rutas. Los errores son picklables.
 
-Integración con `schema` (MOANA-002): los errores de `core` no derivan de `ValueError`, así que Pydantic no los convierte en errores de campo. Validar primero los enteros primitivos con las constantes de `core` (`Field(ge=..., le=...)` o validadores equivalentes) y construir `Point`/`Box`/`Dimensions` después, asignando `json_pointer`. La agregación de varios errores se añade de forma compatible en ese issue.
+Integración con `schema` (MOANA-002): los errores de `core` no derivan de `ValueError`, así que Pydantic no los convierte en errores de campo. `schema` valida los enteros primitivos con las constantes de `core` (`Field(ge=..., le=...)`) y expone `Point`/`Box`/`Dimensions` como propiedades de los modelos. Un error con varios problemas lleva `details: tuple[ErrorDetail, ...]` (`code`, `json_pointer`, `message`, `context`), añadido de forma compatible por ADR-011.
+
+## `schema` (implementado en MOANA-002)
+
+API pública en `moana.schema`; depende sólo de `core` y Pydantic. Decisiones en [ADR-011](decisions/ADR-011-schema-v1.md).
+
+| Elemento | Contrato |
+| --- | --- |
+| `validate_document(source, *, limits)` | `bytes` UTF-8 o `Mapping` → `Document` congelado. Fases: lectura acotada (`ParseLimits`: 8 MiB, profundidad 32, 20 000 nodos, sólo reducibles) → versión (`UnsupportedVersion`) → estructura y capacidades (`ValidationError` / `UnsupportedOperation`) → semántica (`ValidationError` / `ReferenceError`). Cada error lista sus problemas en `details`, ordenados por pointer (índices numéricos) y código. No acepta `str`. |
+| `Document` y modelos | Pydantic `strict`, `extra='forbid'`, `frozen`, secuencias como tuplas, unión discriminada por `type` (`pixel`, `line`, `rect`, `ellipse`, `polygon`). Construir el modelo directamente sólo garantiza estructura; unicidad de IDs, referencias de color y perfil `strict` sólo los garantiza `validate_document`. |
+| Capacidades | `SUPPORTED_*` y `PLANNED_*` en `moana.schema.capabilities`; lo previsto responde `UNSUPPORTED_OPERATION`, nunca se ignora. |
+| `normalize_document` / `canonical_json` / `snapshot_digest` | Normalización de §14: defaults materializados, opcionales omitidos (`null` explícito rechazado; metadata vacía equivale a ausente), claves ordenadas, JSON compacto UTF-8; digest `sha256:<hex>`. |
+| `document_json_schema()` | JSON Schema 2020-12 generado desde los modelos; copia revisada en `schemas/moana-document-1.0.schema.json` (`scripts/generate_schema.py --check`). |
 
 La tabla de imports permitidos de MOANA.md §3 impide dependencias ascendentes. Si dos módulos necesitan la misma representación, se extrae un contrato mínimo a `core` cuando el caso real lo requiera; no se resuelve un ciclo con imports tardíos o un contenedor global.
 

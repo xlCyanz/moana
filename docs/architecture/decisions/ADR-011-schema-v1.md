@@ -1,0 +1,35 @@
+# ADR-011 — Schema 1.0 del documento: lectura acotada, fases de error y forma canónica
+
+Estado: aceptado · 2026-11-17 · Issue: [MOANA-002](../../issues/MOANA-002.md).
+
+## Contexto
+
+MOANA.md §12, §14 y §20 fijan el formato del documento, la normalización canónica y los límites de entrada, pero dejan abiertos detalles observables que consumirán `render`, `editing` y `project`: cómo se acota la lectura antes de construir objetos, qué error se lanza cuando un documento tiene varios problemas, cómo se distingue una capacidad prevista de un error de sintaxis y cuál es la única forma canónica de los miembros opcionales.
+
+## Decisión
+
+1. **Pipeline por fases.** `validate_document(bytes | Mapping)` aplica, en orden: lectura acotada → versión → estructura y capacidades → semántica. Cada fase lanza un único error con todos sus problemas en `details` (`ErrorDetail`: `code`, `json_pointer`, `message`, `context`), ordenados por pointer (índices numéricos) y código. El `json_pointer` del error es el del primer detalle. Dentro de una fase prevalece `ValidationError` sobre `UnsupportedOperation` y éste sobre `ReferenceError`; cada detalle conserva su propio código. Una fase sólo se ejecuta si la anterior pasó: con una capacidad prevista o un error estructural, las referencias rotas aún no se informan. Un `str` no se acepta: la capa de API decide si es una ruta o JSON.
+2. **Lectura acotada.** Los bytes se limitan (8 MiB) antes de decodificar; profundidad (32) y nodos (20 000) se miden con un escaneo lineal de tokens antes de `json.loads`, de modo que un anidamiento hostil no llega al parser recursivo. Se rechazan BOM, UTF-8 inválido, claves duplicadas (con pointer de cada duplicado), `NaN`/`Infinity` y enteros fuera del límite de dígitos del intérprete. Un nodo es un valor JSON; los nombres de miembro no cuentan. Los mappings de Python pasan por los mismos límites al copiarse a `dict`/`list` (las tuplas se vuelven listas y los ciclos fallan por profundidad), lo que garantiza equivalencia mapping/bytes. `ParseLimits` sólo puede bajar estos valores en el MVP; §20 permite que el anfitrión los eleve con configuración explícita, lo que queda aplazado (nunca desde el documento). Los punteros nunca copian nombres de miembro de más de 64 caracteres: se detienen en el ancestro más cercano y el detalle lo indica.
+3. **Registro explícito de capacidades.** `capabilities.py` enumera el vocabulario soportado (`pixel`, `line`, `rect`, `ellipse`, `polygon`; blend `normal`; perfiles `strict`/`rgba`) y el previsto (`path`, `flood_fill`, blends `multiply`/`screen`, colecciones `masks`/`regions`/`materials`/`animations` no vacías y los miembros de capa `mask_id`, `children` y `transform` de máscaras y grupos). Lo previsto produce `UNSUPPORTED_OPERATION`, nunca un error genérico ni un descarte silencioso. Pasar una capacidad a soportada exige su modelo, resolución, coste, raster, pruebas y documentación en su issue; no hay imports dinámicos.
+4. **Decisiones de payload no fijadas por la especificación.**
+   - `revision` (`MAX_REVISION`) y `seed` (`MAX_SEED`) en `0..2^64-1`.
+   - Los límites de cardinalidad de §20 (capas, operaciones, vértices, colores) viven en `moana.core.limits` para que `palette` y `render` los compartan sin depender de `schema`.
+   - Rampa: `{id, colors}` con 2–4096 IDs de color existentes y sin repetición, de sombra a luz.
+   - El conjunto de unicidad global incluye el ID del documento y el de la paleta, además de colores, rampas, capas y operaciones.
+   - `name` de capa y strings de metadata: como máximo 4096 bytes UTF-8.
+   - Perfil `strict`: alfa de color `00`/`FF`, opacidad de capa 255 y como máximo 256 colores; el límite de 10 000 operaciones es global.
+5. **Una sola forma canónica.** Los miembros opcionales se omiten; `null` explícito se rechaza (`null_not_allowed`). La normalización materializa los defaults de §12 y las colecciones futuras vacías; `metadata` sin ningún valor (`{}` o sólo `tags: []`) equivale a ausente y se omite; si tiene algún valor, materializa `tags: []`. Los colores se guardan en mayúsculas. `canonical_json` y `snapshot_digest` (`sha256:<hex>`) implementan §14; el digest del ejemplo mínimo coincide con el `base_snapshot` publicado en ADR-007.
+6. **JSON Schema generado.** `document_json_schema()` produce JSON Schema 2020-12 desde los modelos; `schemas/moana-document-1.0.schema.json` es un artefacto revisado (`$id` relativo, que se resuelve contra la URI desde la que se recupere; sin `default: null`). `scripts/generate_schema.py --check` y un test golden detectan cambios. Las reglas no expresables en JSON Schema (duplicados, unicidad, referencias, perfil, límites de bytes/profundidad/nodos) se declaran en su `description`.
+7. **Errores agregados en `core`.** `ErrorDetail` y `MoanaError.details` se añaden de forma compatible a `moana.core.errors` (ADR-010 §5): inmutables, picklables y con las mismas reglas de contexto. Los mensajes nunca repiten strings no confiables.
+
+## Alternativas descartadas
+
+- Validar con el parser JSON de Pydantic: acepta claves duplicadas (gana la última) y no permite acotar profundidad antes de construir objetos.
+- Aceptar `null` como «ausente»: daría dos documentos distintos con el mismo significado y digests diferentes.
+- Ignorar capacidades desconocidas o tratarlas como extra: oculta instrucciones que el agente esperaba ejecutar (§12).
+
+## Consecuencias
+
+- `Document` construido directamente sólo garantiza estructura; `validate_document` es la única entrada que garantiza semántica. `model_copy(update=...)` tampoco valida. `editing` (MOANA-018) debe volver a entrar por `validate_document(normalize_document(doc))`, como exige §3. `snapshot_digest` es una función de `schema`; la fachada de §13 puede exponerlo como atributo.
+- Cambiar el JSON Schema exige revisión de compatibilidad; un cambio incompatible incrementa `SCHEMA_VERSION`.
+- Evidencia: `tests/unit/schema/` (tabla válida/inválida, equivalencia mapping/bytes, roundtrip con Hypothesis, fuzz de profundidad, golden del schema, límites adversarios).
