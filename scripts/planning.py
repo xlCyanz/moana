@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import sys
 from collections import Counter
 from pathlib import Path
 from typing import Annotated, Literal
@@ -10,11 +11,27 @@ from typing import Annotated, Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 ROOT = Path(__file__).resolve().parents[1]
+# Support direct invocation (`python scripts/planning.py`) as documented.
+if __package__ in {None, ""}:
+    sys.path.insert(0, str(ROOT))
+
+from scripts.agent_guide import agent_guide  # noqa: E402
+
 Text = Annotated[str, Field(min_length=1, pattern=r"\S")]
 IssueId = Annotated[str, Field(pattern=r"^MOANA-\d{3}$")]
 LegacyId = Annotated[str, Field(pattern=r"^MOA-\d{3}$")]
 RequirementId = Annotated[str, Field(pattern=r"^R\d{3}$")]
 Status = Literal["todo", "ready", "in_progress", "blocked", "review", "done"]
+
+
+PHASE_GATES = {
+    "P0": ("Inicialización", "Gate de infraestructura, skills y backlog válido; sin motor."),
+    "P1": ("Contratos y core", "Modelos estrictos, límites y fixtures enteras exactas."),
+    "P2": ("Imagen estática", "Render 128 x 128, PNG roundtrip y determinismo en matriz."),
+    "P3": ("Arte y edición", "Técnicas editables y batches atómicos con historial."),
+    "P4": ("Persistencia y animación", "Proyecto reversible, atlas y timeline decodificado."),
+    "P5": ("Evaluación y release", "Corpus revisado, seguridad, benchmarks y wheel limpio."),
+}
 
 
 class StrictModel(BaseModel):
@@ -177,7 +194,7 @@ def critical_path(issues: list[Issue], order: list[str]) -> list[str]:
     return min(paths.values(), key=lambda path: (-len(path), path)) if paths else []
 
 
-def issue_document(issue: Issue, note: str) -> str:
+def issue_document(issue: Issue, note: str, guide: str) -> str:
     dependencies = ", ".join(f"[{dep}]({dep}.md)" for dep in issue.dependencies) or "Ninguna"
     text = f"# {issue.id} — {issue.title}\n\n{note}## Metadata\n\n"
     text += (
@@ -228,6 +245,7 @@ def issue_document(issue: Issue, note: str) -> str:
             "Dependencias completadas y [ciclo de vida](../guides/issue-lifecycle.md) respetado.",
         ),
         ("Risks and notes", bullets(issue.risks)),
+        ("Guía para agentes de IA", guide),
         (
             "Evidence",
             bullets(
@@ -248,8 +266,13 @@ def generated_documents(issues: list[Issue], requirements: list[Requirement]) ->
     order = validate_graph(issues, requirements)
     result: dict[str, str] = {}
     note = "> Generado por `scripts/planning.py`; editar los catálogos JSON y regenerar.\n\n"
+    requirement_map = {requirement.id: requirement for requirement in requirements}
+    dependents = {
+        issue.id: sorted(i.id for i in issues if issue.id in i.dependencies) for issue in issues
+    }
     for issue in issues:
-        result[f"docs/issues/{issue.id}.md"] = issue_document(issue, note)
+        guide = agent_guide(issue, requirement_map, dependents[issue.id])
+        result[f"docs/issues/{issue.id}.md"] = issue_document(issue, note, guide)
         for alias in issue.aliases:
             result[f"docs/issues/{alias}.md"] = (
                 f"# {alias} — Alias histórico\n\n{note}"
@@ -284,9 +307,6 @@ def generated_documents(issues: list[Issue], requirements: list[Requirement]) ->
         for i in issues
         for dep in i.dependencies
     ]
-    dependents = {
-        issue.id: sorted(i.id for i in issues if issue.id in i.dependencies) for issue in issues
-    }
     dependency_map = (
         f"# Dependencias entre issues\n\n{note}"
         "A → B significa que B requiere A completado. El checker rechaza ciclos, "
@@ -331,14 +351,7 @@ def generated_documents(issues: list[Issue], requirements: list[Requirement]) ->
         "| Requisito | Descripción | MOANA.md § | Issues | Verificación exigida |\n"
         "| --- | --- | --- | --- | --- |\n" + "\n".join(trace_rows) + "\n"
     )
-    gates = {
-        "P0": ("Inicialización", "Gate de infraestructura, skills y backlog válido; sin motor."),
-        "P1": ("Contratos y core", "Modelos estrictos, límites y fixtures enteras exactas."),
-        "P2": ("Imagen estática", "Render 128 x 128, PNG roundtrip y determinismo en matriz."),
-        "P3": ("Arte y edición", "Técnicas editables y batches atómicos con historial."),
-        "P4": ("Persistencia y animación", "Proyecto reversible, atlas y timeline decodificado."),
-        "P5": ("Evaluación y release", "Corpus revisado, seguridad, benchmarks y wheel limpio."),
-    }
+    gates = PHASE_GATES
     roadmap = (
         f"# Roadmap\n\n{note}Se conservan las seis fases de MOANA.md para respetar "
         "las dependencias del contrato existente. Las ocho áreas temáticas de la solicitud "

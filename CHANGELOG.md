@@ -2,6 +2,8 @@
 
 ## Infraestructura — 2026-11-17 (sin nueva versión del paquete)
 
+- Backlog publicado en GitHub (`scripts/github_sync.py`): 36 issues, 6 milestones por fase, labels de fase/prioridad/complejidad/estado/módulo y 95 dependencias nativas. Cada issue incluye una guía de ejecución para agentes generada por `scripts/agent_guide.py`.
+
 - Capa Claude Code (ADR-009): `CLAUDE.md`, ocho reglas por ruta, siete envoltorios de skills, seis subagentes, hooks probados en `scripts/claude_hooks.py` y validación en el checker.
 
 - Backlog MOANA con aliases históricos, seis estados, metadatos completos y evidencia por criterio/prueba.

@@ -1,6 +1,6 @@
 # Inventario del repositorio
 
-196 archivos actuales de fuente, documentación, configuración y pruebas al 2026-11-17. Incluye cambios locales todavía sin commit. Excluye entorno virtual, herramientas, cachés, artefactos y metadata Git.
+201 archivos actuales de fuente, documentación, configuración y pruebas al 2026-11-17. Incluye cambios locales todavía sin commit. Excluye entorno virtual, herramientas, cachés, artefactos y metadata Git.
 
 | Archivo |
 | --- |
@@ -171,6 +171,7 @@
 | [docs/issues/README.md](../docs/issues/README.md) |
 | [docs/issues/catalog.json](../docs/issues/catalog.json) |
 | [docs/issues/dependency-map.md](../docs/issues/dependency-map.md) |
+| [docs/issues/github-map.json](../docs/issues/github-map.json) |
 | [docs/issues/roadmap.md](../docs/issues/roadmap.md) |
 | [docs/issues/traceability.md](../docs/issues/traceability.md) |
 | [docs/requirements.json](../docs/requirements.json) |
@@ -184,12 +185,15 @@
 | [examples/specs/recolor.edit.json](../examples/specs/recolor.edit.json) |
 | [pyproject.toml](../pyproject.toml) |
 | [scripts/__init__.py](../scripts/__init__.py) |
+| [scripts/agent_guide.py](../scripts/agent_guide.py) |
 | [scripts/bootstrap.sh](../scripts/bootstrap.sh) |
 | [scripts/check_repository.py](../scripts/check_repository.py) |
 | [scripts/check_wheel.py](../scripts/check_wheel.py) |
 | [scripts/claude_hooks.py](../scripts/claude_hooks.py) |
+| [scripts/github_sync.py](../scripts/github_sync.py) |
 | [scripts/planning.py](../scripts/planning.py) |
 | [scripts/run_hook.sh](../scripts/run_hook.sh) |
+| [scripts/templates/agent_guide.md](../scripts/templates/agent_guide.md) |
 | [scripts/uv.sh](../scripts/uv.sh) |
 | [scripts/validate.py](../scripts/validate.py) |
 | [src/moana/__init__.py](../src/moana/__init__.py) |
@@ -198,5 +202,6 @@
 | [tests/test_planning.py](../tests/test_planning.py) |
 | [tests/test_repository_tools.py](../tests/test_repository_tools.py) |
 | [tests/unit/test_claude_hooks.py](../tests/unit/test_claude_hooks.py) |
+| [tests/unit/test_github_sync.py](../tests/unit/test_github_sync.py) |
 | [tests/unit/test_portability.py](../tests/unit/test_portability.py) |
 | [uv.lock](../uv.lock) |

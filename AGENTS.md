@@ -30,7 +30,7 @@ uv run python scripts/validate.py
 
 Sin uv global, usa `sh scripts/bootstrap.sh` y sustituye `uv` por `sh scripts/uv.sh`. El gate incluye lock, lint, tipos, estructura, cobertura y build con el backend fijado. Los entornos, cachés y artefactos son ignorados por Git. No edites uv.lock a mano.
 
-Backlog: editar `docs/issues/catalog.json` y `docs/requirements.json`, ejecutar `uv run python scripts/planning.py`, después `uv run python -m scripts.check_repository`. Hook por checkout: `uv run pre-commit install`. La [guía de desarrollo](docs/guides/development.md) explica reproducción y Git.
+Backlog: editar `docs/issues/catalog.json` y `docs/requirements.json`, ejecutar `uv run python scripts/planning.py`, después `uv run python -m scripts.check_repository`; con autorización remota, reflejarlo con `uv run python scripts/github_sync.py --apply`. Cada issue incluye una «Guía para agentes de IA» con lecturas, skills, archivos, pruebas y cierre. Hook por checkout: `uv run pre-commit install`. La [guía de desarrollo](docs/guides/development.md) explica reproducción y Git.
 
 ## Código, pruebas y arte
 
