@@ -1,6 +1,6 @@
 # Inventario del repositorio
 
-270 archivos actuales de fuente, documentación, configuración y pruebas al 2026-11-17. Incluye cambios locales todavía sin commit. Excluye entorno virtual, herramientas, cachés, artefactos y metadata Git.
+278 archivos actuales de fuente, documentación, configuración y pruebas al 2026-11-17. Incluye cambios locales todavía sin commit. Excluye entorno virtual, herramientas, cachés, artefactos y metadata Git.
 
 | Archivo |
 | --- |
@@ -99,6 +99,7 @@
 | [docs/architecture/decisions/ADR-015-raster-primitives.md](../docs/architecture/decisions/ADR-015-raster-primitives.md) |
 | [docs/architecture/decisions/ADR-016-pixel-transforms.md](../docs/architecture/decisions/ADR-016-pixel-transforms.md) |
 | [docs/architecture/decisions/ADR-017-layers-composition.md](../docs/architecture/decisions/ADR-017-layers-composition.md) |
+| [docs/architecture/decisions/ADR-018-render-pipeline.md](../docs/architecture/decisions/ADR-018-render-pipeline.md) |
 | [docs/architecture/module-contracts.md](../docs/architecture/module-contracts.md) |
 | [docs/architecture/overview.md](../docs/architecture/overview.md) |
 | [docs/guides/agent-workflow.md](../docs/guides/agent-workflow.md) |
@@ -211,10 +212,12 @@
 | [src/moana/core/budget.py](../src/moana/core/budget.py) |
 | [src/moana/core/canvas.py](../src/moana/core/canvas.py) |
 | [src/moana/core/coordinates.py](../src/moana/core/coordinates.py) |
+| [src/moana/core/digest.py](../src/moana/core/digest.py) |
 | [src/moana/core/errors.py](../src/moana/core/errors.py) |
 | [src/moana/core/ids.py](../src/moana/core/ids.py) |
 | [src/moana/core/limits.py](../src/moana/core/limits.py) |
 | [src/moana/core/pillow_adapter.py](../src/moana/core/pillow_adapter.py) |
+| [src/moana/core/procedural.py](../src/moana/core/procedural.py) |
 | [src/moana/geometry/__init__.py](../src/moana/geometry/__init__.py) |
 | [src/moana/geometry/fill.py](../src/moana/geometry/fill.py) |
 | [src/moana/geometry/mask.py](../src/moana/geometry/mask.py) |
@@ -229,6 +232,8 @@
 | [src/moana/py.typed](../src/moana/py.typed) |
 | [src/moana/render/__init__.py](../src/moana/render/__init__.py) |
 | [src/moana/render/budget.py](../src/moana/render/budget.py) |
+| [src/moana/render/pipeline.py](../src/moana/render/pipeline.py) |
+| [src/moana/render/result.py](../src/moana/render/result.py) |
 | [src/moana/schema/__init__.py](../src/moana/schema/__init__.py) |
 | [src/moana/schema/_issues.py](../src/moana/schema/_issues.py) |
 | [src/moana/schema/_pointers.py](../src/moana/schema/_pointers.py) |
@@ -236,6 +241,7 @@
 | [src/moana/schema/capabilities.py](../src/moana/schema/capabilities.py) |
 | [src/moana/schema/document.py](../src/moana/schema/document.py) |
 | [src/moana/schema/models.py](../src/moana/schema/models.py) |
+| [tests/integration/test_render_determinism.py](../tests/integration/test_render_determinism.py) |
 | [tests/test_environment.py](../tests/test_environment.py) |
 | [tests/test_planning.py](../tests/test_planning.py) |
 | [tests/test_repository_tools.py](../tests/test_repository_tools.py) |
@@ -246,6 +252,7 @@
 | [tests/unit/core/test_core_errors.py](../tests/unit/core/test_core_errors.py) |
 | [tests/unit/core/test_core_ids.py](../tests/unit/core/test_core_ids.py) |
 | [tests/unit/core/test_core_limits.py](../tests/unit/core/test_core_limits.py) |
+| [tests/unit/core/test_core_procedural.py](../tests/unit/core/test_core_procedural.py) |
 | [tests/unit/geometry/test_geometry_architecture.py](../tests/unit/geometry/test_geometry_architecture.py) |
 | [tests/unit/geometry/test_geometry_fill.py](../tests/unit/geometry/test_geometry_fill.py) |
 | [tests/unit/geometry/test_geometry_mask.py](../tests/unit/geometry/test_geometry_mask.py) |
@@ -259,6 +266,7 @@
 | [tests/unit/palette/test_palette_table.py](../tests/unit/palette/test_palette_table.py) |
 | [tests/unit/render/test_render_architecture.py](../tests/unit/render/test_render_architecture.py) |
 | [tests/unit/render/test_render_budget.py](../tests/unit/render/test_render_budget.py) |
+| [tests/unit/render/test_render_pipeline.py](../tests/unit/render/test_render_pipeline.py) |
 | [tests/unit/schema/conftest.py](../tests/unit/schema/conftest.py) |
 | [tests/unit/schema/test_schema_architecture.py](../tests/unit/schema/test_schema_architecture.py) |
 | [tests/unit/schema/test_schema_document.py](../tests/unit/schema/test_schema_document.py) |

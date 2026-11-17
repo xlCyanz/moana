@@ -2,6 +2,7 @@
 
 import ast
 import sys
+from collections.abc import Iterator
 from pathlib import Path
 
 RENDER = Path(__file__).resolve().parents[3] / "src/moana/render"
@@ -16,17 +17,34 @@ ALLOWED: tuple[str, ...] = (
 )
 
 
-def test_render_imports_only_allowed_modules() -> None:
-    for path in RENDER.glob("*.py"):
-        for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
-            if isinstance(node, ast.ImportFrom) and node.module:
-                names = [node.module]
-            elif isinstance(node, ast.Import):
-                names = [alias.name for alias in node.names]
+def imported_modules(path: Path) -> Iterator[str]:
+    """Every module a file imports; ``from moana import x`` yields ``moana.x``."""
+    for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
+        if isinstance(node, ast.ImportFrom) and node.module:
+            if node.module == "moana":
+                yield from (f"moana.{alias.name}" for alias in node.names)
             else:
-                continue
-            for name in names:
-                root = name.split(".")[0]
-                assert root in sys.stdlib_module_names or name.startswith(ALLOWED), (
-                    f"{path.name} imports {name}"
-                )
+                yield node.module
+        elif isinstance(node, ast.Import):
+            yield from (alias.name for alias in node.names)
+
+
+def test_render_imports_only_allowed_modules() -> None:
+    paths = sorted(RENDER.glob("*.py"))
+    assert paths
+    for path in paths:
+        for name in imported_modules(path):
+            root = name.split(".")[0]
+            # ``moana.__version__`` only, for the provenance manifest
+            assert (
+                root in sys.stdlib_module_names
+                or root == "numpy"
+                or name.startswith(ALLOWED)
+                or name == "moana.__version__"
+            ), f"{path.name} imports {name}"
+
+
+def test_render_never_imports_cli_project_export_or_pillow() -> None:
+    for path in sorted(RENDER.glob("*.py")):
+        for name in imported_modules(path):
+            assert not name.startswith(("moana.cli", "moana.project", "moana.export", "PIL"))

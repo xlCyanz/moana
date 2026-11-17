@@ -8,7 +8,7 @@
 - Aliases históricos: MOA-010
 - Phase: P2
 - Priority: P0
-- Status: ready
+- Status: review
 - Complexity: L (relativa, no estimación de tiempo)
 - Dependencies: [MOANA-002](MOANA-002.md), [MOANA-003](MOANA-003.md), [MOANA-006](MOANA-006.md), [MOANA-009](MOANA-009.md)
 - Related modules: render
@@ -66,7 +66,7 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Guía para agentes de IA
 
-**Estado para agentes:** Listo: todas las dependencias están `done`; puede empezarse.
+**Estado para agentes:** En revisión: sólo correcciones de la revisión; no añadir alcance.
 
 ### 1. Preparación
 
@@ -136,4 +136,14 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Evidence
 
-Pendiente de implementación.
+- src/moana/render/pipeline.py: render(document, *, frame_id, limits, deadline) ejecuta validación (revalida el árbol canónico) → frame (sólo None en schema 1.0) → registro explícito de rasterizadores (RENDERABLE_OPERATION_TYPES) → paleta resuelta → plan_budget → LayerTree con máscaras diferidas → compose; sin disco, caché, concurrencia, reloj ni hash().
+- src/moana/render/result.py: RenderResult inmutable (width, height, rgba bytes, digest §14 recalculado, warnings empty_bounds con puntero, renderer_version, provenance) y Provenance como manifiesto de reproducción (snapshot, seed, frame, render-v1, backend integer, budget-v2, RNG, moana_version).
+- src/moana/layers: DeferredMask para construir una máscara a la vez dentro de compose; src/moana/render/budget.py: estimador budget-v2 (raster + pasada de pintado sobre mask_box; bytes max(40A, 14A + 80·tile) + máscara).
+- src/moana/core/procedural.py: RNG por celda de §14 (SHA-256 del JSON canónico [seed, operation_id, x, y, channel, version], u = 8 bytes big-endian, u·n//2^64); src/moana/core/digest.py: digest visual único para Canvas y RenderResult.
+- ADR-018 (docs/architecture/decisions/ADR-018-render-pipeline.md); notas de cabecera en ADR-012, ADR-015 y ADR-017; MOANA.md 0.1.7-draft (§13 render disponible con deadline, §20 budget-v2); contratos de módulos, overview, README, guía de desarrollo, AGENTS.md y CLAUDE.md actualizados; probe de check_wheel ampliado.
+- Gate: scripts/validate.py y scripts/check_wheel.py verdes; render, layers, core.procedural y core.digest al 100 % de líneas y ramas.
+- Revisión: moana-graphics-engineer y moana-architect (cambios requeridos, aplicados): cota de bytes en lienzos de 1–3 píxeles, RNG movido a core, digest único, moana_version, frame_id tras validar y sin puntero, aviso empty_bounds, RuntimeError para cajas diferidas incorrectas, bytes de máscara diferida en composition_cost, colisión de nombres budget-v2 resuelta y pruebas de 1×1, coordenadas negativas, documento vacío y propiedad plan ⇒ render.
+- AC1: tests/integration/test_render_determinism.py::test_ac1_t1_fresh_processes_with_any_hash_seed_agree (subprocesos nuevos) y ::test_t1_repeated_renders_in_one_process_agree; digests recalculados a mano con hashlib en tests/unit/render/test_render_pipeline.py::test_semitransparent_scene_matches_hand_computation, ::test_every_primitive_in_a_strict_scene y ::test_minimal_example_document.
+- AC2: tests/unit/core/test_core_procedural.py::test_ac2_an_operation_sequence_depends_only_on_its_own_identity; tests/unit/render/test_render_pipeline.py::test_ac2_adding_an_operation_only_changes_its_own_pixels, ::test_ac2_render_does_not_modify_the_document y ::test_ac2_render_writes_and_reads_no_file.
+- T1: tests/integration/test_render_determinism.py::test_ac1_t1_fresh_processes_with_any_hash_seed_agree (PYTHONHASHSEED 0, 1, 4242 y random × tres codificaciones) y ::test_t1_key_order_and_whitespace_do_not_change_the_render (claves en orden inverso, espacios, sort_keys).
+- T2: tests/unit/render/test_render_pipeline.py::test_t2_unsupported_arguments_are_type_errors, ::test_t2_only_documents_are_rendered, ::test_t2_unknown_frame_is_a_reference_error, ::test_t2_invalid_references_are_rejected_with_pointers, ::test_t2_operation_without_rasteriser_is_unsupported, ::test_t2_cancellation_between_operations, ::test_t2_expired_deadline_stops_before_any_raster, ::test_t2_budgets_are_checked_before_any_raster_or_buffer y ::test_plan_budget_admission_means_render_succeeds.

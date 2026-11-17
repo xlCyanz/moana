@@ -1,6 +1,6 @@
 # Desarrollo local y flujo Git
 
-Comenzar por [AGENTS.md](../../AGENTS.md), el [roadmap](../issues/roadmap.md) y el issue elegido. El motor de render no está implementado: el paquete publica su versión, el marcador de tipos, `moana.core`, `moana.schema`, el plan de coste de `moana.render`, el lienzo RGBA de `moana.core.canvas`, `moana.palette`, las máscaras y transformaciones de `moana.geometry` y la composición de `moana.layers`. El JSON Schema de `schemas/` se regenera con `uv run python scripts/generate_schema.py` sólo ante un cambio de contrato revisado (`--check` lo verifica). El entorno actual usa Python 3.12; las plataformas declaradas se verifican según la evidencia del reporte y CI.
+Comenzar por [AGENTS.md](../../AGENTS.md), el [roadmap](../issues/roadmap.md) y el issue elegido. No hay CLI ni exportación todavía: el paquete publica su versión, el marcador de tipos, `moana.core`, `moana.schema`, el render determinista y su plan de coste (`moana.render`), el lienzo RGBA de `moana.core.canvas`, `moana.palette`, las máscaras y transformaciones de `moana.geometry` y la composición de `moana.layers`. El JSON Schema de `schemas/` se regenera con `uv run python scripts/generate_schema.py` sólo ante un cambio de contrato revisado (`--check` lo verifica). El entorno actual usa Python 3.12; las plataformas declaradas se verifican según la evidencia del reporte y CI.
 
 ## Preparar el entorno
 

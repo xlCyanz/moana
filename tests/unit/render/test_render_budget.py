@@ -1,6 +1,6 @@
 """Cost plan before raster: hand-computed oracles, exact limits and no allocation.
 
-Expected values are derived by hand from the budget-v1 formulas documented in
+Expected values are derived by hand from the budget-v2 formulas documented in
 ``moana.render.budget`` and MOANA.md section 20, never from the implementation.
 """
 
@@ -18,6 +18,7 @@ from hypothesis import strategies as st
 from moana.core import errors
 from moana.core.budget import Deadline, RenderLimits
 from moana.core.limits import GeometryLimits
+from moana.render import budget as budget_module
 from moana.render import estimate_cost, plan_budget
 from moana.schema import Document, validate_document
 
@@ -58,17 +59,17 @@ def document(
 def test_minimal_rect_matches_hand_oracle() -> None:
     estimate = estimate_cost(document(layers=[[{"type": "rect", "box": [40, 32, 88, 104]}]]))
     rect = 48 * 72  # 3456
-    # 3A (clear, normalise, copy) + 2A (layer clear, composite) + rect area
-    assert estimate.pixel_visits == 5 * A128 + rect == 85_376
+    # 3A (clear, normalise, copy) + 2A (layer clear, composite) + raster + paint
+    assert estimate.pixel_visits == 5 * A128 + 2 * rect == 88_832
     # 4A canvas + 4A layer + 32A accumulator + mask, plus one retained 4A result
     assert estimate.buffer_bytes == 40 * A128 + rect + 4 * A128 == 724_352
     assert estimate.frame_pixels == A128
     assert (estimate.operations, estimate.layers, estimate.frames) == (1, 1, 1)
-    assert estimate.estimator_version == "budget-v1"
+    assert estimate.estimator_version == "budget-v2"
     (cost,) = estimate.operation_costs
     assert (cost.json_pointer, cost.pixel_visits, cost.mask_bytes) == (
         "/layers/0/operations/0",
-        rect,
+        2 * rect,
         rect,
     )
 
@@ -76,21 +77,26 @@ def test_minimal_rect_matches_hand_oracle() -> None:
 @pytest.mark.parametrize(
     ("operation", "visits", "mask"),
     [
-        ({"type": "pixel", "at": [5, 5]}, 1, 1),
+        # visits = raster work + one paint pass over the clipped mask box
+        ({"type": "pixel", "at": [5, 5]}, 2, 1),
         ({"type": "pixel", "at": [128, 0]}, 0, 0),  # excluded edge: off canvas
         ({"type": "pixel", "at": [-1, 3]}, 0, 0),
-        # Bresenham steps before clipping; mask = clipped bbox x[0,128) y[0,6)
-        ({"type": "line", "start": [-1_000_000, 0], "end": [1_000_000, 5]}, 2_000_001, 768),
-        ({"type": "line", "start": [3, 3], "end": [3, 3]}, 1, 1),
+        # Bresenham steps before clipping + paint of clipped bbox x[0,128) y[0,6)
+        ({"type": "line", "start": [-1_000_000, 0], "end": [1_000_000, 5]}, 2_000_769, 768),
+        ({"type": "line", "start": [3, 3], "end": [3, 3]}, 2, 1),
         ({"type": "line", "start": [500, 500], "end": [400, 520]}, 101, 0),
-        ({"type": "rect", "box": [-10, -10, 10, 10]}, 100, 100),
-        ({"type": "rect", "box": [-1_048_576, -1_048_576, 1_048_577, 1_048_577]}, A128, A128),
-        ({"type": "ellipse", "box": [120, 120, 140, 130]}, 64, 64),
+        ({"type": "rect", "box": [-10, -10, 10, 10]}, 200, 100),
+        ({"type": "rect", "box": [-1_048_576, -1_048_576, 1_048_577, 1_048_577]}, 2 * A128, A128),
+        ({"type": "ellipse", "box": [120, 120, 140, 130]}, 128, 64),
         ({"type": "ellipse", "box": [200, 0, 210, 10]}, 0, 0),
-        # bounds Box(0,0,10,4): area 40 + 4 rows x 3 vertices
-        ({"type": "polygon", "points": [[0, 0], [10, 0], [0, 4]]}, 52, 40),
+        # bounds Box(0,0,10,4): area 40 + 4 rows x 3 vertices + paint 40
+        ({"type": "polygon", "points": [[0, 0], [10, 0], [0, 4]]}, 92, 40),
         ({"type": "polygon", "points": [[0, 0], [5, 0], [9, 0]]}, 0, 0),  # no centre
-        ({"type": "polygon", "points": [[-50, -50], [200, -50], [-50, 200]]}, A128 + 128 * 3, A128),
+        (
+            {"type": "polygon", "points": [[-50, -50], [200, -50], [-50, 200]]},
+            2 * A128 + 128 * 3,
+            A128,
+        ),
     ],
 )
 def test_operation_costs(operation: dict[str, Any], visits: int, mask: int) -> None:
@@ -106,13 +112,13 @@ def test_rect_visits_equal_independent_pixel_count(x0: int, y0: int, w: int, h: 
     estimate = estimate_cost(
         document(16, 12, layers=[[{"type": "rect", "box": [x0, y0, x0 + w, y0 + h]}]])
     )
-    assert estimate.operation_costs[0].pixel_visits == len(pixels)
+    assert estimate.operation_costs[0].pixel_visits == 2 * len(pixels)  # raster + paint
 
 
 def test_hidden_layers_cost_nothing_but_count_operations() -> None:
     rect = {"type": "rect", "box": [0, 0, 128, 128]}
     estimate = estimate_cost(document(layers=[[rect], [rect]], hidden=frozenset({1})))
-    assert estimate.pixel_visits == 3 * A128 + 2 * A128 + A128
+    assert estimate.pixel_visits == 3 * A128 + 2 * A128 + 2 * A128
     assert estimate.operations == 2
     assert [c.json_pointer for c in estimate.operation_costs] == ["/layers/0/operations/0"]
 
@@ -120,19 +126,19 @@ def test_hidden_layers_cost_nothing_but_count_operations() -> None:
 def test_request_exactly_at_each_limit_is_admitted() -> None:
     doc = document(layers=[[{"type": "rect", "box": [40, 32, 88, 104]}]])
     exact = RenderLimits(
-        max_pixel_visits=85_376,
+        max_pixel_visits=88_832,
         max_buffer_bytes=724_352,
         max_frame_pixels=A128,
         max_operations=1,
         max_layers=1,
     )
-    assert plan_budget(doc, exact).pixel_visits == 85_376
+    assert plan_budget(doc, exact).pixel_visits == 88_832
 
 
 @pytest.mark.parametrize(
     ("overrides", "resource", "limit", "estimated", "pointer"),
     [
-        ({"max_pixel_visits": 85_375}, "pixel_visits", 85_375, 85_376, "/layers/0/operations/0"),
+        ({"max_pixel_visits": 88_831}, "pixel_visits", 88_831, 88_832, "/layers/0/operations/0"),
         ({"max_buffer_bytes": 724_351}, "buffer_bytes", 724_351, 724_352, None),
         ({"max_frame_pixels": A128 - 1}, "frame_pixels", A128 - 1, A128, None),
         ({"max_operations": 0}, "operations", 0, 1, "/layers"),
@@ -186,13 +192,14 @@ def test_deep_layer_stacks_exceed_visits_before_any_raster() -> None:
 
 def test_huge_coordinates_cost_their_unclipped_segments() -> None:
     line = {"type": "line", "start": [-1_048_576, -1_048_576], "end": [1_048_576, 1_048_576]}
-    doc = document(layers=[[line] * 48])  # 48 x 2 097 153 steps > 100 000 000
+    per_line = 2_097_153 + A128  # unclipped steps + paint of the clipped (full) bbox
+    doc = document(layers=[[line] * 48])  # 48 x 2 113 537 > 100 000 000
     with pytest.raises(errors.BudgetExceeded) as raised:
         plan_budget(doc)
     detail = raised.value.details[0]
-    assert detail.context["estimated"] == 5 * A128 + 48 * 2_097_153
+    assert detail.context["estimated"] == 5 * A128 + 48 * per_line
     assert detail.json_pointer == "/layers/0/operations/0"
-    assert plan_budget(document(layers=[[line] * 47])).pixel_visits == 5 * A128 + 47 * 2_097_153
+    assert plan_budget(document(layers=[[line] * 47])).pixel_visits == 5 * A128 + 47 * per_line
 
 
 def test_lowered_geometry_limits_reject_canvas_and_coordinates() -> None:
@@ -277,7 +284,7 @@ def test_rejection_happens_without_allocating_raster_buffers(
 
 def test_budget_modules_do_not_load_raster_libraries() -> None:
     probe = (
-        "import sys, moana.render, moana.core.budget; "
+        "import sys, moana.core.budget; "
         "heavy = {'numpy', 'PIL', 'aggdraw'}; "
         "print(sorted(m for m in sys.modules if m.split('.')[0] in heavy))"
     )
@@ -285,6 +292,24 @@ def test_budget_modules_do_not_load_raster_libraries() -> None:
         [sys.executable, "-c", probe], capture_output=True, encoding="utf-8", check=True
     )
     assert result.stdout.strip() == "[]"
+
+
+def test_budget_module_imports_no_raster_code() -> None:
+    """``moana.render`` now loads the rasterisers; the estimator itself never does."""
+    import ast
+    from pathlib import Path
+
+    tree = ast.parse(Path(budget_module.__file__).read_text(encoding="utf-8"))
+    names: list[str] = []
+    for node in ast.walk(tree):
+        if isinstance(node, ast.ImportFrom) and node.module:
+            prefix = "moana." if node.module == "moana" else f"{node.module}."
+            names += [node.module, *(prefix + alias.name for alias in node.names)]
+        elif isinstance(node, ast.Import):
+            names += [alias.name for alias in node.names]
+    forbidden = ("numpy", "PIL", "aggdraw", "moana.geometry", "moana.layers", "moana.core.canvas")
+    assert names
+    assert not [name for name in names if name.startswith(forbidden)]
 
 
 def test_estimate_is_pure_and_repeatable() -> None:
@@ -296,7 +321,7 @@ def test_collinear_diagonal_polygon_is_an_accepted_overestimate() -> None:
     """Upper bound, not exact: the even-odd mask is empty but its bounds are costed."""
     polygon = {"type": "polygon", "points": [[0, 0], [5, 5], [10, 10]]}
     (cost,) = estimate_cost(document(layers=[[polygon]])).operation_costs
-    assert (cost.pixel_visits, cost.mask_bytes) == (100 + 10 * 3, 100)
+    assert (cost.pixel_visits, cost.mask_bytes) == (100 + 10 * 3 + 100, 100)
 
 
 def test_counts_are_rejected_before_costing_operations(monkeypatch: pytest.MonkeyPatch) -> None:

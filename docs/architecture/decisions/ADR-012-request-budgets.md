@@ -1,6 +1,6 @@
 # ADR-012 — Presupuestos de solicitud y plan de coste previo al render
 
-Estado: aceptado · 2026-11-17 · Issue: [MOANA-003](../../issues/MOANA-003.md). La frase de §3 sobre MOANA-004 queda sustituida parcialmente por [ADR-013](ADR-013-canvas-buffer.md).
+Estado: aceptado · 2026-11-17 · Issue: [MOANA-003](../../issues/MOANA-003.md). La frase de §3 sobre MOANA-004 queda sustituida parcialmente por [ADR-013](ADR-013-canvas-buffer.md). Las visitas por operación del punto 2 (`budget-v1`) quedan sustituidas por `budget-v2` en [ADR-018](ADR-018-render-pipeline.md).
 
 ## Contexto
 

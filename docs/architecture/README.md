@@ -27,7 +27,7 @@ Evitar «god modules» de dibujo y un registro dinámico de plugins ejecutables.
 
 ## Estado de carpetas
 
-El paquete contiene `src/moana/__init__.py`, `py.typed` y `src/moana/core/` (MOANA-001) `src/moana/schema/` (MOANA-002) y `src/moana/render/budget.py` (MOANA-003); `schemas/` guarda el JSON Schema generado. Los módulos descritos en MOANA.md se crean al implementar sus issues. `scripts/` contiene herramientas del repositorio y no se distribuye en el wheel. `examples/specs/` expresa diseño, no demuestra render.
+El paquete contiene `src/moana/__init__.py`, `py.typed` y `src/moana/core/` (MOANA-001) `src/moana/schema/` (MOANA-002) y `src/moana/render/` (plan de coste MOANA-003 y orquestador MOANA-010); `schemas/` guarda el JSON Schema generado. Los módulos descritos en MOANA.md se crean al implementar sus issues. `scripts/` contiene herramientas del repositorio y no se distribuye en el wheel. `examples/specs/` expresa diseño; `minimal.moana.json` ya se renderiza con `moana.render.render`.
 
 ## Decisiones
 
@@ -48,6 +48,7 @@ El paquete contiene `src/moana/__init__.py`, `py.typed` y `src/moana/core/` (MOA
 - [ADR-015: primitivas raster enteras, máscaras y flood fill](decisions/ADR-015-raster-primitives.md).
 - [ADR-016: transformaciones pixel-perfect sobre índices](decisions/ADR-016-pixel-transforms.md).
 - [ADR-017: árbol de capas y composición source-over entera](decisions/ADR-017-layers-composition.md).
+- [ADR-018: orquestador de render determinista, máscaras diferidas y `budget-v2`](decisions/ADR-018-render-pipeline.md).
 - [Modelo de amenazas](SECURITY_MODEL.md).
 
 Un ADR nuevo registra contexto, decisión, alternativas, consecuencias y evidencia. Cambiar un ADR aceptado se hace mediante otro que lo sustituya y actualizando el contrato principal.

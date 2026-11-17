@@ -15,7 +15,6 @@ This module is the NumPy adapter of ``core``; ``import moana.core`` does not loa
 
 from __future__ import annotations
 
-import hashlib
 from typing import Final
 
 import numpy as np
@@ -23,6 +22,7 @@ import numpy.typing as npt
 
 from moana.core.budget import RenderLimits
 from moana.core.coordinates import MAX_DIMENSION, MIN_DIMENSION, Dimensions, Point, require_int
+from moana.core.digest import visual_digest
 from moana.core.errors import BudgetExceeded, ErrorDetail, ValidationError
 
 __all__ = ["CHANNELS", "RGBA", "Canvas", "check_canvas_budget"]
@@ -208,9 +208,8 @@ class Canvas:
 
     def visual_digest(self) -> str:
         """``sha256:<hex>`` of width and height (uint32 big-endian) + RGBA (section 14)."""
-        digest = hashlib.sha256(self.width.to_bytes(4, "big") + self.height.to_bytes(4, "big"))
-        digest.update(self._pixels.data)  # C-contiguous: hashed without a copy
-        return "sha256:" + digest.hexdigest()
+        # C-contiguous: hashed without a copy
+        return visual_digest(self.width, self.height, self._pixels.data)
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Canvas):
