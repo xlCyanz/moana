@@ -1,7 +1,10 @@
 name: Quality
+# Full matrix only for pull requests targeting main and for commits landing on main.
 on:
   push:
+    branches: [main]
   pull_request:
+    branches: [main]
   workflow_dispatch:
 
 permissions:

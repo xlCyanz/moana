@@ -44,6 +44,6 @@ La revisión describe el problema, comportamiento resultante, alcance y comandos
 
 ## Protecciones propuestas, no configuradas por esta guía
 
-Para `main` y, si se usa, `develop`: requerir pull request, al menos una revisión, checks de CI de la matriz exigida, resolución de conversaciones y ausencia de force push/borrado. La lista de checks debe corresponder a nombres observados en GitHub; no inventar un check requerido que nunca se publique. La política de revisión puede ajustar el número de aprobaciones al equipo.
+Para `main` y, si se usa, `develop`: requerir pull request, al menos una revisión, checks de CI de la matriz exigida (el workflow Quality sólo corre para PR contra `main` y pushes a `main`; exigirlo en `develop` requiere ampliar sus disparadores), resolución de conversaciones y ausencia de force push/borrado. La lista de checks debe corresponder a nombres observados en GitHub; no inventar un check requerido que nunca se publique. La política de revisión puede ajustar el número de aprobaciones al equipo.
 
 Estas son condiciones recomendadas para el propietario. Cambiar protecciones, configurar reglas remotas, crear ramas remotas o publicar un paquete requiere autorización específica. La infraestructura local no necesita modificar esos recursos para ser verificable.

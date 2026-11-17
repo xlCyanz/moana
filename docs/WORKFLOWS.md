@@ -24,4 +24,4 @@ Resolver la región/ID y mostrar qué elementos se afectan. Crear batch con base
 
 ## Automatización e integraciones
 
-Git pre-commit comprueba lint/formato/estructura, GitHub Actions hace el gate completo en matriz, build con backend del lock e instalación aislada del wheel. Dependabot sólo mantiene acciones. No hay jobs de publicación, envío de mensajes ni automaciones periódicas de Codex. Una actualización de dependencias Python se hace con `uv lock --upgrade`, pruebas y revisión del diff del lock, no silenciosamente.
+Git pre-commit comprueba lint/formato/estructura, GitHub Actions hace el gate completo en matriz sólo en pull requests contra `main`, en commits que llegan a `main` y en ejecuciones manuales (`workflow_dispatch`); las ramas de issue y los PR hacia otras ramas se validan localmente con `scripts/validate.py`. Incluye build con backend del lock e instalación aislada del wheel. Dependabot sólo mantiene acciones. No hay jobs de publicación, envío de mensajes ni automaciones periódicas de Codex. Una actualización de dependencias Python se hace con `uv lock --upgrade`, pruebas y revisión del diff del lock, no silenciosamente.
