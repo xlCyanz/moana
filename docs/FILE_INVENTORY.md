@@ -1,6 +1,6 @@
 # Inventario del repositorio
 
-246 archivos actuales de fuente, documentación, configuración y pruebas al 2026-11-17. Incluye cambios locales todavía sin commit. Excluye entorno virtual, herramientas, cachés, artefactos y metadata Git.
+256 archivos actuales de fuente, documentación, configuración y pruebas al 2026-11-17. Incluye cambios locales todavía sin commit. Excluye entorno virtual, herramientas, cachés, artefactos y metadata Git.
 
 | Archivo |
 | --- |
@@ -96,6 +96,7 @@
 | [docs/architecture/decisions/ADR-012-request-budgets.md](../docs/architecture/decisions/ADR-012-request-budgets.md) |
 | [docs/architecture/decisions/ADR-013-canvas-buffer.md](../docs/architecture/decisions/ADR-013-canvas-buffer.md) |
 | [docs/architecture/decisions/ADR-014-palette.md](../docs/architecture/decisions/ADR-014-palette.md) |
+| [docs/architecture/decisions/ADR-015-raster-primitives.md](../docs/architecture/decisions/ADR-015-raster-primitives.md) |
 | [docs/architecture/module-contracts.md](../docs/architecture/module-contracts.md) |
 | [docs/architecture/overview.md](../docs/architecture/overview.md) |
 | [docs/guides/agent-workflow.md](../docs/guides/agent-workflow.md) |
@@ -212,6 +213,10 @@
 | [src/moana/core/ids.py](../src/moana/core/ids.py) |
 | [src/moana/core/limits.py](../src/moana/core/limits.py) |
 | [src/moana/core/pillow_adapter.py](../src/moana/core/pillow_adapter.py) |
+| [src/moana/geometry/__init__.py](../src/moana/geometry/__init__.py) |
+| [src/moana/geometry/fill.py](../src/moana/geometry/fill.py) |
+| [src/moana/geometry/mask.py](../src/moana/geometry/mask.py) |
+| [src/moana/geometry/primitives.py](../src/moana/geometry/primitives.py) |
 | [src/moana/palette/__init__.py](../src/moana/palette/__init__.py) |
 | [src/moana/palette/colors.py](../src/moana/palette/colors.py) |
 | [src/moana/palette/table.py](../src/moana/palette/table.py) |
@@ -235,6 +240,11 @@
 | [tests/unit/core/test_core_errors.py](../tests/unit/core/test_core_errors.py) |
 | [tests/unit/core/test_core_ids.py](../tests/unit/core/test_core_ids.py) |
 | [tests/unit/core/test_core_limits.py](../tests/unit/core/test_core_limits.py) |
+| [tests/unit/geometry/test_geometry_architecture.py](../tests/unit/geometry/test_geometry_architecture.py) |
+| [tests/unit/geometry/test_geometry_fill.py](../tests/unit/geometry/test_geometry_fill.py) |
+| [tests/unit/geometry/test_geometry_mask.py](../tests/unit/geometry/test_geometry_mask.py) |
+| [tests/unit/geometry/test_geometry_memory.py](../tests/unit/geometry/test_geometry_memory.py) |
+| [tests/unit/geometry/test_geometry_primitives.py](../tests/unit/geometry/test_geometry_primitives.py) |
 | [tests/unit/palette/test_palette_architecture.py](../tests/unit/palette/test_palette_architecture.py) |
 | [tests/unit/palette/test_palette_colors.py](../tests/unit/palette/test_palette_colors.py) |
 | [tests/unit/palette/test_palette_table.py](../tests/unit/palette/test_palette_table.py) |
