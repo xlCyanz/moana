@@ -20,10 +20,10 @@ Estado: 1/1 issues completados.
 
 Puerta de salida: Modelos estrictos, límites y fixtures enteras exactas.
 
-Estado: 0/8 issues completados.
+Estado: 1/8 issues completados.
 
-- [MOANA-001](MOANA-001.md) — Definir tipos, coordenadas, errores y límites (ready)
-- [MOANA-002](MOANA-002.md) — Implementar documento Pydantic y JSON Schema (blocked)
+- [MOANA-001](MOANA-001.md) — Definir tipos, coordenadas, errores y límites (done)
+- [MOANA-002](MOANA-002.md) — Implementar documento Pydantic y JSON Schema (ready)
 - [MOANA-003](MOANA-003.md) — Aplicar presupuesto de trabajo y recursos (blocked)
 - [MOANA-004](MOANA-004.md) — Crear lienzo RGBA y propiedad de buffers (blocked)
 - [MOANA-005](MOANA-005.md) — Implementar paletas y rampas (blocked)
@@ -88,4 +88,4 @@ Estado: 0/8 issues completados.
 
 ## Siguiente paso
 
-Implementar [MOANA-001](MOANA-001.md): Definir tipos, coordenadas, errores y límites.
+Implementar [MOANA-002](MOANA-002.md): Implementar documento Pydantic y JSON Schema.

@@ -1,6 +1,6 @@
 # Inventario del repositorio
 
-201 archivos actuales de fuente, documentación, configuración y pruebas al 2026-11-17. Incluye cambios locales todavía sin commit. Excluye entorno virtual, herramientas, cachés, artefactos y metadata Git.
+210 archivos actuales de fuente, documentación, configuración y pruebas al 2026-11-17. Incluye cambios locales todavía sin commit. Excluye entorno virtual, herramientas, cachés, artefactos y metadata Git.
 
 | Archivo |
 | --- |
@@ -91,6 +91,7 @@
 | [docs/architecture/decisions/ADR-007-contract-clarifications.md](../docs/architecture/decisions/ADR-007-contract-clarifications.md) |
 | [docs/architecture/decisions/ADR-008-portable-tooling.md](../docs/architecture/decisions/ADR-008-portable-tooling.md) |
 | [docs/architecture/decisions/ADR-009-claude-code-layer.md](../docs/architecture/decisions/ADR-009-claude-code-layer.md) |
+| [docs/architecture/decisions/ADR-010-core-contracts.md](../docs/architecture/decisions/ADR-010-core-contracts.md) |
 | [docs/architecture/module-contracts.md](../docs/architecture/module-contracts.md) |
 | [docs/architecture/overview.md](../docs/architecture/overview.md) |
 | [docs/guides/agent-workflow.md](../docs/guides/agent-workflow.md) |
@@ -197,10 +198,18 @@
 | [scripts/uv.sh](../scripts/uv.sh) |
 | [scripts/validate.py](../scripts/validate.py) |
 | [src/moana/__init__.py](../src/moana/__init__.py) |
+| [src/moana/core/__init__.py](../src/moana/core/__init__.py) |
+| [src/moana/core/coordinates.py](../src/moana/core/coordinates.py) |
+| [src/moana/core/errors.py](../src/moana/core/errors.py) |
+| [src/moana/core/limits.py](../src/moana/core/limits.py) |
 | [src/moana/py.typed](../src/moana/py.typed) |
 | [tests/test_environment.py](../tests/test_environment.py) |
 | [tests/test_planning.py](../tests/test_planning.py) |
 | [tests/test_repository_tools.py](../tests/test_repository_tools.py) |
+| [tests/unit/core/test_core_architecture.py](../tests/unit/core/test_core_architecture.py) |
+| [tests/unit/core/test_core_coordinates.py](../tests/unit/core/test_core_coordinates.py) |
+| [tests/unit/core/test_core_errors.py](../tests/unit/core/test_core_errors.py) |
+| [tests/unit/core/test_core_limits.py](../tests/unit/core/test_core_limits.py) |
 | [tests/unit/test_claude_hooks.py](../tests/unit/test_claude_hooks.py) |
 | [tests/unit/test_github_sync.py](../tests/unit/test_github_sync.py) |
 | [tests/unit/test_portability.py](../tests/unit/test_portability.py) |

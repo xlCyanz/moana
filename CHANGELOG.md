@@ -1,5 +1,9 @@
 # Changelog
 
+## Sin publicar
+
+- MOANA-001: `moana.core` con `Point`, `Dimensions`, `Box` semiabierta (vacío como `None`), `GeometryLimits` y jerarquía de errores con códigos estables, códigos de salida, `json_pointer` y contexto inmutable picklable (ADR-010). Contrato MOANA.md 0.1.2-draft.
+
 ## Infraestructura — 2026-11-17 (sin nueva versión del paquete)
 
 - Backlog publicado en GitHub (`scripts/github_sync.py`): 36 issues, 6 milestones por fase, labels de fase/prioridad/complejidad/estado/módulo y 95 dependencias nativas. Cada issue incluye una guía de ejecución para agentes generada por `scripts/agent_guide.py`.

@@ -1,6 +1,6 @@
 # Desarrollo local y flujo Git
 
-Comenzar por [AGENTS.md](../../AGENTS.md), el [roadmap](../issues/roadmap.md) y el issue elegido. El motor no está implementado: el paquete sólo publica su versión y marcador de tipos. El entorno actual usa Python 3.12; las plataformas declaradas se verifican según la evidencia del reporte y CI.
+Comenzar por [AGENTS.md](../../AGENTS.md), el [roadmap](../issues/roadmap.md) y el issue elegido. El motor de render no está implementado: el paquete publica su versión, el marcador de tipos y `moana.core`. El entorno actual usa Python 3.12; las plataformas declaradas se verifican según la evidencia del reporte y CI.
 
 ## Preparar el entorno
 

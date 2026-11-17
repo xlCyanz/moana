@@ -13,7 +13,7 @@
 - Dependencies: [MOANA-001](MOANA-001.md), [MOANA-002](MOANA-002.md)
 - Related modules: palette, schema
 - Requirements: R007 ([trazabilidad](traceability.md))
-- Bloqueo: Dependencias pendientes: MOANA-001, MOANA-002
+- Bloqueo: Dependencias pendientes: MOANA-002
 
 ## Context
 

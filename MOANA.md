@@ -1,6 +1,6 @@
 # MOANA — Especificación técnica
 
-Versión del contrato: **0.1.1-draft** · Fecha: **2026-11-17** · Estado: especificación inicial para implementación; motor todavía no implementado.
+Versión del contrato: **0.1.2-draft** · Fecha: **2026-11-17** · Estado: especificación inicial para implementación; motor todavía no implementado.
 
 Este archivo es la fuente de verdad del producto. «DEBE» expresa una condición verificable; «DEBERÍA», una recomendación artística o de diseño. Los contratos aquí descritos son objetivos futuros, no APIs disponibles en el paquete inicial. Los cambios de contrato requieren actualizar este documento, los ejemplos, los issues y una decisión de arquitectura cuando afecten compatibilidad. El catálogo de requisitos y su trazabilidad vive en `docs/requirements.json` y `docs/issues/traceability.md`.
 
@@ -52,7 +52,7 @@ Python 3.12+ es el lenguaje; Pillow provee buffers/intercambio y codificadores; 
 
 El origen es la esquina superior izquierda; x crece a la derecha y y hacia abajo. Un píxel se indexa `(x, y)` y se almacena `array[y, x, channel]`. El array canónico es C-contiguo, `uint8`, forma `(height, width, 4)`, RGBA recto (no premultiplicado). Color de trabajo sRGB codificado; la composición normativa usa esos valores enteros, sin conversión implícita a luz lineal. El color de todo píxel con alfa cero se normaliza a `(0,0,0,0)`.
 
-Dimensiones válidas: 1–2048 por eje, con límite adicional de área de 4 194 304 píxeles. Predeterminado 128 × 128. Las coordenadas son enteros reales del JSON (no booleanos, strings ni floats); rango absoluto <=1 048 576. Una caja es `[x0,y0,x1,y1)`; exige x0<x1 e y0<y1. La geometría puede quedar fuera del lienzo: se recorta sin wraparound ni error, después de presupuestar su complejidad. Acceso directo a un píxel fuera del lienzo produce error de límites; no hereda índices negativos de NumPy.
+Dimensiones válidas: 1–2048 por eje, con límite adicional de área de 4 194 304 píxeles. Predeterminado 128 × 128. Las coordenadas son enteros reales del JSON (no booleanos, strings ni floats); rango absoluto <=1 048 576. Una caja es `[x0,y0,x1,y1)`; exige x0<x1 e y0<y1. El rango absoluto se aplica a coordenadas de píxel; el borde excluido de una caja puede llegar a 1 048 577 para que todo píxel válido tenga caja 1 × 1. Una intersección o recorte sin píxeles es ausencia de caja, no una caja vacía (ADR-010). La geometría puede quedar fuera del lienzo: se recorta sin wraparound ni error, después de presupuestar su complejidad. Acceso directo a un píxel fuera del lienzo produce error de límites; no hereda índices negativos de NumPy.
 
 Las vistas públicas son inmutables o copias; el propietario del buffer controla la vida útil. Se usan acumuladores uint32/int64 antes de multiplicar para evitar overflow. Escalado de preview sólo por factores enteros >=1 mediante vecino más cercano; el archivo de trabajo conserva la resolución original.
 
@@ -178,7 +178,7 @@ edited = apply_edit(
 
 `load_document(path|bytes|mapping) -> Document` valida y normaliza; paths sólo desde la capa de confianza de la API, no desde operaciones JSON. `render(Document, *, frame_id: str|None, limits: RenderLimits|None) -> RenderResult` no escribe archivos ni modifica el documento. `RenderResult` contiene width, height, RGBA inmutable, digest, warnings, renderer_version y provenance. `apply_edit(Document, EditBatch|mapping) -> Document` devuelve una revisión nueva. `export_png(RenderResult, path, *, scale=1, overwrite=False) -> ExportManifest` realiza escritura atómica.
 
-Errores públicos futuros: `MoanaError` y subclases `ValidationError`, `ReferenceError`, `BudgetExceeded`, `UnsupportedVersion`, `UnsupportedOperation`, `EditConflict`, `ExportError`. No se exponen tracebacks internos en el CLI por defecto. CLI objetivo: `moana validate`, `render`, `edit`, `inspect`, `export`; códigos 0 éxito, 2 entrada inválida, 3 presupuesto, 4 conflicto, 5 I/O, 1 fallo interno. La inicialización no registra un comando que prometa renderizar.
+Errores públicos (`moana.core.errors`, implementados en MOANA-001): `MoanaError` y subclases `ValidationError` (con `OutOfBoundsError` para acceso a píxel fuera del lienzo), `ReferenceError`, `BudgetExceeded`, `UnsupportedVersion`, `UnsupportedOperation`, `EditConflict`, `ExportError`. Cada clase declara `code` estable y el código de salida de la CLI; los códigos están en ADR-010. No se exponen tracebacks internos en el CLI por defecto. CLI objetivo: `moana validate`, `render`, `edit`, `inspect`, `export`; códigos 0 éxito, 2 entrada inválida, 3 presupuesto, 4 conflicto, 5 I/O, 1 fallo interno. La inicialización no registra un comando que prometa renderizar.
 
 ## 14. Renderizado y determinismo
 

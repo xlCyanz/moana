@@ -1,6 +1,6 @@
 # Contratos entre módulos
 
-Estado: **contratos previstos**, no API disponible. Las firmas públicas objetivo están en [MOANA.md §13](../../MOANA.md); sus fórmulas, límites y formatos prevalecen sobre este resumen. No se añaden abstracciones base ni registros de plugins por anticipación.
+Estado: **contratos previstos**, salvo `core` (implementado, ver abajo). Las firmas públicas objetivo están en [MOANA.md §13](../../MOANA.md); sus fórmulas, límites y formatos prevalecen sobre este resumen. No se añaden abstracciones base ni registros de plugins por anticipación.
 
 ## Entradas, salidas y efectos
 
@@ -19,6 +19,23 @@ Estado: **contratos previstos**, no API disponible. Las firmas públicas objetiv
 | `export` | Resultado/frames + opciones + destino autorizado → manifiesto | Codificación y escritura atómica; no llama al editor ni cambia el documento |
 | `quality` | Resultado, paleta y configuración → incidencias y métricas | Diagnóstico estable y no mutante; separa reglas duras de heurísticas artísticas |
 | `api` / `cli` | Solicitud del llamador → resultado, informe o código de salida | Orquesta servicios, autoriza I/O de aplicación y traduce errores; no duplica algoritmos |
+
+## `core` (implementado en MOANA-001)
+
+API pública en `moana.core`, sin dependencias de otros módulos Moana, NumPy ni Pillow. Decisiones en [ADR-010](decisions/ADR-010-core-contracts.md).
+
+| Tipo | Contrato |
+| --- | --- |
+| `Point(x, y)` | Inmutable; `x`/`y` son `int` reales (se rechazan `bool`, float, str y escalares NumPy) con `abs ≤ 1 048 576`. Se indexa como `array[y, x]`. |
+| `Dimensions(width, height)` | Cada eje en 1–2048, área ≤ 4 194 304; `Dimensions.default()` es 128 × 128. `check_pixel(point)` lanza `OutOfBoundsError` fuera del lienzo, sin wraparound de índices negativos. |
+| `Box(x0, y0, x1, y1)` | Semiabierta `[x0,x1) × [y0,y1)`, nunca vacía (`x0 < x1`, `y0 < y1`). `x0`/`y0` en `±1 048 576`; `x1`/`y1` hasta `1 048 577`. Una caja 1 × 1 contiene exactamente un píxel (`Box.from_point`, válido para todo píxel). Puede quedar fuera del lienzo. |
+| `Box.intersection` / `Box.clip_to` | Devuelven la caja común o **`None`** si no queda ningún píxel (incluidas cajas que sólo se tocan en un borde). Nunca se construye una caja vacía o invertida para representar «nada». |
+| `GeometryLimits` / `DEFAULT_GEOMETRY_LIMITS` | Máximos geométricos del contrato §5 (eje, área, coordenada), separados de su aplicación (`check_dimensions`, `check_point`, `check_box`). Sólo pueden bajar; el documento no los define. Los presupuestos elevables de §20 serán `RenderLimits` (MOANA-003), que compone este tipo. |
+| `require_int` | Validación compartida de enteros con rango; `minimum > maximum` es error de programación (`ValueError`). |
+
+Errores (`moana.core.errors`): `MoanaError` (código `INTERNAL_ERROR`, salida 1) y subclases con `code` estable y `exit_code`: `ValidationError` (`VALIDATION_ERROR`, 2), `OutOfBoundsError` (`OUT_OF_BOUNDS`, 2, subclase de validación), `ReferenceError` (`REFERENCE_ERROR`, 2; distinto del builtin homónimo, importar como `errors.ReferenceError`), `UnsupportedVersion` (2), `UnsupportedOperation` (2), `BudgetExceeded` (3), `EditConflict` (4), `ExportError` (5). Atributos de sólo lectura `message`, `json_pointer` (opcional, RFC 6901) y `context`. `context` es inmutable y sólo admite escalares o tuplas: nombres de campo, motivos, tipos y límites numéricos; nunca strings de entrada no confiable ni rutas. Los errores son picklables.
+
+Integración con `schema` (MOANA-002): los errores de `core` no derivan de `ValueError`, así que Pydantic no los convierte en errores de campo. Validar primero los enteros primitivos con las constantes de `core` (`Field(ge=..., le=...)` o validadores equivalentes) y construir `Point`/`Box`/`Dimensions` después, asignando `json_pointer`. La agregación de varios errores se añade de forma compatible en ese issue.
 
 La tabla de imports permitidos de MOANA.md §3 impide dependencias ascendentes. Si dos módulos necesitan la misma representación, se extrae un contrato mínimo a `core` cuando el caso real lo requiera; no se resuelve un ciclo con imports tardíos o un contenedor global.
 

@@ -37,10 +37,11 @@ def main() -> int:
             check=True,
         )
         probe = (
-            "import moana; from importlib.metadata import version; "
+            "import moana, moana.core; from importlib.metadata import version; "
             "from importlib.resources import files; "
             "assert version('moana-pixel-engine') == moana.__version__; "
             "assert files('moana').joinpath('py.typed').is_file(); "
+            "assert moana.core.Box(0, 0, 1, 1).area == 1; "
             "print('Isolated wheel OK:', moana.__version__)"
         )
         subprocess.run([str(python), "-I", "-c", probe], cwd=root, check=True)

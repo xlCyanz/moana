@@ -235,6 +235,10 @@ def agent_guide(
         state = "Completado; usar sólo como referencia del contrato entregado."
     elif issue.status == "ready":
         state = "Listo: todas las dependencias están `done`; puede empezarse."
+    elif issue.status == "in_progress":
+        state = "En curso: continuar en su rama sin ampliar el alcance."
+    elif issue.status == "review":
+        state = "En revisión: sólo correcciones de la revisión; no añadir alcance."
     else:
         state = (
             f"No empezar: estado `{issue.status}`. Esperar a que {dependency_links} "
