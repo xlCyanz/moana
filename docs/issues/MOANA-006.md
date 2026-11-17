@@ -13,7 +13,7 @@
 - Dependencies: [MOANA-004](MOANA-004.md), [MOANA-005](MOANA-005.md)
 - Related modules: geometry, layers
 - Requirements: R003 ([trazabilidad](traceability.md))
-- Bloqueo: Dependencias pendientes: MOANA-004, MOANA-005
+- Bloqueo: Dependencias pendientes: MOANA-005
 
 ## Context
 

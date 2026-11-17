@@ -8,7 +8,7 @@
 - Aliases históricos: MOA-004
 - Phase: P1
 - Priority: P1
-- Status: ready
+- Status: done
 - Complexity: M (relativa, no estimación de tiempo)
 - Dependencies: [MOANA-001](MOANA-001.md), [MOANA-003](MOANA-003.md)
 - Related modules: core
@@ -43,13 +43,13 @@ No dibujar primitivas ni componer capas.
 
 ## Acceptance criteria
 
-- [ ] AC1: Leer/escribir coordenadas válidas preserva RGBA y coordenadas negativas no hacen wrap
-- [ ] AC2: Una copia/export de array no puede mutar silenciosamente el canvas original
+- [x] AC1: Leer/escribir coordenadas válidas preserva RGBA y coordenadas negativas no hacen wrap
+- [x] AC2: Una copia/export de array no puede mutar silenciosamente el canvas original
 
 ## Required tests
 
-- [ ] T1: Fixtures 1×1 y 128×128, transparentes con RGB residual y roundtrip NumPy/Pillow
-- [ ] T2: Pruebas de aliasing, dtype/shape inválidos, límite de memoria y acceso fuera de rango
+- [x] T1: Fixtures 1×1 y 128×128, transparentes con RGB residual y roundtrip NumPy/Pillow
+- [x] T2: Pruebas de aliasing, dtype/shape inválidos, límite de memoria y acceso fuera de rango
 
 ## Expected deliverables
 
@@ -66,7 +66,7 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Guía para agentes de IA
 
-**Estado para agentes:** Listo: todas las dependencias están `done`; puede empezarse.
+**Estado para agentes:** Completado; usar sólo como referencia del contrato entregado.
 
 ### 1. Preparación
 
@@ -136,4 +136,14 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Evidence
 
-Pendiente de implementación.
+- src/moana/core/canvas.py: Canvas propietario del buffer uint8 C-contiguo (h, w, 4), construcción cerrada, copias en ambos sentidos, alfa cero normalizado, check_canvas_budget antes de reservar.
+- src/moana/core/pillow_adapter.py: canvas_to_pillow/canvas_from_pillow sólo RGBA de un frame, sin conversión implícita, errores de Pillow envueltos.
+- ADR-013 (docs/architecture/decisions/ADR-013-canvas-buffer.md): adaptadores como submódulos de core no importados por moana.core; sustituye parcialmente ADR-012 §3. MOANA.md 0.1.5-draft.
+- tests/unit/core/test_core_architecture.py: NumPy sólo en canvas.py, Pillow sólo en pillow_adapter.py, ningún otro módulo de core importa los adaptadores e import moana.core no carga numpy/PIL/pydantic.
+- Gate: scripts/validate.py y scripts/check_wheel.py verdes; cobertura 100 % de canvas.py y pillow_adapter.py.
+- Revisión: moana-python-engineer y moana-architect; hallazgos (copy.copy con alias, constructor público, pico de memoria de normalización, errores de Pillow, MaskedArray, limits obligatorio, redacción ADR-012/013) corregidos con pruebas.
+- Aprobado por el propietario el 2026-11-17 tras revisión; PR #42 hacia develop.
+- AC1: tests/unit/core/test_core_canvas.py::test_set_get_preserves_rgba_or_normalizes_alpha_zero (Hypothesis 128×128, sin escrituras colaterales) y ::test_out_of_range_access_raises_without_wrap (x/y = -1 y 128 lanzan OutOfBoundsError sin modificar el lienzo).
+- AC2: tests/unit/core/test_core_canvas.py::test_exported_array_does_not_alias_canvas, ::test_imported_array_is_copied_and_never_modified, ::test_shallow_and_deep_copy_do_not_share_the_buffer, ::test_direct_construction_is_closed y ::test_pillow_export_and_import_do_not_alias.
+- T1: tests/unit/core/test_core_canvas.py::test_blank_canvas_is_transparent_black_uint8_c_contiguous y ::test_from_array_normalizes_transparent_residual_rgb (1×1 y 128×128, oráculo a mano), ::test_numpy_and_pillow_roundtrip_preserve_rgba, ::test_from_pillow_normalizes_transparent_residual_rgb y ::test_visual_digest_matches_section_14_oracle.
+- T2: tests/unit/core/test_core_canvas.py: aliasing (::test_exported_array_does_not_alias_canvas, ::test_shallow_and_deep_copy_do_not_share_the_buffer), dtype/shape/tipo (::test_from_array_rejects_invalid_type_dtype_shape, ::test_from_array_rejects_masked_array, ::test_from_pillow_rejects_wrong_source_or_mode, ::test_from_pillow_rejects_multiframe_image), memoria (::test_budget_is_checked_before_numpy_allocates, ::test_from_array_checks_budget_before_copying, ::test_lowered_geometry_rejects_largest_canvas_without_allocating, ::test_transparent_import_peak_memory_stays_near_4a con tracemalloc) y fuera de rango (::test_out_of_range_access_raises_without_wrap).

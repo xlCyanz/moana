@@ -1,6 +1,6 @@
 # Contratos entre módulos
 
-Estado: **contratos previstos**, salvo `core`, `schema` y el plan de coste de `render` (implementados, ver abajo). Las firmas públicas objetivo están en [MOANA.md §13](../../MOANA.md); sus fórmulas, límites y formatos prevalecen sobre este resumen. No se añaden abstracciones base ni registros de plugins por anticipación.
+Estado: **contratos previstos**, salvo `core` (con el lienzo RGBA), `schema` y el plan de coste de `render` (implementados, ver abajo). Las firmas públicas objetivo están en [MOANA.md §13](../../MOANA.md); sus fórmulas, límites y formatos prevalecen sobre este resumen. No se añaden abstracciones base ni registros de plugins por anticipación.
 
 ## Entradas, salidas y efectos
 
@@ -22,7 +22,7 @@ Estado: **contratos previstos**, salvo `core`, `schema` y el plan de coste de `r
 
 ## `core` (implementado en MOANA-001)
 
-API pública en `moana.core`, sin dependencias de otros módulos Moana, NumPy ni Pillow. Decisiones en [ADR-010](decisions/ADR-010-core-contracts.md).
+API pública en `moana.core`, sin dependencias de otros módulos Moana, NumPy ni Pillow; los adaptadores del lienzo son submódulos aparte (abajo). Decisiones en [ADR-010](decisions/ADR-010-core-contracts.md).
 
 | Tipo | Contrato |
 | --- | --- |
@@ -38,11 +38,19 @@ API pública en `moana.core`, sin dependencias de otros módulos Moana, NumPy ni
 
 Errores (`moana.core.errors`): `MoanaError` (código `INTERNAL_ERROR`, salida 1) y subclases con `code` estable y `exit_code`: `ValidationError` (`VALIDATION_ERROR`, 2), `OutOfBoundsError` (`OUT_OF_BOUNDS`, 2, subclase de validación), `ReferenceError` (`REFERENCE_ERROR`, 2; distinto del builtin homónimo, importar como `errors.ReferenceError`), `UnsupportedVersion` (2), `UnsupportedOperation` (2), `BudgetExceeded` (3), `EditConflict` (4), `ExportError` (5). Atributos de sólo lectura `message`, `json_pointer` (opcional, RFC 6901) y `context`. `context` es inmutable y sólo admite escalares o tuplas: nombres de campo, motivos, tipos y límites numéricos; nunca strings de entrada no confiable ni rutas. Los errores son picklables.
 
+Lienzo (MOANA-004, [ADR-013](decisions/ADR-013-canvas-buffer.md)): adaptadores explícitos que `moana.core` no importa, para que `schema` y el plan de coste no carguen bibliotecas gráficas.
+
+| Tipo | Contrato |
+| --- | --- |
+| `moana.core.canvas.Canvas` | Propietario exclusivo de un buffer `uint8` C-contiguo `(height, width, 4)`, RGBA recto, alfa cero normalizado a `(0,0,0,0)`. `blank(dimensions, *, limits)` y `from_array(array, *, limits)` (límites obligatorios) validan tipo, dtype, forma y presupuesto antes de copiar o reservar. `get_pixel`/`set_pixel` con `Point` lanzan `OutOfBoundsError` fuera del lienzo, sin wraparound. `to_array()` (copia escribible), `to_bytes()`, `copy()`, `visual_digest()` (§14). Mutable y sin hash; igualdad por tamaño y bytes; construcción directa cerrada y `copy.copy`/`deepcopy` copian el buffer. No llega a la fachada: `RenderResult` guarda bytes inmutables (ADR-013). |
+| `moana.core.canvas.check_canvas_budget` | Geometría del anfitrión y `4 × A` bytes contra `RenderLimits`; `BudgetExceeded` con los mismos recursos que `plan_budget`. |
+| `moana.core.pillow_adapter` | `canvas_to_pillow(canvas)` crea una imagen `RGBA` nueva; `canvas_from_pillow(image, *, limits)` acepta sólo `RGBA` de un frame ya abierto, sin conversión implícita, y copia; una imagen cerrada o truncada da `ValidationError` (`unreadable_image`). |
+
 Integración con `schema` (MOANA-002): los errores de `core` no derivan de `ValueError`, así que Pydantic no los convierte en errores de campo. `schema` valida los enteros primitivos con las constantes de `core` (`Field(ge=..., le=...)`) y expone `Point`/`Box`/`Dimensions` como propiedades de los modelos. Un error con varios problemas lleva `details: tuple[ErrorDetail, ...]` (`code`, `json_pointer`, `message`, `context`), añadido de forma compatible por ADR-011.
 
 ## `render` — plan de coste (MOANA-003)
 
-`moana.render.estimate_cost(document, *, frames)` calcula con aritmética entera, sin reservar ni recorrer píxeles, las visitas, bytes, píxeles de frames y conteos según las fórmulas `budget-v1` de [ADR-012](decisions/ADR-012-request-budgets.md). `plan_budget(document, limits, *, frames, deadline)` lanza `BudgetExceeded` antes de cualquier buffer, con un detalle por recurso (`resource`, `limit`, `estimated`); una solicitud en el límite se admite. `frames` (≤256) cuenta renders idénticos; una animación suma un plan por frame evaluado. `plan_budget` es la única puerta para los límites del anfitrión: el lienzo (MOANA-004) reserva sólo con un `CostEstimate` aprobado. Rasterizadores y compositor trabajan por filas o tiles dentro de estas cotas, con prueba `tracemalloc`, o actualizan el estimador. El orquestador llega en MOANA-010.
+`moana.render.estimate_cost(document, *, frames)` calcula con aritmética entera, sin reservar ni recorrer píxeles, las visitas, bytes, píxeles de frames y conteos según las fórmulas `budget-v1` de [ADR-012](decisions/ADR-012-request-budgets.md). `plan_budget(document, limits, *, frames, deadline)` lanza `BudgetExceeded` antes de cualquier buffer, con un detalle por recurso (`resource`, `limit`, `estimated`); una solicitud en el límite se admite. `frames` (≤256) cuenta renders idénticos; una animación suma un plan por frame evaluado. `plan_budget` es la única puerta para los límites del anfitrión: el orquestador (MOANA-010) sólo crea lienzos tras `plan_budget` y les pasa los límites de la solicitud; el lienzo repite su parte (`4A`, geometría) con el mismo `BudgetExceeded` como defensa en profundidad (ADR-013). Rasterizadores y compositor trabajan por filas o tiles dentro de estas cotas, con prueba `tracemalloc`, o actualizan el estimador. El orquestador llega en MOANA-010.
 
 ## `schema` (implementado en MOANA-002)
 

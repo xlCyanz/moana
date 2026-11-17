@@ -1,6 +1,6 @@
 # Arquitectura prevista de Moana
 
-Estado: **diseño para implementación**. El paquete actual contiene metadata y un marcador de tipos; las cajas de este documento no representan módulos ya entregados. La fuente normativa es [MOANA.md](../../MOANA.md). El [índice de arquitectura](README.md) conserva las decisiones originales y [module-contracts.md](module-contracts.md) concreta las fronteras.
+Estado: **diseño para implementación**. El paquete actual implementa `core` (con el lienzo RGBA), `schema` y el plan de coste de `render` (ver [module-contracts.md](module-contracts.md)); el resto de cajas de este documento no representan módulos ya entregados. La fuente normativa es [MOANA.md](../../MOANA.md). El [índice de arquitectura](README.md) conserva las decisiones originales y [module-contracts.md](module-contracts.md) concreta las fronteras.
 
 ## Propósito y límites del sistema
 
