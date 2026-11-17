@@ -1,6 +1,6 @@
 # Contratos entre módulos
 
-Estado: **contratos previstos**, salvo `core` (con el lienzo RGBA), `schema` y el plan de coste de `render` (implementados, ver abajo). Las firmas públicas objetivo están en [MOANA.md §13](../../MOANA.md); sus fórmulas, límites y formatos prevalecen sobre este resumen. No se añaden abstracciones base ni registros de plugins por anticipación.
+Estado: **contratos previstos**, salvo `core` (con el lienzo RGBA), `schema`, `palette` y el plan de coste de `render` (implementados, ver abajo). Las firmas públicas objetivo están en [MOANA.md §13](../../MOANA.md); sus fórmulas, límites y formatos prevalecen sobre este resumen. No se añaden abstracciones base ni registros de plugins por anticipación.
 
 ## Entradas, salidas y efectos
 
@@ -35,6 +35,9 @@ API pública en `moana.core`, sin dependencias de otros módulos Moana, NumPy ni
 | `RenderLimits` / `DEFAULT_RENDER_LIMITS` | Presupuestos por solicitud de §20 (bytes de buffers con temporales, visitas de píxel, píxeles de frames, operaciones, capas) y `geometry`. Se bajan libremente; elevar un presupuesto exige `host_override=True` del anfitrión; conteos y geometría nunca superan el contrato. ADR-012. |
 | `Deadline` | Comprobación cooperativa entre unidades de trabajo (`checkpoint`), `BudgetExceeded` con recurso `time`; no influye en el resultado ni interrumpe código nativo. |
 | `require_int` | Validación compartida de enteros con rango; `minimum > maximum` es error de programación (`ValueError`). |
+| `moana.core.ids` | Dueño único de los lenguajes léxicos: `ID_REGEX`/`ID_PATTERN` (`[a-z][a-z0-9_-]{0,63}`) y `RGBA_HEX_REGEX`/`RGBA_HEX_PATTERN` (`#RRGGBBAA`); `is_id`, `is_rgba_hex` y `check_id` aceptan sólo `str` exacto con `fullmatch`. `schema` publica estos patrones. ADR-014. |
+| `MAX_RAMP_ENTRIES` | Total de miembros de rampa de una paleta (20 000); acota paletas construidas fuera del lector del esquema. |
+| `errors.detail_sort_key` | Orden canónico de `ErrorDetail` (pointer con índices numéricos, código, mensaje), compartido por `schema` y `palette`. |
 
 Errores (`moana.core.errors`): `MoanaError` (código `INTERNAL_ERROR`, salida 1) y subclases con `code` estable y `exit_code`: `ValidationError` (`VALIDATION_ERROR`, 2), `OutOfBoundsError` (`OUT_OF_BOUNDS`, 2, subclase de validación), `ReferenceError` (`REFERENCE_ERROR`, 2; distinto del builtin homónimo, importar como `errors.ReferenceError`), `UnsupportedVersion` (2), `UnsupportedOperation` (2), `BudgetExceeded` (3), `EditConflict` (4), `ExportError` (5). Atributos de sólo lectura `message`, `json_pointer` (opcional, RFC 6901) y `context`. `context` es inmutable y sólo admite escalares o tuplas: nombres de campo, motivos, tipos y límites numéricos; nunca strings de entrada no confiable ni rutas. Los errores son picklables.
 
@@ -51,6 +54,19 @@ Integración con `schema` (MOANA-002): los errores de `core` no derivan de `Valu
 ## `render` — plan de coste (MOANA-003)
 
 `moana.render.estimate_cost(document, *, frames)` calcula con aritmética entera, sin reservar ni recorrer píxeles, las visitas, bytes, píxeles de frames y conteos según las fórmulas `budget-v1` de [ADR-012](decisions/ADR-012-request-budgets.md). `plan_budget(document, limits, *, frames, deadline)` lanza `BudgetExceeded` antes de cualquier buffer, con un detalle por recurso (`resource`, `limit`, `estimated`); una solicitud en el límite se admite. `frames` (≤256) cuenta renders idénticos; una animación suma un plan por frame evaluado. `plan_budget` es la única puerta para los límites del anfitrión: el orquestador (MOANA-010) sólo crea lienzos tras `plan_budget` y les pasa los límites de la solicitud; el lienzo repite su parte (`4A`, geometría) con el mismo `BudgetExceeded` como defensa en profundidad (ADR-013). Rasterizadores y compositor trabajan por filas o tiles dentro de estas cotas, con prueba `tracemalloc`, o actualizan el estimador. El orquestador llega en MOANA-010.
+
+## `palette` (implementado en MOANA-005)
+
+API pública en `moana.palette`; depende sólo de `core` y no carga NumPy, Pillow ni Pydantic. Decisiones en [ADR-014](decisions/ADR-014-palette.md).
+
+| Tipo | Contrato |
+| --- | --- |
+| `Rgba` | Canales `int` 0–255; `parse` sólo acepta `#RRGGBBAA` (cualquier caja) y `hex` lo devuelve en mayúsculas; `normalized()` convierte alfa 0 en `(0,0,0,0)`; `luminance` es Y lineal entera (`2126·lin[R] + 7152·lin[G] + 722·lin[B]`, tabla literal `SRGB_TO_LINEAR` × 65 535). |
+| `Palette` | Valor inmutable y hashable con `id`, `profile` (`strict`/`rgba`), `colors` y `ramps`. Valida las mismas reglas que `schema` para una paleta aislada, con los mismos códigos, motivos, orden y contexto `issue_count`, y pointers relativos (`/colors/0/rgba`). `index_of`/`color`/`ramp` por ID (`ReferenceError` si falta); `ids_with_value` compara valores normalizados. `replace_color` y `duplicate_color` devuelven paletas nuevas sin renumerar. `to_mapping`/`from_mapping` usan la forma de la sección `palette` del documento normalizado; `from_mapping` acepta sólo `dict`/`list`/`str` exactos y acota longitudes antes de recorrer. |
+| `PaletteWarning` | Advertencias no bloqueantes de `luminance_warnings()`: `RAMP_LUMINANCE_NOT_INCREASING` (`decreasing`, `equal`, `duplicate_value`), `RAMP_TRANSPARENT_STEP` y `RAMP_PARTIAL_ALPHA_STEP`, con pointer, `ramp_id` e IDs de color. |
+| `ColorRemap` | Sustitución explícita de un paso entre IDs de la misma paleta; no encadena ni introduce colores; detalles sin pointer (`side`, `position`). |
+
+`editing` no importa `palette` (§3): `replace_palette_color` validará con los modelos de `schema`. La conversión `schema.Palette → palette.Palette` vivirá en `render`.
 
 ## `schema` (implementado en MOANA-002)
 

@@ -8,7 +8,7 @@ Prioridades: P0 fundamento/bloqueante; P1 funcionalidad central; P2 avanzada; P3
 
 [Roadmap](roadmap.md) · [Dependencias](dependency-map.md) · [Trazabilidad](traceability.md) · [Ciclo de vida](../guides/issue-lifecycle.md).
 
-Estados: {'blocked': 29, 'done': 5, 'ready': 2}.
+Estados: {'blocked': 29, 'done': 5, 'ready': 1, 'review': 1}.
 
 | Issue | Resultado | Fase | Prioridad | Estado | Dependencias directas |
 | --- | --- | --- | --- | --- | --- |
@@ -17,7 +17,7 @@ Estados: {'blocked': 29, 'done': 5, 'ready': 2}.
 | [MOANA-002](MOANA-002.md) | Implementar documento Pydantic y JSON Schema | P1 | P0 | done | MOANA-001 |
 | [MOANA-003](MOANA-003.md) | Aplicar presupuesto de trabajo y recursos | P1 | P0 | done | MOANA-001, MOANA-002 |
 | [MOANA-004](MOANA-004.md) | Crear lienzo RGBA y propiedad de buffers | P1 | P1 | done | MOANA-001, MOANA-003 |
-| [MOANA-005](MOANA-005.md) | Implementar paletas y rampas | P1 | P1 | ready | MOANA-001, MOANA-002 |
+| [MOANA-005](MOANA-005.md) | Implementar paletas y rampas | P1 | P1 | review | MOANA-001, MOANA-002 |
 | [MOANA-006](MOANA-006.md) | Rasterizar primitivas enteras y flood fill | P1 | P1 | blocked | MOANA-004, MOANA-005 |
 | [MOANA-007](MOANA-007.md) | Añadir adaptador de paths AggDraw | P3 | P2 | blocked | MOANA-006, MOANA-010, MOANA-028 |
 | [MOANA-008](MOANA-008.md) | Añadir transformaciones pixel-perfect | P1 | P1 | blocked | MOANA-006 |

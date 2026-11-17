@@ -26,7 +26,7 @@ Estado: 4/8 issues completados.
 - [MOANA-002](MOANA-002.md) — Implementar documento Pydantic y JSON Schema (done)
 - [MOANA-003](MOANA-003.md) — Aplicar presupuesto de trabajo y recursos (done)
 - [MOANA-004](MOANA-004.md) — Crear lienzo RGBA y propiedad de buffers (done)
-- [MOANA-005](MOANA-005.md) — Implementar paletas y rampas (ready)
+- [MOANA-005](MOANA-005.md) — Implementar paletas y rampas (review)
 - [MOANA-006](MOANA-006.md) — Rasterizar primitivas enteras y flood fill (blocked)
 - [MOANA-008](MOANA-008.md) — Añadir transformaciones pixel-perfect (blocked)
 - [MOANA-028](MOANA-028.md) — Crear harness de regresión visual (ready)
@@ -88,4 +88,4 @@ Estado: 0/8 issues completados.
 
 ## Siguiente paso
 
-Implementar [MOANA-005](MOANA-005.md): Implementar paletas y rampas.
+Implementar [MOANA-028](MOANA-028.md): Crear harness de regresión visual.

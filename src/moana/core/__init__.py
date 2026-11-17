@@ -35,6 +35,16 @@ from moana.core.errors import (
     UnsupportedOperation,
     UnsupportedVersion,
     ValidationError,
+    detail_sort_key,
+)
+from moana.core.ids import (
+    ID_PATTERN,
+    ID_REGEX,
+    RGBA_HEX_PATTERN,
+    RGBA_HEX_REGEX,
+    check_id,
+    is_id,
+    is_rgba_hex,
 )
 from moana.core.limits import (
     DEFAULT_GEOMETRY_LIMITS,
@@ -42,6 +52,7 @@ from moana.core.limits import (
     MAX_COLORS_STRICT,
     MAX_LAYERS,
     MAX_OPERATIONS,
+    MAX_RAMP_ENTRIES,
     MAX_VERTICES,
     GeometryLimits,
 )
@@ -53,6 +64,8 @@ __all__ = [
     "DEFAULT_MAX_PIXEL_VISITS",
     "DEFAULT_RENDER_LIMITS",
     "DEFAULT_SIZE",
+    "ID_PATTERN",
+    "ID_REGEX",
     "MAX_AREA",
     "MAX_COLORS_RGBA",
     "MAX_COLORS_STRICT",
@@ -60,8 +73,11 @@ __all__ = [
     "MAX_DIMENSION",
     "MAX_LAYERS",
     "MAX_OPERATIONS",
+    "MAX_RAMP_ENTRIES",
     "MAX_VERTICES",
     "MIN_DIMENSION",
+    "RGBA_HEX_PATTERN",
+    "RGBA_HEX_REGEX",
     "Box",
     "BudgetExceeded",
     "Deadline",
@@ -78,5 +94,9 @@ __all__ = [
     "UnsupportedOperation",
     "UnsupportedVersion",
     "ValidationError",
+    "check_id",
+    "detail_sort_key",
+    "is_id",
+    "is_rgba_hex",
     "require_int",
 ]

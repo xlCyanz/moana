@@ -340,7 +340,7 @@
       "id": "MOANA-005",
       "title": "Implementar paletas y rampas",
       "phase": "P1",
-      "status": "ready",
+      "status": "review",
       "priority": "P1",
       "dependencies": [
         "MOANA-001",
@@ -363,7 +363,13 @@
         "Casos de colores duplicados por valor pero IDs diferentes y IDs duplicados inválidos",
         "Pruebas de límites 256/4096, transparencia y remapeo explícito sin colores ocultos"
       ],
-      "evidence": [],
+      "evidence": [
+        "src/moana/palette/{__init__,colors,table}.py: Rgba canónico #RRGGBBAA y luminancia lineal entera, Palette inmutable por IDs con perfiles strict/rgba, edición sin renumerar, ColorRemap explícito, advertencias de rampa no bloqueantes.",
+        "src/moana/core/ids.py: dueño único de los lenguajes de ID y color (schema publica los mismos patrones; generate_schema --check sin cambios); detail_sort_key movido a core.errors; MAX_RAMP_ENTRIES en core.limits.",
+        "ADR-014 (docs/architecture/decisions/ADR-014-palette.md); MOANA.md 0.1.6-draft (§9 luminancia verificable); contratos de módulos y overview actualizados.",
+        "Gate: scripts/validate.py y scripts/check_wheel.py verdes; cobertura 100 % de moana.palette y moana.core.ids.",
+        "Revisión: moana-python-engineer, moana-pixel-artist y moana-architect; corregidos luminancia sobre sRGB codificado, pasos transparentes/semitransparentes, IDs en advertencias, patrones duplicados, unicidad con el ID de paleta, formato de errores distinto del esquema, coste sin cota de from_mapping/ColorRemap, hash de ColorRemap y subclases hostiles de str/dict/list."
+      ],
       "aliases": [
         "MOA-005"
       ],
@@ -386,8 +392,14 @@
         "La transparencia normalizada puede cambiar RGB residual; definirla antes de comparar pertenencia."
       ],
       "blocking_reason": null,
-      "acceptance_evidence": {},
-      "test_evidence": {}
+      "acceptance_evidence": {
+        "AC1": "tests/unit/palette/test_palette_table.py::test_strict_rejects_intermediate_alpha, ::test_missing_ramp_reference_is_a_reference_error, ::test_validation_problems_take_precedence_and_are_sorted; paridad con el esquema en tests/unit/palette/test_palette_architecture.py::test_schema_and_palette_report_the_same_semantic_problems.",
+        "AC2": "tests/unit/palette/test_palette_table.py::test_mapping_roundtrip_preserves_order_values_and_identity (strict y rgba), tests/unit/palette/test_palette_architecture.py::test_normalized_document_palette_loads_identically; advertencias no bloqueantes en tests/unit/palette/test_palette_table.py::test_luminance_warning_does_not_block_stylised_ramp, ::test_hue_shifted_ramp_ordered_by_linear_luminance y ::test_transparent_steps_are_reported_and_skipped_for_ordering."
+      },
+      "test_evidence": {
+        "T1": "tests/unit/palette/test_palette_table.py::test_same_value_different_ids_are_independent_colors, ::test_duplicate_color_ids_are_invalid, ::test_ids_are_unique_across_palette_colors_and_ramps y ::test_duplicate_value_equal_and_translucent_steps_are_distinguished.",
+        "T2": "tests/unit/palette/test_palette_table.py::test_profile_color_limits_exact_and_plus_one (256/4096 exacto y +1), ::test_strict_limit_also_applies_to_the_constructor, ::test_ramp_budget_is_checked_before_walking_members, ::test_transparent_values_match_after_normalisation, ::test_remap_is_explicit_single_step_and_closed_over_the_palette, ::test_remap_rejects_unknown_ids_and_non_strings_without_pointers; tests/unit/palette/test_palette_colors.py::test_linear_table_matches_the_srgb_formula."
+      }
     },
     {
       "id": "MOANA-006",

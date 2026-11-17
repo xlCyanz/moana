@@ -28,6 +28,7 @@ __all__ = [
     "UnsupportedOperation",
     "UnsupportedVersion",
     "ValidationError",
+    "detail_sort_key",
 ]
 
 _SCALARS = (int, str, type(None))
@@ -242,3 +243,15 @@ class ExportError(MoanaError):
 
     code = "EXPORT_ERROR"
     exit_code = 5
+
+
+def detail_sort_key(detail: ErrorDetail) -> tuple[object, ...]:
+    """Order by pointer (array indexes numerically), then code, then message."""
+    pointer = detail.json_pointer
+    tokens: tuple[tuple[int, int, str], ...] = ()
+    if pointer:
+        tokens = tuple(
+            (0, int(token), "") if token.isascii() and token.isdigit() else (1, 0, token)
+            for token in pointer[1:].split("/")
+        )
+    return (pointer is not None, tokens, detail.code, detail.message)

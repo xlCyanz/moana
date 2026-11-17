@@ -44,6 +44,7 @@ El paquete contiene `src/moana/__init__.py`, `py.typed` y `src/moana/core/` (MOA
 - [ADR-011: schema 1.0 del documento](decisions/ADR-011-schema-v1.md).
 - [ADR-012: presupuestos de solicitud](decisions/ADR-012-request-budgets.md).
 - [ADR-013: lienzo RGBA y adaptadores](decisions/ADR-013-canvas-buffer.md).
+- [ADR-014: paletas, lenguajes de ID y luminancia](decisions/ADR-014-palette.md).
 - [Modelo de amenazas](SECURITY_MODEL.md).
 
 Un ADR nuevo registra contexto, decisión, alternativas, consecuencias y evidencia. Cambiar un ADR aceptado se hace mediante otro que lo sustituya y actualizando el contrato principal.

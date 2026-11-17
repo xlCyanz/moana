@@ -26,6 +26,7 @@ from pydantic import (
 from pydantic.json_schema import SkipJsonSchema
 from pydantic_core import PydanticCustomError
 
+from moana.core import ids
 from moana.core.coordinates import (
     MAX_COORDINATE,
     MAX_DIMENSION,
@@ -72,8 +73,9 @@ MAX_TAGS: Final = 32
 MAX_SEED: Final = 2**64 - 1
 MAX_REVISION: Final = 2**64 - 1
 
-ID_PATTERN: Final = r"^[a-z][a-z0-9_-]{0,63}$"
-RGBA_PATTERN: Final = r"^#[0-9A-Fa-f]{8}$"
+# Lexical languages are owned by core (ADR-014); re-exported under the schema names.
+ID_PATTERN: Final = ids.ID_PATTERN
+RGBA_PATTERN: Final = ids.RGBA_HEX_PATTERN
 
 
 def _as_tuple(value: object) -> object:
