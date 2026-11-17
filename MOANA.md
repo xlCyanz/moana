@@ -1,6 +1,6 @@
 # MOANA — Especificación técnica
 
-Versión del contrato: **0.1.4-draft** · Fecha: **2026-11-17** · Estado: especificación inicial para implementación; motor todavía no implementado.
+Versión del contrato: **0.1.5-draft** · Fecha: **2026-11-17** · Estado: especificación inicial para implementación; motor todavía no implementado.
 
 Este archivo es la fuente de verdad del producto. «DEBE» expresa una condición verificable; «DEBERÍA», una recomendación artística o de diseño. Los contratos aquí descritos son objetivos futuros, no APIs disponibles en el paquete inicial. Los cambios de contrato requieren actualizar este documento, los ejemplos, los issues y una decisión de arquitectura cuando afecten compatibilidad. El catálogo de requisitos y su trazabilidad vive en `docs/requirements.json` y `docs/issues/traceability.md`.
 
@@ -54,7 +54,7 @@ El origen es la esquina superior izquierda; x crece a la derecha y y hacia abajo
 
 Dimensiones válidas: 1–2048 por eje, con límite adicional de área de 4 194 304 píxeles. Predeterminado 128 × 128. Las coordenadas son enteros reales del JSON (no booleanos, strings ni floats); rango absoluto <=1 048 576. Una caja es `[x0,y0,x1,y1)`; exige x0<x1 e y0<y1. El rango absoluto se aplica a coordenadas de píxel; el borde excluido de una caja puede llegar a 1 048 577 para que todo píxel válido tenga caja 1 × 1. Una intersección o recorte sin píxeles es ausencia de caja, no una caja vacía (ADR-010). La geometría puede quedar fuera del lienzo: se recorta sin wraparound ni error, después de presupuestar su complejidad. Acceso directo a un píxel fuera del lienzo produce error de límites; no hereda índices negativos de NumPy.
 
-Las vistas públicas son inmutables o copias; el propietario del buffer controla la vida útil. Se usan acumuladores uint32/int64 antes de multiplicar para evitar overflow. Escalado de preview sólo por factores enteros >=1 mediante vecino más cercano; el archivo de trabajo conserva la resolución original.
+Las vistas públicas son inmutables o copias; el propietario del buffer controla la vida útil. El lienzo y sus adaptadores NumPy/Pillow son submódulos de `core` que su paquete no importa; sólo intercambian copias e imágenes `RGBA` de un frame, sin convertir modos implícitamente (ADR-013). Se usan acumuladores uint32/int64 antes de multiplicar para evitar overflow. Escalado de preview sólo por factores enteros >=1 mediante vecino más cercano; el archivo de trabajo conserva la resolución original.
 
 ## 6. Geometría y primitivas
 

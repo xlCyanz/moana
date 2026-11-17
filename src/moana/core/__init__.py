@@ -1,6 +1,8 @@
 """Core contracts: integer coordinates, canvas limits and the domain error hierarchy.
 
-``moana.core`` imports no other Moana module, NumPy or Pillow (MOANA.md section 3).
+``moana.core`` imports no other Moana module (MOANA.md section 3), and importing the
+package loads neither NumPy nor Pillow. The canvas buffer and its adapters are the
+explicit submodules ``moana.core.canvas`` and ``moana.core.pillow_adapter`` (ADR-013).
 """
 
 from moana.core.budget import (

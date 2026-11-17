@@ -1,6 +1,6 @@
 # Inventario del repositorio
 
-233 archivos actuales de fuente, documentación, configuración y pruebas al 2026-11-17. Incluye cambios locales todavía sin commit. Excluye entorno virtual, herramientas, cachés, artefactos y metadata Git.
+237 archivos actuales de fuente, documentación, configuración y pruebas al 2026-11-17. Incluye cambios locales todavía sin commit. Excluye entorno virtual, herramientas, cachés, artefactos y metadata Git.
 
 | Archivo |
 | --- |
@@ -94,6 +94,7 @@
 | [docs/architecture/decisions/ADR-010-core-contracts.md](../docs/architecture/decisions/ADR-010-core-contracts.md) |
 | [docs/architecture/decisions/ADR-011-schema-v1.md](../docs/architecture/decisions/ADR-011-schema-v1.md) |
 | [docs/architecture/decisions/ADR-012-request-budgets.md](../docs/architecture/decisions/ADR-012-request-budgets.md) |
+| [docs/architecture/decisions/ADR-013-canvas-buffer.md](../docs/architecture/decisions/ADR-013-canvas-buffer.md) |
 | [docs/architecture/module-contracts.md](../docs/architecture/module-contracts.md) |
 | [docs/architecture/overview.md](../docs/architecture/overview.md) |
 | [docs/guides/agent-workflow.md](../docs/guides/agent-workflow.md) |
@@ -204,9 +205,11 @@
 | [src/moana/__init__.py](../src/moana/__init__.py) |
 | [src/moana/core/__init__.py](../src/moana/core/__init__.py) |
 | [src/moana/core/budget.py](../src/moana/core/budget.py) |
+| [src/moana/core/canvas.py](../src/moana/core/canvas.py) |
 | [src/moana/core/coordinates.py](../src/moana/core/coordinates.py) |
 | [src/moana/core/errors.py](../src/moana/core/errors.py) |
 | [src/moana/core/limits.py](../src/moana/core/limits.py) |
+| [src/moana/core/pillow_adapter.py](../src/moana/core/pillow_adapter.py) |
 | [src/moana/py.typed](../src/moana/py.typed) |
 | [src/moana/render/__init__.py](../src/moana/render/__init__.py) |
 | [src/moana/render/budget.py](../src/moana/render/budget.py) |
@@ -222,6 +225,7 @@
 | [tests/test_repository_tools.py](../tests/test_repository_tools.py) |
 | [tests/unit/core/test_core_architecture.py](../tests/unit/core/test_core_architecture.py) |
 | [tests/unit/core/test_core_budget.py](../tests/unit/core/test_core_budget.py) |
+| [tests/unit/core/test_core_canvas.py](../tests/unit/core/test_core_canvas.py) |
 | [tests/unit/core/test_core_coordinates.py](../tests/unit/core/test_core_coordinates.py) |
 | [tests/unit/core/test_core_errors.py](../tests/unit/core/test_core_errors.py) |
 | [tests/unit/core/test_core_limits.py](../tests/unit/core/test_core_limits.py) |
