@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from typing import Final
 
-from moana.core.errors import ErrorDetail
+from moana.core.errors import detail_sort_key
 
 __all__ = ["MAX_POINTER_TOKEN", "ROOT", "Location", "child_pointer", "detail_sort_key"]
 
@@ -30,15 +30,3 @@ def child_pointer(location: Location, token: str | int) -> Location:
     if not exact or len(text) > MAX_POINTER_TOKEN:
         return pointer, False
     return f"{pointer}/{text.replace('~', '~0').replace('/', '~1')}", True
-
-
-def detail_sort_key(detail: ErrorDetail) -> tuple[object, ...]:
-    """Order by pointer (array indexes numerically), then code, then message."""
-    pointer = detail.json_pointer
-    tokens: tuple[tuple[int, int, str], ...] = ()
-    if pointer:
-        tokens = tuple(
-            (0, int(token), "") if token.isascii() and token.isdigit() else (1, 0, token)
-            for token in pointer[1:].split("/")
-        )
-    return (pointer is not None, tokens, detail.code, detail.message)

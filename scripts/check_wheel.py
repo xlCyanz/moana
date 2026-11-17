@@ -46,6 +46,7 @@ def main() -> int:
             "assert files('moana').joinpath('render/budget.py').is_file(); "
             "assert files('moana').joinpath('core/canvas.py').is_file(); "
             "assert files('moana').joinpath('core/pillow_adapter.py').is_file(); "
+            "import moana.palette; assert moana.palette.Rgba.parse('#000000FF').a == 255; "
             "print('Isolated wheel OK:', moana.__version__)"
         )
         subprocess.run([str(python), "-I", "-c", probe], cwd=root, check=True)

@@ -1,6 +1,6 @@
 # MOANA — Especificación técnica
 
-Versión del contrato: **0.1.5-draft** · Fecha: **2026-11-17** · Estado: especificación inicial para implementación; motor todavía no implementado.
+Versión del contrato: **0.1.6-draft** · Fecha: **2026-11-17** · Estado: especificación inicial para implementación; motor todavía no implementado.
 
 Este archivo es la fuente de verdad del producto. «DEBE» expresa una condición verificable; «DEBERÍA», una recomendación artística o de diseño. Los contratos aquí descritos son objetivos futuros, no APIs disponibles en el paquete inicial. Los cambios de contrato requieren actualizar este documento, los ejemplos, los issues y una decisión de arquitectura cuando afecten compatibilidad. El catálogo de requisitos y su trazabilidad vive en `docs/requirements.json` y `docs/issues/traceability.md`.
 
@@ -92,7 +92,7 @@ Cluster = componente conectado de píxeles del mismo color (o del mismo índice 
 
 ## 9. Paletas, color e iluminación
 
-Una paleta tiene ID estable, colores con IDs únicos y valores `#RRGGBBAA` en mayúsculas. `#RRGGBB` no es formato canónico. Las operaciones referencian IDs de color, no copias del valor. Las rampas son listas ordenadas de IDs de sombra a luz; la luminancia creciente es una recomendación verificable, con excepción documentable para rampas estilizadas. Cambiar un color modifica todos sus consumidores; duplicarlo permite una edición local independiente.
+Una paleta tiene ID estable, colores con IDs únicos y valores `#RRGGBBAA` en mayúsculas. `#RRGGBB` no es formato canónico. Las operaciones referencian IDs de color, no copias del valor. Las rampas son listas ordenadas de IDs de sombra a luz; la luminancia creciente es una recomendación verificable, con excepción documentable para rampas estilizadas. La luminancia verificable es Y lineal entera: `2126·lin[R] + 7152·lin[G] + 722·lin[B]` con la tabla sRGB→lineal de 256 enteros escalada a 65 535 (ADR-014); un paso que no crece, un paso transparente o uno semitransparente produce advertencia, nunca rechazo. Cambiar un color modifica todos sus consumidores; duplicarlo permite una edición local independiente.
 
 Perfil `strict`: alfa de colores {0,255}, capas con opacidad 255 y composición normal; el resultado usa sólo colores de la paleta más transparente. Perfil `rgba`: admite alfa 0–255 y composición, puede generar colores adicionales y lo declara en el reporte. No se cuantiza implícitamente. La exportación indexada rechaza exceso de colores salvo que el usuario pida un remapeo explícito y reciba su informe de error.
 

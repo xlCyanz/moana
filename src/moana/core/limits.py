@@ -30,6 +30,7 @@ __all__ = [
     "MAX_COLORS_STRICT",
     "MAX_LAYERS",
     "MAX_OPERATIONS",
+    "MAX_RAMP_ENTRIES",
     "MAX_VERTICES",
     "GeometryLimits",
 ]
@@ -41,6 +42,10 @@ MAX_OPERATIONS: Final = 10_000
 MAX_VERTICES: Final = 4096
 MAX_COLORS_STRICT: Final = 256
 MAX_COLORS_RGBA: Final = 4096
+# Total colour references across all ramps of a palette. A schema document cannot
+# reach it (its reader admits at most 20 000 JSON nodes); it bounds the cost of
+# palettes built outside the schema reader (ADR-014).
+MAX_RAMP_ENTRIES: Final = 20_000
 
 
 @dataclass(frozen=True, slots=True)

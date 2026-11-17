@@ -13,7 +13,7 @@
 - Dependencies: [MOANA-013](MOANA-013.md), [MOANA-005](MOANA-005.md)
 - Related modules: techniques, quality
 - Requirements: R006, R025 ([trazabilidad](traceability.md))
-- Bloqueo: Dependencias pendientes: MOANA-013, MOANA-005
+- Bloqueo: Dependencias pendientes: MOANA-013
 
 ## Context
 
