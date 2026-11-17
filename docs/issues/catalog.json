@@ -76,7 +76,7 @@
       "id": "MOANA-001",
       "title": "Definir tipos, coordenadas, errores y límites",
       "phase": "P1",
-      "status": "ready",
+      "status": "done",
       "priority": "P0",
       "dependencies": [
         "MOANA-000"
@@ -100,7 +100,13 @@
         "Parametrizar extremos de rango, cajas negativas, bordes y tamaños 1/128/2048",
         "Propiedades de intersección: conmutatividad, contención y ausencia de expansión"
       ],
-      "evidence": [],
+      "evidence": [
+        "Implementación: src/moana/core/{__init__,coordinates,errors,limits}.py; decisión ADR-010.",
+        "uv run python scripts/validate.py: ruff, mypy estricto, check_repository y pytest verdes; core 100 % de ramas cubiertas.",
+        "uv run python scripts/check_wheel.py: wheel aislado importa moana.core.",
+        "Revisión por subagentes moana-python-engineer y moana-architect; hallazgos alto/medios corregidos (borde excluido +1, errores picklables con json_pointer, GeometryLimits, ADR).",
+        "Aprobado por el propietario el 2026-11-17 tras revisión; PR hacia develop."
+      ],
       "aliases": [
         "MOA-001"
       ],
@@ -122,14 +128,20 @@
         "Los bool son subclase de int; distinguirlos y definir el resultado vacío sin bbox inválida."
       ],
       "blocking_reason": null,
-      "acceptance_evidence": {},
-      "test_evidence": {}
+      "acceptance_evidence": {
+        "AC1": "tests/unit/core/test_core_coordinates.py::test_dimensions_out_of_range_fail, ::test_only_real_python_ints_are_coordinates y ::test_empty_or_inverted_box_fail: dimensión 0, bool/float/str/NumPy y cajas invertidas lanzan ValidationError (code VALIDATION_ERROR, context field/reason).",
+        "AC2": "Semántica en src/moana/core/coordinates.py, docs/architecture/module-contracts.md (core), ADR-010 y MOANA.md §5; tests ::test_unit_box_contains_exactly_one_pixel, ::test_canvas_box_and_clipping, ::test_intersection_of_touching_boxes_is_none; test_core_architecture.py prueba que core no importa NumPy/Pillow."
+      },
+      "test_evidence": {
+        "T1": "test_core_coordinates.py: tamaños 1/128/2048 y 2048×1, coordenadas ±1 048 576 y ±1 048 577, cajas negativas, bordes semiabiertos, rangos de esquinas y clip de caja máxima; test_core_limits.py: límites reducidos y píxeles en lienzos 1×1 y 2048.",
+        "T2": "test_core_coordinates.py con Hypothesis: intersección contra oráculo de conjuntos de píxeles (rango pequeño y cerca del máximo), conmutatividad, contención, no expansión, idempotencia y clip contra conjunto del lienzo."
+      }
     },
     {
       "id": "MOANA-002",
       "title": "Implementar documento Pydantic y JSON Schema",
       "phase": "P1",
-      "status": "blocked",
+      "status": "ready",
       "priority": "P0",
       "dependencies": [
         "MOANA-001"
@@ -174,7 +186,7 @@
       "risks": [
         "Un esquema demasiado permisivo oculta instrucciones desconocidas; uno anticipado sin gramática inventa soporte."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-001",
+      "blocking_reason": null,
       "acceptance_evidence": {},
       "test_evidence": {}
     },
@@ -228,7 +240,7 @@
       "risks": [
         "Un timeout cooperativo no interrumpe una llamada C bloqueada; nunca presentarlo como aislamiento."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-001, MOANA-002",
+      "blocking_reason": "Dependencias pendientes: MOANA-002",
       "acceptance_evidence": {},
       "test_evidence": {}
     },
@@ -281,7 +293,7 @@
       "risks": [
         "Vistas writeable=false pueden reabrirse si el propietario se filtra; probar ownership real."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-001, MOANA-003",
+      "blocking_reason": "Dependencias pendientes: MOANA-003",
       "acceptance_evidence": {},
       "test_evidence": {}
     },
@@ -334,7 +346,7 @@
       "risks": [
         "La transparencia normalizada puede cambiar RGB residual; definirla antes de comparar pertenencia."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-001, MOANA-002",
+      "blocking_reason": "Dependencias pendientes: MOANA-002",
       "acceptance_evidence": {},
       "test_evidence": {}
     },

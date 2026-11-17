@@ -8,13 +8,13 @@ Prioridades: P0 fundamento/bloqueante; P1 funcionalidad central; P2 avanzada; P3
 
 [Roadmap](roadmap.md) · [Dependencias](dependency-map.md) · [Trazabilidad](traceability.md) · [Ciclo de vida](../guides/issue-lifecycle.md).
 
-Estados: {'blocked': 34, 'done': 1, 'ready': 1}.
+Estados: {'blocked': 33, 'done': 2, 'ready': 1}.
 
 | Issue | Resultado | Fase | Prioridad | Estado | Dependencias directas |
 | --- | --- | --- | --- | --- | --- |
 | [MOANA-000](MOANA-000.md) | Inicializar infraestructura y planificación | P0 | P0 | done | — |
-| [MOANA-001](MOANA-001.md) | Definir tipos, coordenadas, errores y límites | P1 | P0 | ready | MOANA-000 |
-| [MOANA-002](MOANA-002.md) | Implementar documento Pydantic y JSON Schema | P1 | P0 | blocked | MOANA-001 |
+| [MOANA-001](MOANA-001.md) | Definir tipos, coordenadas, errores y límites | P1 | P0 | done | MOANA-000 |
+| [MOANA-002](MOANA-002.md) | Implementar documento Pydantic y JSON Schema | P1 | P0 | ready | MOANA-001 |
 | [MOANA-003](MOANA-003.md) | Aplicar presupuesto de trabajo y recursos | P1 | P0 | blocked | MOANA-001, MOANA-002 |
 | [MOANA-004](MOANA-004.md) | Crear lienzo RGBA y propiedad de buffers | P1 | P1 | blocked | MOANA-001, MOANA-003 |
 | [MOANA-005](MOANA-005.md) | Implementar paletas y rampas | P1 | P1 | blocked | MOANA-001, MOANA-002 |

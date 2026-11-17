@@ -2,7 +2,7 @@
 
 ## Propósito y fuente de verdad
 
-Moana será un motor Python de Pixel Art determinista y editable. Lee [MOANA.md](MOANA.md), el issue asignado en [docs/issues](docs/issues/README.md) y sus dependencias antes de editar. Estado actual: infraestructura lista; el paquete sólo expone metadata. Implementa únicamente el alcance solicitado. No conviertas ejemplos de diseño en APIs existentes ni marques completado un issue sin pruebas.
+Moana será un motor Python de Pixel Art determinista y editable. Lee [MOANA.md](MOANA.md), el issue asignado en [docs/issues](docs/issues/README.md) y sus dependencias antes de editar. Estado actual: infraestructura lista y `moana.core` (coordenadas, límites, errores) implementado; no hay render. Implementa únicamente el alcance solicitado. No conviertas ejemplos de diseño en APIs existentes ni marques completado un issue sin pruebas.
 
 Orden documental: solicitud actual del usuario → contratos de MOANA.md → ADR aplicables → criterios del issue. Si detectas una contradicción, corrige fuente y derivados dentro del alcance o informa el punto concreto. Conserva trabajo existente; no hagas commit, push, publicación ni comunicación externa implícitos.
 
@@ -58,4 +58,4 @@ IDs canónicos MOANA-xxx; aliases históricos MOA-xxx. Ciclo: `todo → ready �
 
 DoD: alcance y criterios satisfechos, pruebas relevantes aprobadas, tipos/lint/build correctos, documentación y trazabilidad sincronizadas, diff revisado y evidencia específica de cada criterio AC y prueba T además del resumen general. El validador comprueba la presencia de evidencia; el responsable verifica su veracidad. Regenera el catálogo derivado antes del cierre.
 
-Reporta cambios, comandos ejecutados, fallos/no comprobado y siguiente paso. Distingue smoke tests del entorno de pruebas del motor. No declares CI remoto, carga de roles, hooks de Codex o aprobación artística humana sin evidencia. Siguiente issue: [MOANA-001](docs/issues/MOANA-001.md).
+Reporta cambios, comandos ejecutados, fallos/no comprobado y siguiente paso. Distingue smoke tests del entorno de pruebas del motor. No declares CI remoto, carga de roles, hooks de Codex o aprobación artística humana sin evidencia. Siguiente issue: el primero `ready` del [roadmap](docs/issues/roadmap.md).
