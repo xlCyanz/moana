@@ -207,7 +207,7 @@
       "id": "MOANA-003",
       "title": "Aplicar presupuesto de trabajo y recursos",
       "phase": "P1",
-      "status": "review",
+      "status": "done",
       "priority": "P0",
       "dependencies": [
         "MOANA-001",
@@ -235,7 +235,8 @@
         "Implementación: src/moana/core/budget.py (RenderLimits, Deadline), src/moana/render/{__init__,budget}.py (estimador budget-v1, plan_budget); decisión ADR-012; MOANA.md 0.1.4-draft.",
         "uv run python scripts/validate.py: lock, ruff, format, mypy estricto, check_repository, pytest y build verdes; core/budget.py y render/budget.py con 100 % de ramas cubiertas.",
         "uv run python scripts/check_wheel.py: wheel aislado incluye moana/render/budget.py.",
-        "Revisión por subagentes moana-python-engineer y moana-architect (incluye preguntas gráficas de cotas de raster/composición): corregidos tipado de la prueba de arquitectura, exhaustividad con assert_never, rechazo de conteos antes de costear, checkpoints cada 256 operaciones, validación de clock/stage, MAX_FRAMES=256 (§17) y ADR con temporales por filas/tiles, puerta única de límites y prohibición de host_override desde la petición."
+        "Revisión por subagentes moana-python-engineer y moana-architect (incluye preguntas gráficas de cotas de raster/composición): corregidos tipado de la prueba de arquitectura, exhaustividad con assert_never, rechazo de conteos antes de costear, checkpoints cada 256 operaciones, validación de clock/stage, MAX_FRAMES=256 (§17) y ADR con temporales por filas/tiles, puerta única de límites y prohibición de host_override desde la petición.",
+        "Aprobado por el propietario el 2026-11-17 tras revisión; PR #41 hacia develop."
       ],
       "aliases": [
         "MOA-003"
@@ -272,7 +273,7 @@
       "id": "MOANA-004",
       "title": "Crear lienzo RGBA y propiedad de buffers",
       "phase": "P1",
-      "status": "blocked",
+      "status": "ready",
       "priority": "P1",
       "dependencies": [
         "MOANA-001",
@@ -317,7 +318,7 @@
       "risks": [
         "Vistas writeable=false pueden reabrirse si el propietario se filtra; probar ownership real."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-003",
+      "blocking_reason": null,
       "acceptance_evidence": {},
       "test_evidence": {}
     },
@@ -585,7 +586,7 @@
       "risks": [
         "La opacidad por hijo cambia la imagen; el bloqueo afecta edición, no render."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-002, MOANA-004, MOANA-005, MOANA-006, MOANA-008",
+      "blocking_reason": "Dependencias pendientes: MOANA-004, MOANA-005, MOANA-006, MOANA-008",
       "acceptance_evidence": {},
       "test_evidence": {}
     },
@@ -640,7 +641,7 @@
       "risks": [
         "hash(), reloj o estado global rompen reproducibilidad aunque el primer test pase."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-002, MOANA-003, MOANA-006, MOANA-009",
+      "blocking_reason": "Dependencias pendientes: MOANA-006, MOANA-009",
       "acceptance_evidence": {},
       "test_evidence": {}
     },
@@ -1071,7 +1072,7 @@
       "risks": [
         "Tras undo pueden existir revisiones numéricas iguales en ramas distintas; verificar también identidad del snapshot."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-002, MOANA-010, MOANA-012, MOANA-013",
+      "blocking_reason": "Dependencias pendientes: MOANA-010, MOANA-012, MOANA-013",
       "acceptance_evidence": {},
       "test_evidence": {}
     },
@@ -1717,7 +1718,7 @@
       "risks": [
         "Las pruebas hostiles deben ser acotadas y nunca desactivar protecciones de Pillow."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-003, MOANA-020, MOANA-021, MOANA-022",
+      "blocking_reason": "Dependencias pendientes: MOANA-020, MOANA-021, MOANA-022",
       "acceptance_evidence": {},
       "test_evidence": {}
     },

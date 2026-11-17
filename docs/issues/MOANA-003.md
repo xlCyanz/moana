@@ -8,7 +8,7 @@
 - Aliases históricos: MOA-003
 - Phase: P1
 - Priority: P0
-- Status: review
+- Status: done
 - Complexity: L (relativa, no estimación de tiempo)
 - Dependencies: [MOANA-001](MOANA-001.md), [MOANA-002](MOANA-002.md)
 - Related modules: core, render
@@ -43,13 +43,13 @@ No construir un servicio aislado ni tratar el timeout cooperativo como límite d
 
 ## Acceptance criteria
 
-- [ ] AC1: Una solicitud que exceda cualquier límite falla antes de crear un buffer raster
-- [ ] AC2: Se informa recurso, límite y coste estimado; una solicitud justo en el límite se admite
+- [x] AC1: Una solicitud que exceda cualquier límite falla antes de crear un buffer raster
+- [x] AC2: Se informa recurso, límite y coste estimado; una solicitud justo en el límite se admite
 
 ## Required tests
 
-- [ ] T1: Instrumentar allocators falsos para comprobar ausencia de reservas al rechazar
-- [ ] T2: Casos de coordenadas enormes, capas profundas, muchos frames y overflow de productos
+- [x] T1: Instrumentar allocators falsos para comprobar ausencia de reservas al rechazar
+- [x] T2: Casos de coordenadas enormes, capas profundas, muchos frames y overflow de productos
 
 ## Expected deliverables
 
@@ -66,7 +66,7 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Guía para agentes de IA
 
-**Estado para agentes:** En revisión: sólo correcciones de la revisión; no añadir alcance.
+**Estado para agentes:** Completado; usar sólo como referencia del contrato entregado.
 
 ### 1. Preparación
 
@@ -140,6 +140,7 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 - uv run python scripts/validate.py: lock, ruff, format, mypy estricto, check_repository, pytest y build verdes; core/budget.py y render/budget.py con 100 % de ramas cubiertas.
 - uv run python scripts/check_wheel.py: wheel aislado incluye moana/render/budget.py.
 - Revisión por subagentes moana-python-engineer y moana-architect (incluye preguntas gráficas de cotas de raster/composición): corregidos tipado de la prueba de arquitectura, exhaustividad con assert_never, rechazo de conteos antes de costear, checkpoints cada 256 operaciones, validación de clock/stage, MAX_FRAMES=256 (§17) y ADR con temporales por filas/tiles, puerta única de límites y prohibición de host_override desde la petición.
+- Aprobado por el propietario el 2026-11-17 tras revisión; PR #41 hacia develop.
 - AC1: tests/unit/render/test_render_budget.py::test_rejection_happens_without_allocating_raster_buffers (numpy.empty/zeros/ones/full/*_like/ndarray y PIL.Image.new sustituidos por allocators falsos: cero llamadas; pico tracemalloc < 1 MiB rechazando 2048×2048 × 4 frames), ::test_counts_are_rejected_before_costing_operations y ::test_budget_modules_do_not_load_raster_libraries.
 - AC2: test_render_budget.py::test_one_unit_over_a_limit_reports_resource_limit_and_estimate (pixel_visits, buffer_bytes, frame_pixels, operations, layers con resource/limit/estimated y pointer) y ::test_request_exactly_at_each_limit_is_admitted (85 376 visitas y 724 352 bytes calculados a mano); ::test_many_frames_accumulate_until_the_frame_budget admite exactamente 16 777 216 píxeles.
 - T1: test_render_budget.py::test_rejection_happens_without_allocating_raster_buffers con allocators falsos de NumPy y Pillow más tracemalloc; test_core_budget.py cubre RenderLimits (bajar libre, subir sólo con host_override) y Deadline con reloj falso.
