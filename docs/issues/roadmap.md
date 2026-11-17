@@ -20,7 +20,7 @@ Estado: 1/1 issues completados.
 
 Puerta de salida: Modelos estrictos, límites y fixtures enteras exactas.
 
-Estado: 6/8 issues completados.
+Estado: 7/8 issues completados.
 
 - [MOANA-001](MOANA-001.md) — Definir tipos, coordenadas, errores y límites (done)
 - [MOANA-002](MOANA-002.md) — Implementar documento Pydantic y JSON Schema (done)
@@ -29,7 +29,7 @@ Estado: 6/8 issues completados.
 - [MOANA-005](MOANA-005.md) — Implementar paletas y rampas (done)
 - [MOANA-006](MOANA-006.md) — Rasterizar primitivas enteras y flood fill (done)
 - [MOANA-008](MOANA-008.md) — Añadir transformaciones pixel-perfect (ready)
-- [MOANA-028](MOANA-028.md) — Crear harness de regresión visual (review)
+- [MOANA-028](MOANA-028.md) — Crear harness de regresión visual (done)
 
 ## P2 — Imagen estática
 

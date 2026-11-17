@@ -8,7 +8,7 @@
 - Aliases históricos: MOA-028
 - Phase: P1
 - Priority: P1
-- Status: review
+- Status: done
 - Complexity: M (relativa, no estimación de tiempo)
 - Dependencies: [MOANA-004](MOANA-004.md)
 - Related modules: tests.visual
@@ -43,13 +43,13 @@ No SSIM como criterio de aprobación ni corpus artístico completo.
 
 ## Acceptance criteria
 
-- [ ] AC1: Una diferencia de un píxel falla y genera bbox/conteo correctos
-- [ ] AC2: Una imagen idéntica pasa aunque los bytes comprimidos del PNG sean diferentes
+- [x] AC1: Una diferencia de un píxel falla y genera bbox/conteo correctos
+- [x] AC2: Una imagen idéntica pasa aunque los bytes comprimidos del PNG sean diferentes
 
 ## Required tests
 
-- [ ] T1: Tests del harness con píxel cambiado, dimensiones distintas y alfa cero
-- [ ] T2: Archivos de diagnóstico válidos y baseline intacto tras fallo; manejo de ruta con espacios
+- [x] T1: Tests del harness con píxel cambiado, dimensiones distintas y alfa cero
+- [x] T2: Archivos de diagnóstico válidos y baseline intacto tras fallo; manejo de ruta con espacios
 
 ## Expected deliverables
 
@@ -66,7 +66,7 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Guía para agentes de IA
 
-**Estado para agentes:** En revisión: sólo correcciones de la revisión; no añadir alcance.
+**Estado para agentes:** Completado; usar sólo como referencia del contrato entregado.
 
 ### 1. Preparación
 
@@ -140,6 +140,7 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 - Golden de referencia tests/visual/goldens/harness-reference-4x3.png construido a mano (oráculo independiente).
 - Gate: scripts/validate.py, scripts/check_wheel.py y pre-commit verdes; 51 pruebas visuales (marker visual), también con CI=true.
 - Revisión: moana-qa-engineer; corregidos guarda de CI saltable con update=True, diagnósticos obsoletos, permisos 0600, colisión de nombres entre subcarpetas, presupuesto de entradas y unión, y ambigüedad del negro en diff.png.
+- Aprobado por el propietario el 2026-11-17 tras revisión; PR #45 hacia develop.
 - AC1: tests/visual/test_visual_harness.py::test_one_changed_pixel_fails_with_hand_computed_bbox_and_count, ::test_failure_writes_valid_diagnostics_and_keeps_baseline.
 - AC2: tests/visual/test_visual_harness.py::test_same_pixels_pass_with_different_png_bytes.
 - T1: tests/visual/test_visual_harness.py::test_different_dimensions_fail_over_the_union, ::test_transposed_dimensions_with_same_pixel_count_fail, ::test_zero_alpha_with_residual_rgb_is_equal, ::test_dimension_mismatch_diagnostics, ::test_diff_outside_both_images_differs_from_unchanged_black, ::test_budget_is_checked_before_copying.

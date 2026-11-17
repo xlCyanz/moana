@@ -13,7 +13,7 @@
 - Dependencies: [MOANA-010](MOANA-010.md), [MOANA-011](MOANA-011.md), [MOANA-028](MOANA-028.md)
 - Related modules: ci, tests.integration
 - Requirements: R015, R027, R035 ([trazabilidad](traceability.md))
-- Bloqueo: Dependencias pendientes: MOANA-010, MOANA-011, MOANA-028
+- Bloqueo: Dependencias pendientes: MOANA-010, MOANA-011
 
 ## Context
 

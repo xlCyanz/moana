@@ -521,7 +521,7 @@
       "risks": [
         "No asumir que AggDraw comparte píxeles entre versiones o plataformas no ensayadas."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-010, MOANA-028",
+      "blocking_reason": "Dependencias pendientes: MOANA-010",
       "acceptance_evidence": {},
       "test_evidence": {}
     },
@@ -1597,7 +1597,7 @@
       "risks": [
         "No marcar como aprobada la calidad artística mientras falte una persona revisora."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-017, MOANA-022, MOANA-026, MOANA-028",
+      "blocking_reason": "Dependencias pendientes: MOANA-017, MOANA-022, MOANA-026",
       "acceptance_evidence": {},
       "test_evidence": {}
     },
@@ -1605,7 +1605,7 @@
       "id": "MOANA-028",
       "title": "Crear harness de regresión visual",
       "phase": "P1",
-      "status": "review",
+      "status": "done",
       "priority": "P1",
       "dependencies": [
         "MOANA-004"
@@ -1632,7 +1632,8 @@
         "Actualización de goldens sólo con MOANA_UPDATE_GOLDENS=1 o update=True explícito; rechazada siempre si CI está activo (guarda inmediatamente antes de escribir). Documentado en tests/visual/README.md y docs/guides/development.md.",
         "Golden de referencia tests/visual/goldens/harness-reference-4x3.png construido a mano (oráculo independiente).",
         "Gate: scripts/validate.py, scripts/check_wheel.py y pre-commit verdes; 51 pruebas visuales (marker visual), también con CI=true.",
-        "Revisión: moana-qa-engineer; corregidos guarda de CI saltable con update=True, diagnósticos obsoletos, permisos 0600, colisión de nombres entre subcarpetas, presupuesto de entradas y unión, y ambigüedad del negro en diff.png."
+        "Revisión: moana-qa-engineer; corregidos guarda de CI saltable con update=True, diagnósticos obsoletos, permisos 0600, colisión de nombres entre subcarpetas, presupuesto de entradas y unión, y ambigüedad del negro en diff.png.",
+        "Aprobado por el propietario el 2026-11-17 tras revisión; PR #45 hacia develop."
       ],
       "aliases": [
         "MOA-028"
@@ -1716,7 +1717,7 @@
       "risks": [
         "Identidad del perfil entero y de AggDraw son garantías separadas."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-010, MOANA-011, MOANA-028",
+      "blocking_reason": "Dependencias pendientes: MOANA-010, MOANA-011",
       "acceptance_evidence": {},
       "test_evidence": {}
     },
