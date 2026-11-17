@@ -8,7 +8,7 @@
 - Aliases históricos: MOA-005
 - Phase: P1
 - Priority: P1
-- Status: review
+- Status: done
 - Complexity: M (relativa, no estimación de tiempo)
 - Dependencies: [MOANA-001](MOANA-001.md), [MOANA-002](MOANA-002.md)
 - Related modules: palette, schema
@@ -43,13 +43,13 @@ No cuantización automática ni iluminación.
 
 ## Acceptance criteria
 
-- [ ] AC1: Paleta strict rechaza alfa intermedio y referencias de rampa inexistentes
-- [ ] AC2: Serializar y cargar preserva orden, valores e identidad; advertencia de luminancia no bloquea estilos válidos
+- [x] AC1: Paleta strict rechaza alfa intermedio y referencias de rampa inexistentes
+- [x] AC2: Serializar y cargar preserva orden, valores e identidad; advertencia de luminancia no bloquea estilos válidos
 
 ## Required tests
 
-- [ ] T1: Casos de colores duplicados por valor pero IDs diferentes y IDs duplicados inválidos
-- [ ] T2: Pruebas de límites 256/4096, transparencia y remapeo explícito sin colores ocultos
+- [x] T1: Casos de colores duplicados por valor pero IDs diferentes y IDs duplicados inválidos
+- [x] T2: Pruebas de límites 256/4096, transparencia y remapeo explícito sin colores ocultos
 
 ## Expected deliverables
 
@@ -66,7 +66,7 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Guía para agentes de IA
 
-**Estado para agentes:** En revisión: sólo correcciones de la revisión; no añadir alcance.
+**Estado para agentes:** Completado; usar sólo como referencia del contrato entregado.
 
 ### 1. Preparación
 
@@ -140,6 +140,7 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 - ADR-014 (docs/architecture/decisions/ADR-014-palette.md); MOANA.md 0.1.6-draft (§9 luminancia verificable); contratos de módulos y overview actualizados.
 - Gate: scripts/validate.py y scripts/check_wheel.py verdes; cobertura 100 % de moana.palette y moana.core.ids.
 - Revisión: moana-python-engineer, moana-pixel-artist y moana-architect; corregidos luminancia sobre sRGB codificado, pasos transparentes/semitransparentes, IDs en advertencias, patrones duplicados, unicidad con el ID de paleta, formato de errores distinto del esquema, coste sin cota de from_mapping/ColorRemap, hash de ColorRemap y subclases hostiles de str/dict/list.
+- Aprobado por el propietario el 2026-11-17 tras revisión; PR #43 hacia develop.
 - AC1: tests/unit/palette/test_palette_table.py::test_strict_rejects_intermediate_alpha, ::test_missing_ramp_reference_is_a_reference_error, ::test_validation_problems_take_precedence_and_are_sorted; paridad con el esquema en tests/unit/palette/test_palette_architecture.py::test_schema_and_palette_report_the_same_semantic_problems.
 - AC2: tests/unit/palette/test_palette_table.py::test_mapping_roundtrip_preserves_order_values_and_identity (strict y rgba), tests/unit/palette/test_palette_architecture.py::test_normalized_document_palette_loads_identically; advertencias no bloqueantes en tests/unit/palette/test_palette_table.py::test_luminance_warning_does_not_block_stylised_ramp, ::test_hue_shifted_ramp_ordered_by_linear_luminance y ::test_transparent_steps_are_reported_and_skipped_for_ordering.
 - T1: tests/unit/palette/test_palette_table.py::test_same_value_different_ids_are_independent_colors, ::test_duplicate_color_ids_are_invalid, ::test_ids_are_unique_across_palette_colors_and_ramps y ::test_duplicate_value_equal_and_translucent_steps_are_distinguished.

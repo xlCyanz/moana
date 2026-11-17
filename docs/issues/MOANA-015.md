@@ -13,7 +13,7 @@
 - Dependencies: [MOANA-005](MOANA-005.md), [MOANA-013](MOANA-013.md)
 - Related modules: techniques, palette
 - Requirements: R008 ([trazabilidad](traceability.md))
-- Bloqueo: Dependencias pendientes: MOANA-005, MOANA-013
+- Bloqueo: Dependencias pendientes: MOANA-013
 
 ## Context
 

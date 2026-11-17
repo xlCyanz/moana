@@ -340,7 +340,7 @@
       "id": "MOANA-005",
       "title": "Implementar paletas y rampas",
       "phase": "P1",
-      "status": "review",
+      "status": "done",
       "priority": "P1",
       "dependencies": [
         "MOANA-001",
@@ -368,7 +368,8 @@
         "src/moana/core/ids.py: dueño único de los lenguajes de ID y color (schema publica los mismos patrones; generate_schema --check sin cambios); detail_sort_key movido a core.errors; MAX_RAMP_ENTRIES en core.limits.",
         "ADR-014 (docs/architecture/decisions/ADR-014-palette.md); MOANA.md 0.1.6-draft (§9 luminancia verificable); contratos de módulos y overview actualizados.",
         "Gate: scripts/validate.py y scripts/check_wheel.py verdes; cobertura 100 % de moana.palette y moana.core.ids.",
-        "Revisión: moana-python-engineer, moana-pixel-artist y moana-architect; corregidos luminancia sobre sRGB codificado, pasos transparentes/semitransparentes, IDs en advertencias, patrones duplicados, unicidad con el ID de paleta, formato de errores distinto del esquema, coste sin cota de from_mapping/ColorRemap, hash de ColorRemap y subclases hostiles de str/dict/list."
+        "Revisión: moana-python-engineer, moana-pixel-artist y moana-architect; corregidos luminancia sobre sRGB codificado, pasos transparentes/semitransparentes, IDs en advertencias, patrones duplicados, unicidad con el ID de paleta, formato de errores distinto del esquema, coste sin cota de from_mapping/ColorRemap, hash de ColorRemap y subclases hostiles de str/dict/list.",
+        "Aprobado por el propietario el 2026-11-17 tras revisión; PR #43 hacia develop."
       ],
       "aliases": [
         "MOA-005"
@@ -405,7 +406,7 @@
       "id": "MOANA-006",
       "title": "Rasterizar primitivas enteras y flood fill",
       "phase": "P1",
-      "status": "blocked",
+      "status": "ready",
       "priority": "P1",
       "dependencies": [
         "MOANA-004",
@@ -451,7 +452,7 @@
       "risks": [
         "Even-odd de autointersecciones no se puede descartar por área firmada cero."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-005",
+      "blocking_reason": null,
       "acceptance_evidence": {},
       "test_evidence": {}
     },
@@ -612,7 +613,7 @@
       "risks": [
         "La opacidad por hijo cambia la imagen; el bloqueo afecta edición, no render."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-005, MOANA-006, MOANA-008",
+      "blocking_reason": "Dependencias pendientes: MOANA-006, MOANA-008",
       "acceptance_evidence": {},
       "test_evidence": {}
     },
@@ -880,7 +881,7 @@
       "risks": [
         "No eliminar ojos o partículas por ser singletons; las métricas no inferirán intención."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-013, MOANA-005",
+      "blocking_reason": "Dependencias pendientes: MOANA-013",
       "acceptance_evidence": {},
       "test_evidence": {}
     },
@@ -933,7 +934,7 @@
       "risks": [
         "La estética de una rampa puede contradecir luminancia monótona; emitir advertencia configurable."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-005, MOANA-013",
+      "blocking_reason": "Dependencias pendientes: MOANA-013",
       "acceptance_evidence": {},
       "test_evidence": {}
     },
@@ -985,7 +986,7 @@
       "risks": [
         "El módulo negativo y los overrides temporales deben tener tests propios."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-005, MOANA-013",
+      "blocking_reason": "Dependencias pendientes: MOANA-013",
       "acceptance_evidence": {},
       "test_evidence": {}
     },
@@ -1419,7 +1420,7 @@
       "risks": [
         "Los encoders pueden fusionar frames idénticos; comparar tiempo/imagen, no sólo count."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-022, MOANA-005, MOANA-011",
+      "blocking_reason": "Dependencias pendientes: MOANA-022, MOANA-011",
       "acceptance_evidence": {},
       "test_evidence": {}
     },
