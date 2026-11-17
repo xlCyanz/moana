@@ -1,6 +1,6 @@
 # Contratos entre módulos
 
-Estado: **contratos previstos**, salvo `core` (con el lienzo RGBA), `schema`, `palette`, `geometry` y el plan de coste de `render` (implementados, ver abajo). Las firmas públicas objetivo están en [MOANA.md §13](../../MOANA.md); sus fórmulas, límites y formatos prevalecen sobre este resumen. No se añaden abstracciones base ni registros de plugins por anticipación.
+Estado: **contratos previstos**, salvo `core` (con el lienzo RGBA), `schema`, `palette`, `geometry`, `layers` y el plan de coste de `render` (implementados, ver abajo). Las firmas públicas objetivo están en [MOANA.md §13](../../MOANA.md); sus fórmulas, límites y formatos prevalecen sobre este resumen. No se añaden abstracciones base ni registros de plugins por anticipación.
 
 ## Entradas, salidas y efectos
 
@@ -37,6 +37,7 @@ API pública en `moana.core`, sin dependencias de otros módulos Moana, NumPy ni
 | `require_int` | Validación compartida de enteros con rango; `minimum > maximum` es error de programación (`ValueError`). |
 | `moana.core.ids` | Dueño único de los lenguajes léxicos: `ID_REGEX`/`ID_PATTERN` (`[a-z][a-z0-9_-]{0,63}`) y `RGBA_HEX_REGEX`/`RGBA_HEX_PATTERN` (`#RRGGBBAA`); `is_id`, `is_rgba_hex` y `check_id` aceptan sólo `str` exacto con `fullmatch`. `schema` publica estos patrones. ADR-014. |
 | `MAX_RAMP_ENTRIES` | Total de miembros de rampa de una paleta (20 000); acota paletas construidas fuera del lector del esquema. |
+| `MAX_GROUP_DEPTH` | Anidamiento máximo de grupos en el árbol de capas (16, §11); lo aplica `layers` y lo aplicará `schema` cuando admita grupos. |
 | `errors.detail_sort_key` | Orden canónico de `ErrorDetail` (pointer con índices numéricos, código, mensaje), compartido por `schema` y `palette`. |
 
 Errores (`moana.core.errors`): `MoanaError` (código `INTERNAL_ERROR`, salida 1) y subclases con `code` estable y `exit_code`: `ValidationError` (`VALIDATION_ERROR`, 2), `OutOfBoundsError` (`OUT_OF_BOUNDS`, 2, subclase de validación), `ReferenceError` (`REFERENCE_ERROR`, 2; distinto del builtin homónimo, importar como `errors.ReferenceError`), `UnsupportedVersion` (2), `UnsupportedOperation` (2), `BudgetExceeded` (3), `EditConflict` (4), `ExportError` (5). Atributos de sólo lectura `message`, `json_pointer` (opcional, RFC 6901) y `context`. `context` es inmutable y sólo admite escalares o tuplas: nombres de campo, motivos, tipos y límites numéricos; nunca strings de entrada no confiable ni rutas. Los errores son picklables.
@@ -79,7 +80,17 @@ API pública en `moana.geometry`; depende sólo de `core` y usa NumPy internamen
 | `flood_fill(snapshot, seed, *, limits)` | Conectividad 4 e igualdad RGBA exacta sobre una copia del `Canvas` recibido, que no se modifica. Antes de copiar comprueba `flood_fill_cost` (`A` visitas, `FLOOD_FILL_BYTES_PER_PIXEL × A` bytes) y, si no cabe, lanza `BudgetExceeded`. Es un scanline iterativo, sin recursión. Una semilla fuera del lienzo da una máscara vacía: es una decisión de recorte, distinta del acceso directo de §5, que se ratificará en MOANA.md cuando el schema active `flood_fill` (`budget-v2`, `8A`). No está activo en schema 1.0. |
 | `Transform`, `transform_mask(mask, transform, dimensions)`, `transform_box(box, transform)` | Valor congelado `pivot`/`mirror`/`rotation`/`scale`/`offset` sobre índices de píxel. Orden fijo: espejo `x → −x`, cuartos de vuelta horarios `(x, y) → (−y, x)`, escala entera `k` (cada índice pasa a un bloque `k × k`) y traslación. El píxel `p` va a `k·R·(p − pivot) + pivot + offset`. Rotación fuera de {0, 90, 180, 270}, escala no entera o fuera de 1..2048 y `mirror` no booleano lanzan `ValidationError` (`arbitrary_rotation`, `out_of_range`, `not_integer`, `not_boolean`). Las máscaras se recortan al lienzo sin wraparound mediante recolección inversa (memoria: caja de salida recortada + copia del origen). Las cajas se transforman como conjuntos de píxeles. Una imagen sin píxeles visibles es `Mask.empty()`. `inverse()` sólo existe sin escala y con `pivot + offset` en rango (`not_invertible`). La igualdad es estructural. |
 
-Aplicar una máscara a un lienzo corresponde al compositor (`layers`/`render`), que todavía no existe.
+Aplicar una máscara a un lienzo corresponde al compositor de `layers` (MOANA-009, abajo).
+
+## `layers` (implementado en MOANA-009)
+
+API pública en `moana.layers`; depende de `core`, `palette` y `geometry` y usa NumPy internamente. `import moana.layers` no carga Pillow ni Pydantic. Decisiones en [ADR-017](decisions/ADR-017-layers-composition.md).
+
+| Elemento | Contrato |
+| --- | --- |
+| `Fill`, `Layer`, `Group` | Valores congelados. `Fill(mask, color)` pinta una `Mask` con un `Rgba` (alfa 0 no borra). `Layer` y `Group` validan ID, nombre (UTF-8 válido, ≤4096 bytes), `visible`/`locked` booleanos, opacidad 0..255, `blend` sólo `normal`, ≤10 000 fills o ≤128 hijos. `locked` no altera el render. |
+| `LayerTree(dimensions, children, profile)` | Árbol de abajo arriba validado de una vez. Rechaza IDs repetidos (`duplicate_id`), más de 16 grupos anidados (`too_deep`), más de 128 capas y grupos, máscaras fuera del lienzo (`outside_canvas`) y, en `strict`, opacidad distinta de 255 (`partial_opacity`) o fills con alfa parcial (`partial_alpha`). Los errores llevan `node_id`/`fill` y se informa del primero en orden. `walk()` recorre en profundidad, de abajo arriba. |
+| `composition_cost(tree)` / `compose(tree, *, limits, deadline)` | Coste puro (visitas, bytes, capas, operaciones, profundidad) comprobado contra `RenderLimits`, incluidos los límites de geometría, antes de reservar; si no cabe, `BudgetExceeded`. Deadline antes de cada nodo y cada fill. Composición source-over entera literal de §11 por bloques de `min(4096, A // 4)` píxeles: fills en orden sobre un buffer de capa transparente, capa con su opacidad, grupos en buffer aislado con la opacidad aplicada una vez, alfa 0 normalizado. Devuelve un `Canvas` nuevo. |
 
 ## `schema` (implementado en MOANA-002)
 

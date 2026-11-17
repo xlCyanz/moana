@@ -28,6 +28,7 @@ __all__ = [
     "DEFAULT_GEOMETRY_LIMITS",
     "MAX_COLORS_RGBA",
     "MAX_COLORS_STRICT",
+    "MAX_GROUP_DEPTH",
     "MAX_LAYERS",
     "MAX_OPERATIONS",
     "MAX_RAMP_ENTRIES",
@@ -38,6 +39,8 @@ __all__ = [
 # Document cardinality limits of MOANA.md section 20, shared by schema, palette and
 # render. Byte, depth and node limits of the reader live in ``moana.schema``.
 MAX_LAYERS: Final = 128
+# Nesting of groups in the layer tree (MOANA.md section 11).
+MAX_GROUP_DEPTH: Final = 16
 MAX_OPERATIONS: Final = 10_000
 MAX_VERTICES: Final = 4096
 MAX_COLORS_STRICT: Final = 256

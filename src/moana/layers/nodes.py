@@ -1,0 +1,244 @@
+"""Immutable layer tree: fills, layers, groups and the validated tree (ADR-017).
+
+A :class:`Layer` holds an ordered tuple of :class:`Fill` (a binary
+:class:`~moana.geometry.Mask` painted with one :class:`~moana.palette.Rgba`); a
+:class:`Group` holds ordered children. Children are listed bottom to top. ``locked``
+is kept for editing and never changes the render. :class:`LayerTree` validates the
+whole tree once: unique IDs, group depth, at most 128 layers and groups, masks inside
+the canvas and, in the ``strict`` profile, opacity 255 and fully opaque or
+transparent fill colours. Validation stops at the first problem in bottom-to-top,
+depth-first order (the tree is built by code, not edited as a document).
+"""
+
+from __future__ import annotations
+
+from collections.abc import Iterator
+from dataclasses import dataclass
+from typing import Final, Literal
+
+from moana.core.coordinates import Box, Dimensions, require_int
+from moana.core.errors import ValidationError
+from moana.core.ids import check_id
+from moana.core.limits import MAX_GROUP_DEPTH, MAX_LAYERS, MAX_OPERATIONS
+from moana.geometry import Mask
+from moana.palette import ColorProfile, Rgba
+
+__all__ = [
+    "BLEND_MODES",
+    "MAX_NAME_BYTES",
+    "Fill",
+    "Group",
+    "Layer",
+    "LayerTree",
+    "Node",
+]
+
+MAX_NAME_BYTES: Final = 4096
+BLEND_MODES: Final = ("normal",)
+
+
+def _invalid(message: str, **context: object) -> ValidationError:
+    return ValidationError(message, context=context)
+
+
+def _check_name(value: object) -> None:
+    if type(value) is not str:
+        raise _invalid("name must be a string", field="name", reason="not_string")
+    try:
+        size = len(value.encode("utf-8"))
+    except UnicodeEncodeError:
+        raise _invalid("name must be valid UTF-8", field="name", reason="invalid_utf8") from None
+    if size > MAX_NAME_BYTES:
+        raise _invalid("name is too long", field="name", reason="too_long")
+
+
+def _check_flag(value: object, field: str) -> None:
+    if type(value) is not bool:
+        raise _invalid(f"{field} must be a boolean", field=field, reason="not_boolean")
+
+
+def _check_children(children: object) -> None:
+    if type(children) is not tuple:
+        raise TypeError("children must be a tuple of Layer or Group values")
+    for child in children:
+        if not isinstance(child, Layer | Group):
+            raise TypeError("children must be a tuple of Layer or Group values")
+
+
+def _check_node_fields(
+    node_id: object, name: object, visible: object, locked: object, opacity: object
+) -> None:
+    check_id(node_id)
+    _check_name(name)
+    _check_flag(visible, "visible")
+    _check_flag(locked, "locked")
+    require_int(opacity, "opacity", minimum=0, maximum=255)
+
+
+@dataclass(frozen=True, slots=True)
+class Fill:
+    """Pixels of ``mask`` painted with ``color`` (source-over at full opacity)."""
+
+    mask: Mask
+    color: Rgba
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.mask, Mask):
+            raise TypeError("mask must be a Mask value")
+        if not isinstance(self.color, Rgba):
+            raise TypeError("color must be an Rgba value")
+
+
+@dataclass(frozen=True, slots=True)
+class Layer:
+    """Leaf node: ordered fills composited onto a transparent layer buffer."""
+
+    id: str
+    name: str
+    fills: tuple[Fill, ...] = ()
+    visible: bool = True
+    locked: bool = False
+    opacity: int = 255
+    blend: Literal["normal"] = "normal"
+
+    def __post_init__(self) -> None:
+        _check_node_fields(self.id, self.name, self.visible, self.locked, self.opacity)
+        if type(self.fills) is not tuple:
+            raise TypeError("fills must be a tuple of Fill values")
+        if len(self.fills) > MAX_OPERATIONS:
+            raise _invalid(
+                "a layer has too many fills",
+                field="fills",
+                reason="out_of_range",
+                maximum=MAX_OPERATIONS,
+            )
+        for fill in self.fills:
+            if not isinstance(fill, Fill):
+                raise TypeError("fills must be a tuple of Fill values")
+        if self.blend not in BLEND_MODES:
+            raise _invalid(
+                "only the normal blend mode is supported",
+                field="blend",
+                reason="unsupported_blend",
+            )
+
+
+@dataclass(frozen=True, slots=True)
+class Group:
+    """Inner node: children composited in an isolated buffer, then ``opacity`` once."""
+
+    id: str
+    name: str
+    children: tuple[Node, ...] = ()
+    visible: bool = True
+    locked: bool = False
+    opacity: int = 255
+
+    def __post_init__(self) -> None:
+        _check_node_fields(self.id, self.name, self.visible, self.locked, self.opacity)
+        _check_children(self.children)
+        if len(self.children) > MAX_LAYERS:
+            raise _invalid(
+                "a group has too many children",
+                field="children",
+                reason="out_of_range",
+                maximum=MAX_LAYERS,
+            )
+
+
+Node = Layer | Group
+
+
+def _iter_nodes(children: tuple[Node, ...]) -> Iterator[tuple[Node, int]]:
+    """Nodes bottom to top, depth first, with the number of enclosing groups."""
+    stack: list[tuple[Node, int]] = [(child, 0) for child in reversed(children)]
+    while stack:
+        node, depth = stack.pop()
+        yield node, depth
+        if isinstance(node, Group):
+            stack.extend((child, depth + 1) for child in reversed(node.children))
+
+
+@dataclass(frozen=True, slots=True)
+class LayerTree:
+    """Validated bottom-to-top tree over a canvas of ``dimensions``.
+
+    ``profile`` follows the document colour profile: ``strict`` rejects opacity other
+    than 255 and fill colours with partial alpha. Errors carry ``node_id`` (and
+    ``fill`` index) instead of a document pointer, since the tree has no JSON form.
+    """
+
+    dimensions: Dimensions
+    children: tuple[Node, ...]
+    profile: ColorProfile = "rgba"
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.dimensions, Dimensions):
+            raise TypeError("dimensions must be a Dimensions value")
+        _check_children(self.children)
+        if self.profile not in ("strict", "rgba"):
+            raise _invalid(
+                "profile must be strict or rgba", field="profile", reason="unknown_profile"
+            )
+        self._validate_nodes()
+
+    def _validate_nodes(self) -> None:
+        canvas = Box.from_dimensions(self.dimensions)
+        seen: set[str] = set()
+        for count, (node, depth) in enumerate(_iter_nodes(self.children), start=1):
+            if count > MAX_LAYERS:
+                raise _invalid(
+                    "the tree has too many layers and groups",
+                    field="layers",
+                    reason="out_of_range",
+                    maximum=MAX_LAYERS,
+                )
+            if node.id in seen:
+                raise _invalid(
+                    "node IDs must be unique", field="id", reason="duplicate_id", node_id=node.id
+                )
+            seen.add(node.id)
+            if self.profile == "strict" and node.opacity != 255:
+                raise _invalid(
+                    "opacity must be 255 in the strict profile",
+                    field="opacity",
+                    reason="partial_opacity",
+                    profile="strict",
+                    node_id=node.id,
+                )
+            if isinstance(node, Group) and depth + 1 > MAX_GROUP_DEPTH:
+                raise _invalid(
+                    "groups are nested too deeply",
+                    field="children",
+                    reason="too_deep",
+                    node_id=node.id,
+                    maximum=MAX_GROUP_DEPTH,
+                )
+            if isinstance(node, Layer):
+                self._check_fills(node, canvas)
+
+    def _check_fills(self, layer: Layer, canvas: Box) -> None:
+        for index, fill in enumerate(layer.fills):
+            box = fill.mask.box
+            if box is not None and box.intersection(canvas) != box:
+                raise _invalid(
+                    "fill mask lies outside the canvas",
+                    field="mask",
+                    reason="outside_canvas",
+                    node_id=layer.id,
+                    fill=index,
+                )
+            alpha = fill.color.a
+            if self.profile == "strict" and alpha not in (0, 255):
+                raise _invalid(
+                    "fill colours must be opaque or transparent in the strict profile",
+                    field="color",
+                    reason="partial_alpha",
+                    profile="strict",
+                    node_id=layer.id,
+                    fill=index,
+                )
+
+    def walk(self) -> tuple[tuple[Node, int], ...]:
+        """Every node bottom to top, depth first, with its number of enclosing groups."""
+        return tuple(_iter_nodes(self.children))

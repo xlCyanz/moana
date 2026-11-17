@@ -13,7 +13,7 @@
 - Dependencies: [MOANA-009](MOANA-009.md), [MOANA-010](MOANA-010.md)
 - Related modules: layers, schema
 - Requirements: R012 ([trazabilidad](traceability.md))
-- Bloqueo: Dependencias pendientes: MOANA-009, MOANA-010
+- Bloqueo: Dependencias pendientes: MOANA-010
 
 ## Context
 

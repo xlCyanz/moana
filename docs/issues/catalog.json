@@ -593,7 +593,7 @@
       "id": "MOANA-009",
       "title": "Implementar capas, grupos y composición",
       "phase": "P2",
-      "status": "ready",
+      "status": "done",
       "priority": "P1",
       "dependencies": [
         "MOANA-002",
@@ -619,7 +619,14 @@
         "Casos alpha 0/1/127/255 y normalización RGB en transparente",
         "Grupos anidados, profundidad límite, capa invisible y strict que rechaza opacidad intermedia"
       ],
-      "evidence": [],
+      "evidence": [
+        "src/moana/layers/nodes.py: árbol inmutable Fill/Layer/Group/LayerTree con validación de ID, nombre UTF-8 (≤4096 bytes), booleanos, opacidad 0..255, blend sólo normal, IDs únicos, ≤128 capas y grupos, profundidad ≤16 (MAX_GROUP_DEPTH en core.limits), máscaras dentro del lienzo y perfil strict (partial_opacity, partial_alpha).",
+        "src/moana/layers/composite.py: kernel source-over entero literal de MOANA.md §11 en uint32 con round_half_up y normalización de alfa 0; grupos en buffer aislado con opacidad aplicada una vez; nodos ocultos sin coste; locked sin efecto; composition_cost puro y comprobación de presupuesto (geometría, frame_pixels, layers, operations, pixel_visits, buffer_bytes) antes de reservar; temporales por bloques de min(4096, A//4) píxeles; deadline por nodo y fill.",
+        "ADR-017 (docs/architecture/decisions/ADR-017-layers-composition.md); contratos de módulos, overview, índice de arquitectura, README, guía de desarrollo, AGENTS.md y CLAUDE.md actualizados; probe de check_wheel ampliado.",
+        "Gate: scripts/validate.py y scripts/check_wheel.py verdes.",
+        "Revisión: moana-graphics-engineer y moana-python-engineer; corregidos límites de geometría, grupos en el límite de 128, temporales acotados por bloques para respetar budget-v1, deadline por fill, nombre de módulo, UTF-8 estricto, profile en el contexto de errores y pruebas de varios bloques, 1×1 y cota de temporales.",
+        "Aprobado por el propietario el 2026-11-17 tras revisión; PR #47 hacia develop."
+      ],
       "aliases": [
         "MOA-009"
       ],
@@ -641,14 +648,20 @@
         "La opacidad por hijo cambia la imagen; el bloqueo afecta edición, no render."
       ],
       "blocking_reason": null,
-      "acceptance_evidence": {},
-      "test_evidence": {}
+      "acceptance_evidence": {
+        "AC1": "tests/unit/layers/test_layers_compose.py::test_ac1_semitransparent_fixture_matches_hand_computation (161,80,90,255 calculado a mano) y ::test_ac1_random_trees_match_the_scalar_oracle (Hypothesis, oráculo escalar independiente con grupos).",
+        "AC2": "tests/unit/layers/test_layers_compose.py::test_ac2_order_decides_which_colour_is_on_top, ::test_ac2_hiding_a_layer_removes_exactly_its_pixels y ::test_ac2_group_opacity_is_applied_once_to_the_group_result (contraejemplo por hijo)."
+      },
+      "test_evidence": {
+        "T1": "tests/unit/layers/test_layers_compose.py::test_t1_alpha_cases_match_hand_values (alfa 0/1/127/255) y ::test_t1_transparent_result_is_normalised_to_zero.",
+        "T2": "tests/unit/layers/test_layers_compose.py::test_t2_nested_groups_compose_like_the_oracle, ::test_t2_maximum_depth_composes_and_one_more_is_rejected, ::test_t2_hidden_group_skips_its_subtree_and_costs_nothing, ::test_t2_locked_does_not_change_the_render, ::test_t2_budget_is_checked_before_any_buffer, ::test_t2_other_budgets_are_enforced; tests/unit/layers/test_layers_nodes.py::test_t2_strict_rejects_intermediate_opacity y ::test_t2_depth_limit_counts_nested_groups."
+      }
     },
     {
       "id": "MOANA-010",
       "title": "Construir pipeline de render determinista",
       "phase": "P2",
-      "status": "blocked",
+      "status": "ready",
       "priority": "P0",
       "dependencies": [
         "MOANA-002",
@@ -695,7 +708,7 @@
       "risks": [
         "hash(), reloj o estado global rompen reproducibilidad aunque el primer test pase."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-009",
+      "blocking_reason": null,
       "acceptance_evidence": {},
       "test_evidence": {}
     },
@@ -854,7 +867,7 @@
       "risks": [
         "Un grupo transformado requiere semántica clara de máscara en canvas frente a geometría local."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-009, MOANA-010",
+      "blocking_reason": "Dependencias pendientes: MOANA-010",
       "acceptance_evidence": {},
       "test_evidence": {}
     },

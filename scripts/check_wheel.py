@@ -52,6 +52,9 @@ def main() -> int:
             "assert files('moana').joinpath('geometry/__init__.py').is_file(); "
             "assert files('moana').joinpath('geometry/mask.py').is_file(); "
             "assert files('moana').joinpath('geometry/transform.py').is_file(); "
+            "assert files('moana').joinpath('layers/__init__.py').is_file(); "
+            "assert files('moana').joinpath('layers/nodes.py').is_file(); "
+            "assert files('moana').joinpath('layers/composite.py').is_file(); "
             "print('Isolated wheel OK:', moana.__version__)"
         )
         subprocess.run([str(python), "-I", "-c", probe], cwd=root, check=True)

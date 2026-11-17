@@ -2,6 +2,7 @@
 
 ## Sin publicar
 
+- MOANA-009: capas, grupos y composición en `moana.layers` (`Fill`, `Layer`, `Group`, `LayerTree`, `compose`, `composition_cost`): source-over entera literal de §11 con `round_half_up` y alfa 0 normalizado, grupos aislados con opacidad aplicada una vez, nodos ocultos sin coste, profundidad ≤16, perfil strict y presupuesto comprobado antes de reservar buffers (ADR-017).
 - MOANA-008: transformaciones pixel-perfect en `moana.geometry` (`Transform`, `transform_mask`, `transform_box`): espejo, giros 0/90/180/270 sobre índices `(x, y) → (−y, x)` alrededor de un píxel pivote, escala entera nearest-neighbor y traslación explícita; máscaras recortadas sin wraparound por recolección inversa, cajas como conjuntos de píxeles y rechazo de rotación arbitraria o escala no entera (ADR-016).
 - MOANA-028: harness de regresión visual exacta en `tests/visual/`: comparación RGBA con alfa cero normalizado, conteo y bbox de diferencias, diagnósticos expected/actual/diff con manifiesto JSON al fallar, y actualización de goldens sólo explícita con `MOANA_UPDATE_GOLDENS=1` (rechazada en CI).
 - MOANA-006: `moana.geometry` con máscaras enteras inmutables de pixel/line/rect/ellipse/polygon según §6 (sin shoelace ni defaults de ImageDraw) y flood fill 4-conectado sobre snapshot, acotado por presupuesto antes de copiar (ADR-015).
