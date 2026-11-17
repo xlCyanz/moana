@@ -13,7 +13,7 @@
 - Dependencies: [MOANA-010](MOANA-010.md), [MOANA-022](MOANA-022.md), [MOANA-027](MOANA-027.md)
 - Related modules: benchmarks
 - Requirements: R028 ([trazabilidad](traceability.md))
-- Bloqueo: Dependencias pendientes: MOANA-010, MOANA-022, MOANA-027
+- Bloqueo: Dependencias pendientes: MOANA-022, MOANA-027
 
 ## Context
 

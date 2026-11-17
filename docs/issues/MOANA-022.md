@@ -13,7 +13,7 @@
 - Dependencies: [MOANA-018](MOANA-018.md), [MOANA-019](MOANA-019.md), [MOANA-010](MOANA-010.md)
 - Related modules: animation, schema
 - Requirements: R020 ([trazabilidad](traceability.md))
-- Bloqueo: Dependencias pendientes: MOANA-018, MOANA-019, MOANA-010
+- Bloqueo: Dependencias pendientes: MOANA-018, MOANA-019
 
 ## Context
 
