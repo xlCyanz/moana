@@ -1,0 +1,20 @@
+minimum_pre_commit_version: "4.0.0"
+repos:
+  - repo: local
+    hooks:
+      - id: ruff
+        name: Ruff lint
+        entry: sh scripts/run_hook.sh ruff check
+        language: system
+        types_or: [python, pyi]
+      - id: ruff-format
+        name: Ruff format check
+        entry: sh scripts/run_hook.sh ruff format --check
+        language: system
+        types_or: [python, pyi]
+      - id: repository-contracts
+        name: Repository and planning consistency
+        entry: sh scripts/run_hook.sh scripts.check_repository
+        language: system
+        pass_filenames: false
+        always_run: true

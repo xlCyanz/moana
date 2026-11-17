@@ -1,0 +1,4 @@
+interface:
+  display_name: "Moana · Pixel Art"
+  short_description: "Dirección artística y edición por regiones"
+  default_prompt: "Usa $moana-pixel-art para trabajar el issue asignado de Moana respetando su contrato y estado real."

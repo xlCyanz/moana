@@ -1,0 +1,343 @@
+{
+  "schema_version": 1,
+  "requirements": [
+    {
+      "id": "R001",
+      "description": "Visión, alcance y especificación exhaustiva",
+      "sections": [
+        1,
+        2,
+        23,
+        24,
+        25
+      ],
+      "verification": "Revisión de las 25 secciones y gate P0"
+    },
+    {
+      "id": "R002",
+      "description": "Lienzo, coordenadas y buffers RGBA seguros",
+      "sections": [
+        5
+      ],
+      "verification": "Fixtures de límites, dtype e inmutabilidad"
+    },
+    {
+      "id": "R003",
+      "description": "Primitivas exactas, clipping y flood fill",
+      "sections": [
+        6
+      ],
+      "verification": "Oráculos de píxel por primitiva y casos degenerados"
+    },
+    {
+      "id": "R004",
+      "description": "Geometría complementaria AggDraw",
+      "sections": [
+        4,
+        6
+      ],
+      "verification": "Fixtures de paths y capabilities por backend"
+    },
+    {
+      "id": "R005",
+      "description": "Técnicas profesionales y calidad artística",
+      "sections": [
+        7,
+        19
+      ],
+      "verification": "Corpus editable y rúbrica humana documentada"
+    },
+    {
+      "id": "R006",
+      "description": "Siluetas, contornos y clusters",
+      "sections": [
+        8
+      ],
+      "verification": "Morfología y componentes conocidos"
+    },
+    {
+      "id": "R007",
+      "description": "Paletas, ramps y perfiles de color",
+      "sections": [
+        9
+      ],
+      "verification": "Referencias, cardinalidad y conservación de colores"
+    },
+    {
+      "id": "R008",
+      "description": "Iluminación y sombreado por bandas",
+      "sections": [
+        9,
+        10
+      ],
+      "verification": "Fixtures de rampas y prioridades de máscaras"
+    },
+    {
+      "id": "R009",
+      "description": "Dithering controlado",
+      "sections": [
+        10
+      ],
+      "verification": "Patrones exactos, coverage y fase temporal"
+    },
+    {
+      "id": "R010",
+      "description": "Materiales editables y reproducibles",
+      "sections": [
+        10
+      ],
+      "verification": "Fixtures de cinco materiales y semillas"
+    },
+    {
+      "id": "R011",
+      "description": "Capas, grupos y composición",
+      "sections": [
+        11
+      ],
+      "verification": "Source-over entero y orden/opacidad de grupos"
+    },
+    {
+      "id": "R012",
+      "description": "Máscaras y regiones semánticas",
+      "sections": [
+        11
+      ],
+      "verification": "DAG, álgebra de máscaras y targeting por ID"
+    },
+    {
+      "id": "R013",
+      "description": "JSON estricto y schema para agentes",
+      "sections": [
+        12
+      ],
+      "verification": "Pydantic, JSON Schema y corpus inválido"
+    },
+    {
+      "id": "R014",
+      "description": "API Python y CLI públicas",
+      "sections": [
+        13
+      ],
+      "verification": "Wheel limpio y contratos de errores/resultados"
+    },
+    {
+      "id": "R015",
+      "description": "Renderizado determinista",
+      "sections": [
+        14
+      ],
+      "verification": "Digests RGBA en procesos/OS y semillas distintas"
+    },
+    {
+      "id": "R016",
+      "description": "Edición no destructiva atómica",
+      "sections": [
+        15
+      ],
+      "verification": "Batch reversible, revisión obsoleta y diff local"
+    },
+    {
+      "id": "R017",
+      "description": "Historial y undo/redo",
+      "sections": [
+        15
+      ],
+      "verification": "Snapshots y ramas con igualdad exacta"
+    },
+    {
+      "id": "R018",
+      "description": "Formato de proyectos y assets",
+      "sections": [
+        16
+      ],
+      "verification": "Roundtrip y escritura atómica confinada"
+    },
+    {
+      "id": "R019",
+      "description": "Versionado y migraciones",
+      "sections": [
+        16
+      ],
+      "verification": "Fixtures entre versiones y original preservado"
+    },
+    {
+      "id": "R020",
+      "description": "Animaciones, duraciones y pivotes",
+      "sections": [
+        17
+      ],
+      "verification": "Evaluación independiente y continuidad temporal"
+    },
+    {
+      "id": "R021",
+      "description": "Spritesheets y manifest",
+      "sections": [
+        17
+      ],
+      "verification": "Reconstrucción exacta de cada frame"
+    },
+    {
+      "id": "R022",
+      "description": "Exportación PNG RGBA/indexada",
+      "sections": [
+        18
+      ],
+      "verification": "Roundtrip decoded y destino intacto al fallar"
+    },
+    {
+      "id": "R023",
+      "description": "Exportación GIF",
+      "sections": [
+        18
+      ],
+      "verification": "Timeline/disposal y pérdidas explícitas"
+    },
+    {
+      "id": "R024",
+      "description": "Formatos adicionales",
+      "sections": [
+        18
+      ],
+      "verification": "APNG/WebP lossless según codec disponible"
+    },
+    {
+      "id": "R025",
+      "description": "Evaluación gráfica y diagnósticos",
+      "sections": [
+        19
+      ],
+      "verification": "Hard/soft checks, bbox y supresiones"
+    },
+    {
+      "id": "R026",
+      "description": "Validación y seguridad de datos",
+      "sections": [
+        20
+      ],
+      "verification": "Entradas adversarias rechazadas antes de reservar/IO"
+    },
+    {
+      "id": "R027",
+      "description": "Testing y regresión visual",
+      "sections": [
+        21
+      ],
+      "verification": "Unit/property/integration y diffs exactos"
+    },
+    {
+      "id": "R028",
+      "description": "Rendimiento y recursos medidos",
+      "sections": [
+        22
+      ],
+      "verification": "Benchmark reproducible y memoria acotada"
+    },
+    {
+      "id": "R029",
+      "description": "Caché e incrementalidad",
+      "sections": [
+        22
+      ],
+      "verification": "Equivalencia caché on/off y límites LRU"
+    },
+    {
+      "id": "R030",
+      "description": "Arquitectura modular y documentación",
+      "sections": [
+        3
+      ],
+      "verification": "Dependencias internas y ADR revisados"
+    },
+    {
+      "id": "R031",
+      "description": "Paquete instalable y artefactos",
+      "sections": [
+        4,
+        25
+      ],
+      "verification": "Build y smoke de wheel/sdist aislados"
+    },
+    {
+      "id": "R032",
+      "description": "Entorno Python y herramientas de calidad",
+      "sections": [
+        4,
+        21
+      ],
+      "verification": "uv locked, Ruff, mypy, pytest y dependencias nativas"
+    },
+    {
+      "id": "R033",
+      "description": "Siete skills especializadas",
+      "sections": [
+        3,
+        25
+      ],
+      "verification": "Frontmatter, UI metadata, referencias y validador de skills"
+    },
+    {
+      "id": "R034",
+      "description": "Codex, roles y flujos de agentes",
+      "sections": [
+        3,
+        13,
+        25
+      ],
+      "verification": "Auditoría de capacidades y configuración local válida"
+    },
+    {
+      "id": "R035",
+      "description": "Hooks y automatización CI",
+      "sections": [
+        21,
+        25
+      ],
+      "verification": "pre-commit y workflow en matriz sin publicación"
+    },
+    {
+      "id": "R036",
+      "description": "Issues, roadmap, dependencias y trazabilidad",
+      "sections": [
+        23,
+        24
+      ],
+      "verification": "Checker DAG, cobertura y documentos sincronizados"
+    },
+    {
+      "id": "R037",
+      "description": "Objetos, tiles y escenarios",
+      "sections": [
+        2,
+        7
+      ],
+      "verification": "Ejemplos editables y costuras verificadas"
+    },
+    {
+      "id": "R038",
+      "description": "Preview y modificación específica por IA",
+      "sections": [
+        1,
+        13,
+        15
+      ],
+      "verification": "Tutorial render-preview-edit con IDs preservados"
+    },
+    {
+      "id": "R039",
+      "description": "Criterios de aceptación y Definition of Done",
+      "sections": [
+        24,
+        25
+      ],
+      "verification": "Evidencias por issue y gate de release"
+    },
+    {
+      "id": "R040",
+      "description": "Transformaciones pixel-perfect",
+      "sections": [
+        6
+      ],
+      "verification": "Identidades de giros/espejos y nearest-neighbor"
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Moana · Computer Graphics"
+  short_description: "Rasterización determinista y buffers"
+  default_prompt: "Usa $moana-graphics para trabajar el issue asignado de Moana respetando su contrato y estado real."

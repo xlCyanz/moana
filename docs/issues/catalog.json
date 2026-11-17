@@ -1,0 +1,1109 @@
+{
+  "schema_version": 1,
+  "issues": [
+    {
+      "id": "MOA-000",
+      "title": "Inicializar infraestructura y planificación",
+      "phase": "P0",
+      "status": "done",
+      "priority": "P0",
+      "dependencies": [],
+      "requirements": [
+        "R001",
+        "R030",
+        "R031",
+        "R032",
+        "R033",
+        "R034",
+        "R035",
+        "R036",
+        "R039"
+      ],
+      "scope": "Crear especificación, paquete mínimo, entorno, skills, roles, CI y backlog completo; registrar evidencia de las capacidades realmente observadas.",
+      "out_of_scope": "No implementar canvas, rasterizador, API gráfica ni publicar repositorio/paquete.",
+      "technical": [
+        "Python >=3.12, src layout, uv.lock resuelto y entorno virtual real",
+        "Ruff, mypy, pytest, build y validación de DAG/skills accesibles desde scripts/validate.py"
+      ],
+      "acceptance": [
+        "Las 25 secciones normativas y todos los requisitos tienen trazabilidad sin ciclos",
+        "Import y wheel aislado funcionan; siete skills válidas, configuración local documentada y gate verde"
+      ],
+      "tests": [
+        "Ejecutar lint, formato, tipos, smoke de bibliotecas y comprobación del backlog",
+        "Construir wheel/sdist, instalar wheel fuera de src y validar las siete skills con el validador disponible"
+      ],
+      "evidence": [
+        "2026-11-16: scripts/validate.py aprobó lock, Ruff, mypy, checker, 20 tests y build en macOS arm64 / Python 3.12.16.",
+        "Wheel construido desde sdist e instalado fuera del checkout; metadata y py.typed verificados.",
+        "Siete skills aprobadas por quick_validate.py; roles/config TOML verificados y ajustes aceptados por CLI Codex.",
+        "pre-commit instalado y ejecutado sobre todos los archivos nuevos. Ver docs/INITIALIZATION_REPORT.md para límites y versiones."
+      ]
+    },
+    {
+      "id": "MOA-001",
+      "title": "Definir tipos, coordenadas, errores y límites",
+      "phase": "P1",
+      "status": "planned",
+      "priority": "P0",
+      "dependencies": [
+        "MOA-000"
+      ],
+      "requirements": [
+        "R002",
+        "R026",
+        "R030"
+      ],
+      "scope": "Crear moana/core con contratos inmutables de coordenadas, cajas, dimensiones, límites y jerarquía de errores utilizada por todos los módulos.",
+      "out_of_scope": "No reservar buffers ni dibujar; no crear aún modelos de documento.",
+      "technical": [
+        "Aplicar cajas semiabiertas, enteros sin bool y top-left según MOANA.md §5",
+        "Separar datos de límites de su aplicación; códigos de error estables sin imports de capas superiores"
+      ],
+      "acceptance": [
+        "Una dimensión 0, coordenada bool o bbox invertida falla con error de dominio identificable",
+        "Cajas 1×1 y recortes vacíos tienen semántica documentada y no dependen de NumPy"
+      ],
+      "tests": [
+        "Parametrizar extremos de rango, cajas negativas, bordes y tamaños 1/128/2048",
+        "Propiedades de intersección: conmutatividad, contención y ausencia de expansión"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "MOA-002",
+      "title": "Implementar documento Pydantic y JSON Schema",
+      "phase": "P1",
+      "status": "planned",
+      "priority": "P0",
+      "dependencies": [
+        "MOA-001"
+      ],
+      "requirements": [
+        "R013",
+        "R026"
+      ],
+      "scope": "Crear moana/schema, modelos v1 para el MVP y el registro explícito de capacidades; generar schema y validar el ejemplo mínimo.",
+      "out_of_scope": "No rasterizar ni implementar anticipadamente todas las técnicas futuras; ampliar modelos junto a sus issues.",
+      "technical": [
+        "Modo strict y extra forbid, IDs globales, discriminadores, defaults canónicos y rechazo de claves duplicadas en bytes",
+        "Distinguir parseo, referencias y operación no soportada; limitar bytes/profundidad antes de parsear completamente"
+      ],
+      "acceptance": [
+        "El JSON mínimo normaliza de forma idempotente y produce schema versionado reproducible",
+        "IDs duplicados, colores inexistentes, bool como entero y campos extra se rechazan con pointer y código"
+      ],
+      "tests": [
+        "Tabla de entradas válidas/inválidas y equivalencia mapping/bytes",
+        "Roundtrip modelo-JSON-modelo, fuzz acotado de profundidad y golden del schema con revisión de compatibilidad"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "MOA-003",
+      "title": "Aplicar presupuesto de trabajo y recursos",
+      "phase": "P1",
+      "status": "planned",
+      "priority": "P0",
+      "dependencies": [
+        "MOA-001",
+        "MOA-002"
+      ],
+      "requirements": [
+        "R026",
+        "R028"
+      ],
+      "scope": "Implementar plan de coste previo al render con límites de operaciones, buffers, visitas de píxel y frames según §20.",
+      "out_of_scope": "No construir un servicio aislado ni tratar el timeout cooperativo como límite de proceso.",
+      "technical": [
+        "Contabilizar temporales y bbox recortada, y coste de segmentos antes de clipping",
+        "Los documentos no pueden aumentar límites; deadline cooperativo separado de límites duros del anfitrión"
+      ],
+      "acceptance": [
+        "Una solicitud que exceda cualquier límite falla antes de crear un buffer raster",
+        "Se informa recurso, límite y coste estimado; una solicitud justo en el límite se admite"
+      ],
+      "tests": [
+        "Instrumentar allocators falsos para comprobar ausencia de reservas al rechazar",
+        "Casos de coordenadas enormes, capas profundas, muchos frames y overflow de productos"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "MOA-004",
+      "title": "Crear lienzo RGBA y propiedad de buffers",
+      "phase": "P1",
+      "status": "planned",
+      "priority": "P1",
+      "dependencies": [
+        "MOA-001",
+        "MOA-003"
+      ],
+      "requirements": [
+        "R002",
+        "R027"
+      ],
+      "scope": "Crear buffer de canvas y adaptadores Pillow/NumPy con propiedad explícita, normalización de transparencia y acceso seguro.",
+      "out_of_scope": "No dibujar primitivas ni componer capas.",
+      "technical": [
+        "uint8 C-contiguo [y,x,4], alfa recto y píxel transparente negro",
+        "Copias o vistas inmutables hacia el exterior; acumuladores amplios y límites antes de reservar"
+      ],
+      "acceptance": [
+        "Leer/escribir coordenadas válidas preserva RGBA y coordenadas negativas no hacen wrap",
+        "Una copia/export de array no puede mutar silenciosamente el canvas original"
+      ],
+      "tests": [
+        "Fixtures 1×1 y 128×128, transparentes con RGB residual y roundtrip NumPy/Pillow",
+        "Pruebas de aliasing, dtype/shape inválidos, límite de memoria y acceso fuera de rango"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "MOA-005",
+      "title": "Implementar paletas y rampas",
+      "phase": "P1",
+      "status": "planned",
+      "priority": "P1",
+      "dependencies": [
+        "MOA-001",
+        "MOA-002"
+      ],
+      "requirements": [
+        "R007"
+      ],
+      "scope": "Crear moana/palette con IDs de color, canonicalización RGBA, ramps y validación de perfiles strict/rgba.",
+      "out_of_scope": "No cuantización automática ni iluminación.",
+      "technical": [
+        "Referencias por ID y formato canónico #RRGGBBAA; orden explícito de ramps",
+        "Validar alfa y cardinalidad por perfil; cambios de color no renumeran consumidores"
+      ],
+      "acceptance": [
+        "Paleta strict rechaza alfa intermedio y referencias de rampa inexistentes",
+        "Serializar y cargar preserva orden, valores e identidad; advertencia de luminancia no bloquea estilos válidos"
+      ],
+      "tests": [
+        "Casos de colores duplicados por valor pero IDs diferentes y IDs duplicados inválidos",
+        "Pruebas de límites 256/4096, transparencia y remapeo explícito sin colores ocultos"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "MOA-006",
+      "title": "Rasterizar primitivas enteras y flood fill",
+      "phase": "P1",
+      "status": "planned",
+      "priority": "P1",
+      "dependencies": [
+        "MOA-004",
+        "MOA-005"
+      ],
+      "requirements": [
+        "R003"
+      ],
+      "scope": "Implementar pixel, line, rect, ellipse, polygon y flood_fill en moana/geometry según reglas exactas de §6.",
+      "out_of_scope": "No paths Bézier, AA ni trazos de grosor implícito.",
+      "technical": [
+        "Máscaras binarias con empates y bordes normativos; no depender de defaults de ImageDraw",
+        "Flood fill iterativo 4-conectado sobre snapshot de la capa y coste acotado; clipping consistente"
+      ],
+      "acceptance": [
+        "Invertir una línea produce la misma máscara y los extremos están incluidos",
+        "Rectángulos, elipses y polígonos concuerdan con fixtures manuales; fill no atraviesa límites de color"
+      ],
+      "tests": [
+        "Octantes de línea, degenerados, bordes semiabiertos y autointersecciones even-odd",
+        "Flood fill de un píxel/todo canvas, coincidencia de color, contención y rechazo por presupuesto"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "MOA-007",
+      "title": "Añadir adaptador de paths AggDraw",
+      "phase": "P3",
+      "status": "planned",
+      "priority": "P2",
+      "dependencies": [
+        "MOA-006",
+        "MOA-010",
+        "MOA-028"
+      ],
+      "requirements": [
+        "R004",
+        "R015"
+      ],
+      "scope": "Agregar path M/L/Q/C/Z con punto fijo, versión de backend y binarización de cobertura; mantener separado el perfil entero.",
+      "out_of_scope": "No fuentes, SVG completo ni rasterización vectorial genérica.",
+      "technical": [
+        "Umbral >=128 a resolución nativa; comandos limitados y sin SVG externo",
+        "Registrar aggdraw-v1 y versiones en provenance; exponer capacidad real y estimación de trabajo"
+      ],
+      "acceptance": [
+        "Paths cerrados producen únicamente máscara binaria y no introducen colores por AA",
+        "Entradas desconocidas o excesivas fallan antes del adaptador; ausencia de capacidad da error explícito"
+      ],
+      "tests": [
+        "Fixtures de curvas pequeñas, joins, cierres y curvas fuera de lienzo",
+        "Repetición con entorno fijado y comparación backend por plataforma sin prometer equivalencia al raster entero"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "MOA-008",
+      "title": "Añadir transformaciones pixel-perfect",
+      "phase": "P1",
+      "status": "planned",
+      "priority": "P1",
+      "dependencies": [
+        "MOA-006"
+      ],
+      "requirements": [
+        "R040"
+      ],
+      "scope": "Crear traslación, espejo, giro en cuartos de vuelta y escala entera para máscaras y geometría.",
+      "out_of_scope": "No interpolación suave, deformación ni rotación libre.",
+      "technical": [
+        "Definir pivote y orden explícito; aplicar fórmula de §6 a índices",
+        "Preservar IDs y usar nearest-neighbor; cajas resultan de píxeles transformados"
+      ],
+      "acceptance": [
+        "Cuatro giros de 90 grados reconstruyen el resultado sin pérdida",
+        "Espejo doble es identidad y una escala 2 replica cada píxel en 2×2"
+      ],
+      "tests": [
+        "Propiedades de composición/inversas sobre máscaras no cuadradas y pivotes negativos",
+        "Clipping de objetos parcialmente fuera y rechazo de escala no entera o rotación arbitraria en strict"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "MOA-009",
+      "title": "Implementar capas, grupos y composición",
+      "phase": "P2",
+      "status": "planned",
+      "priority": "P1",
+      "dependencies": [
+        "MOA-002",
+        "MOA-004",
+        "MOA-005",
+        "MOA-006",
+        "MOA-008"
+      ],
+      "requirements": [
+        "R011"
+      ],
+      "scope": "Crear árbol ordenado de capas/grupos, visibilidad, bloqueo y composición normal source-over entera.",
+      "out_of_scope": "No multiply/screen ni máscaras semánticas todavía.",
+      "technical": [
+        "Orden abajo-arriba; buffer aislado por grupo y opacidad aplicada una vez",
+        "Fórmula de redondeo §11, normalización alpha cero y límite de profundidad"
+      ],
+      "acceptance": [
+        "Composición de fixture semitransparente coincide con cálculo entero independiente",
+        "Cambiar orden/visibilidad produce diferencia prevista; grupos no aplican opacidad por hijo"
+      ],
+      "tests": [
+        "Casos alpha 0/1/127/255 y normalización RGB en transparente",
+        "Grupos anidados, profundidad límite, capa invisible y strict que rechaza opacidad intermedia"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "MOA-010",
+      "title": "Construir pipeline de render determinista",
+      "phase": "P2",
+      "status": "planned",
+      "priority": "P0",
+      "dependencies": [
+        "MOA-002",
+        "MOA-003",
+        "MOA-006",
+        "MOA-009"
+      ],
+      "requirements": [
+        "R015",
+        "R030"
+      ],
+      "scope": "Implementar moana/render como orquestador validación-resolución-coste-raster-composición y RenderResult inmutable.",
+      "out_of_scope": "No caché, concurrencia ni optimizaciones sin benchmark.",
+      "technical": [
+        "Canonicalizar defaults/keys y digest dimensional RGBA según §14",
+        "Registro explícito de operaciones; RNG por ID/coordenadas; sin reloj, hash() ni estado global"
+      ],
+      "acceptance": [
+        "El mismo documento produce RGBA y digest idénticos en procesos nuevos",
+        "Añadir una operación no cambia la secuencia aleatoria de otra; render no modifica documento ni escribe archivos"
+      ],
+      "tests": [
+        "Variar PYTHONHASHSEED, orden de claves de objeto y repetir en subprocesos",
+        "Entradas no soportadas, references inválidas, cancelación entre operaciones y límites previos al render"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "MOA-011",
+      "title": "Exportar PNG y manifiesto de salida",
+      "phase": "P2",
+      "status": "planned",
+      "priority": "P1",
+      "dependencies": [
+        "MOA-010"
+      ],
+      "requirements": [
+        "R022"
+      ],
+      "scope": "Crear exportador PNG RGBA/indexado con escala entera y escritura atómica que no sobrescribe por defecto.",
+      "out_of_scope": "No GIF ni publicar archivos en servicios externos.",
+      "technical": [
+        "Metadata estable; indexed conserva orden y valida cardinalidad/transparencia",
+        "ExportManifest incluye dimensiones, hash, ruta y warnings; evitar cuantización implícita"
+      ],
+      "acceptance": [
+        "PNG decodificado es exactamente igual al RenderResult en escala 1",
+        "Fallo de escritura deja el destino anterior intacto y no devuelve éxito parcial"
+      ],
+      "tests": [
+        "Roundtrip RGBA e indexado, transparencia y escala nearest 1/2/4",
+        "Paleta 256/257, destino existente, permiso denegado y fallo simulado durante escritura"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "MOA-012",
+      "title": "Exponer API pública y CLI estático",
+      "phase": "P2",
+      "status": "planned",
+      "priority": "P1",
+      "dependencies": [
+        "MOA-010",
+        "MOA-011"
+      ],
+      "requirements": [
+        "R014",
+        "R038"
+      ],
+      "scope": "Crear moana/api y comando moana para validate/render/inspect/export estático con resultados y errores documentados.",
+      "out_of_scope": "No editor interactivo, GUI ni integración con proveedor de IA.",
+      "technical": [
+        "Fachada tipada sin objetos mutables de bibliotecas; añadir entrypoint sólo al funcionar",
+        "CLI con códigos de §13 y paths autorizados por el llamador; capacidades visibles"
+      ],
+      "acceptance": [
+        "Una instalación limpia del wheel valida un JSON y exporta un PNG de 128×128",
+        "Help y errores distinguen capacidades disponibles, entrada inválida, presupuesto e I/O"
+      ],
+      "tests": [
+        "Integración CLI en directorio ajeno al repo con paths con espacios",
+        "Tests de exit codes, no traceback por defecto, stdout parseable y error de operación futura"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "MOA-013",
+      "title": "Añadir máscaras y regiones semánticas",
+      "phase": "P3",
+      "status": "planned",
+      "priority": "P1",
+      "dependencies": [
+        "MOA-009",
+        "MOA-010"
+      ],
+      "requirements": [
+        "R012"
+      ],
+      "scope": "Implementar nodos de máscaras binarias y union/intersect/subtract/xor; asociar regiones semánticas a IDs y geometría.",
+      "out_of_scope": "No inferencia automática de regiones desde un PNG.",
+      "technical": [
+        "Resolver referencias en DAG sin depender del color raster de capas",
+        "Máscaras en coordenadas de canvas; bbox y caché potencial dependen de los nodos fuente"
+      ],
+      "acceptance": [
+        "Una operación enmascarada no modifica píxeles fuera de su máscara",
+        "Regiones permiten resolver ojo izquierdo por ID; ciclos y referencias rotas se rechazan antes de render"
+      ],
+      "tests": [
+        "Álgebra de conjuntos en fixtures 1/8/128 píxeles y máscaras vacías",
+        "Ciclos directos/indirectos, máscara fuera del canvas y grupos transformados"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "MOA-014",
+      "title": "Crear contornos y análisis de clusters",
+      "phase": "P3",
+      "status": "planned",
+      "priority": "P1",
+      "dependencies": [
+        "MOA-013",
+        "MOA-005"
+      ],
+      "requirements": [
+        "R006",
+        "R025"
+      ],
+      "scope": "Implementar morfología binaria para outlines y análisis conectado de clusters con salida editable y diagnósticos.",
+      "out_of_scope": "No clasificar intención artística como error matemático ni borrar detalles automáticamente.",
+      "technical": [
+        "Vecindad Chebyshev para contornos y conectividad 4/8 explícita para clusters",
+        "Advertencias por singleton y escalones con supresión por región; no limpieza destructiva automática"
+      ],
+      "acceptance": [
+        "Contornos internos/externos respetan ancho, huecos y clipping",
+        "Un brillo aislado puede conservarse mediante excepción; el análisis no cambia el documento"
+      ],
+      "tests": [
+        "Máscaras con huecos, contactos de esquina, diagonal y borde de canvas",
+        "Componentes conocidos, outline de ancho 1/2 y operación editable que reproduce la máscara"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "MOA-015",
+      "title": "Añadir bandas de sombreado e iluminación",
+      "phase": "P3",
+      "status": "planned",
+      "priority": "P1",
+      "dependencies": [
+        "MOA-005",
+        "MOA-013"
+      ],
+      "requirements": [
+        "R008"
+      ],
+      "scope": "Agregar luces discretas, máscaras de bandas y selección de índices de rampa para volúmenes estilizados.",
+      "out_of_scope": "No sombreado 3D físico ni multiplicación RGB que cree colores ocultos.",
+      "technical": [
+        "Prioridad por orden de bandas y clamp de pasos a la rampa",
+        "Sin normales inferidas: luz recibe regiones/mapas authored; selective outline consume la misma información"
+      ],
+      "acceptance": [
+        "Solapamientos toman la última banda y todos los colores pertenecen a la rampa",
+        "Modificar una máscara de sombra conserva geometría/IDs y da un diff localizado documentado"
+      ],
+      "tests": [
+        "Bandas vacías, solapamientos, clamp y cambios de orientación",
+        "Fixtures manuales con rampa de 3/5 tonos y píxeles de frontera"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "MOA-016",
+      "title": "Implementar dithering ordenado",
+      "phase": "P3",
+      "status": "planned",
+      "priority": "P1",
+      "dependencies": [
+        "MOA-005",
+        "MOA-013"
+      ],
+      "requirements": [
+        "R009"
+      ],
+      "scope": "Añadir patrones Bayer 2×2/4×4 con coverage entera, anclaje explícito y clipping por máscara.",
+      "out_of_scope": "No error diffusion ni dithering automático global.",
+      "technical": [
+        "Tablas y módulo matemático fijados en §10; dos IDs de color",
+        "El patrón se ancla al canvas y conserva fase entre tiles y frames salvo instrucción explícita"
+      ],
+      "acceptance": [
+        "Coverage 0 produce sólo A y N² sólo B dentro de la máscara",
+        "Patrones con origen negativo y traducciones múltiplo del período coinciden exactamente"
+      ],
+      "tests": [
+        "Todos los thresholds, coberturas y posiciones del período",
+        "Máscaras no rectangulares, costuras entre tiles y repetición temporal sin parpadeo"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "MOA-017",
+      "title": "Crear presets de materiales versionados",
+      "phase": "P3",
+      "status": "planned",
+      "priority": "P1",
+      "dependencies": [
+        "MOA-014",
+        "MOA-015",
+        "MOA-016"
+      ],
+      "requirements": [
+        "R010",
+        "R005"
+      ],
+      "scope": "Crear presets editables de piel, tela, metal, madera y piedra definidos por rampas, bandas y patrones.",
+      "out_of_scope": "No afirmar calidad profesional sólo por aprobar fixtures ni usar assets sin licencia.",
+      "technical": [
+        "Semilla por operación/coordenada según §14; ningún shader ejecutable en JSON",
+        "Parámetros con rango, fuente, versión y recetas reproducibles; registrar procedencia de ejemplos"
+      ],
+      "acceptance": [
+        "Cada material puede editarse sin perder IDs ni introducir colores fuera del perfil",
+        "Misma semilla genera igual textura y una operación nueva no altera material existente"
+      ],
+      "tests": [
+        "Fixtures pequeñas por material con máscara y límites de densidad/escala",
+        "Pruebas de estabilidad entre frames y revisión visual a 1×/4× documentada como humana o pendiente"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "MOA-018",
+      "title": "Implementar batches de edición atómica",
+      "phase": "P3",
+      "status": "planned",
+      "priority": "P0",
+      "dependencies": [
+        "MOA-002",
+        "MOA-010",
+        "MOA-012",
+        "MOA-013"
+      ],
+      "requirements": [
+        "R016",
+        "R038"
+      ],
+      "scope": "Crear moana/editing con comandos de §15, targeting por ID y revisión optimista; integrar apply_edit en fachada.",
+      "out_of_scope": "No protocolo JSON Patch arbitrario ni colaboración en tiempo real.",
+      "technical": [
+        "Validar lote completo y escena final; sin cambios parciales ni mutación del documento fuente",
+        "Rechazar revisión vieja, capa bloqueada, borrado referenciado e IDs mutados; incrementar revisión una vez"
+      ],
+      "acceptance": [
+        "Recolor de body_fill modifica únicamente su referencia y la revisión preservando toda otra estructura",
+        "Un segundo comando inválido revierte también el primero; se devuelve EditConflict para base vieja"
+      ],
+      "tests": [
+        "Cada comando con caso válido/negativo, reorder al principio y dependencias vivas",
+        "Comparar documento original byte a byte, render antes/después y batch sin cambio visual"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "MOA-019",
+      "title": "Añadir undo/redo e historial inmutable",
+      "phase": "P3",
+      "status": "planned",
+      "priority": "P1",
+      "dependencies": [
+        "MOA-018"
+      ],
+      "requirements": [
+        "R017"
+      ],
+      "scope": "Crear snapshots con digest, comandos canónicos y cursor de historial; permitir undo/redo y nueva rama después de undo.",
+      "out_of_scope": "No persistir todavía un contenedor de proyecto ni fusionar ramas automáticamente.",
+      "technical": [
+        "No reconstruir estados con operaciones inversas aproximadas",
+        "Limitar memoria/historial y separar selección de revisión de la edición que crea nueva revisión"
+      ],
+      "acceptance": [
+        "Undo y redo recuperan documento y RGBA exactos",
+        "Editar después de undo invalida sólo redo activo sin eliminar estados ya persistidos"
+      ],
+      "tests": [
+        "Secuencias de 1/10/100 ediciones y navegación a límites",
+        "Fallo de batch no agrega snapshot; ramas, revisiones y budget de historial"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "MOA-020",
+      "title": "Persistir proyectos y assets seguros",
+      "phase": "P4",
+      "status": "planned",
+      "priority": "P1",
+      "dependencies": [
+        "MOA-018",
+        "MOA-019",
+        "MOA-011"
+      ],
+      "requirements": [
+        "R018",
+        "R026"
+      ],
+      "scope": "Crear formato .moana.json, proyecto directorio y contenedor ZIP opcional con assets declarados, hashes y escritura atómica.",
+      "out_of_scope": "No soporte PSD/Aseprite ni assets remotos o ejecutables.",
+      "technical": [
+        "Confinar rutas y rechazar symlinks, duplicados y traversal antes de extracción",
+        "Limitar entradas, expansión/ratio, bytes y decode Pillow; guardar temporal y conservar destino al fallar"
+      ],
+      "acceptance": [
+        "Guardar/cargar preserva IDs, revisiones, historial y RGBA",
+        "Un asset con checksum incorrecto o ruta maliciosa no escribe fuera de la raíz ni carga parcialmente"
+      ],
+      "tests": [
+        "Roundtrip proyecto geométrico y con PNG; fallo simulado de disco",
+        "ZIP con ../, rutas absolutas, symlink, nombres en colisión, ratio excesivo y bomba de imagen"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "MOA-021",
+      "title": "Versionar y migrar formatos de proyecto",
+      "phase": "P4",
+      "status": "planned",
+      "priority": "P1",
+      "dependencies": [
+        "MOA-020"
+      ],
+      "requirements": [
+        "R019"
+      ],
+      "scope": "Implementar registro explícito de versiones de schema y migraciones puras con copia original preservada.",
+      "out_of_scope": "No prometer compatibilidad con formatos que no tengan contrato de migración registrado.",
+      "technical": [
+        "Distinguir versión paquete/schema/renderer y rechazar futuras desconocidas",
+        "Migración offline sin I/O interno; metadata de procedencia y backup gestionados por proyecto"
+      ],
+      "acceptance": [
+        "Una fixture de versión anterior migra a v1 conservando semántica y render",
+        "Abrir un archivo no lo sobrescribe ni aplica migración destructiva silenciosa"
+      ],
+      "tests": [
+        "Fixtures de migración, migración repetida/idempotencia del destino y versión futura",
+        "Simular fallo intermedio y comprobar que el original permanece intacto"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "MOA-022",
+      "title": "Implementar timeline y evaluación de frames",
+      "phase": "P4",
+      "status": "planned",
+      "priority": "P1",
+      "dependencies": [
+        "MOA-018",
+        "MOA-019",
+        "MOA-010"
+      ],
+      "requirements": [
+        "R020"
+      ],
+      "scope": "Crear animaciones con duración, loops, pivote común y overrides evaluados siempre contra la base.",
+      "out_of_scope": "No tweening implícito, rigging ni interpolación aprendida.",
+      "technical": [
+        "Validar IDs y presupuestos acumulados antes de export; frames no heredan cambios del anterior",
+        "Estabilidad de semilla por defecto y variación temporal sólo explícita"
+      ],
+      "acceptance": [
+        "Cambiar el orden de evaluación de frames no cambia ninguno de sus resultados",
+        "Duraciones y pivotes se preservan y un override inválido impide el render parcial de la solicitud"
+      ],
+      "tests": [
+        "Frame único, 256 frames, límite de duración/área y loops",
+        "Overrides de geometría/color/visibilidad y textura estable entre frames"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "MOA-023",
+      "title": "Exportar spritesheets y manifest reversible",
+      "phase": "P4",
+      "status": "planned",
+      "priority": "P1",
+      "dependencies": [
+        "MOA-022",
+        "MOA-011"
+      ],
+      "requirements": [
+        "R021"
+      ],
+      "scope": "Crear atlas grid con margen/padding, manifiesto de frames, pivotes y tiempos; reconstrucción comprobable.",
+      "out_of_scope": "No packing heurístico compacto hasta tener contrato de desempate independiente.",
+      "technical": [
+        "Orden de frames estable, sin rotación/trim implícito y dimensiones presupuestadas",
+        "Manifest versionado con rect, source_size, trim_offset, duration y digest"
+      ],
+      "acceptance": [
+        "Recortar atlas por manifest reconstruye RGBA exacto de cada frame",
+        "Export idéntico con misma configuración y ningún frame solapa padding o sale del sheet"
+      ],
+      "tests": [
+        "Columnas 1/N, último renglón incompleto, margen/padding y canvas no cuadrado",
+        "Atlas excesivo, manifest corrupto y roundtrip recortes/tiempos"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "MOA-024",
+      "title": "Exportar GIF con política de pérdidas",
+      "phase": "P4",
+      "status": "planned",
+      "priority": "P1",
+      "dependencies": [
+        "MOA-022",
+        "MOA-005",
+        "MOA-011"
+      ],
+      "requirements": [
+        "R023"
+      ],
+      "scope": "Implementar GIF con paleta compartida, transparencia, disposal y duración efectiva declarada.",
+      "out_of_scope": "No cuantización silenciosa ni equiparar GIF al maestro RGBA.",
+      "technical": [
+        "<=256 índices, reserva de transparencia y rechazo de alfa intermedio sin background explícito",
+        "Duración múltiplo de 10 ms o redondeo solicitado; comprobar timeline tras decode"
+      ],
+      "acceptance": [
+        "Frames decodificados/composited y tiempos son equivalentes al objetivo bajo las opciones elegidas",
+        "Colores o tiempos no representables generan error o informe de pérdida explícitamente aceptada"
+      ],
+      "tests": [
+        "Paleta llena, 255 colores más transparente, alpha intermedio y disposal",
+        "Frames duplicados fusionados, loop, duraciones cortas y decode acumulado en Pillow"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "MOA-025",
+      "title": "Añadir APNG y WebP lossless opcionales",
+      "phase": "P4",
+      "status": "planned",
+      "priority": "P2",
+      "dependencies": [
+        "MOA-022",
+        "MOA-011"
+      ],
+      "requirements": [
+        "R024"
+      ],
+      "scope": "Agregar exportadores adicionales sólo cuando el build de Pillow soporte los codecs, con capabilities públicas.",
+      "out_of_scope": "No WebP lossy por defecto ni dependencia obligatoria de encoders ausentes.",
+      "technical": [
+        "Detectar capacidad en runtime sin sustituir formatos; preservación de alfa/tiempos",
+        "Opciones lossless explícitas y manifest con versiones de codec"
+      ],
+      "acceptance": [
+        "Cada codec disponible pasa roundtrip RGBA y timeline",
+        "Codec ausente produce UnsupportedOperation claro sin archivo con extensión engañosa"
+      ],
+      "tests": [
+        "Pruebas condicionadas a capacidades con skip explicado y reporte del build",
+        "Mock de codec ausente y casos multi-frame, alfa parcial y duración"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "MOA-026",
+      "title": "Crear informes de calidad gráfica",
+      "phase": "P5",
+      "status": "planned",
+      "priority": "P1",
+      "dependencies": [
+        "MOA-014",
+        "MOA-015",
+        "MOA-022"
+      ],
+      "requirements": [
+        "R025",
+        "R005"
+      ],
+      "scope": "Crear moana/quality para hard checks, heurísticas configurables, métricas y diagnósticos por región.",
+      "out_of_scope": "No puntaje automático que garantice calidad profesional ni revisión humana ficticia.",
+      "technical": [
+        "Informe ordenado con rule_id, severidad, bbox, explicación y evidencia; no modifica render",
+        "Separar conformidad matemática de advertencias artísticas y permitir supresiones localizadas"
+      ],
+      "acceptance": [
+        "Un color fuera de paleta strict se detecta como fallo y un singleton como advertencia",
+        "Informe se reproduce idéntico y supresión de un ojo no oculta errores de otra región"
+      ],
+      "tests": [
+        "Corpus sintético con defectos conocidos y versiones corregidas",
+        "Tests de no mutación, orden estable, regiones superpuestas y estabilidad temporal"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "MOA-027",
+      "title": "Construir corpus artístico y rúbrica humana",
+      "phase": "P5",
+      "status": "planned",
+      "priority": "P1",
+      "dependencies": [
+        "MOA-017",
+        "MOA-022",
+        "MOA-026",
+        "MOA-028"
+      ],
+      "requirements": [
+        "R005",
+        "R027",
+        "R038"
+      ],
+      "scope": "Crear ejemplos propios de personaje, criatura, objeto, tile y animación con JSON, PNG, paleta, procedencia y evaluación.",
+      "out_of_scope": "No inventar aprobaciones humanas ni generar ejemplos finales con un modelo visual.",
+      "technical": [
+        "Cada ejemplo conserva fuente editable, semilla, versión de renderer y licencia/procedencia",
+        "Mostrar 1×/4×, silueta y clusters; rúbrica de §19 con aprobación humana registrada o pendiente"
+      ],
+      "acceptance": [
+        "Corpus cubre cinco categorías y pasa hard checks sin ocultar warnings",
+        "Sólo se califica profesional un ejemplo revisado por una persona con >=4 en categorías aplicables"
+      ],
+      "tests": [
+        "Render de todo el corpus y cambio localizado por región con diff",
+        "Inspección visual documentada, estabilidad de animación y auditoría de procedencia"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "MOA-028",
+      "title": "Crear harness de regresión visual",
+      "phase": "P1",
+      "status": "planned",
+      "priority": "P1",
+      "dependencies": [
+        "MOA-004"
+      ],
+      "requirements": [
+        "R027"
+      ],
+      "scope": "Crear utilidades de tests para comparar buffers exactos y producir expected/actual/diff con manifiesto cuando fallan.",
+      "out_of_scope": "No SSIM como criterio de aprobación ni corpus artístico completo.",
+      "technical": [
+        "Oráculos pequeños independientes y digest dimensional; no depender de render aún",
+        "Actualizar goldens mediante acción explícita revisada; CI no escribe baseline"
+      ],
+      "acceptance": [
+        "Una diferencia de un píxel falla y genera bbox/conteo correctos",
+        "Una imagen idéntica pasa aunque los bytes comprimidos del PNG sean diferentes"
+      ],
+      "tests": [
+        "Tests del harness con píxel cambiado, dimensiones distintas y alfa cero",
+        "Archivos de diagnóstico válidos y baseline intacto tras fallo; manejo de ruta con espacios"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "MOA-029",
+      "title": "Verificar determinismo entre procesos y plataformas",
+      "phase": "P2",
+      "status": "planned",
+      "priority": "P1",
+      "dependencies": [
+        "MOA-010",
+        "MOA-011",
+        "MOA-028"
+      ],
+      "requirements": [
+        "R015",
+        "R027",
+        "R035"
+      ],
+      "scope": "Ampliar CI para renderizar fixtures comunes en Python/OS soportados y comparar digests RGBA esperados.",
+      "out_of_scope": "No afirmar portabilidad de backend AggDraw fuera de combinaciones realmente verificadas.",
+      "technical": [
+        "Variar PYTHONHASHSEED y ejecutar en procesos limpios",
+        "Registrar backend/lock y separar diferencias de codec de diferencias de píxel"
+      ],
+      "acceptance": [
+        "Perfil entero produce mismos digests en Linux/macOS/Windows",
+        "CI publica evidencia útil cuando hay divergencia y no actualiza goldens automáticamente"
+      ],
+      "tests": [
+        "Fixtures de diagonales, alpha, grupos, transparencias y clipping",
+        "Subprocesos con semillas distintas, orden de claves y export/decode frente a RGBA maestro"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "MOA-030",
+      "title": "Ejercitar amenazas y entradas adversarias",
+      "phase": "P5",
+      "status": "planned",
+      "priority": "P0",
+      "dependencies": [
+        "MOA-003",
+        "MOA-020",
+        "MOA-021",
+        "MOA-022"
+      ],
+      "requirements": [
+        "R026",
+        "R027"
+      ],
+      "scope": "Implementar suite de seguridad y propiedades de rechazo para JSON, proyectos, assets, referencias y edición.",
+      "out_of_scope": "No pentest de servicios externos ni garantía de aislamiento in-process para llamadas nativas bloqueadas.",
+      "technical": [
+        "Generadores acotados Hypothesis y corpus malicioso versionado sin payload ejecutable",
+        "Verificar no reserva/IO previo al rechazo, preservación de destino y errores sin secretos"
+      ],
+      "acceptance": [
+        "Todas las fronteras del threat model tienen caso reproducible y mitigación ejercitada",
+        "Solicitudes hostiles fallan bajo límites de tiempo/memoria de test y no dejan salida parcial"
+      ],
+      "tests": [
+        "Duplicados JSON, nesting, ciclos, NaN, tamaños enormes y ZIP traversal/bomb",
+        "Monkeypatch de asignación/IO, mutación parcial de batch, decode enorme y fallo de checksum"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "MOA-031",
+      "title": "Medir rendimiento y memoria de referencia",
+      "phase": "P5",
+      "status": "planned",
+      "priority": "P1",
+      "dependencies": [
+        "MOA-010",
+        "MOA-022",
+        "MOA-027"
+      ],
+      "requirements": [
+        "R028"
+      ],
+      "scope": "Crear benchmark repetible del corpus de §22 y registrar hardware, versiones, warmups, mediana, p95 y memoria.",
+      "out_of_scope": "No optimización GPU/JIT/paralela antes de disponer de mediciones.",
+      "technical": [
+        "Separar render de I/O, 5 warmups y 30 muestras; buffers y proceso identificados",
+        "Objetivos informativos hasta runner estable; no esconder regresión con tolerancia arbitraria"
+      ],
+      "acceptance": [
+        "Reporte reproducible indica si 100 ms/2 s/256 MiB se cumplen y en qué máquina",
+        "Casos adversos respetan presupuestos aunque incumplan objetivo de latencia"
+      ],
+      "tests": [
+        "Benchmark estático 32 capas/500 rects y animación 16 frames",
+        "Comprobar contadores, ausencia de trabajo eliminado por caché y comparabilidad de versiones"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "MOA-032",
+      "title": "Optimizar caché y render incremental acotados",
+      "phase": "P5",
+      "status": "planned",
+      "priority": "P2",
+      "dependencies": [
+        "MOA-018",
+        "MOA-031"
+      ],
+      "requirements": [
+        "R029",
+        "R028",
+        "R015"
+      ],
+      "scope": "Agregar caché LRU por bytes y dirty regions únicamente donde el benchmark demuestre beneficio.",
+      "out_of_scope": "No paralelismo ni optimizaciones sin mejora medible; justificar si el benchmark no aconseja caché.",
+      "technical": [
+        "Clave incluye documento/dependencias, renderer/backend/lock y frame",
+        "Nunca filtrar buffers mutables; invalidar dependencias transitivas y limitar temporales"
+      ],
+      "acceptance": [
+        "Caché on/off produce RGBA y reportes idénticos",
+        "Una edición cambia todos sus consumidores y la caché no supera el límite configurado"
+      ],
+      "tests": [
+        "Comparar render completo/incremental para cambios de paleta, máscara, grupo y orden",
+        "Evicción LRU, versiones distintas, mutación externa impedida y benchmark antes/después"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "MOA-033",
+      "title": "Documentar flujos IA y previews editables",
+      "phase": "P5",
+      "status": "planned",
+      "priority": "P1",
+      "dependencies": [
+        "MOA-012",
+        "MOA-018",
+        "MOA-020",
+        "MOA-026"
+      ],
+      "requirements": [
+        "R014",
+        "R034",
+        "R038"
+      ],
+      "scope": "Completar tutorial JSON/Python/CLI y flujo de agente desde brief hasta preview y modificación por ID usando capacidades reales.",
+      "out_of_scope": "No GUI, servicio alojado, credenciales ni envío de mensajes a terceros.",
+      "technical": [
+        "Ejemplos ejecutables con schema vigente, paths relativos autorizados y PNG 1×/4×",
+        "Actualizar skills y capabilities tras implementar; sin proveedor IA obligatorio"
+      ],
+      "acceptance": [
+        "Un usuario reproduce creación, inspección y recolor con los comandos documentados",
+        "El agente conserva fuente/revisión y presenta limitaciones sin prometer generación visual inexistente"
+      ],
+      "tests": [
+        "Ejecutar snippets/tutorial en entorno wheel limpio",
+        "Validar ejemplos JSON contra schema y comprobar sólo región prevista cambia salvo dependencias declaradas"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "MOA-034",
+      "title": "Añadir ejemplos de tiles y escenarios modulares",
+      "phase": "P5",
+      "status": "planned",
+      "priority": "P2",
+      "dependencies": [
+        "MOA-008",
+        "MOA-016",
+        "MOA-020",
+        "MOA-023"
+      ],
+      "requirements": [
+        "R037",
+        "R005"
+      ],
+      "scope": "Crear composiciones de tiles/props/escena con origen de patrón común, IDs semánticos y paleta compartida.",
+      "out_of_scope": "No editor de mapas, física ni sistema de juego.",
+      "technical": [
+        "Instanciar geometría existente sin crear motor de mapas separado",
+        "Definir grid, pivotes, bordes y licencia/procedencia; asegurar textura periódica en costuras"
+      ],
+      "acceptance": [
+        "Un tile repetible no presenta costuras y una escena mantiene paleta e IDs editables",
+        "Exportar atlas y reconstruir composición reproduce los píxeles originales"
+      ],
+      "tests": [
+        "Costuras horizontal/vertical, espejos y traslación por múltiplos de tile",
+        "Editar un prop por ID y verificar regiones; inspección de legibilidad a escala nativa"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "MOA-035",
+      "title": "Preparar release y comprobar Definition of Done",
+      "phase": "P5",
+      "status": "planned",
+      "priority": "P1",
+      "dependencies": [
+        "MOA-007",
+        "MOA-021",
+        "MOA-023",
+        "MOA-024",
+        "MOA-025",
+        "MOA-027",
+        "MOA-029",
+        "MOA-030",
+        "MOA-032",
+        "MOA-033",
+        "MOA-034"
+      ],
+      "requirements": [
+        "R031",
+        "R039",
+        "R036"
+      ],
+      "scope": "Preparar release candidate con wheel/sdist, changelog, matriz de compatibilidad, evidencia de QA y decisión de licencia.",
+      "out_of_scope": "No publicar en PyPI/GitHub ni declarar CI remoto verde sin ejecutarlo y sin autorización de publicación.",
+      "technical": [
+        "Auditar todos los requisitos y evidencias sin confundir cobertura de planning con implementación",
+        "Versiones paquete/schema/renderer, migraciones y capacidades documentadas; publicación separada"
+      ],
+      "acceptance": [
+        "Wheel y sdist se instalan limpios y tutorial/corpus funcionan sin checkout",
+        "DoD completa, licencia decidida por propietario y limitaciones/artistic review pendientes explícitas antes de publicar"
+      ],
+      "tests": [
+        "Instalación desde ambos artefactos, smoke CLI y migraciones en entorno limpio",
+        "Revisión final de traceability, CI remoto real, corpus, seguridad y benchmark archivados"
+      ],
+      "evidence": []
+    }
+  ]
+}

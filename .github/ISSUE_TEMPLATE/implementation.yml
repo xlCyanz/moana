@@ -1,0 +1,23 @@
+name: Implementación de un módulo
+description: Trasladar un issue local a trabajo de implementación
+title: "[MOA-XXX] "
+body:
+  - type: input
+    id: local_issue
+    attributes:
+      label: Issue local y dependencias
+      description: Referencia docs/issues/MOA-XXX.md y estado de sus dependencias.
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Alcance y requisitos técnicos
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Criterios de aceptación y pruebas
+    validations:
+      required: true

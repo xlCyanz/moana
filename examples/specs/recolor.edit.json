@@ -1,0 +1,7 @@
+{
+  "schema_version": "1.0",
+  "base_revision": 0,
+  "commands": [
+    {"type": "set_color", "target_id": "body_fill", "color": "ink"}
+  ]
+}

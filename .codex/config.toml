@@ -1,0 +1,4 @@
+# Project roles inherit model, tools and permissions from the host.
+[agents]
+enabled = true
+max_concurrent_threads_per_session = 3

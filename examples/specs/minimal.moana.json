@@ -1,0 +1,28 @@
+{
+  "schema_version": "1.0",
+  "id": "sprite_demo",
+  "revision": 0,
+  "seed": 42,
+  "canvas": {"width": 128, "height": 128, "profile": "strict"},
+  "palette": {
+    "id": "palette_main",
+    "colors": [
+      {"id": "ink", "rgba": "#182338FF"},
+      {"id": "cloth", "rgba": "#36AFA5FF"}
+    ],
+    "ramps": []
+  },
+  "layers": [
+    {
+      "id": "body",
+      "name": "Cuerpo",
+      "visible": true,
+      "locked": false,
+      "opacity": 255,
+      "blend": "normal",
+      "operations": [
+        {"id": "body_fill", "type": "rect", "box": [40, 32, 88, 104], "color": "cloth"}
+      ]
+    }
+  ]
+}
