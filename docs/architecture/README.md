@@ -56,6 +56,7 @@ El paquete contiene `src/moana/__init__.py`, `py.typed` y `src/moana/core/` (MOA
 - [ADR-023: paths de punto fijo con el backend `aggdraw-v1` y `budget-v4`](decisions/ADR-023-aggdraw-paths.md).
 - [ADR-024: batches de edición atómicos, revisión optimista y `moana edit`](decisions/ADR-024-atomic-edits.md).
 - [ADR-025: dithering ordenado Bayer con cobertura entera, anclaje explícito y `budget-v5`](decisions/ADR-025-ordered-dithering.md).
+- [ADR-026: historial de edición inmutable en memoria: snapshots por digest, cursor y ramas](decisions/ADR-026-edit-history.md).
 - [Modelo de amenazas](SECURITY_MODEL.md).
 
 Un ADR nuevo registra contexto, decisión, alternativas, consecuencias y evidencia. Cambiar un ADR aceptado se hace mediante otro que lo sustituya y actualizando el contrato principal.

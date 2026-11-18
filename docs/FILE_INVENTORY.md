@@ -1,6 +1,6 @@
 # Inventario del repositorio
 
-345 archivos actuales de fuente, documentación, configuración y pruebas al 2026-11-17. Incluye cambios locales todavía sin commit. Excluye entorno virtual, herramientas, cachés, artefactos y metadata Git.
+348 archivos actuales de fuente, documentación, configuración y pruebas al 2026-11-17. Incluye cambios locales todavía sin commit. Excluye entorno virtual, herramientas, cachés, artefactos y metadata Git.
 
 | Archivo |
 | --- |
@@ -107,6 +107,7 @@
 | [docs/architecture/decisions/ADR-023-aggdraw-paths.md](../docs/architecture/decisions/ADR-023-aggdraw-paths.md) |
 | [docs/architecture/decisions/ADR-024-atomic-edits.md](../docs/architecture/decisions/ADR-024-atomic-edits.md) |
 | [docs/architecture/decisions/ADR-025-ordered-dithering.md](../docs/architecture/decisions/ADR-025-ordered-dithering.md) |
+| [docs/architecture/decisions/ADR-026-edit-history.md](../docs/architecture/decisions/ADR-026-edit-history.md) |
 | [docs/architecture/module-contracts.md](../docs/architecture/module-contracts.md) |
 | [docs/architecture/overview.md](../docs/architecture/overview.md) |
 | [docs/guides/agent-workflow.md](../docs/guides/agent-workflow.md) |
@@ -243,6 +244,7 @@
 | [src/moana/editing/_tree.py](../src/moana/editing/_tree.py) |
 | [src/moana/editing/apply.py](../src/moana/editing/apply.py) |
 | [src/moana/editing/batch.py](../src/moana/editing/batch.py) |
+| [src/moana/editing/history.py](../src/moana/editing/history.py) |
 | [src/moana/export/__init__.py](../src/moana/export/__init__.py) |
 | [src/moana/export/atomic.py](../src/moana/export/atomic.py) |
 | [src/moana/export/png.py](../src/moana/export/png.py) |
@@ -306,6 +308,7 @@
 | [tests/unit/editing/test_editing_architecture.py](../tests/unit/editing/test_editing_architecture.py) |
 | [tests/unit/editing/test_editing_batch.py](../tests/unit/editing/test_editing_batch.py) |
 | [tests/unit/editing/test_editing_dither.py](../tests/unit/editing/test_editing_dither.py) |
+| [tests/unit/editing/test_editing_history.py](../tests/unit/editing/test_editing_history.py) |
 | [tests/unit/editing/test_editing_members.py](../tests/unit/editing/test_editing_members.py) |
 | [tests/unit/export/test_export_png.py](../tests/unit/export/test_export_png.py) |
 | [tests/unit/geometry/test_geometry_algebra.py](../tests/unit/geometry/test_geometry_algebra.py) |

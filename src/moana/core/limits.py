@@ -30,6 +30,8 @@ __all__ = [
     "MAX_COLORS_STRICT",
     "MAX_EDIT_COMMANDS",
     "MAX_GROUP_DEPTH",
+    "MAX_HISTORY_BYTES",
+    "MAX_HISTORY_SNAPSHOTS",
     "MAX_LAYERS",
     "MAX_MASKS",
     "MAX_MASK_DEPTH",
@@ -82,6 +84,17 @@ MAX_PATH_CELLS: Final = 2_097_152
 # revalidated, so this bounds the whole batch (worst case measured: about 2 s for 1024
 # translates of a 3001-command path).
 MAX_EDIT_COMMANDS: Final = 1024
+# In-memory edit history (MOANA.md section 15, ADR-026): stored snapshots, root
+# included, and the bytes they account for (canonical JSON of each document plus the
+# canonical batch that produced it). A history that would exceed either bound rejects
+# the edit with ``BudgetExceeded`` before adding anything; nothing is evicted. A host
+# may lower both through ``moana.editing.HistoryLimits``, never raise them. The byte
+# measure is deterministic and proportional to what is stored, but it is not a bound
+# on RAM: each snapshot holds a separate validated ``Document``, and the memory traced
+# for it was about 10-17x its canonical JSON (about 0.3-0.5 GiB at this maximum). With
+# 8 MiB documents only 4 versions fit.
+MAX_HISTORY_SNAPSHOTS: Final = 1024
+MAX_HISTORY_BYTES: Final = 32 * 1024 * 1024
 
 
 @dataclass(frozen=True, slots=True)

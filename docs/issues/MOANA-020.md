@@ -8,12 +8,12 @@
 - Aliases históricos: MOA-020
 - Phase: P4
 - Priority: P1
-- Status: blocked
+- Status: ready
 - Complexity: L (relativa, no estimación de tiempo)
 - Dependencies: [MOANA-018](MOANA-018.md), [MOANA-019](MOANA-019.md), [MOANA-011](MOANA-011.md)
 - Related modules: project
 - Requirements: R018, R026 ([trazabilidad](traceability.md))
-- Bloqueo: Dependencias pendientes: MOANA-019
+- Bloqueo: Ninguno
 
 ## Context
 
@@ -65,10 +65,11 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 ## Risks and notes
 
 - Guardar el mismo asset path in-place antes del manifiesto rompe atomicidad; versiones inmutables necesarias.
+- Convergencia del historial (MOANA-019, ADR-026 §4): un digest alcanzado desde otro padre se rechaza con EditConflict (existing_snapshot); permitirla exige separar la identidad de la entrada de historial (padre + batch + digest) del almacén por contenido, con un ADR nuevo antes de persistir.
 
 ## Guía para agentes de IA
 
-**Estado para agentes:** No empezar: estado `blocked`. Esperar a que [MOANA-018](MOANA-018.md), [MOANA-019](MOANA-019.md), [MOANA-011](MOANA-011.md) estén `done` y el catálogo marque este issue `ready`.
+**Estado para agentes:** Listo: todas las dependencias están `done`; puede empezarse.
 
 ### 1. Preparación
 

@@ -47,7 +47,7 @@ Estado: 5/5 issues completados.
 
 Puerta de salida: Técnicas editables y batches atómicos con historial.
 
-Estado: 4/8 issues completados.
+Estado: 5/8 issues completados.
 
 - [MOANA-007](MOANA-007.md) — Añadir adaptador de paths AggDraw (done)
 - [MOANA-013](MOANA-013.md) — Añadir máscaras y regiones semánticas (done)
@@ -56,7 +56,7 @@ Estado: 4/8 issues completados.
 - [MOANA-016](MOANA-016.md) — Implementar dithering ordenado (done)
 - [MOANA-017](MOANA-017.md) — Crear presets de materiales versionados (blocked)
 - [MOANA-018](MOANA-018.md) — Implementar batches de edición atómica (done)
-- [MOANA-019](MOANA-019.md) — Añadir undo/redo e historial inmutable (ready)
+- [MOANA-019](MOANA-019.md) — Añadir undo/redo e historial inmutable (done)
 
 ## P4 — Persistencia y animación
 
@@ -64,9 +64,9 @@ Puerta de salida: Proyecto reversible, atlas y timeline decodificado.
 
 Estado: 0/6 issues completados.
 
-- [MOANA-020](MOANA-020.md) — Persistir proyectos y assets seguros (blocked)
+- [MOANA-020](MOANA-020.md) — Persistir proyectos y assets seguros (ready)
 - [MOANA-021](MOANA-021.md) — Versionar y migrar formatos de proyecto (blocked)
-- [MOANA-022](MOANA-022.md) — Implementar timeline y evaluación de frames (blocked)
+- [MOANA-022](MOANA-022.md) — Implementar timeline y evaluación de frames (ready)
 - [MOANA-023](MOANA-023.md) — Exportar spritesheets y manifest reversible (blocked)
 - [MOANA-024](MOANA-024.md) — Exportar GIF con política de pérdidas (blocked)
 - [MOANA-025](MOANA-025.md) — Añadir APNG y WebP lossless opcionales (blocked)
