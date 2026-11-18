@@ -10,7 +10,7 @@ from .harness import GOLDENS_DIR, assert_matches_golden
 assert_matches_golden(canvas, GOLDENS_DIR / "mi-caso.png", source="fixture o documento de origen")
 ```
 
-Importación: dentro de `tests/visual/` se usa el import relativo `from .harness import ...`. Desde otra carpeta de tests (`tests/integration/`, ...) el import previsto es `from tests.visual.harness import ...`, pero hoy mypy (`files = ["tests"]`, sin `tests/__init__.py`) registra el módulo dos veces (`visual.harness` y `tests.visual.harness`) y falla. El primer issue que lo necesite debe añadir `tests/__init__.py` (comprobado localmente: mypy y pytest pasan) o mover el harness a un paquete de soporte de tests común.
+Importación: dentro de `tests/visual/` se usa el import relativo `from .harness import ...`. Desde otra carpeta de tests (`tests/integration/`, ...) se usa `from tests.visual.harness import ...`: desde MOANA-021 existe `tests/__init__.py` (junto con `tests/fixtures/__init__.py` para las fixtures de migración), así que mypy (`files = ["tests"]`) registra el módulo una sola vez como `tests.visual.harness`.
 
 - `compare_rgba(expected, actual)` devuelve tamaños, digests (§14: SHA-256 de ancho y alto uint32 big-endian + RGBA row-major), conteo de píxeles distintos y bbox semiabierta. Con dimensiones distintas ambas imágenes se anclan arriba a la izquierda y cuentan como diferentes los píxeles cubiertos por una sola.
 - `assert_matches_golden` acepta `Canvas` o un array `uint8 (alto, ancho, 4)`. El golden debe ser PNG RGBA de un frame; se decodifica con los presupuestos de `canvas_from_pillow`.

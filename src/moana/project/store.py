@@ -6,6 +6,7 @@ Layout (MOANA.md section 16), identical in a directory and in a ZIP::
     assets/<sha256>.png                 source bytes of each asset
     history/snapshots/<sha256>.json     canonical JSON of each snapshot document
     history/batches/<sha256>.json       canonical JSON of each batch
+    migrations/<sha256>.json            preserved original of each migration (ADR-031)
 
 Every file but the manifest is content-addressed: its name is the SHA-256 of its
 bytes (for a snapshot, the hex of its ``snapshot_digest``), so it is immutable and a
@@ -33,21 +34,27 @@ the race window described in ADR-029 section 8.
 
 from __future__ import annotations
 
-import hashlib
 import os
 import stat
-from collections.abc import Callable, Mapping
-from contextlib import ExitStack
+from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
 
-from moana.core.errors import BudgetExceeded, ExportError, MoanaError, ReadError, ValidationError
-from moana.editing import History, Snapshot, apply_batch, canonical_batch, parse_edit_batch
-from moana.project._fs import Folder, caller_path, read_caller_file, write_failure
-from moana.project._json import canonical_bytes, measure_shape, read_json_object
+from moana.core.errors import ExportError, ReadError
+from moana.editing import History
+from moana.project._fs import Folder, caller_path, write_failure
+from moana.project._json import canonical_bytes, measure_shape
+from moana.project._load import (
+    DIGEST_PREFIX,
+    batch_path,
+    budget_error,
+    consume_source,
+    load_json,
+    sha256_hex,
+    snapshot_path,
+)
 from moana.project.archive import build_archive as _build_archive
-from moana.project.archive import inspect_archive
-from moana.project.assets import PNG_MIME, Asset
+from moana.project.assets import PNG_MIME
 from moana.project.limits import DEFAULT_PROJECT_LIMITS, ProjectLimits
 from moana.project.manifest import (
     MANIFEST_NAME,
@@ -55,17 +62,15 @@ from moana.project.manifest import (
     PROJECT_VERSION,
     AssetRef,
     HistoryEntry,
+    MigrationRecord,
     ProjectManifest,
-    parse_manifest,
 )
-from moana.project.model import Project, check_asset_ids
+from moana.project.model import Project
 from moana.schema import (
     DEFAULT_PARSE_LIMITS,
     Document,
     ParseLimits,
     canonical_json,
-    snapshot_digest,
-    validate_document,
 )
 
 __all__ = [
@@ -78,21 +83,6 @@ __all__ = [
     "save_project_archive",
     "snapshot_path",
 ]
-
-type _Reader = Callable[[str, int], bytes]
-"""Reads at most ``limit + 1`` bytes of a relative project path."""
-
-_DIGEST_PREFIX = "sha256:"
-
-
-def snapshot_path(digest: str) -> str:
-    """Immutable path of a snapshot document: ``history/snapshots/<hex>.json``."""
-    return f"history/snapshots/{digest.removeprefix(_DIGEST_PREFIX)}.json"
-
-
-def batch_path(digest: str) -> str:
-    """Immutable path of a canonical batch: ``history/batches/<hex>.json``."""
-    return f"history/batches/{digest.removeprefix(_DIGEST_PREFIX)}.json"
 
 
 @dataclass(frozen=True, slots=True)
@@ -115,26 +105,15 @@ class SaveReport:
 # --- encoding ------------------------------------------------------------------------
 
 
-def _sha(data: bytes) -> str:
-    return hashlib.sha256(data).hexdigest()
-
-
-def _budget(resource: str, limit: int, estimated: int) -> BudgetExceeded:
-    return BudgetExceeded(
-        "the project exceeds its budget",
-        context={"resource": resource, "limit": limit, "estimated": estimated},
-    )
-
-
 def _check_loadable(data: bytes, what: str, max_bytes: int, max_depth: int, max_nodes: int) -> None:
     """Fail now if a reader with these bounds would reject ``data`` when loading."""
     if len(data) > max_bytes:
-        raise _budget(f"{what}_bytes", max_bytes, len(data))
+        raise budget_error(f"{what}_bytes", max_bytes, len(data))
     depth, nodes = measure_shape(data.decode("utf-8"))
     if depth > max_depth:
-        raise _budget(f"{what}_depth", max_depth, depth)
+        raise budget_error(f"{what}_depth", max_depth, depth)
     if nodes > max_nodes:
-        raise _budget(f"{what}_nodes", max_nodes, nodes)
+        raise budget_error(f"{what}_nodes", max_nodes, nodes)
 
 
 def _check_parse(data: bytes, what: str, limits: ParseLimits) -> None:
@@ -146,9 +125,9 @@ def _history_files(
 ) -> tuple[HistoryEntry, ...]:
     budget = limits.history
     if len(history.snapshots) > budget.max_snapshots:
-        raise _budget("history_snapshots", budget.max_snapshots, len(history.snapshots))
+        raise budget_error("history_snapshots", budget.max_snapshots, len(history.snapshots))
     if history.total_bytes > budget.max_bytes:
-        raise _budget("history_bytes", budget.max_bytes, history.total_bytes)
+        raise budget_error("history_bytes", budget.max_bytes, history.total_bytes)
     entries: list[HistoryEntry] = []
     for digest, snapshot in history.snapshots.items():
         document = canonical_json(snapshot.document)
@@ -157,7 +136,7 @@ def _history_files(
         batch = None
         if snapshot.batch is not None:
             _check_parse(snapshot.batch, "batch", limits.parse)
-            batch = _DIGEST_PREFIX + _sha(snapshot.batch)
+            batch = DIGEST_PREFIX + sha256_hex(snapshot.batch)
             files[batch_path(batch)] = snapshot.batch
         redo = snapshot.parent is not None and history.redo_children.get(snapshot.parent) == digest
         entries.append(
@@ -168,13 +147,25 @@ def _history_files(
 
 def _check_assets(project: Project, limits: ProjectLimits) -> None:
     if len(project.assets) > limits.max_assets:
-        raise _budget("project_assets", limits.max_assets, len(project.assets))
+        raise budget_error("project_assets", limits.max_assets, len(project.assets))
     for asset in project.assets:
         if len(asset.data) > limits.max_asset_bytes:
-            raise _budget("asset_bytes", limits.max_asset_bytes, len(asset.data))
+            raise budget_error("asset_bytes", limits.max_asset_bytes, len(asset.data))
     pixels = sum(asset.pixels for asset in project.assets)
     if pixels > limits.max_asset_pixels:
-        raise _budget("asset_pixels", limits.max_asset_pixels, pixels)
+        raise budget_error("asset_pixels", limits.max_asset_pixels, pixels)
+
+
+def _migration_files(
+    project: Project, files: dict[str, bytes], limits: ProjectLimits
+) -> tuple[MigrationRecord, ...]:
+    if len(project.migrations) > limits.max_migrations:
+        raise budget_error("project_migrations", limits.max_migrations, len(project.migrations))
+    for backup in project.migrations:
+        if len(backup.data) > limits.max_manifest_bytes:
+            raise budget_error("migration_bytes", limits.max_manifest_bytes, len(backup.data))
+        files[backup.path] = backup.data
+    return tuple(backup.record for backup in project.migrations)
 
 
 def encode_project(
@@ -185,7 +176,7 @@ def encode_project(
     Deterministic: the same project always encodes to the same bytes. Every part is
     checked against the bounds :func:`load_project` applies with the same ``limits``
     (bytes, depth and nodes of the manifest, of the document and of each snapshot
-    and batch; asset and history budgets), so ``BudgetExceeded`` is raised here,
+    and batch; asset, history and migration budgets), so ``BudgetExceeded`` is raised here,
     before anything is written, for a project that would not load.
     """
     if not isinstance(project, Project):
@@ -207,12 +198,14 @@ def encode_project(
         )
     history = project.history
     entries = () if history is None else _history_files(history, files, limits)
+    migrations = _migration_files(project, files, limits)
     manifest = ProjectManifest(
         kind=PROJECT_KIND,
         project_version=PROJECT_VERSION,
         document=project.document,
         assets=tuple(refs),
         history=entries,
+        migrations=migrations,
     )
     data = canonical_bytes(manifest.to_tree())
     _check_loadable(
@@ -295,7 +288,7 @@ def save_project(
         root.sync()
         root.write(MANIFEST_NAME, manifest, overwrite=overwrite)
         root.sync(strict=False)
-    return SaveReport(_sha(manifest), (*written, MANIFEST_NAME), tuple(reused))
+    return SaveReport(sha256_hex(manifest), (*written, MANIFEST_NAME), tuple(reused))
 
 
 def _save_file(path: Path, data: bytes, *, overwrite: bool) -> SaveReport:
@@ -310,7 +303,7 @@ def _save_file(path: Path, data: bytes, *, overwrite: bool) -> SaveReport:
             parent.check_links(name)
         parent.write(name, data, overwrite=overwrite)
         parent.sync(strict=False)
-    return SaveReport(_sha(data), (name,), ())
+    return SaveReport(sha256_hex(data), (name,), ())
 
 
 def save_project_archive(
@@ -354,195 +347,6 @@ def save_document(
 # --- loading -------------------------------------------------------------------------
 
 
-def _mismatch(message: str, reason: str, **extra: int) -> ValidationError:
-    return ValidationError(message, context={"reason": reason, **extra})
-
-
-def _load_assets(
-    manifest: ProjectManifest, read: _Reader, limits: ProjectLimits
-) -> tuple[Asset, ...]:
-    refs = manifest.assets
-    if len(refs) > limits.max_assets:
-        raise _budget("project_assets", limits.max_assets, len(refs))
-    check_asset_ids(manifest.document, tuple(ref.id for ref in refs))
-    for ref in refs:
-        if ref.byte_length > limits.max_asset_bytes:
-            raise _budget("asset_bytes", limits.max_asset_bytes, ref.byte_length)
-    assets: list[Asset] = []
-    pixels = 0
-    for index, ref in enumerate(refs):
-        data = read(ref.path, ref.byte_length)
-        if len(data) != ref.byte_length or _sha(data) != ref.sha256:
-            raise _mismatch(
-                "an asset does not match its checksum", "checksum_mismatch", index=index
-            )
-        asset = Asset.from_png(
-            ref.id,
-            data,
-            max_bytes=limits.max_asset_bytes,
-            max_pixels=limits.max_asset_pixels - pixels,
-        )
-        pixels += asset.pixels
-        assets.append(asset)
-    return tuple(assets)
-
-
-def _invalid_history(message: str, index: int) -> ValidationError:
-    return ValidationError(message, context={"reason": "invalid_history", "entry": index})
-
-
-def _read_hashed(read: _Reader, name: str, digest: str, limit: int, index: int) -> bytes:
-    data = read(name, limit)
-    if len(data) > limit:
-        raise _budget("history_file_bytes", limit, len(data))
-    if _DIGEST_PREFIX + _sha(data) != digest:
-        raise _mismatch("a history file does not match its hash", "checksum_mismatch", entry=index)
-    return data
-
-
-def _load_snapshot(
-    entry: HistoryEntry,
-    index: int,
-    stored: dict[str, Snapshot],
-    read: _Reader,
-    limits: ProjectLimits,
-) -> Snapshot:
-    parse = limits.parse
-    raw = _read_hashed(read, snapshot_path(entry.snapshot), entry.snapshot, parse.max_bytes, index)
-    try:
-        document = validate_document(raw, limits=parse)
-    except MoanaError as exc:
-        raise _invalid_history("a stored snapshot is not a valid document", index) from exc
-    if canonical_json(document) != raw:
-        raise _invalid_history("a stored snapshot is not canonical", index)
-    if entry.parent is None or entry.batch is None:
-        return Snapshot(entry.snapshot, document, None, None, (), len(raw))
-    parent = stored.get(entry.parent)
-    if parent is None:
-        raise _invalid_history("a parent is not stored before its child", index)
-    batch = _read_hashed(read, batch_path(entry.batch), entry.batch, parse.max_bytes, index)
-    try:
-        parsed = parse_edit_batch(batch, limits=parse)
-        result = apply_batch(parent.document, parsed, limits=parse)
-    except MoanaError as exc:
-        raise _invalid_history("a stored batch does not apply to its parent", index) from exc
-    if canonical_batch(parsed) != batch or result.snapshot != entry.snapshot:
-        raise _invalid_history("a stored batch does not reproduce its snapshot", index)
-    return Snapshot(
-        entry.snapshot, document, entry.parent, batch, result.affected_ids, len(raw) + len(batch)
-    )
-
-
-def _load_history(
-    manifest: ProjectManifest, read: _Reader, limits: ProjectLimits
-) -> History | None:
-    """Rebuild the history; its ``limits`` are the loader's ``limits.history``.
-
-    ``HistoryLimits`` is configuration of the host that loads, not project data, so
-    it is not persisted (ADR-029 section 7).
-    """
-    entries = manifest.history
-    if not entries:
-        return None
-    budget = limits.history
-    if len(entries) > budget.max_snapshots:
-        raise _budget("history_snapshots", budget.max_snapshots, len(entries))
-    stored: dict[str, Snapshot] = {}
-    redo: dict[str, str] = {}
-    children: dict[str, tuple[str, ...]] = {}
-    total = 0
-    for index, entry in enumerate(entries):
-        if entry.snapshot in stored or (index == 0) != (entry.parent is None):
-            raise _invalid_history("history entries are duplicated or have several roots", index)
-        snapshot = _load_snapshot(entry, index, stored, read, limits)
-        total += snapshot.size
-        if total > budget.max_bytes:
-            raise _budget("history_bytes", budget.max_bytes, total)
-        stored[entry.snapshot] = snapshot
-        if entry.parent is not None:
-            children[entry.parent] = (*children.get(entry.parent, ()), entry.snapshot)
-            if entry.redo:
-                if entry.parent in redo:
-                    raise _invalid_history("a snapshot has two active redo children", index)
-                redo[entry.parent] = entry.snapshot
-    cursor = snapshot_digest(manifest.document)
-    if cursor not in stored:
-        raise _invalid_history("the project document is not in its history", len(entries))
-    return History(
-        root=entries[0].snapshot,
-        cursor=cursor,
-        limits=budget,
-        snapshots=stored,
-        children=children,
-        redo_children=redo,
-        total_bytes=total,
-    )
-
-
-def _load_json(data: bytes, read: _Reader, limits: ProjectLimits) -> Project:
-    """A JSON file: an envelope when its root object has a ``kind`` member, else a document.
-
-    The JSON is first read with the manifest bounds (it may be an envelope); a plain
-    document is then validated by ``moana.schema`` with ``limits.parse``, which gives
-    its own limits and detailed pointers.
-    """
-    tree = read_json_object(
-        data,
-        max_bytes=limits.max_manifest_bytes,
-        max_depth=limits.max_manifest_depth,
-        max_nodes=limits.max_manifest_nodes,
-    )
-    if not (isinstance(tree, dict) and "kind" in tree):
-        return Project(validate_document(data, limits=limits.parse))
-    manifest = parse_manifest(tree, limits=limits.parse)
-    assets = _load_assets(manifest, read, limits)
-    history = _load_history(manifest, read, limits)
-    return Project(manifest.document, assets, history)
-
-
-def _folder_reader(root: Folder) -> _Reader:
-    def read(name: str, limit: int) -> bytes:
-        *directories, part = name.split("/")
-        if not directories:
-            return root.read(part, limit)
-        opened: list[Folder] = []
-        try:
-            current = root
-            for directory in directories:
-                current = current.child(directory, create=False)
-                opened.append(current)
-            return current.read(part, limit)
-        finally:
-            for folder in reversed(opened):
-                folder.close()
-
-    return read
-
-
-def _load_directory(root_path: Path, limits: ProjectLimits) -> Project:
-    with Folder.open_root(root_path, create=False, writing=False) as root:
-        reader = _folder_reader(root)
-        return _load_json(reader(MANIFEST_NAME, limits.max_manifest_bytes), reader, limits)
-
-
-def _load_beside(data: bytes, parent: Path, limits: ProjectLimits) -> Project:
-    """Load JSON read by path; an envelope reads its files from ``parent``.
-
-    The parent is opened on the first read only, so a plain document never touches
-    it, and an envelope loads exactly as ``project.moana.json`` in that directory.
-    """
-    with ExitStack() as stack:
-        opened: list[_Reader] = []
-
-        def read(name: str, limit: int) -> bytes:
-            if not opened:
-                root = Folder.open_root(parent, create=False, writing=False)
-                opened.append(_folder_reader(stack.enter_context(root)))
-            return opened[0](name, limit)
-
-        return _load_json(data, read, limits)
-
-
 def load_project(
     path: str | os.PathLike[str], *, limits: ProjectLimits = DEFAULT_PROJECT_LIMITS
 ) -> Project:
@@ -559,20 +363,11 @@ def load_project(
     descriptors on POSIX; on Windows by checks before each use, ADR-029 section 8).
     Raises ``ReadError``, ``ValidationError``, ``BudgetExceeded`` or the errors of
     ``moana.schema`` and ``moana.editing``; nothing is returned partially.
+
+    Loading never writes and never migrates (ADR-031): a document or envelope in
+    another version is ``UnsupportedVersion`` (``migration_required`` when a
+    migration is registered); :func:`moana.project.migrate_project` migrates
+    explicitly into a new destination. Migration records and their preserved
+    originals are verified (length and SHA-256) and kept in ``Project.migrations``.
     """
-    if not isinstance(limits, ProjectLimits):
-        raise TypeError("limits must be a ProjectLimits value")
-    target = caller_path(path)
-    try:
-        is_directory = stat.S_ISDIR(os.stat(target).st_mode)
-    except OSError:
-        is_directory = False
-    if is_directory:
-        return _load_directory(target, limits)
-    data = read_caller_file(target, limits.max_manifest_bytes, zip_limit=limits.max_archive_bytes)
-    if data.startswith(b"PK"):
-        archive = inspect_archive(data, limits)
-        return _load_json(
-            archive.read(MANIFEST_NAME, limits.max_manifest_bytes), archive.read, limits
-        )
-    return _load_beside(data, target.parent, limits)
+    return consume_source(path, limits, lambda data, read: load_json(data, read, limits))

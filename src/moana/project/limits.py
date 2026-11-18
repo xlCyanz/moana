@@ -17,6 +17,7 @@ from moana.core.limits import (
     MAX_PROJECT_MANIFEST_BYTES,
     MAX_PROJECT_MANIFEST_DEPTH,
     MAX_PROJECT_MANIFEST_NODES,
+    MAX_PROJECT_MIGRATIONS,
 )
 from moana.editing import DEFAULT_HISTORY_LIMITS, HistoryLimits
 from moana.schema import DEFAULT_PARSE_LIMITS, ParseLimits
@@ -31,7 +32,9 @@ class ProjectLimits:
     ``parse`` bounds the embedded document, every snapshot and every batch;
     ``history`` the rebuilt history. Asset bounds apply to the declared assets of the
     manifest; archive bounds to a ``.moana`` ZIP, checked from its central directory
-    before any entry is decompressed.
+    before any entry is decompressed. ``max_migrations`` bounds the migration records
+    of a project (ADR-031); each preserved original is bounded by
+    ``max_manifest_bytes``, the bound it was read with.
     """
 
     max_manifest_bytes: int = MAX_PROJECT_MANIFEST_BYTES
@@ -44,6 +47,7 @@ class ProjectLimits:
     max_archive_bytes: int = MAX_ARCHIVE_BYTES
     max_archive_expanded_bytes: int = MAX_ARCHIVE_EXPANDED_BYTES
     max_archive_ratio: int = MAX_ARCHIVE_RATIO
+    max_migrations: int = MAX_PROJECT_MIGRATIONS
     parse: ParseLimits = field(default=DEFAULT_PARSE_LIMITS)
     history: HistoryLimits = field(default=DEFAULT_HISTORY_LIMITS)
 
@@ -59,6 +63,7 @@ class ProjectLimits:
             ("max_archive_bytes", 1, MAX_ARCHIVE_BYTES),
             ("max_archive_expanded_bytes", 1, MAX_ARCHIVE_EXPANDED_BYTES),
             ("max_archive_ratio", 1, MAX_ARCHIVE_RATIO),
+            ("max_migrations", 0, MAX_PROJECT_MIGRATIONS),
         )
         for name, minimum, maximum in bounds:
             require_int(getattr(self, name), name, minimum=minimum, maximum=maximum)

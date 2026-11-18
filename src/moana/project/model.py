@@ -1,16 +1,19 @@
-"""In-memory project: a document, its declared assets and an optional history (ADR-029)."""
+"""In-memory project: a document, its assets, an optional history (ADR-029) and the
+records of the explicit migrations that produced it, with their originals (ADR-031)."""
 
 from __future__ import annotations
 
+import hashlib
 from dataclasses import dataclass
 
 from moana.core.errors import BudgetExceeded, ValidationError
-from moana.core.limits import MAX_ASSET_PIXELS, MAX_PROJECT_ASSETS
+from moana.core.limits import MAX_ASSET_PIXELS, MAX_PROJECT_ASSETS, MAX_PROJECT_MIGRATIONS
 from moana.editing import History
 from moana.project.assets import Asset
+from moana.project.manifest import MigrationRecord
 from moana.schema import Document, document_ids, snapshot_digest
 
-__all__ = ["Project", "check_asset_ids"]
+__all__ = ["MigrationBackup", "Project", "check_asset_ids"]
 
 
 def _invalid(message: str, reason: str, **extra: int) -> ValidationError:
@@ -43,6 +46,38 @@ def _budget(resource: str, limit: int, estimated: int) -> BudgetExceeded:
 
 
 @dataclass(frozen=True, slots=True)
+class MigrationBackup:
+    """A migration record and the exact bytes of the original it preserves.
+
+    ``data`` must match ``record.byte_length`` and ``record.sha256``
+    (``checksum_mismatch``); it is stored at ``record.path``
+    (``migrations/<sha256>.json``) and never parsed again: it is an opaque copy.
+    """
+
+    record: MigrationRecord
+    data: bytes
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.record, MigrationRecord):
+            raise TypeError("record must be a MigrationRecord")
+        if not isinstance(self.data, bytes):
+            raise TypeError("data must be bytes")
+        if (
+            len(self.data) != self.record.byte_length
+            or hashlib.sha256(self.data).hexdigest() != self.record.sha256
+        ):
+            raise ValidationError(
+                "a migration original does not match its checksum",
+                context={"field": "migrations", "reason": "checksum_mismatch"},
+            )
+
+    @property
+    def path(self) -> str:
+        """Immutable path of the preserved original inside the project."""
+        return self.record.path
+
+
+@dataclass(frozen=True, slots=True)
 class Project:
     """A validated document, its PNG assets (in declared order) and an optional history.
 
@@ -51,11 +86,16 @@ class Project:
     it. Asset IDs are unique and distinct from every document ID; more than
     ``MAX_PROJECT_ASSETS`` assets or ``MAX_ASSET_PIXELS`` decoded pixels in total is
     ``BudgetExceeded`` (``project_assets``, ``asset_pixels``), as when loading.
+    ``migrations`` lists, oldest first, the explicit migrations that produced the
+    project with their preserved originals (ADR-031); more than
+    ``MAX_PROJECT_MIGRATIONS`` is ``BudgetExceeded`` (``project_migrations``) and the
+    same original twice is ``duplicate_migration``.
     """
 
     document: Document
     assets: tuple[Asset, ...] = ()
     history: History | None = None
+    migrations: tuple[MigrationBackup, ...] = ()
 
     def __post_init__(self) -> None:
         if not isinstance(self.document, Document):
@@ -66,6 +106,18 @@ class Project:
             raise TypeError("assets must be a tuple of Asset values")
         if self.history is not None and not isinstance(self.history, History):
             raise TypeError("history must be a History or None")
+        if not isinstance(self.migrations, tuple) or not all(
+            isinstance(backup, MigrationBackup) for backup in self.migrations
+        ):
+            raise TypeError("migrations must be a tuple of MigrationBackup values")
+        if len(self.migrations) > MAX_PROJECT_MIGRATIONS:
+            raise _budget("project_migrations", MAX_PROJECT_MIGRATIONS, len(self.migrations))
+        hashes = [backup.record.sha256 for backup in self.migrations]
+        if len(set(hashes)) != len(hashes):
+            raise ValidationError(
+                "a migration original is preserved twice",
+                context={"field": "migrations", "reason": "duplicate_migration"},
+            )
         if len(self.assets) > MAX_PROJECT_ASSETS:
             raise _budget("project_assets", MAX_PROJECT_ASSETS, len(self.assets))
         pixels = sum(asset.pixels for asset in self.assets)

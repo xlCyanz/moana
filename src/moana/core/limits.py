@@ -44,6 +44,7 @@ __all__ = [
     "MAX_MASKS",
     "MAX_MASK_DEPTH",
     "MAX_MASK_OPERANDS",
+    "MAX_MIGRATION_STEPS",
     "MAX_MORPHOLOGY_RADIUS",
     "MAX_OPERATIONS",
     "MAX_PATH_CELLS",
@@ -54,6 +55,7 @@ __all__ = [
     "MAX_PROJECT_MANIFEST_BYTES",
     "MAX_PROJECT_MANIFEST_DEPTH",
     "MAX_PROJECT_MANIFEST_NODES",
+    "MAX_PROJECT_MIGRATIONS",
     "MAX_RAMP_ENTRIES",
     "MAX_REGIONS",
     "MAX_VERTICES",
@@ -182,3 +184,12 @@ MAX_ARCHIVE_ENTRIES: Final = 256
 MAX_ARCHIVE_BYTES: Final = 64 * 1024 * 1024
 MAX_ARCHIVE_EXPANDED_BYTES: Final = 256 * 1024 * 1024
 MAX_ARCHIVE_RATIO: Final = 100
+
+
+# Format versions and migrations (MOANA.md section 16, ADR-031). A registered chain of
+# pure migration steps from any known version to the current one has at most
+# ``MAX_MIGRATION_STEPS`` steps; a project keeps at most ``MAX_PROJECT_MIGRATIONS``
+# migration records, each with the preserved copy of its original JSON (bounded by
+# ``MAX_PROJECT_MANIFEST_BYTES``).
+MAX_MIGRATION_STEPS: Final = 16
+MAX_PROJECT_MIGRATIONS: Final = 8

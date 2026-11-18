@@ -9,7 +9,9 @@ reference DAG checked by :mod:`moana.schema.references`; :func:`resolve_region`
 resolves a semantic region by ID (ADR-022). A ``dither`` operation names two palette
 colours and a clipping mask (ADR-025); an ``outline`` operation names one colour and
 the mask it outlines (ADR-027); a ``shade`` operation names a ramp and ordered bands,
-each with its own ID and mask (ADR-028).
+each with its own ID and mask (ADR-028). Format versions are an explicit registry
+(:data:`DOCUMENT_MIGRATIONS`, only 1.0 and no migration); :func:`migrate_document`
+migrates a tree with registered pure steps, and reading never migrates (ADR-031).
 """
 
 from moana.schema._reader import DEFAULT_PARSE_LIMITS, ParseLimits
@@ -40,6 +42,7 @@ from moana.schema.document import (
     validate_document,
 )
 from moana.schema.members import MASK_MEMBERS, OPERATION_MEMBERS, NodeMembers
+from moana.schema.migrations import DocumentMigration, migrate_document
 from moana.schema.models import (
     Canvas,
     Color,
@@ -78,9 +81,17 @@ from moana.schema.models import (
     XorMask,
 )
 from moana.schema.references import ResolvedRegion, mask_dependencies, resolve_region
+from moana.schema.versions import (
+    DOCUMENT_MIGRATIONS,
+    Migration,
+    MigrationRegistry,
+    MigrationStep,
+    parse_version,
+)
 
 __all__ = [
     "DEFAULT_PARSE_LIMITS",
+    "DOCUMENT_MIGRATIONS",
     "JSON_SCHEMA_DIALECT",
     "MASK_MEMBERS",
     "OPERATION_MEMBERS",
@@ -104,6 +115,7 @@ __all__ = [
     "CombinationMask",
     "DitherOperation",
     "Document",
+    "DocumentMigration",
     "EllipseMask",
     "EllipseOperation",
     "IntersectMask",
@@ -113,6 +125,9 @@ __all__ = [
     "LineOperation",
     "MaskNode",
     "Metadata",
+    "Migration",
+    "MigrationRegistry",
+    "MigrationStep",
     "NodeMembers",
     "Operation",
     "OutlineOperation",
@@ -141,7 +156,9 @@ __all__ = [
     "document_ids",
     "document_json_schema",
     "mask_dependencies",
+    "migrate_document",
     "normalize_document",
+    "parse_version",
     "resolve_region",
     "snapshot_digest",
     "validate_document",
