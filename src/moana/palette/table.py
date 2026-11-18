@@ -253,6 +253,19 @@ class Palette:
             for warning in self._ramp_warnings(ramp_index, ramp)
         )
 
+    def ramp_warnings(self, ramp_id: str) -> tuple[PaletteWarning, ...]:
+        """The :meth:`luminance_warnings` of one ramp, in step order (ADR-028).
+
+        Raises ``ReferenceError`` (``unknown_ramp``) when the palette has no such ramp.
+        """
+        for ramp_index, ramp in enumerate(self.ramps):
+            if ramp.id == ramp_id:
+                return tuple(self._ramp_warnings(ramp_index, ramp))
+        raise ReferenceError(
+            "ramp does not exist in the palette",
+            context={"field": "ramp_id", "reason": "unknown_ramp"},
+        )
+
     def _ramp_warnings(self, ramp_index: int, ramp: Ramp) -> Iterator[PaletteWarning]:
         previous: tuple[str, Rgba] | None = None
         for step, color_id in enumerate(ramp.colors):

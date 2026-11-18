@@ -1,6 +1,6 @@
 # ADR-014 — Paletas por ID, lenguajes compartidos en `core` y luminancia de rampas
 
-Estado: aceptado · 2026-11-17 · Issue: [MOANA-005](../../issues/MOANA-005.md). Complementa ADR-010 y ADR-011.
+Estado: aceptado · 2026-11-17 · Issue: [MOANA-005](../../issues/MOANA-005.md). Complementa ADR-010 y ADR-011. Ampliado por [ADR-028](ADR-028-band-shading.md): `Palette.ramp_warnings(ramp_id)` devuelve los hallazgos de una rampa, que `render` emite como advertencias de una operación `shade` según su `ramp_order`.
 
 ## Contexto
 

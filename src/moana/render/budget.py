@@ -1,7 +1,7 @@
 """Cost plan of a validated document, checked before any buffer exists (MOANA-003).
 
-The estimator (``budget-v6``, ADR-018, ADR-022, ADR-023, ADR-025 and ADR-027) is pure
-integer arithmetic over
+The estimator (``budget-v7``, ADR-018, ADR-022, ADR-023, ADR-025, ADR-027 and ADR-028)
+is pure integer arithmetic over
 the document: it never allocates pixels, imports NumPy or Pillow, or iterates over
 pixels. It is an upper bound that the rasterisers and compositor respect; a change in
 their memory or work pattern updates these formulas and :data:`ESTIMATOR_VERSION`.
@@ -79,6 +79,20 @@ to the canvas.
   morphology_bytes(X, w) + 2 x area(X)`` bytes (evaluation peak, the mask kept
   during the morphology, :func:`moana.core.morphology.morphology_bytes`, and the
   operand and result of the subtraction). An empty ``M`` costs ``M`` alone.
+* **Band shading** (``budget-v7``, ADR-028; a document without ``shade`` costs exactly
+  as in ``budget-v6``): a ``shade`` paints one deferred fill per band. Band ``i``
+  (mask estimate ``Mi``, result box ``Bi``) folds into one buffer over ``Bi`` its
+  own mask and every *later* band mask ``Mj`` whose box meets ``Bi``
+  (:func:`shade_later`), so the last listed band wins. It costs
+  ``Mi.pixel_visits +`` :data:`SHADE_PASSES` ``x area(Bi) + sum(Mj.pixel_visits +
+  area(Bi))`` visits (zeroing, first fold, emptiness scan and paint pass, plus one
+  fold per later mask) and ``area(Bi) + max(Mi.buffer_bytes, Mj.buffer_bytes...) +``
+  :data:`SHADE_FIXED_BYTES` (``+`` :data:`SHADE_FOLD_BYTES` when some later mask is
+  folded) bytes: the buffer, one mask evaluation at a time and the measured fixed
+  overhead of the fill and of NumPy's iteration buffers. A band whose ``Bi`` is empty
+  is never built and costs nothing. The operation's visits are the sum over its
+  bands and its bytes the largest band (fills run one at a time); the ``operations``
+  budget counts one fill per band. A ``shade`` has no coordinates of its own.
 * **Frame pixels**: ``frames x A``.
 """
 
@@ -122,6 +136,7 @@ from moana.schema import (
     PolygonOperation,
     RectMask,
     RectOperation,
+    ShadeOperation,
     ShapeMask,
     ShapeOperation,
 )
@@ -138,6 +153,9 @@ __all__ = [
     "PATH_BUFFER_MARGIN",
     "PATH_CELL_BYTES",
     "PATH_COMMAND_BYTES",
+    "SHADE_FIXED_BYTES",
+    "SHADE_FOLD_BYTES",
+    "SHADE_PASSES",
     "CostEstimate",
     "MaskEstimate",
     "OperationCost",
@@ -149,9 +167,11 @@ __all__ = [
     "outline_box",
     "outline_cost",
     "plan_budget",
+    "shade_cost",
+    "shade_later",
 ]
 
-ESTIMATOR_VERSION: Final = "budget-v6"
+ESTIMATOR_VERSION: Final = "budget-v7"
 RGBA_BYTES: Final = 4
 COMPOSITE_BYTES_PER_PIXEL: Final = 32
 MASK_BYTES_PER_PIXEL: Final = 1
@@ -175,6 +195,16 @@ DITHER_PASSES: Final = 4
 DITHER_FIXED_BYTES: Final = 4096
 # Outlines (ADR-027): passes over the padded work box of one outline fill.
 OUTLINE_PASSES: Final = 16
+# Band shading (ADR-028): zeroing, first fold, emptiness scan and paint of one band;
+# fixed bytes of one band fill (mask, builder and generator objects) and of folding
+# later masks. The fold term is NumPy's iteration buffers of the strided subtraction:
+# at most NPY_BUFSIZE = 8192 one-byte elements for each of its three operands (two
+# inputs and the output), whatever the box or the number of later masks, since the
+# masks are folded one at a time. Measured with tracemalloc: at most 18 793 bytes
+# (256 x 256, eight shifted rects), against 3 x 8192 = 24 576.
+SHADE_PASSES: Final = 4
+SHADE_FIXED_BYTES: Final = 8192
+SHADE_FOLD_BYTES: Final = 3 * 8192
 # Operations between two cooperative deadline checks.
 CHECKPOINT_EVERY: Final = 256
 
@@ -328,13 +358,52 @@ def outline_cost(
     return mask.pixel_visits + OUTLINE_PASSES * padded, peak
 
 
-def fill_count(document: Document) -> int:
-    """Raster fills the compositor receives: one per operation, two per ``dither``."""
-    return sum(
-        DITHER_FILLS if isinstance(operation, DitherOperation) else 1
-        for layer in document.layers
-        for operation in layer.operations
+def shade_later(boxes: list[Box | None], index: int) -> tuple[int, ...]:
+    """Indexes of the bands after ``index`` whose box meets band ``index``'s box.
+
+    Only those later masks can remove pixels from band ``index``; ``render`` folds
+    exactly these, in order, so plan and raster agree. An empty band needs none.
+    """
+    box = boxes[index]
+    if box is None:
+        return ()
+    return tuple(
+        later
+        for later in range(index + 1, len(boxes))
+        if (other := boxes[later]) is not None and box.intersection(other) is not None
     )
+
+
+def shade_cost(bands: list[MaskEstimate]) -> tuple[int, int]:
+    """``(visits, bytes)`` of a ``shade`` whose band masks have estimates ``bands``."""
+    boxes = [band.box for band in bands]
+    visits = peak = 0
+    for index, band in enumerate(bands):
+        box = band.box
+        if box is None:
+            continue  # the fill is never built
+        later = [bands[position] for position in shade_later(boxes, index)]
+        area = box.area
+        visits += band.pixel_visits + SHADE_PASSES * area
+        visits += sum(mask.pixel_visits + area for mask in later)
+        evaluation = max([band.buffer_bytes, *(mask.buffer_bytes for mask in later)])
+        fold = SHADE_FOLD_BYTES if later else 0
+        peak = max(peak, area + evaluation + SHADE_FIXED_BYTES + fold)
+    return visits, peak
+
+
+def _fills(operation: Operation) -> int:
+    if isinstance(operation, DitherOperation):
+        return DITHER_FILLS
+    if isinstance(operation, ShadeOperation):
+        return len(operation.bands)
+    return 1
+
+
+def fill_count(document: Document) -> int:
+    """Raster fills the compositor receives: one per operation, two per ``dither``,
+    one per band of a ``shade``."""
+    return sum(_fills(operation) for layer in document.layers for operation in layer.operations)
 
 
 def _operation_cost(
@@ -344,6 +413,11 @@ def _operation_cost(
         if operation.mask_id not in masks:
             raise _unknown_mask()
         visits, peak = dither_cost(masks[operation.mask_id], operation.size)
+        return OperationCost(pointer, visits, peak)
+    if isinstance(operation, ShadeOperation):
+        if any(band.mask_id not in masks for band in operation.bands):
+            raise _unknown_mask()
+        visits, peak = shade_cost([masks[band.mask_id] for band in operation.bands])
         return OperationCost(pointer, visits, peak)
     if isinstance(operation, OutlineOperation):
         if operation.mask_id not in masks:
@@ -559,8 +633,8 @@ def _coordinate_reach(operation: Located) -> int:
             return operation.path.reach
         case DitherOperation():
             values = operation.origin
-        case OutlineOperation():
-            return 0  # no coordinates: its pixels derive from a checked mask
+        case OutlineOperation() | ShadeOperation():
+            return 0  # no coordinates: its pixels derive from checked masks
         case _:  # pragma: no cover - a new operation type must add its reach
             assert_never(operation)
     return max(abs(value) for value in values)

@@ -8,7 +8,8 @@ generates the versioned JSON Schema stored in ``schemas/``. Masks and regions fo
 reference DAG checked by :mod:`moana.schema.references`; :func:`resolve_region`
 resolves a semantic region by ID (ADR-022). A ``dither`` operation names two palette
 colours and a clipping mask (ADR-025); an ``outline`` operation names one colour and
-the mask it outlines (ADR-027).
+the mask it outlines (ADR-027); a ``shade`` operation names a ramp and ordered bands,
+each with its own ID and mask (ADR-028).
 """
 
 from moana.schema._reader import DEFAULT_PARSE_LIMITS, ParseLimits
@@ -32,6 +33,7 @@ from moana.schema.capabilities import (
 from moana.schema.document import (
     JSON_SCHEMA_DIALECT,
     canonical_json,
+    document_ids,
     document_json_schema,
     normalize_document,
     snapshot_digest,
@@ -48,6 +50,7 @@ from moana.schema.models import (
     EllipseOperation,
     IntersectMask,
     Layer,
+    Light,
     LineMask,
     LineOperation,
     MaskNode,
@@ -66,6 +69,8 @@ from moana.schema.models import (
     RectMask,
     RectOperation,
     Region,
+    ShadeBand,
+    ShadeOperation,
     ShapeMask,
     ShapeOperation,
     SubtractMask,
@@ -103,6 +108,7 @@ __all__ = [
     "EllipseOperation",
     "IntersectMask",
     "Layer",
+    "Light",
     "LineMask",
     "LineOperation",
     "MaskNode",
@@ -124,12 +130,15 @@ __all__ = [
     "RectOperation",
     "Region",
     "ResolvedRegion",
+    "ShadeBand",
+    "ShadeOperation",
     "ShapeMask",
     "ShapeOperation",
     "SubtractMask",
     "UnionMask",
     "XorMask",
     "canonical_json",
+    "document_ids",
     "document_json_schema",
     "mask_dependencies",
     "normalize_document",

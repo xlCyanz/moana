@@ -41,6 +41,7 @@ from moana.editing._tree import (
     Node,
     NodeMembers,
     index_nodes,
+    item_ids,
     live_references,
     node_members,
 )
@@ -94,9 +95,10 @@ class EditResult:
     """A successful batch: the new document, its identity and the IDs it touched.
 
     ``affected_ids`` lists, once and in command order, every target, inserted and
-    removed ID (a removed layer adds its operations). Indirect consumers (operations
-    using a replaced colour) and the difference bbox are not computed here: they
-    belong to the history manifest of ``project`` (ADR-024).
+    removed ID (a removed layer adds its operations; an inserted or removed operation
+    adds its items, such as the bands of a ``shade``, ADR-028). Indirect consumers
+    (operations using a replaced colour) and the difference bbox are not computed
+    here: they belong to the history manifest of ``project`` (ADR-024).
     """
 
     document: Document
@@ -361,6 +363,21 @@ def _replace_color(work: _Work, command: ReplacePaletteColor, pointer: str) -> t
     return (command.target_id,)
 
 
+def _check_item_ids(
+    work: _Work, index: dict[str, Node], operation: JsonObject, prefix: str
+) -> None:
+    """IDs of the items of a new operation (``shade`` bands) are new IDs too (ADR-028)."""
+    seen = {operation["id"]}
+    for member, _ in OPERATION_MEMBERS[operation["type"]].items:
+        for position, item in enumerate(operation[member]):
+            item_id, pointer = item["id"], f"{prefix}/{member}/{position}/id"
+            if item_id in work.removed:
+                raise _invalid(pointer, "ID was removed earlier in this batch", "reused_id")
+            if item_id in index or item_id in seen:
+                raise _invalid(pointer, "ID is already used", "duplicate_id")
+            seen.add(item_id)
+
+
 def _insert(work: _Work, command: InsertOperation, pointer: str) -> tuple[str, ...]:
     index = index_nodes(work.tree)
     layer = _unlocked(_target(index, command.layer_id, f"{pointer}/layer_id", ("layer",)), pointer)
@@ -370,6 +387,7 @@ def _insert(work: _Work, command: InsertOperation, pointer: str) -> tuple[str, .
         raise _invalid(f"{prefix}/id", "ID was removed earlier in this batch", "reused_id")
     if operation["id"] in index:
         raise _invalid(f"{prefix}/id", "ID is already used", "duplicate_id")
+    _check_item_ids(work, index, operation, prefix)
     palette = _color_ids(work.tree)
     for member in OPERATION_MEMBERS[operation["type"]].colors:
         if operation[member] not in palette:
@@ -378,7 +396,7 @@ def _insert(work: _Work, command: InsertOperation, pointer: str) -> tuple[str, .
             )
     siblings = layer.value["operations"]
     siblings.insert(_anchor(index, command.after_id, f"{pointer}/after_id", siblings), operation)
-    return (operation["id"],)
+    return (operation["id"], *item_ids(operation))
 
 
 def _live_reference_error(pointer: str, references: list[str]) -> ReferenceError:
@@ -402,9 +420,12 @@ def _live_reference_error(pointer: str, references: list[str]) -> ReferenceError
 def _remove(work: _Work, command: Remove, pointer: str) -> tuple[str, ...]:
     node = _target(index_nodes(work.tree), command.target_id, f"{pointer}/target_id", _REMOVABLE)
     _unlocked(node, pointer)
-    removed = (command.target_id,)
+    removed: tuple[str, ...] = (command.target_id,)
+    if node.kind == "operation":
+        removed += item_ids(node.value)
     if node.kind == "layer":
-        removed += tuple(operation["id"] for operation in node.value["operations"])
+        for operation in node.value["operations"]:
+            removed += (operation["id"], *item_ids(operation))
     references = live_references(work.tree, frozenset(removed))
     if references:
         raise _live_reference_error(pointer, references)

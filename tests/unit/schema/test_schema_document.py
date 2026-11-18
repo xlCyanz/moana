@@ -117,8 +117,19 @@ VALID: dict[str, Mutation] = {
                     "side": "inner",
                     "color": "ink",
                 },
+                {
+                    "id": "s",
+                    "type": "shade",
+                    "ramp": "tones",
+                    "ramp_order": "stylized",
+                    "light": {"direction": "front", "height": 3, "intensity": 4095, "ambient": 0},
+                    "bands": [
+                        {"id": "s_band", "mask_id": "area", "facing": "none", "offset": -4095}
+                    ],
+                },
             ],
         ),
+        setter(("palette", "ramps"), [{"id": "tones", "colors": ["ink", "cloth"]}]),
     ),
     "rgba_profile_partial_alpha": both(
         setter(("canvas", "profile"), "rgba"),

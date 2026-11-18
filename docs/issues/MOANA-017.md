@@ -8,12 +8,12 @@
 - Aliases históricos: MOA-017
 - Phase: P3
 - Priority: P1
-- Status: blocked
+- Status: ready
 - Complexity: L (relativa, no estimación de tiempo)
 - Dependencies: [MOANA-014](MOANA-014.md), [MOANA-015](MOANA-015.md), [MOANA-016](MOANA-016.md)
 - Related modules: techniques, schema
 - Requirements: R010, R005 ([trazabilidad](traceability.md))
-- Bloqueo: Dependencias pendientes: MOANA-015
+- Bloqueo: Ninguno
 
 ## Context
 
@@ -35,6 +35,7 @@ No afirmar calidad profesional sólo por aprobar fixtures ni usar assets sin lic
 
 - Semilla por operación/coordenada según §14; ningún shader ejecutable en JSON
 - Parámetros con rango, fuente, versión y recetas reproducibles; registrar procedencia de ejemplos
+- Contorno selectivo de MOANA.md §8 (pendiente desde MOANA-015, ADR-028): reutilizar ShadeLight/exposure/band_index de moana.techniques.shading para decidir qué tramos del outline se aclaran u oscurecen, sin una segunda regla de luz.
 
 ## Proposed implementation
 
@@ -66,7 +67,7 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Guía para agentes de IA
 
-**Estado para agentes:** No empezar: estado `blocked`. Esperar a que [MOANA-014](MOANA-014.md), [MOANA-015](MOANA-015.md), [MOANA-016](MOANA-016.md) estén `done` y el catálogo marque este issue `ready`.
+**Estado para agentes:** Listo: todas las dependencias están `done`; puede empezarse.
 
 ### 1. Preparación
 

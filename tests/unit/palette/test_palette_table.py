@@ -482,3 +482,25 @@ def test_remap_mapping_is_a_read_only_snapshot() -> None:
     assert remap.resolve("ink") == "base"
     with pytest.raises(TypeError):
         remap.mapping["ink"] = "light"  # type: ignore[index]
+
+
+def test_ramp_warnings_select_one_ramp_by_id() -> None:
+    """MOANA-015 (ADR-028): the findings of the ramp a ``shade`` uses, located by step."""
+    grey = Rgba(0x3C, 0x3C, 0x3C, 255)
+    blue = Rgba(0, 0, 255, 255)
+    palette = with_ramps(
+        Palette("p", "strict", colors(("grey", grey), ("blue", blue))),
+        Ramp("good", ("grey", "blue")),
+        Ramp("bad", ("blue", "grey")),
+    )
+    assert palette.ramp_warnings("good") == ()
+    (warning,) = palette.ramp_warnings("bad")
+    assert (warning.ramp_id, warning.json_pointer, warning.reason) == (
+        "bad",
+        "/ramps/1/colors/1",
+        "decreasing",
+    )
+    assert palette.ramp_warnings("bad") == palette.luminance_warnings()
+    with pytest.raises(core_errors.ReferenceError) as raised:
+        palette.ramp_warnings("grey")
+    assert raised.value.context == {"field": "ramp_id", "reason": "unknown_ramp"}

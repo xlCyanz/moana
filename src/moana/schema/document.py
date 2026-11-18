@@ -45,6 +45,7 @@ from moana.schema.references import reference_details
 __all__ = [
     "JSON_SCHEMA_DIALECT",
     "canonical_json",
+    "document_ids",
     "document_json_schema",
     "normalize_document",
     "snapshot_digest",
@@ -100,11 +101,24 @@ def _identities(document: Document) -> Iterator[tuple[str, str]]:
     for layer_index, layer in enumerate(document.layers):
         yield layer.id, f"/layers/{layer_index}/id"
         for index, operation in enumerate(layer.operations):
-            yield operation.id, f"/layers/{layer_index}/operations/{index}/id"
+            pointer = f"/layers/{layer_index}/operations/{index}"
+            yield operation.id, f"{pointer}/id"
+            for member, _ in OPERATION_MEMBERS[operation.type].items:
+                for position, item in enumerate(getattr(operation, member)):
+                    yield item.id, f"{pointer}/{member}/{position}/id"
     for index, mask in enumerate(document.masks):
         yield mask.id, f"/masks/{index}/id"
     for index, region in enumerate(document.regions):
         yield region.id, f"/regions/{index}/id"
+
+
+def document_ids(document: Document) -> frozenset[str]:
+    """Every ID declared by ``document``: palette, colours, ramps, layers, operations,
+    operation items such as ``shade`` bands (ADR-028), masks and regions.
+
+    IDs are global (MOANA.md section 12), so this is the namespace a new ID must avoid.
+    """
+    return frozenset(identifier for identifier, _ in _identities(document))
 
 
 def _color_references(operation: Operation) -> tuple[tuple[str, str], ...]:
@@ -155,13 +169,25 @@ def _semantic_details(document: Document) -> list[ErrorDetail]:
                 invalid(pointer, "Ramp repeats a color", "duplicate_ramp_color")
             seen.add(color_id)
 
+    ramp_ids = {ramp.id for ramp in palette.ramps}
     total_operations = 0
     for layer_index, layer in enumerate(document.layers):
         total_operations += len(layer.operations)
         for index, operation in enumerate(layer.operations):
+            pointer = f"/layers/{layer_index}/operations/{index}"
             for member, color_id in _color_references(operation):
                 if color_id not in color_ids:
-                    missing_color(f"/layers/{layer_index}/operations/{index}/{member}")
+                    missing_color(f"{pointer}/{member}")
+            for member in OPERATION_MEMBERS[operation.type].ramps:
+                if getattr(operation, member) not in ramp_ids:
+                    details.append(
+                        ErrorDetail(
+                            ReferenceError.code,
+                            "Referenced ramp does not exist in the palette",
+                            json_pointer=f"{pointer}/{member}",
+                            context={"reason": "unknown_ramp"},
+                        )
+                    )
     if total_operations > MAX_OPERATIONS:
         invalid("/layers", "Document has too many operations", "too_many", maximum=MAX_OPERATIONS)
 

@@ -319,7 +319,8 @@
                 "path": "#/$defs/PathOperation",
                 "pixel": "#/$defs/PixelOperation",
                 "polygon": "#/$defs/PolygonOperation",
-                "rect": "#/$defs/RectOperation"
+                "rect": "#/$defs/RectOperation",
+                "shade": "#/$defs/ShadeOperation"
               },
               "propertyName": "type"
             },
@@ -347,6 +348,9 @@
               },
               {
                 "$ref": "#/$defs/OutlineOperation"
+              },
+              {
+                "$ref": "#/$defs/ShadeOperation"
               }
             ]
           },
@@ -366,6 +370,53 @@
         "operations"
       ],
       "title": "Layer",
+      "type": "object"
+    },
+    "Light": {
+      "additionalProperties": false,
+      "description": "Discrete artistic light of a ``shade`` operation (MOANA.md section 9, ADR-028).\n\n``direction``: eight picture-plane orientations or ``front``; ``height`` ``0..3``\n(0 grazes the plane, 3 faces the viewer; unused by ``front``); ``intensity``: ramp\nsteps between a facing that looks at the light and the ambient step;\n``ambient``: ramp index of an unexposed facing. No normal is inferred.",
+      "properties": {
+        "ambient": {
+          "maximum": 4095,
+          "minimum": 0,
+          "title": "Ambient",
+          "type": "integer"
+        },
+        "direction": {
+          "enum": [
+            "n",
+            "ne",
+            "e",
+            "se",
+            "s",
+            "sw",
+            "w",
+            "nw",
+            "front"
+          ],
+          "title": "Direction",
+          "type": "string"
+        },
+        "height": {
+          "maximum": 3,
+          "minimum": 0,
+          "title": "Height",
+          "type": "integer"
+        },
+        "intensity": {
+          "maximum": 4095,
+          "minimum": 0,
+          "title": "Intensity",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "direction",
+        "height",
+        "intensity",
+        "ambient"
+      ],
+      "title": "Light",
       "type": "object"
     },
     "LineMask": {
@@ -1301,6 +1352,103 @@
         "mask_id"
       ],
       "title": "Region",
+      "type": "object"
+    },
+    "ShadeBand": {
+      "additionalProperties": false,
+      "description": "One authored band: mask ``mask_id``, its ``facing`` and an ``offset`` in steps.\n\nThe ID is global like any other; ``facing`` is a light direction or ``none``.",
+      "properties": {
+        "facing": {
+          "enum": [
+            "n",
+            "ne",
+            "e",
+            "se",
+            "s",
+            "sw",
+            "w",
+            "nw",
+            "front",
+            "none"
+          ],
+          "title": "Facing",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "mask_id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Mask Id",
+          "type": "string"
+        },
+        "offset": {
+          "maximum": 4095,
+          "minimum": -4095,
+          "title": "Offset",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "id",
+        "mask_id",
+        "facing",
+        "offset"
+      ],
+      "title": "ShadeBand",
+      "type": "object"
+    },
+    "ShadeOperation": {
+      "additionalProperties": false,
+      "description": "Band shading with colours of ramp ``ramp`` chosen by index (ADR-028).\n\nEach band paints ``ramp[clamp(ambient + level + offset)]`` over its mask, with\n``level`` from the band ``facing`` and the ``light``; where bands overlap the last\nlisted wins. ``ramp_order`` ``monotonic`` reports a render warning when the ramp\nluminance does not grow; ``stylized`` documents the exception. 1 to 64 bands.",
+      "properties": {
+        "bands": {
+          "items": {
+            "$ref": "#/$defs/ShadeBand"
+          },
+          "maxItems": 64,
+          "minItems": 1,
+          "title": "Bands",
+          "type": "array"
+        },
+        "id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "light": {
+          "$ref": "#/$defs/Light"
+        },
+        "ramp": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Ramp",
+          "type": "string"
+        },
+        "ramp_order": {
+          "enum": [
+            "monotonic",
+            "stylized"
+          ],
+          "title": "Ramp Order",
+          "type": "string"
+        },
+        "type": {
+          "const": "shade",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "ramp",
+        "ramp_order",
+        "light",
+        "bands"
+      ],
+      "title": "ShadeOperation",
       "type": "object"
     },
     "SubtractMask": {

@@ -7,14 +7,19 @@ names from here instead of testing model classes, so a new type only adds a row:
 
 * ``colors``: members holding a palette colour ID;
 * ``masks``: members holding mask IDs (a single ID or, for combinations, a tuple);
-* ``geometry``: members holding the pixel geometry of the node.
+* ``geometry``: members holding the pixel geometry of the node;
+* ``ramps``: members holding a palette ramp ID (ADR-028);
+* ``items``: ``(member, row)`` pairs of members holding an array of objects with an
+  ``id`` of their own, whose references the nested ``row`` describes (ADR-028).
 
 A ``dither`` has two colours and one mask reference; its ``origin`` anchors a
 pattern phase and is deliberately not listed as geometry (a later ADR decides how
 editing treats it). An ``outline`` (ADR-027) has one colour, one mask reference and
 no geometry: its ``width`` and ``side`` derive pixels from the mask and are not
-coordinates. Every listed member exists on its model; a test enforces both
-that and that the keys match the unions exactly.
+coordinates. A ``shade`` (ADR-028) has no colour member: it names one ramp and an
+array of ``bands``, each with its own ID and one mask reference. Every listed member
+exists on its model; a test enforces both that and that the keys match the unions
+exactly.
 """
 
 from __future__ import annotations
@@ -33,6 +38,8 @@ class NodeMembers:
     colors: tuple[str, ...]
     masks: tuple[str, ...]
     geometry: tuple[str, ...]
+    ramps: tuple[str, ...] = ()
+    items: tuple[tuple[str, NodeMembers], ...] = ()
 
 
 _GEOMETRY: Final = {
@@ -52,6 +59,13 @@ OPERATION_MEMBERS: Final[MappingProxyType[str, NodeMembers]] = MappingProxyType(
         },
         "dither": NodeMembers(colors=("color_a", "color_b"), masks=("mask_id",), geometry=()),
         "outline": NodeMembers(colors=("color",), masks=("mask_id",), geometry=()),
+        "shade": NodeMembers(
+            colors=(),
+            masks=(),
+            geometry=(),
+            ramps=("ramp",),
+            items=(("bands", NodeMembers(colors=(), masks=("mask_id",), geometry=())),),
+        ),
     }
 )
 """Members of every operation ``type`` of schema 1.0."""

@@ -45,7 +45,7 @@ def test_capabilities_with_the_tested_backend() -> None:
             "version": backend.version,
         }
     ]
-    assert listing.estimator_version == "budget-v6"
+    assert listing.estimator_version == "budget-v7"
 
 
 @pytest.mark.parametrize("breakage", ["missing", "untested_version"])
@@ -84,7 +84,7 @@ def test_cli_render_without_backend_is_unsupported_operation(
 def test_example_with_paths_loads_inspects_and_renders() -> None:
     document = load_document(EXAMPLE)
     report = inspect_document(document)
-    assert report.budget.within_limits and report.budget.estimator_version == "budget-v6"
+    assert report.budget.within_limits and report.budget.estimator_version == "budget-v7"
     assert [op.type for layer in report.layers for op in layer.operations].count("path") >= 1
     assert any(mask.type == "path" for mask in report.masks)
     result = render(document)

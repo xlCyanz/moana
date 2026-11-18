@@ -8,7 +8,11 @@ outlines (:func:`outline_mask`, Chebyshev morphology of section 8) and the clust
 analysis of an RGBA image (:func:`analyze_clusters`): connected components of equal
 colour with explicit 4/8 connectivity, singleton and irregular-step warnings and
 region exceptions (:func:`check_cluster_settings`, :func:`cluster_bytes` bound its
-memory). The analysis never modifies anything and never cleans up.
+memory). The analysis never modifies anything and never cleans up. MOANA-015
+(ADR-028) adds band shading: a discrete :class:`ShadeLight`, authored facings
+(:func:`exposure`, :func:`band_level`), the clamped ramp index of a band
+(:func:`band_index`) and last-listed-wins priority (:func:`last_wins`,
+:func:`resolve_bands`). No normal is inferred and no colour is computed.
 """
 
 from moana.techniques.clusters import (
@@ -45,6 +49,24 @@ from moana.techniques.outline import (
     OutlineSide,
     outline_mask,
 )
+from moana.techniques.shading import (
+    COSINE,
+    EXPOSURE_SCALE,
+    FACINGS,
+    LIGHT_DIRECTIONS,
+    MAX_LIGHT_HEIGHT,
+    MAX_RAMP_STEP,
+    MAX_SHADE_BANDS,
+    Facing,
+    LightDirection,
+    ShadeLight,
+    band_index,
+    band_level,
+    exposure,
+    last_wins,
+    ramp_index,
+    resolve_bands,
+)
 
 __all__ = [
     "BAYER_2X2",
@@ -53,9 +75,16 @@ __all__ = [
     "CLUSTER_RULES",
     "CLUSTER_RUN_BYTES",
     "CONNECTIVITIES",
+    "COSINE",
     "DITHER_PARTS",
     "DITHER_SIZES",
+    "EXPOSURE_SCALE",
+    "FACINGS",
+    "LIGHT_DIRECTIONS",
+    "MAX_LIGHT_HEIGHT",
     "MAX_OUTLINE_WIDTH",
+    "MAX_RAMP_STEP",
+    "MAX_SHADE_BANDS",
     "OUTLINE_SIDES",
     "Cluster",
     "ClusterException",
@@ -64,15 +93,24 @@ __all__ = [
     "ClusterRule",
     "Connectivity",
     "DitherPart",
+    "Facing",
+    "LightDirection",
     "OrderedDither",
     "OutlineSide",
     "Severity",
+    "ShadeLight",
     "analyze_clusters",
+    "band_index",
+    "band_level",
     "bayer_matrix",
     "check_cluster_settings",
     "cluster_bytes",
     "dither_cells",
     "dither_mask",
+    "exposure",
+    "last_wins",
     "outline_mask",
+    "ramp_index",
+    "resolve_bands",
     "split_dither",
 ]

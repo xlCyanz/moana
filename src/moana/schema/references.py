@@ -4,8 +4,8 @@ Masks reference other masks by ID, layers reference a mask through ``mask_id`` a
 regions reference a mask and, optionally, operations. :func:`reference_details`
 checks every reference of a structurally valid document before any raster:
 
-* an operand, ``mask_id`` (of a layer or of a ``dither`` operation, ADR-025) or
-  region mask that names no mask is ``REFERENCE_ERROR``
+* an operand, ``mask_id`` (of a layer, of a ``dither`` operation, ADR-025, or of a
+  ``shade`` band, ADR-028) or region mask that names no mask is ``REFERENCE_ERROR``
   (``unknown_mask``), and a region operation that names no operation is
   ``unknown_operation``; a repeated operand or region operation is a
   ``VALIDATION_ERROR`` (``duplicate_reference``), since it has no meaning of its own;
@@ -198,10 +198,17 @@ def reference_details(document: Document) -> list[ErrorDetail]:
         if layer.mask_id is not None and layer.mask_id not in index:
             details.append(_unknown_mask(f"/layers/{layer_index}/mask_id"))
         for position, operation in enumerate(layer.operations):
-            for member in OPERATION_MEMBERS[operation.type].masks:
+            prefix = f"/layers/{layer_index}/operations/{position}"
+            row = OPERATION_MEMBERS[operation.type]
+            for member in row.masks:
                 if getattr(operation, member) not in index:
-                    pointer = f"/layers/{layer_index}/operations/{position}/{member}"
-                    details.append(_unknown_mask(pointer))
+                    details.append(_unknown_mask(f"{prefix}/{member}"))
+            for items, item_row in row.items:  # nested objects, e.g. ``shade`` bands
+                for item_index, item in enumerate(getattr(operation, items)):
+                    for member in item_row.masks:
+                        if getattr(item, member) not in index:
+                            pointer = f"{prefix}/{items}/{item_index}/{member}"
+                            details.append(_unknown_mask(pointer))
     operations = _operation_layers(document)
     for region_index, region in enumerate(document.regions):
         if region.mask_id not in index:
