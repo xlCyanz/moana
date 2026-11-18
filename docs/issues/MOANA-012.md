@@ -8,7 +8,7 @@
 - Aliases históricos: MOA-012
 - Phase: P2
 - Priority: P1
-- Status: review
+- Status: done
 - Complexity: M (relativa, no estimación de tiempo)
 - Dependencies: [MOANA-010](MOANA-010.md), [MOANA-011](MOANA-011.md)
 - Related modules: api, cli
@@ -43,13 +43,13 @@ No editor interactivo, GUI ni integración con proveedor de IA.
 
 ## Acceptance criteria
 
-- [ ] AC1: Una instalación limpia del wheel valida un JSON y exporta un PNG de 128×128
-- [ ] AC2: Help y errores distinguen capacidades disponibles, entrada inválida, presupuesto e I/O
+- [x] AC1: Una instalación limpia del wheel valida un JSON y exporta un PNG de 128×128
+- [x] AC2: Help y errores distinguen capacidades disponibles, entrada inválida, presupuesto e I/O
 
 ## Required tests
 
-- [ ] T1: Integración CLI en directorio ajeno al repo con paths con espacios
-- [ ] T2: Tests de exit codes, no traceback por defecto, stdout parseable y error de operación futura
+- [x] T1: Integración CLI en directorio ajeno al repo con paths con espacios
+- [x] T2: Tests de exit codes, no traceback por defecto, stdout parseable y error de operación futura
 
 ## Expected deliverables
 
@@ -66,7 +66,7 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Guía para agentes de IA
 
-**Estado para agentes:** En revisión: sólo correcciones de la revisión; no añadir alcance.
+**Estado para agentes:** Completado; usar sólo como referencia del contrato entregado.
 
 ### 1. Preparación
 
@@ -144,6 +144,7 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 - Trazabilidad: R014 cubierto; R038 cubierto en parte (render y preview desde API/CLI); la edición y el tutorial render-preview-edit quedan para MOANA-018 y MOANA-033.
 - Gate: scripts/validate.py y scripts/check_wheel.py verdes; moana.api, moana.cli y moana.core.errors al 100 % de líneas y ramas; mypy también con --platform win32. Sin ejecutar en Windows real (pruebas de FIFO, dispositivo, permisos y pipe real se omiten en win32).
 - Revisión: moana-architect (cambios requeridos, aplicados: ReadError en core.errors con ADR-010 ampliado, CLI sólo sobre api, errores de uso sin argv, TypeError en vez de assert, capacidades sin desapariciones, check_wheel offline primero, documentación del contrato) y moana-python-engineer (cambios requeridos, aplicados: BrokenPipe sin traceback, directorio sin permiso → READ_ERROR, JSON pasado como str, FIFO sin bloqueo, --scale estricto, entorno aislado en check_wheel, prueba real de lectura acotada, interrupción en todas las fases, sin abreviaturas, ayuda de edit, --debug tras el comando).
+- Aprobado por el propietario el 2026-11-17 tras revisión; PR #51 hacia develop.
 - AC1: scripts/check_wheel.py (check_cli: wheel limpio, moana validate y export fuera del repo, PNG 128×128 decodificado: «Installed CLI OK»); tests/unit/api/test_api_facade.py::test_export_writes_a_verified_128_png.
 - AC2: tests/unit/cli/test_cli_main.py::test_help_distinguishes_available_and_planned, ::test_edit_help_says_it_is_planned, ::test_capabilities_lists_available_apart_from_planned, ::test_document_errors_map_to_exit_codes, ::test_io_errors_do_not_leak_the_full_path, ::test_export_overwrite y ::test_planned_command_is_unsupported; tests/unit/api/test_api_facade.py::test_capabilities_separate_available_from_planned y ::test_schema_only_operations_are_reported_as_planned.
 - T1: tests/integration/test_cli_paths.py::test_cli_outside_the_repository_with_spaces (script instalado y python -m, paths relativos y absolutos con espacios y ñ/í), ::test_cli_failures_in_a_fresh_process y ::test_console_script_is_installed.
