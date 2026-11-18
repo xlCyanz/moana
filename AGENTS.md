@@ -2,7 +2,7 @@
 
 ## Propósito y fuente de verdad
 
-Moana será un motor Python de Pixel Art determinista y editable. Lee [MOANA.md](MOANA.md), el issue asignado en [docs/issues](docs/issues/README.md) y sus dependencias antes de editar. Estado actual: infraestructura lista y `moana.core` (coordenadas, límites, errores) `moana.schema` (documento 1.0 y JSON Schema) el plan de coste de `moana.render`, el lienzo RGBA (`moana.core.canvas`), las paletas (`moana.palette`), las máscaras raster de primitivas, flood fill y transformaciones (`moana.geometry`) la composición de capas y grupos (`moana.layers`) y el orquestador de render determinista (`moana.render.render`) y la exportación PNG atómica (`moana.export`) implementados, con harness de regresión visual en `tests/visual/` y verificación de determinismo entre procesos y plataformas (`scripts/determinism.py`); no hay CLI. Implementa únicamente el alcance solicitado. No conviertas ejemplos de diseño en APIs existentes ni marques completado un issue sin pruebas.
+Moana será un motor Python de Pixel Art determinista y editable. Lee [MOANA.md](MOANA.md), el issue asignado en [docs/issues](docs/issues/README.md) y sus dependencias antes de editar. Estado actual: infraestructura lista y `moana.core` (coordenadas, límites, errores) `moana.schema` (documento 1.0 y JSON Schema) el plan de coste de `moana.render`, el lienzo RGBA (`moana.core.canvas`), las paletas (`moana.palette`), las máscaras raster de primitivas, flood fill y transformaciones (`moana.geometry`) la composición de capas y grupos (`moana.layers`) y el orquestador de render determinista (`moana.render.render`) la exportación PNG atómica (`moana.export`) y la fachada `moana.api` con el comando estático `moana` implementados, con harness de regresión visual en `tests/visual/` y verificación de determinismo entre procesos y plataformas (`scripts/determinism.py`); la edición (`apply_edit`, `moana edit`) aún no existe. Implementa únicamente el alcance solicitado. No conviertas ejemplos de diseño en APIs existentes ni marques completado un issue sin pruebas.
 
 Orden documental: solicitud actual del usuario → contratos de MOANA.md → ADR aplicables → criterios del issue. Si detectas una contradicción, corrige fuente y derivados dentro del alcance o informa el punto concreto. Conserva trabajo existente; no hagas commit, push, publicación ni comunicación externa implícitos.
 
@@ -18,6 +18,7 @@ No hay AGENTS.md anidados: las reglas actuales son comunes y las diferencias de 
 
 ```sh
 uv sync --locked
+uv run moana validate examples/specs/minimal.moana.json
 uv run ruff check .
 uv run ruff format --check .
 uv run mypy src/

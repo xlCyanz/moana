@@ -23,6 +23,9 @@ classifiers = [
   "Typing :: Typed",
 ]
 
+[project.scripts]
+moana = "moana.cli:main"
+
 [dependency-groups]
 dev = [
   "hatchling>=1.27,<2",

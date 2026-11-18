@@ -17,6 +17,7 @@ PUBLIC = {
     errors.BudgetExceeded: ("BUDGET_EXCEEDED", 3),
     errors.EditConflict: ("EDIT_CONFLICT", 4),
     errors.ExportError: ("EXPORT_ERROR", 5),
+    errors.ReadError: ("READ_ERROR", 5),
 }
 
 

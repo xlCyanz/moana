@@ -1,6 +1,6 @@
 # MOANA — Especificación técnica
 
-Versión del contrato: **0.1.7-draft** · Fecha: **2026-11-17** · Estado: especificación inicial para implementación; motor todavía no implementado.
+Versión del contrato: **0.1.8-draft** · Fecha: **2026-11-17** · Estado: especificación inicial para implementación; motor todavía no implementado.
 
 Este archivo es la fuente de verdad del producto. «DEBE» expresa una condición verificable; «DEBERÍA», una recomendación artística o de diseño. Los contratos aquí descritos son objetivos futuros, no APIs disponibles en el paquete inicial. Los cambios de contrato requieren actualizar este documento, los ejemplos, los issues y una decisión de arquitectura cuando afecten compatibilidad. El catálogo de requisitos y su trazabilidad vive en `docs/requirements.json` y `docs/issues/traceability.md`.
 
@@ -40,7 +40,7 @@ Flujo obligatorio: `entrada → validación sintáctica → resolución de refer
 | `quality` | métricas, incidencias y visualizaciones de diagnóstico | core, palette |
 | `api` / `cli` | fachada y composición de servicios | módulos anteriores |
 
-El orquestador combina render y quality; el rasterizador no depende del CLI, del almacenamiento ni del evaluador. Pillow, NumPy y AggDraw quedan detrás de adaptadores internos. Los contratos de dominio no exponen objetos mutables de esas bibliotecas. No se crean módulos vacíos simulando funcionalidad: se incorporan al comenzar su issue. La distribución inicial sólo expone versión y metadata.
+El orquestador combina render y quality; el rasterizador no depende del CLI, del almacenamiento ni del evaluador. Pillow, NumPy y AggDraw quedan detrás de adaptadores internos. Los contratos de dominio no exponen objetos mutables de esas bibliotecas. No se crean módulos vacíos simulando funcionalidad: se incorporan al comenzar su issue. La distribución expone la fachada `moana.api` y el comando estático `moana` (MOANA-012, ADR-020) sobre los módulos implementados; los módulos futuros no se publican hasta tener comportamiento real.
 
 ## 4. Stack tecnológico
 
@@ -157,28 +157,42 @@ El JSON Schema se genera desde Pydantic (`moana.schema`, MOANA-002) y se version
 
 ## 13. API pública de Python
 
-Fachada objetivo para v0.1; aún no implementada:
+Fachada v0.1 implementada en `moana.api` (MOANA-012, ADR-020); `apply_edit` sigue prevista (MOANA-018, §15) y no se exporta:
 
 ```python
-from moana.api import load_document, render, export_png, apply_edit
+from moana.api import capabilities, export_png, inspect_document, load_document, render
+from moana.schema import snapshot_digest
 
 document = load_document("hero.moana.json")
 result = render(document, frame_id=None, limits=None)
 export_png(result, "hero.png", scale=1)
-edited = apply_edit(
-    document,
-    {
-        "schema_version": "1.0",
-        "base_revision": document.revision,
-        "base_snapshot": document.snapshot_digest,
-        "commands": [{"type": "set_color", "target_id": "body_fill", "color": "ink"}],
-    },
-)
+# Prevista (MOANA-018), aún no disponible:
+# edited = apply_edit(
+#     document,
+#     {
+#         "schema_version": "1.0",
+#         "base_revision": document.revision,
+#         "base_snapshot": snapshot_digest(document),
+#         "commands": [{"type": "set_color", "target_id": "body_fill", "color": "ink"}],
+#     },
+# )
 ```
 
-`load_document(path|bytes|mapping) -> Document` valida y normaliza; paths sólo desde la capa de confianza de la API, no desde operaciones JSON. `render(Document, *, frame_id: str|None, limits: RenderLimits|None) -> RenderResult` no escribe archivos ni modifica el documento; ya existe como `moana.render.render` (MOANA-010, ADR-018), que acepta además `deadline: Deadline|None` cooperativo, mientras la fachada `moana.api` sigue siendo futura. `RenderResult` contiene width, height, RGBA inmutable, digest, warnings, renderer_version y provenance. `apply_edit(Document, EditBatch|mapping) -> Document` devuelve una revisión nueva. `export_png(RenderResult, path, *, scale=1, overwrite=False) -> ExportManifest` realiza escritura atómica; ya existe como `moana.export.export_png` (MOANA-011, ADR-019), que acepta además `mode` (`rgba`/`indexed`), `palette` y `limits`.
+- `load_document(source: str | os.PathLike[str] | bytes | Mapping[str, object], *, limits: ParseLimits = DEFAULT_PARSE_LIMITS) -> Document` valida y normaliza. Un path es de confianza porque lo pasa la API, nunca porque lo nombre un documento. Un `str` que empieza por `{` o `[` se rechaza (`ValidationError`, `json_text`): el JSON entra como bytes o mapping. El archivo debe ser regular; se abre sin bloquear y se leen como mucho `max_bytes + 1` bytes. Un fallo de lectura es `ReadError` (`READ_ERROR`, salida 5) con `reason`, `file_name` (≤255 caracteres) y `errno`, sin ruta completa.
+- `render(Document, *, frame_id: str | None = None, limits: RenderLimits | None = None, deadline: Deadline | None = None) -> RenderResult` delega en `moana.render.render` (MOANA-010, ADR-018); no escribe archivos ni modifica el documento. `RenderResult` contiene width, height, RGBA inmutable (`bytes`), digest, warnings, renderer_version y provenance.
+- `export_png(RenderResult, path, *, scale: int = 1, overwrite: bool = False, limits: RenderLimits | None = None) -> ExportManifest` escribe un PNG RGBA de forma atómica mediante `moana.export.export_png` (MOANA-011, ADR-019), que acepta además `mode` (`rgba`/`indexed`) y `palette`.
+- `inspect_document(Document, *, limits=None) -> DocumentReport` resume identidad, lienzo, paleta, capas y presupuesto estimado; un exceso se informa (`within_limits`, `exceeded`), no se lanza. `capabilities() -> Capabilities` separa lo disponible de lo previsto.
+- La identidad de snapshot es `moana.schema.snapshot_digest(document)`, reexportada en `moana.api`. Todos los retornos son congelados y sin objetos NumPy ni Pillow.
+- `apply_edit(Document, EditBatch | mapping) -> Document` devolverá una revisión nueva (MOANA-018).
 
-Errores públicos (`moana.core.errors`, implementados en MOANA-001): `MoanaError` y subclases `ValidationError` (con `OutOfBoundsError` para acceso a píxel fuera del lienzo), `ReferenceError`, `BudgetExceeded`, `UnsupportedVersion`, `UnsupportedOperation`, `EditConflict`, `ExportError`. Cada clase declara `code` estable y el código de salida de la CLI; los códigos están en ADR-010. No se exponen tracebacks internos en el CLI por defecto. CLI objetivo: `moana validate`, `render`, `edit`, `inspect`, `export`; códigos 0 éxito, 2 entrada inválida, 3 presupuesto, 4 conflicto, 5 I/O, 1 fallo interno. La inicialización no registra un comando que prometa renderizar.
+Errores públicos (`moana.core.errors`): `MoanaError` y subclases `ValidationError` (con `OutOfBoundsError` para acceso a píxel fuera del lienzo), `ReferenceError`, `BudgetExceeded`, `UnsupportedVersion`, `UnsupportedOperation`, `EditConflict`, `ExportError` y `ReadError`. Cada clase declara `code` estable y el código de salida de la CLI (ADR-010, ampliado por ADR-020 con `READ_ERROR` = 5).
+
+CLI `moana` (también `python -m moana.cli`):
+
+- Comandos: `validate DOC`, `inspect DOC`, `render DOC` (en memoria, sin escribir), `export DOC OUT.png [--scale 1..64] [--overwrite]` y `capabilities`. Opciones `--version` y `--debug` (antes o después del comando), sin abreviaturas.
+- `edit` es una capacidad prevista: responde `UNSUPPORTED_OPERATION` con salida 2 y la ayuda lo marca como no disponible.
+- Cada invocación escribe un único objeto JSON en una línea de stdout (`ok`, `command` y el resultado, o `error {code, exit_code, message, json_pointer, context, details}`) y, si falla, una línea breve en stderr. Un error de uso es `VALIDATION_ERROR` (`reason: usage`) con mensaje fijo.
+- Códigos: 0 éxito, 2 entrada inválida o capacidad no disponible, 3 presupuesto, 4 conflicto, 5 I/O (lectura, exportación o stdout cerrado), 1 fallo interno y 130 interrupción (objeto `INTERRUPTED`). No se muestran tracebacks salvo con `--debug`.
 
 ## 14. Renderizado y determinismo
 

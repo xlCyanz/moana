@@ -1,6 +1,6 @@
 # ADR-010 — Contratos de `core`: cajas, límites geométricos y errores
 
-Estado: aceptado · 2026-11-17 · Issue: [MOANA-001](../../issues/MOANA-001.md).
+Estado: aceptado · 2026-11-17 · Issue: [MOANA-001](../../issues/MOANA-001.md). Ampliado por [ADR-020](ADR-020-public-api-cli.md): `ReadError` (`READ_ERROR`, salida 5) para lecturas de documento fallidas.
 
 ## Contexto
 
