@@ -362,10 +362,10 @@ INVALID: dict[str, tuple[Mutation, str, str, str]] = {
         "/layers/0/blend",
         "planned_capability",
     ),
-    "planned_masks": (
-        setter(("masks",), [{"id": "m"}]),
+    "planned_materials": (
+        setter(("materials",), [{"id": "m"}]),
         "UNSUPPORTED_OPERATION",
-        "/masks",
+        "/materials",
         "planned_capability",
     ),
     "planned_group_children": (
@@ -374,10 +374,10 @@ INVALID: dict[str, tuple[Mutation, str, str, str]] = {
         "/layers/0/children",
         "planned_capability",
     ),
-    "planned_layer_mask": (
-        setter(("layers", 0, "mask_id"), "m"),
+    "planned_group_transform": (
+        setter(("layers", 0, "transform"), {}),
         "UNSUPPORTED_OPERATION",
-        "/layers/0/mask_id",
+        "/layers/0/transform",
         "planned_capability",
     ),
 }
@@ -535,12 +535,12 @@ def test_validation_outranks_references_in_one_phase(minimal: dict[str, Any]) ->
 def test_unsupported_capability_alone_raises_unsupported_operation(
     minimal: dict[str, Any],
 ) -> None:
-    minimal["regions"] = [{"id": "eye"}]
+    minimal["materials"] = [{"id": "skin"}]
     minimal["animations"] = [{}]
     with pytest.raises(errors.UnsupportedOperation) as raised:
         validate_document(minimal)
     capabilities = [d.context["capability"] for d in raised.value.details]
-    assert capabilities == ["animations", "regions"]
+    assert capabilities == ["animations", "materials"]
 
 
 def test_error_messages_do_not_echo_untrusted_strings(minimal: dict[str, Any]) -> None:

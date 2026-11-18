@@ -55,6 +55,57 @@
       "title": "Color",
       "type": "object"
     },
+    "EllipseMask": {
+      "additionalProperties": false,
+      "description": "Mask of the ellipse inscribed in a half-open box (same rule as ``ellipse``).",
+      "properties": {
+        "box": {
+          "maxItems": 4,
+          "minItems": 4,
+          "prefixItems": [
+            {
+              "maximum": 1048576,
+              "minimum": -1048576,
+              "type": "integer"
+            },
+            {
+              "maximum": 1048576,
+              "minimum": -1048576,
+              "type": "integer"
+            },
+            {
+              "maximum": 1048577,
+              "minimum": -1048575,
+              "type": "integer"
+            },
+            {
+              "maximum": 1048577,
+              "minimum": -1048575,
+              "type": "integer"
+            }
+          ],
+          "title": "Box",
+          "type": "array"
+        },
+        "id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "type": {
+          "const": "ellipse",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "box"
+      ],
+      "title": "EllipseMask",
+      "type": "object"
+    },
     "EllipseOperation": {
       "additionalProperties": false,
       "description": "Ellipse inscribed in a half-open box, by pixel-centre inclusion.",
@@ -112,9 +163,42 @@
       "title": "EllipseOperation",
       "type": "object"
     },
+    "IntersectMask": {
+      "additionalProperties": false,
+      "description": "Pixels of every operand.",
+      "properties": {
+        "id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "masks": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+            "type": "string"
+          },
+          "maxItems": 64,
+          "minItems": 2,
+          "title": "Masks",
+          "type": "array"
+        },
+        "type": {
+          "const": "intersect",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "masks",
+        "type"
+      ],
+      "title": "IntersectMask",
+      "type": "object"
+    },
     "Layer": {
       "additionalProperties": false,
-      "description": "Ordered operations drawn bottom-to-top; ``locked`` affects editing only.",
+      "description": "Ordered operations drawn bottom-to-top; ``locked`` affects editing only.\n\n``mask_id`` (optional) clips the whole layer to a semantic mask (ADR-022).",
       "properties": {
         "blend": {
           "const": "normal",
@@ -131,6 +215,11 @@
           "default": false,
           "title": "Locked",
           "type": "boolean"
+        },
+        "mask_id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Mask Id",
+          "type": "string"
         },
         "name": {
           "maxLength": 4096,
@@ -190,6 +279,66 @@
         "operations"
       ],
       "title": "Layer",
+      "type": "object"
+    },
+    "LineMask": {
+      "additionalProperties": false,
+      "description": "Mask of a one-pixel line, inclusive at both ends (same rule as ``line``).",
+      "properties": {
+        "end": {
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "maximum": 1048576,
+              "minimum": -1048576,
+              "type": "integer"
+            },
+            {
+              "maximum": 1048576,
+              "minimum": -1048576,
+              "type": "integer"
+            }
+          ],
+          "title": "End",
+          "type": "array"
+        },
+        "id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "start": {
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "maximum": 1048576,
+              "minimum": -1048576,
+              "type": "integer"
+            },
+            {
+              "maximum": 1048576,
+              "minimum": -1048576,
+              "type": "integer"
+            }
+          ],
+          "title": "Start",
+          "type": "array"
+        },
+        "type": {
+          "const": "line",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "start",
+        "end"
+      ],
+      "title": "LineMask",
       "type": "object"
     },
     "LineOperation": {
@@ -330,6 +479,47 @@
       "title": "Palette",
       "type": "object"
     },
+    "PixelMask": {
+      "additionalProperties": false,
+      "description": "Mask of exactly one pixel at ``at`` (canvas coordinates, ADR-022).",
+      "properties": {
+        "at": {
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "maximum": 1048576,
+              "minimum": -1048576,
+              "type": "integer"
+            },
+            {
+              "maximum": 1048576,
+              "minimum": -1048576,
+              "type": "integer"
+            }
+          ],
+          "title": "At",
+          "type": "array"
+        },
+        "id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "type": {
+          "const": "pixel",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "at"
+      ],
+      "title": "PixelMask",
+      "type": "object"
+    },
     "PixelOperation": {
       "additionalProperties": false,
       "description": "Exactly one pixel at ``at``.",
@@ -375,6 +565,52 @@
         "at"
       ],
       "title": "PixelOperation",
+      "type": "object"
+    },
+    "PolygonMask": {
+      "additionalProperties": false,
+      "description": "Mask of an even-odd filled polygon (same rule as ``polygon``).",
+      "properties": {
+        "id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "points": {
+          "items": {
+            "maxItems": 2,
+            "minItems": 2,
+            "prefixItems": [
+              {
+                "maximum": 1048576,
+                "minimum": -1048576,
+                "type": "integer"
+              },
+              {
+                "maximum": 1048576,
+                "minimum": -1048576,
+                "type": "integer"
+              }
+            ],
+            "type": "array"
+          },
+          "maxItems": 4096,
+          "minItems": 3,
+          "title": "Points",
+          "type": "array"
+        },
+        "type": {
+          "const": "polygon",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "points"
+      ],
+      "title": "PolygonMask",
       "type": "object"
     },
     "PolygonOperation": {
@@ -456,6 +692,57 @@
       "title": "Ramp",
       "type": "object"
     },
+    "RectMask": {
+      "additionalProperties": false,
+      "description": "Mask of a filled half-open box ``[x0, y0, x1, y1)``.",
+      "properties": {
+        "box": {
+          "maxItems": 4,
+          "minItems": 4,
+          "prefixItems": [
+            {
+              "maximum": 1048576,
+              "minimum": -1048576,
+              "type": "integer"
+            },
+            {
+              "maximum": 1048576,
+              "minimum": -1048576,
+              "type": "integer"
+            },
+            {
+              "maximum": 1048577,
+              "minimum": -1048575,
+              "type": "integer"
+            },
+            {
+              "maximum": 1048577,
+              "minimum": -1048575,
+              "type": "integer"
+            }
+          ],
+          "title": "Box",
+          "type": "array"
+        },
+        "id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "type": {
+          "const": "rect",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "box"
+      ],
+      "title": "RectMask",
+      "type": "object"
+    },
     "RectOperation": {
       "additionalProperties": false,
       "description": "Filled half-open box ``[x0, y0, x1, y1)``.",
@@ -512,12 +799,143 @@
       ],
       "title": "RectOperation",
       "type": "object"
+    },
+    "Region": {
+      "additionalProperties": false,
+      "description": "Semantic region: a stable ID bound to a mask and, optionally, operations.\n\nIt lets an agent target \"the left eye\" by ID instead of inferring pixels.",
+      "properties": {
+        "id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "mask_id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Mask Id",
+          "type": "string"
+        },
+        "operation_ids": {
+          "default": [],
+          "items": {
+            "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+            "type": "string"
+          },
+          "maxItems": 10000,
+          "title": "Operation Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "mask_id"
+      ],
+      "title": "Region",
+      "type": "object"
+    },
+    "SubtractMask": {
+      "additionalProperties": false,
+      "description": "Pixels of the first operand that are in none of the others.",
+      "properties": {
+        "id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "masks": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+            "type": "string"
+          },
+          "maxItems": 64,
+          "minItems": 2,
+          "title": "Masks",
+          "type": "array"
+        },
+        "type": {
+          "const": "subtract",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "masks",
+        "type"
+      ],
+      "title": "SubtractMask",
+      "type": "object"
+    },
+    "UnionMask": {
+      "additionalProperties": false,
+      "description": "Pixels of at least one operand.",
+      "properties": {
+        "id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "masks": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+            "type": "string"
+          },
+          "maxItems": 64,
+          "minItems": 2,
+          "title": "Masks",
+          "type": "array"
+        },
+        "type": {
+          "const": "union",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "masks",
+        "type"
+      ],
+      "title": "UnionMask",
+      "type": "object"
+    },
+    "XorMask": {
+      "additionalProperties": false,
+      "description": "Pixels of an odd number of operands.",
+      "properties": {
+        "id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "masks": {
+          "items": {
+            "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+            "type": "string"
+          },
+          "maxItems": 64,
+          "minItems": 2,
+          "title": "Masks",
+          "type": "array"
+        },
+        "type": {
+          "const": "xor",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "masks",
+        "type"
+      ],
+      "title": "XorMask",
+      "type": "object"
     }
   },
   "$id": "moana-document-1.0.schema.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
-  "description": "Structural schema of a Moana sprite document. validate_document also rejects duplicate member names, NaN/Infinity, documents over 8 MiB, deeper than 32 or with more than 20000 nodes, repeated IDs, unknown color references, more than 10000 operations, and strict-profile violations (alpha other than 00/FF, layer opacity other than 255, more than 256 colors).",
+  "description": "Structural schema of a Moana sprite document. validate_document also rejects duplicate member names, NaN/Infinity, documents over 8 MiB, deeper than 32 or with more than 20000 nodes, repeated IDs, unknown color references, more than 10000 operations, strict-profile violations (alpha other than 00/FF, layer opacity other than 255, more than 256 colors), unknown or repeated mask, region and operation references, mask reference cycles and mask reference chains longer than 16.",
   "properties": {
     "animations": {
       "default": [],
@@ -543,7 +961,52 @@
     },
     "masks": {
       "default": [],
-      "maxItems": 0,
+      "items": {
+        "discriminator": {
+          "mapping": {
+            "ellipse": "#/$defs/EllipseMask",
+            "intersect": "#/$defs/IntersectMask",
+            "line": "#/$defs/LineMask",
+            "pixel": "#/$defs/PixelMask",
+            "polygon": "#/$defs/PolygonMask",
+            "rect": "#/$defs/RectMask",
+            "subtract": "#/$defs/SubtractMask",
+            "union": "#/$defs/UnionMask",
+            "xor": "#/$defs/XorMask"
+          },
+          "propertyName": "type"
+        },
+        "oneOf": [
+          {
+            "$ref": "#/$defs/PixelMask"
+          },
+          {
+            "$ref": "#/$defs/LineMask"
+          },
+          {
+            "$ref": "#/$defs/RectMask"
+          },
+          {
+            "$ref": "#/$defs/EllipseMask"
+          },
+          {
+            "$ref": "#/$defs/PolygonMask"
+          },
+          {
+            "$ref": "#/$defs/UnionMask"
+          },
+          {
+            "$ref": "#/$defs/IntersectMask"
+          },
+          {
+            "$ref": "#/$defs/SubtractMask"
+          },
+          {
+            "$ref": "#/$defs/XorMask"
+          }
+        ]
+      },
+      "maxItems": 1024,
       "title": "Masks",
       "type": "array"
     },
@@ -561,7 +1024,10 @@
     },
     "regions": {
       "default": [],
-      "maxItems": 0,
+      "items": {
+        "$ref": "#/$defs/Region"
+      },
+      "maxItems": 1024,
       "title": "Regions",
       "type": "array"
     },

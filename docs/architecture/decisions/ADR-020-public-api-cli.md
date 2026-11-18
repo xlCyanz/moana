@@ -1,6 +1,6 @@
 # ADR-020 — Fachada pública `moana.api` y CLI estático `moana`
 
-Estado: aceptado · 2026-11-17 · Issue: [MOANA-012](../../issues/MOANA-012.md). Aplica ADR-011 (schema 1.0), ADR-018 (`render`) y ADR-019 (`export_png`). Amplía ADR-010 §4 con `READ_ERROR` (5).
+Estado: aceptado · 2026-11-17 · Issue: [MOANA-012](../../issues/MOANA-012.md). Aplica ADR-011 (schema 1.0), ADR-018 (`render`) y ADR-019 (`export_png`). Amplía ADR-010 §4 con `READ_ERROR` (5). Ampliado por [ADR-022](ADR-022-masks-regions.md): `resolve_region`/`ResolvedRegion` en la fachada, `masks`/`regions`/`mask_id` en `inspect_document` y `collections`/`mask_types`/`planned_mask_types` en `capabilities()`.
 
 ## Contexto
 

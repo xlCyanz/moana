@@ -4,9 +4,17 @@
 detail: rasterisers return immutable :class:`Mask` values and never expose a shared
 array. Pixel-perfect transformations (mirror, quarter turns, integer scale, translation)
 act on pixel indices about a pivot pixel (ADR-016). Paths and stroke widths are out
-of scope (later issues).
+of scope (later issues). Masks combine through the set algebra of
+:mod:`moana.geometry.algebra` (union, intersect, subtract, xor; ADR-022).
 """
 
+from moana.geometry.algebra import (
+    MASK_OPERATORS,
+    MaskBuilder,
+    MaskOperator,
+    combine_masks,
+    combined_box,
+)
 from moana.geometry.fill import FLOOD_FILL_BYTES_PER_PIXEL, flood_fill, flood_fill_cost
 from moana.geometry.mask import Mask
 from moana.geometry.primitives import (
@@ -27,11 +35,16 @@ from moana.geometry.transform import (
 
 __all__ = [
     "FLOOD_FILL_BYTES_PER_PIXEL",
+    "MASK_OPERATORS",
     "MAX_SCALE",
     "MIN_POLYGON_VERTICES",
     "QUARTER_TURNS",
     "Mask",
+    "MaskBuilder",
+    "MaskOperator",
     "Transform",
+    "combine_masks",
+    "combined_box",
     "flood_fill",
     "flood_fill_cost",
     "rasterize_ellipse",

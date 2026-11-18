@@ -50,7 +50,7 @@ Puerta de salida: Técnicas editables y batches atómicos con historial.
 Estado: 0/8 issues completados.
 
 - [MOANA-007](MOANA-007.md) — Añadir adaptador de paths AggDraw (ready)
-- [MOANA-013](MOANA-013.md) — Añadir máscaras y regiones semánticas (ready)
+- [MOANA-013](MOANA-013.md) — Añadir máscaras y regiones semánticas (review)
 - [MOANA-014](MOANA-014.md) — Crear contornos y análisis de clusters (blocked)
 - [MOANA-015](MOANA-015.md) — Añadir bandas de sombreado e iluminación (blocked)
 - [MOANA-016](MOANA-016.md) — Implementar dithering ordenado (blocked)
@@ -88,4 +88,4 @@ Estado: 0/8 issues completados.
 
 ## Siguiente paso
 
-Implementar [MOANA-013](MOANA-013.md): Añadir máscaras y regiones semánticas.
+Implementar [MOANA-007](MOANA-007.md): Añadir adaptador de paths AggDraw.

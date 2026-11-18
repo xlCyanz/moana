@@ -176,7 +176,7 @@ def test_minimal_example_document() -> None:
         frame_id=None,
         renderer_version=RENDERER_VERSION,
         renderer_backend="integer",
-        estimator_version="budget-v2",
+        estimator_version="budget-v3",
         rng_version=RNG_VERSION,
     )
     assert result.provenance.moana_version == moana.__version__

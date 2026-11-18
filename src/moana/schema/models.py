@@ -39,7 +39,10 @@ from moana.core.limits import (
     MAX_COLORS_RGBA,
     MAX_COLORS_STRICT,
     MAX_LAYERS,
+    MAX_MASK_OPERANDS,
+    MAX_MASKS,
     MAX_OPERATIONS,
+    MAX_REGIONS,
     MAX_VERTICES,
 )
 
@@ -47,25 +50,41 @@ __all__ = [
     "MAX_COLORS_RGBA",
     "MAX_COLORS_STRICT",
     "MAX_LAYERS",
+    "MAX_MASKS",
+    "MAX_MASK_OPERANDS",
     "MAX_METADATA_STRING_BYTES",
     "MAX_OPERATIONS",
+    "MAX_REGIONS",
     "MAX_REVISION",
     "MAX_SEED",
     "MAX_TAGS",
     "MAX_VERTICES",
     "Canvas",
     "Color",
+    "CombinationMask",
     "Document",
+    "EllipseMask",
     "EllipseOperation",
+    "IntersectMask",
     "Layer",
+    "LineMask",
     "LineOperation",
+    "MaskNode",
     "Metadata",
     "Operation",
     "Palette",
+    "PixelMask",
     "PixelOperation",
+    "PolygonMask",
     "PolygonOperation",
     "Ramp",
+    "RectMask",
     "RectOperation",
+    "Region",
+    "ShapeMask",
+    "SubtractMask",
+    "UnionMask",
+    "XorMask",
 ]
 
 MAX_METADATA_STRING_BYTES: Final = 4096
@@ -258,8 +277,142 @@ Operation = Annotated[
 """Operations of schema 1.0, discriminated by ``type``."""
 
 
+class _Mask(_Model):
+    id: Id
+
+
+class PixelMask(_Mask):
+    """Mask of exactly one pixel at ``at`` (canvas coordinates, ADR-022)."""
+
+    type: Literal["pixel"]
+    at: PointValue
+
+    @property
+    def point(self) -> Point:
+        """The pixel as a ``core`` value."""
+        return Point(*self.at)
+
+
+class LineMask(_Mask):
+    """Mask of a one-pixel line, inclusive at both ends (same rule as ``line``)."""
+
+    type: Literal["line"]
+    start: PointValue
+    end: PointValue
+
+
+class RectMask(_Mask):
+    """Mask of a filled half-open box ``[x0, y0, x1, y1)``."""
+
+    type: Literal["rect"]
+    box: BoxValue
+
+    @property
+    def bbox(self) -> Box:
+        """The box as a ``core`` value."""
+        return Box(*self.box)
+
+
+class EllipseMask(_Mask):
+    """Mask of the ellipse inscribed in a half-open box (same rule as ``ellipse``)."""
+
+    type: Literal["ellipse"]
+    box: BoxValue
+
+    @property
+    def bbox(self) -> Box:
+        """The box as a ``core`` value."""
+        return Box(*self.box)
+
+
+class PolygonMask(_Mask):
+    """Mask of an even-odd filled polygon (same rule as ``polygon``)."""
+
+    type: Literal["polygon"]
+    points: Annotated[
+        tuple[PointValue, ...],
+        Field(min_length=3, max_length=MAX_VERTICES),
+        BeforeValidator(_as_tuple),
+    ]
+
+
+class CombinationMask(_Mask):
+    """Boolean node over 2 to 64 mask IDs, folded in array order.
+
+    ``union``: in any operand; ``intersect``: in every operand; ``subtract``: in the
+    first operand and none of the others; ``xor``: in an odd number of operands.
+    """
+
+    masks: Annotated[
+        tuple[Id, ...],
+        Field(min_length=2, max_length=MAX_MASK_OPERANDS),
+        BeforeValidator(_as_tuple),
+    ]
+
+
+class UnionMask(CombinationMask):
+    """Pixels of at least one operand."""
+
+    type: Literal["union"]
+
+
+class IntersectMask(CombinationMask):
+    """Pixels of every operand."""
+
+    type: Literal["intersect"]
+
+
+class SubtractMask(CombinationMask):
+    """Pixels of the first operand that are in none of the others."""
+
+    type: Literal["subtract"]
+
+
+class XorMask(CombinationMask):
+    """Pixels of an odd number of operands."""
+
+    type: Literal["xor"]
+
+
+ShapeMask = PixelMask | LineMask | RectMask | EllipseMask | PolygonMask
+"""Mask leaves: primitive geometry in canvas coordinates, without colour."""
+
+MaskNode = Annotated[
+    PixelMask
+    | LineMask
+    | RectMask
+    | EllipseMask
+    | PolygonMask
+    | UnionMask
+    | IntersectMask
+    | SubtractMask
+    | XorMask,
+    Field(discriminator="type"),
+]
+"""Semantic mask nodes of schema 1.0 (ADR-022), discriminated by ``type``."""
+
+
+class Region(_Model):
+    """Semantic region: a stable ID bound to a mask and, optionally, operations.
+
+    It lets an agent target "the left eye" by ID instead of inferring pixels.
+    """
+
+    id: Id
+    mask_id: Id
+    operation_ids: Annotated[
+        tuple[Id, ...], Field(max_length=MAX_OPERATIONS), BeforeValidator(_as_tuple)
+    ] = ()
+
+
+OptionalId = Annotated[Id | SkipJsonSchema[None], BeforeValidator(_reject_null)]
+
+
 class Layer(_Model):
-    """Ordered operations drawn bottom-to-top; ``locked`` affects editing only."""
+    """Ordered operations drawn bottom-to-top; ``locked`` affects editing only.
+
+    ``mask_id`` (optional) clips the whole layer to a semantic mask (ADR-022).
+    """
 
     id: Id
     name: MetadataString
@@ -270,6 +423,7 @@ class Layer(_Model):
     operations: Annotated[
         tuple[Operation, ...], Field(max_length=MAX_OPERATIONS), BeforeValidator(_as_tuple)
     ]
+    mask_id: OptionalId = None
 
 
 class Metadata(_Model):
@@ -298,8 +452,12 @@ class Document(_Model):
     canvas: Canvas
     palette: Palette
     layers: Annotated[tuple[Layer, ...], Field(max_length=MAX_LAYERS), BeforeValidator(_as_tuple)]
-    masks: FutureCollection = ()
-    regions: FutureCollection = ()
+    masks: Annotated[
+        tuple[MaskNode, ...], Field(max_length=MAX_MASKS), BeforeValidator(_as_tuple)
+    ] = ()
+    regions: Annotated[
+        tuple[Region, ...], Field(max_length=MAX_REGIONS), BeforeValidator(_as_tuple)
+    ] = ()
     materials: FutureCollection = ()
     animations: FutureCollection = ()
     metadata: Annotated[Metadata | SkipJsonSchema[None], BeforeValidator(_metadata_or_absent)] = (

@@ -1,6 +1,6 @@
 # ADR-011 — Schema 1.0 del documento: lectura acotada, fases de error y forma canónica
 
-Estado: aceptado · 2026-11-17 · Issue: [MOANA-002](../../issues/MOANA-002.md).
+Estado: aceptado · 2026-11-17 · Issue: [MOANA-002](../../issues/MOANA-002.md). Ampliado por [ADR-022](ADR-022-masks-regions.md): `masks`, `regions` y `mask_id` de capa tienen gramática 1.0 (extensión compatible); `materials` y `animations` siguen aceptándose sólo vacías.
 
 ## Contexto
 

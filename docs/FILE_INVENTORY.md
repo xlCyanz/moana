@@ -1,6 +1,6 @@
 # Inventario del repositorio
 
-300 archivos actuales de fuente, documentación, configuración y pruebas al 2026-11-17. Incluye cambios locales todavía sin commit. Excluye entorno virtual, herramientas, cachés, artefactos y metadata Git.
+309 archivos actuales de fuente, documentación, configuración y pruebas al 2026-11-17. Incluye cambios locales todavía sin commit. Excluye entorno virtual, herramientas, cachés, artefactos y metadata Git.
 
 | Archivo |
 | --- |
@@ -103,6 +103,7 @@
 | [docs/architecture/decisions/ADR-019-png-export.md](../docs/architecture/decisions/ADR-019-png-export.md) |
 | [docs/architecture/decisions/ADR-020-public-api-cli.md](../docs/architecture/decisions/ADR-020-public-api-cli.md) |
 | [docs/architecture/decisions/ADR-021-cross-platform-determinism.md](../docs/architecture/decisions/ADR-021-cross-platform-determinism.md) |
+| [docs/architecture/decisions/ADR-022-masks-regions.md](../docs/architecture/decisions/ADR-022-masks-regions.md) |
 | [docs/architecture/module-contracts.md](../docs/architecture/module-contracts.md) |
 | [docs/architecture/overview.md](../docs/architecture/overview.md) |
 | [docs/guides/agent-workflow.md](../docs/guides/agent-workflow.md) |
@@ -193,6 +194,7 @@
 | [docs/standards/security.md](../docs/standards/security.md) |
 | [docs/standards/testing.md](../docs/standards/testing.md) |
 | [examples/README.md](../examples/README.md) |
+| [examples/specs/masked-eyes.moana.json](../examples/specs/masked-eyes.moana.json) |
 | [examples/specs/minimal.moana.json](../examples/specs/minimal.moana.json) |
 | [examples/specs/recolor.edit.json](../examples/specs/recolor.edit.json) |
 | [pyproject.toml](../pyproject.toml) |
@@ -233,6 +235,7 @@
 | [src/moana/export/atomic.py](../src/moana/export/atomic.py) |
 | [src/moana/export/png.py](../src/moana/export/png.py) |
 | [src/moana/geometry/__init__.py](../src/moana/geometry/__init__.py) |
+| [src/moana/geometry/algebra.py](../src/moana/geometry/algebra.py) |
 | [src/moana/geometry/fill.py](../src/moana/geometry/fill.py) |
 | [src/moana/geometry/mask.py](../src/moana/geometry/mask.py) |
 | [src/moana/geometry/primitives.py](../src/moana/geometry/primitives.py) |
@@ -255,6 +258,7 @@
 | [src/moana/schema/capabilities.py](../src/moana/schema/capabilities.py) |
 | [src/moana/schema/document.py](../src/moana/schema/document.py) |
 | [src/moana/schema/models.py](../src/moana/schema/models.py) |
+| [src/moana/schema/references.py](../src/moana/schema/references.py) |
 | [tests/fixtures/determinism/corpus.json](../tests/fixtures/determinism/corpus.json) |
 | [tests/fixtures/determinism/expected.json](../tests/fixtures/determinism/expected.json) |
 | [tests/integration/test_cli_paths.py](../tests/integration/test_cli_paths.py) |
@@ -265,6 +269,7 @@
 | [tests/test_repository_tools.py](../tests/test_repository_tools.py) |
 | [tests/unit/api/test_api_architecture.py](../tests/unit/api/test_api_architecture.py) |
 | [tests/unit/api/test_api_facade.py](../tests/unit/api/test_api_facade.py) |
+| [tests/unit/api/test_api_masks.py](../tests/unit/api/test_api_masks.py) |
 | [tests/unit/cli/test_cli_main.py](../tests/unit/cli/test_cli_main.py) |
 | [tests/unit/core/test_core_architecture.py](../tests/unit/core/test_core_architecture.py) |
 | [tests/unit/core/test_core_budget.py](../tests/unit/core/test_core_budget.py) |
@@ -275,6 +280,7 @@
 | [tests/unit/core/test_core_limits.py](../tests/unit/core/test_core_limits.py) |
 | [tests/unit/core/test_core_procedural.py](../tests/unit/core/test_core_procedural.py) |
 | [tests/unit/export/test_export_png.py](../tests/unit/export/test_export_png.py) |
+| [tests/unit/geometry/test_geometry_algebra.py](../tests/unit/geometry/test_geometry_algebra.py) |
 | [tests/unit/geometry/test_geometry_architecture.py](../tests/unit/geometry/test_geometry_architecture.py) |
 | [tests/unit/geometry/test_geometry_fill.py](../tests/unit/geometry/test_geometry_fill.py) |
 | [tests/unit/geometry/test_geometry_mask.py](../tests/unit/geometry/test_geometry_mask.py) |
@@ -282,17 +288,20 @@
 | [tests/unit/geometry/test_geometry_primitives.py](../tests/unit/geometry/test_geometry_primitives.py) |
 | [tests/unit/geometry/test_geometry_transform.py](../tests/unit/geometry/test_geometry_transform.py) |
 | [tests/unit/layers/test_layers_compose.py](../tests/unit/layers/test_layers_compose.py) |
+| [tests/unit/layers/test_layers_masks.py](../tests/unit/layers/test_layers_masks.py) |
 | [tests/unit/layers/test_layers_nodes.py](../tests/unit/layers/test_layers_nodes.py) |
 | [tests/unit/palette/test_palette_architecture.py](../tests/unit/palette/test_palette_architecture.py) |
 | [tests/unit/palette/test_palette_colors.py](../tests/unit/palette/test_palette_colors.py) |
 | [tests/unit/palette/test_palette_table.py](../tests/unit/palette/test_palette_table.py) |
 | [tests/unit/render/test_render_architecture.py](../tests/unit/render/test_render_architecture.py) |
 | [tests/unit/render/test_render_budget.py](../tests/unit/render/test_render_budget.py) |
+| [tests/unit/render/test_render_masks.py](../tests/unit/render/test_render_masks.py) |
 | [tests/unit/render/test_render_pipeline.py](../tests/unit/render/test_render_pipeline.py) |
 | [tests/unit/schema/conftest.py](../tests/unit/schema/conftest.py) |
 | [tests/unit/schema/test_schema_architecture.py](../tests/unit/schema/test_schema_architecture.py) |
 | [tests/unit/schema/test_schema_document.py](../tests/unit/schema/test_schema_document.py) |
 | [tests/unit/schema/test_schema_issues.py](../tests/unit/schema/test_schema_issues.py) |
+| [tests/unit/schema/test_schema_masks.py](../tests/unit/schema/test_schema_masks.py) |
 | [tests/unit/schema/test_schema_reader.py](../tests/unit/schema/test_schema_reader.py) |
 | [tests/unit/schema/test_schema_roundtrip.py](../tests/unit/schema/test_schema_roundtrip.py) |
 | [tests/unit/test_claude_hooks.py](../tests/unit/test_claude_hooks.py) |

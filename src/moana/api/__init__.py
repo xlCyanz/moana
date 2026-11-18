@@ -8,7 +8,9 @@ The facade composes the implemented services and adds no algorithm of its own:
   ``bytes``, digest, warnings, provenance) and writes nothing;
 * :func:`export_png` writes the RGBA PNG atomically and returns an
   :class:`~moana.export.ExportManifest`;
-* :func:`inspect_document` and :func:`capabilities` are read-only reports.
+* :func:`inspect_document` and :func:`capabilities` are read-only reports;
+* :func:`resolve_region` resolves a semantic region by ID to its mask, the masks it
+  depends on and its operations (ADR-022), delegating to :mod:`moana.schema`.
 
 Every return value is frozen and holds no NumPy array or Pillow image. Errors are
 ``moana.core.errors`` classes (``ReadError`` for unreadable input files is
@@ -26,7 +28,9 @@ from moana.api.inspection import (
     DocumentReport,
     ExceededResource,
     LayerSummary,
+    MaskSummary,
     OperationSummary,
+    RegionSummary,
     capabilities,
     inspect_document,
 )
@@ -36,7 +40,13 @@ from moana.core.budget import Deadline, RenderLimits
 from moana.core.errors import ReadError
 from moana.export import MAX_SCALE, ExportManifest
 from moana.render import RenderResult, RenderWarning
-from moana.schema import Document, ParseLimits, snapshot_digest
+from moana.schema import (
+    Document,
+    ParseLimits,
+    ResolvedRegion,
+    resolve_region,
+    snapshot_digest,
+)
 
 __all__ = [
     "AVAILABLE_FUNCTIONS",
@@ -51,16 +61,20 @@ __all__ = [
     "ExceededResource",
     "ExportManifest",
     "LayerSummary",
+    "MaskSummary",
     "OperationSummary",
     "ParseLimits",
     "ReadError",
+    "RegionSummary",
     "RenderLimits",
     "RenderResult",
     "RenderWarning",
+    "ResolvedRegion",
     "capabilities",
     "export_png",
     "inspect_document",
     "load_document",
     "render",
+    "resolve_region",
     "snapshot_digest",
 ]
