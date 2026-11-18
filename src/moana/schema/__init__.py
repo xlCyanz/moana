@@ -9,9 +9,12 @@ reference DAG checked by :mod:`moana.schema.references`; :func:`resolve_region`
 resolves a semantic region by ID (ADR-022). A ``dither`` operation names two palette
 colours and a clipping mask (ADR-025); an ``outline`` operation names one colour and
 the mask it outlines (ADR-027); a ``shade`` operation names a ramp and ordered bands,
-each with its own ID and mask (ADR-028). Format versions are an explicit registry
-(:data:`DOCUMENT_MIGRATIONS`, only 1.0 and no migration); :func:`migrate_document`
-migrates a tree with registered pure steps, and reading never migrates (ADR-031).
+each with its own ID and mask (ADR-028); a ``material`` operation adds to those
+bands the texture of a versioned preset, and a ``selective_outline`` operation an
+outline whose authored segments take ramp steps from the same light (ADR-030).
+Format versions are an explicit registry (:data:`DOCUMENT_MIGRATIONS`, only 1.0
+and no migration); :func:`migrate_document` migrates a tree with registered pure
+steps, and reading never migrates (ADR-031).
 """
 
 from moana.schema._reader import DEFAULT_PARSE_LIMITS, ParseLimits
@@ -57,6 +60,7 @@ from moana.schema.models import (
     LineMask,
     LineOperation,
     MaskNode,
+    MaterialOperation,
     Metadata,
     Operation,
     OutlineOperation,
@@ -72,6 +76,7 @@ from moana.schema.models import (
     RectMask,
     RectOperation,
     Region,
+    SelectiveOutlineOperation,
     ShadeBand,
     ShadeOperation,
     ShapeMask,
@@ -124,6 +129,7 @@ __all__ = [
     "LineMask",
     "LineOperation",
     "MaskNode",
+    "MaterialOperation",
     "Metadata",
     "Migration",
     "MigrationRegistry",
@@ -145,6 +151,7 @@ __all__ = [
     "RectOperation",
     "Region",
     "ResolvedRegion",
+    "SelectiveOutlineOperation",
     "ShadeBand",
     "ShadeOperation",
     "ShapeMask",

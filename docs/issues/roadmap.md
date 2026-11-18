@@ -54,7 +54,7 @@ Estado: 7/8 issues completados.
 - [MOANA-014](MOANA-014.md) — Crear contornos y análisis de clusters (done)
 - [MOANA-015](MOANA-015.md) — Añadir bandas de sombreado e iluminación (done)
 - [MOANA-016](MOANA-016.md) — Implementar dithering ordenado (done)
-- [MOANA-017](MOANA-017.md) — Crear presets de materiales versionados (ready)
+- [MOANA-017](MOANA-017.md) — Crear presets de materiales versionados (review)
 - [MOANA-018](MOANA-018.md) — Implementar batches de edición atómica (done)
 - [MOANA-019](MOANA-019.md) — Añadir undo/redo e historial inmutable (done)
 
@@ -88,4 +88,4 @@ Estado: 0/8 issues completados.
 
 ## Siguiente paso
 
-Implementar [MOANA-017](MOANA-017.md): Crear presets de materiales versionados.
+Implementar [MOANA-022](MOANA-022.md): Implementar timeline y evaluación de frames.

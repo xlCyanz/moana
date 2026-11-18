@@ -53,6 +53,13 @@ from moana.core.limits import (
     MAX_REGIONS,
     MAX_VERTICES,
 )
+from moana.core.materials import (
+    DENSITY_STEPS,
+    MAX_MATERIAL_ORIGIN,
+    MAX_MATERIAL_SCALE,
+    PresetName,
+    preset,
+)
 from moana.core.shading import (
     MAX_LIGHT_HEIGHT,
     MAX_RAMP_STEP,
@@ -96,6 +103,7 @@ __all__ = [
     "LineMask",
     "LineOperation",
     "MaskNode",
+    "MaterialOperation",
     "Metadata",
     "Operation",
     "OutlineOperation",
@@ -111,6 +119,7 @@ __all__ = [
     "RectMask",
     "RectOperation",
     "Region",
+    "SelectiveOutlineOperation",
     "ShadeBand",
     "ShadeOperation",
     "ShapeMask",
@@ -503,18 +512,27 @@ class ShadeBand(_Model):
     offset: Annotated[int, Field(ge=-MAX_RAMP_STEP, le=MAX_RAMP_STEP)]
 
 
-def _band_array(value: object) -> object:
-    """Array to tuple, rejecting an empty array before reading any band.
+def _non_empty(owner: str, item: str) -> Any:
+    """Before-validator: array to tuple, rejecting an empty array before reading items.
 
-    As for path commands, ``min_length`` would count only the bands that validated
-    and report a spurious ``too_short`` next to the real error of an invalid band.
+    As for path commands, ``min_length`` would count only the items that validated
+    and report a spurious ``too_short`` next to the real error of an invalid item.
     """
-    value = _as_tuple(value)
-    if value == ():
-        raise PydanticCustomError(
-            "too_short", "Shade should have at least {min_length} band", {"min_length": 1}
-        )
-    return value
+
+    def check(value: object) -> object:
+        value = _as_tuple(value)
+        if value == ():
+            raise PydanticCustomError(
+                "too_short",
+                f"{owner} should have at least {{min_length}} {item}",
+                {"min_length": 1},
+            )
+        return value
+
+    return check
+
+
+_band_array = _non_empty("Shade", "band")
 
 
 class ShadeOperation(_Model):
@@ -538,6 +556,99 @@ class ShadeOperation(_Model):
     ]
 
 
+Bands = Annotated[
+    tuple[ShadeBand, ...],
+    Field(max_length=MAX_SHADE_BANDS, json_schema_extra={"minItems": 1}),
+    BeforeValidator(_non_empty("Material", "band")),
+]
+"""1 to 64 authored bands of a ``material`` (the ``shade`` band model)."""
+MaterialOrigin = Annotated[int, Field(ge=-MAX_MATERIAL_ORIGIN, le=MAX_MATERIAL_ORIGIN)]
+"""A texture origin coordinate, ``-2048..2048``."""
+
+
+def _post_init_error(model: str, details: list[InitErrorDetails]) -> None:
+    if details:
+        raise PydanticValidationError.from_exception_data(model, details)
+
+
+def _at_most(member: str, value: int, maximum: int) -> InitErrorDetails:
+    reason = PydanticCustomError(
+        "less_than_equal", "Input should be less than or equal to {le}", {"le": maximum}
+    )
+    return InitErrorDetails(type=reason, loc=(member,), input=value)
+
+
+class MaterialOperation(_Model):
+    """Band shading of ramp ``ramp`` with the texture of a versioned preset (ADR-030).
+
+    The bands, ``light`` and ``ramp_order`` behave exactly as in ``shade``
+    (ADR-028); then each pixel moves by the ramp-step offset of its texture cell
+    (:mod:`moana.techniques.materials`), and the index is clamped to the ramp again.
+    ``(preset, version)`` names a recipe of :data:`moana.core.materials.MATERIAL_PRESETS`
+    (``unknown_preset_version``), whose row bounds ``density`` (sixty-fourths) and
+    ``scale`` (cell side). ``origin`` anchors the cells on the canvas. No code,
+    formula or shader is read from the document.
+    """
+
+    id: Id
+    type: Literal["material"]
+    preset: PresetName
+    version: Annotated[int, Field(ge=1)]
+    ramp: Id
+    ramp_order: RampOrder
+    light: Light
+    density: Annotated[int, Field(ge=0, le=DENSITY_STEPS)]
+    scale: Annotated[int, Field(ge=1, le=MAX_MATERIAL_SCALE)]
+    origin: Annotated[tuple[MaterialOrigin, MaterialOrigin], BeforeValidator(_as_tuple)]
+    bands: Bands
+
+    def model_post_init(self, context: Any, /) -> None:
+        """Check the recipe and bound ``density`` and ``scale`` by its row."""
+        row = preset(self.preset, self.version)
+        details: list[InitErrorDetails] = []
+        if row is None:
+            reason = PydanticCustomError(
+                "unknown_preset_version", "Preset has no recipe with this version"
+            )
+            details.append(InitErrorDetails(type=reason, loc=("version",), input=self.version))
+        else:
+            if self.density > row.max_density:
+                details.append(_at_most("density", self.density, row.max_density))
+            if self.scale > row.max_scale:
+                details.append(_at_most("scale", self.scale, row.max_scale))
+        _post_init_error(type(self).__name__, details)
+
+    @property
+    def anchor(self) -> Point:
+        """The texture origin as a ``core`` value."""
+        return Point(*self.origin)
+
+
+class SelectiveOutlineOperation(_Model):
+    """Outline of mask ``mask_id`` whose segments take ramp steps from the light (ADR-030).
+
+    The ring is that of ``outline`` (``width``, ``side``, ADR-027). A ring pixel inside
+    a ``segments`` mask takes ``ramp[band_index(facing, offset, light)]`` of the last
+    listed segment that contains it (the ``shade`` rule of ADR-028, not a second light
+    rule); every other ring pixel takes ``color``. 1 to 64 segments.
+    """
+
+    id: Id
+    type: Literal["selective_outline"]
+    mask_id: Id
+    width: Annotated[int, Field(ge=1, le=MAX_MORPHOLOGY_RADIUS)]
+    side: Literal["outer", "inner"]
+    color: Id
+    ramp: Id
+    ramp_order: RampOrder
+    light: Light
+    segments: Annotated[
+        tuple[ShadeBand, ...],
+        Field(max_length=MAX_SHADE_BANDS, json_schema_extra={"minItems": 1}),
+        BeforeValidator(_non_empty("Selective outline", "segment")),
+    ]
+
+
 ShapeOperation = (
     PixelOperation
     | LineOperation
@@ -557,7 +668,9 @@ Operation = Annotated[
     | PathOperation
     | DitherOperation
     | OutlineOperation
-    | ShadeOperation,
+    | ShadeOperation
+    | MaterialOperation
+    | SelectiveOutlineOperation,
     Field(discriminator="type"),
 ]
 """Operations of schema 1.0, discriminated by ``type``."""

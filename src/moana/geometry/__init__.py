@@ -11,7 +11,9 @@ probed; stroke widths are out of scope. Masks combine through the set algebra of
 cell table anchored on the canvas selects mask pixels with the mathematical modulo
 (:func:`select_periodic`, ADR-025), the geometry under ordered dithering. Bounded
 Chebyshev dilation and erosion with a transparent exterior (:func:`dilate`,
-:func:`erode`, ADR-027) are the geometry under outlines.
+:func:`erode`, ADR-027) are the geometry under outlines. A grid of one-byte cells
+anchored on the canvas selects mask pixels by cell value (:func:`select_cells`,
+ADR-030), the geometry under material textures.
 """
 
 from moana.geometry.algebra import (
@@ -52,6 +54,7 @@ from moana.geometry.pattern import (
     MAX_PATTERN_SIZE,
     PATTERN_INDEX_BYTES,
     CellTable,
+    select_cells,
     select_periodic,
 )
 from moana.geometry.primitives import (
@@ -111,6 +114,7 @@ __all__ = [
     "rasterize_pixel",
     "rasterize_polygon",
     "rasterize_rect",
+    "select_cells",
     "select_periodic",
     "transform_box",
     "transform_mask",

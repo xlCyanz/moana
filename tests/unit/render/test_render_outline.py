@@ -198,7 +198,7 @@ def test_budget_v6_hand_oracle() -> None:
     assert estimate.pixel_visits == 3 * 64 + 2 * 64 + 1034
     # working max(40A, 14A + 80 x 16) = 2560, plus the outline peak, plus one result 4A
     assert estimate.buffer_bytes == 2560 + 5338 + 256
-    assert estimate.estimator_version == ESTIMATOR_VERSION == "budget-v7"
+    assert estimate.estimator_version == ESTIMATOR_VERSION == "budget-v8"
     assert estimate.fills == fill_count(document) == 1
 
 
@@ -235,7 +235,7 @@ def test_inspect_summarises_the_outline() -> None:
     )
     summary = report.layers[0].operations[0]
     assert (summary.id, summary.type, summary.color) == ("o", "outline", "ink")
-    assert report.budget.fills == 1 and report.budget.estimator_version == "budget-v7"
+    assert report.budget.fills == 1 and report.budget.estimator_version == "budget-v8"
 
 
 def test_peak_memory_with_outlines_stays_within_the_estimate() -> None:

@@ -1,0 +1,230 @@
+{
+  "schema_version": "1.0",
+  "id": "material_wood",
+  "revision": 0,
+  "seed": 17,
+  "canvas": {
+    "width": 32,
+    "height": 32,
+    "profile": "strict"
+  },
+  "palette": {
+    "id": "palette_wood",
+    "colors": [
+      {
+        "id": "ink",
+        "rgba": "#1E100AFF"
+      },
+      {
+        "id": "wood_0",
+        "rgba": "#3A2116FF"
+      },
+      {
+        "id": "wood_1",
+        "rgba": "#5E3620FF"
+      },
+      {
+        "id": "wood_2",
+        "rgba": "#8A5530FF"
+      },
+      {
+        "id": "wood_3",
+        "rgba": "#B57E45FF"
+      },
+      {
+        "id": "wood_4",
+        "rgba": "#DDB070FF"
+      }
+    ],
+    "ramps": [
+      {
+        "id": "wood_ramp",
+        "colors": [
+          "wood_0",
+          "wood_1",
+          "wood_2",
+          "wood_3",
+          "wood_4"
+        ]
+      }
+    ]
+  },
+  "masks": [
+    {
+      "id": "body",
+      "type": "rect",
+      "box": [
+        5,
+        7,
+        27,
+        25
+      ]
+    },
+    {
+      "id": "body_down_right",
+      "type": "rect",
+      "box": [
+        7,
+        9,
+        29,
+        27
+      ]
+    },
+    {
+      "id": "body_up_left",
+      "type": "rect",
+      "box": [
+        3,
+        5,
+        25,
+        23
+      ]
+    },
+    {
+      "id": "lit_side",
+      "type": "subtract",
+      "masks": [
+        "body",
+        "body_down_right"
+      ]
+    },
+    {
+      "id": "shadow_side",
+      "type": "subtract",
+      "masks": [
+        "body",
+        "body_up_left"
+      ]
+    },
+    {
+      "id": "upper_left",
+      "type": "polygon",
+      "points": [
+        [
+          0,
+          0
+        ],
+        [
+          32,
+          0
+        ],
+        [
+          0,
+          32
+        ]
+      ]
+    }
+  ],
+  "regions": [
+    {
+      "id": "wood_surface",
+      "mask_id": "body",
+      "operation_ids": [
+        "wood_material"
+      ]
+    }
+  ],
+  "layers": [
+    {
+      "id": "object",
+      "name": "Tabla de madera",
+      "operations": [
+        {
+          "id": "wood_material",
+          "type": "material",
+          "preset": "wood",
+          "version": 1,
+          "ramp": "wood_ramp",
+          "ramp_order": "monotonic",
+          "light": {
+            "direction": "nw",
+            "height": 1,
+            "intensity": 1,
+            "ambient": 2
+          },
+          "density": 64,
+          "scale": 1,
+          "origin": [
+            0,
+            0
+          ],
+          "bands": [
+            {
+              "id": "band_body",
+              "mask_id": "body",
+              "facing": "front",
+              "offset": 0
+            },
+            {
+              "id": "band_shadow",
+              "mask_id": "shadow_side",
+              "facing": "se",
+              "offset": 0
+            },
+            {
+              "id": "band_lit",
+              "mask_id": "lit_side",
+              "facing": "nw",
+              "offset": 0
+            }
+          ]
+        },
+        {
+          "id": "wood_shadow_flat",
+          "type": "shade",
+          "ramp": "wood_ramp",
+          "ramp_order": "monotonic",
+          "light": {
+            "direction": "nw",
+            "height": 1,
+            "intensity": 1,
+            "ambient": 2
+          },
+          "bands": [
+            {
+              "id": "band_shadow_flat",
+              "mask_id": "shadow_side",
+              "facing": "se",
+              "offset": 0
+            }
+          ]
+        },
+        {
+          "id": "wood_outline",
+          "type": "selective_outline",
+          "mask_id": "body",
+          "width": 1,
+          "side": "outer",
+          "color": "ink",
+          "ramp": "wood_ramp",
+          "ramp_order": "monotonic",
+          "light": {
+            "direction": "nw",
+            "height": 1,
+            "intensity": 1,
+            "ambient": 2
+          },
+          "segments": [
+            {
+              "id": "outline_lit",
+              "mask_id": "upper_left",
+              "facing": "nw",
+              "offset": -2
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "title": "Material wood (preset wood v1)",
+    "description": "Ejemplo editable del preset `wood` v1: tres bandas (cuerpo, sombra y lado iluminado) con luz nw y textura de celdas con semilla; un `shade` plano repinta el lado en sombra sin textura para que el paso más oscuro no toque la tinta, y un contorno selectivo aclara el tramo superior izquierdo con la misma luz.",
+    "author": "Moana (agente de IA)",
+    "tags": [
+      "material",
+      "wood",
+      "MOANA-017"
+    ],
+    "provenance": "Creado para Moana por un agente de IA (MOANA-017, ADR-030) a partir de MOANA.md §8-§10; sin assets, texturas ni paletas externas. Revisión artística humana: PENDIENTE."
+  }
+}

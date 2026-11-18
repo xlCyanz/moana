@@ -116,10 +116,12 @@ def test_unknown_type_lists_supported_operations(minimal: dict[str, Any]) -> Non
         "dither",
         "ellipse",
         "line",
+        "material",
         "outline",
         "path",
         "pixel",
         "polygon",
         "rect",
+        "selective_outline",
         "shade",
     )

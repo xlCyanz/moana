@@ -35,9 +35,23 @@ SUPPORTED_SCHEMA_VERSIONS: Final = frozenset({SCHEMA_VERSION})
 
 # ``dither`` (ordered Bayer dithering clipped by a mask) arrived with MOANA-016, ADR-025;
 # ``outline`` (outer/inner outline of a mask) with MOANA-014, ADR-027; ``shade`` (band
-# shading by ramp index with a discrete light) with MOANA-015, ADR-028.
+# shading by ramp index with a discrete light) with MOANA-015, ADR-028; ``material``
+# (band shading plus a versioned preset texture) and ``selective_outline`` (outline
+# whose authored segments take ramp steps from the light) with MOANA-017, ADR-030.
 SUPPORTED_OPERATION_TYPES: Final = frozenset(
-    {"dither", "ellipse", "line", "outline", "path", "pixel", "polygon", "rect", "shade"}
+    {
+        "dither",
+        "ellipse",
+        "line",
+        "material",
+        "outline",
+        "path",
+        "pixel",
+        "polygon",
+        "rect",
+        "selective_outline",
+        "shade",
+    }
 )
 PLANNED_OPERATION_TYPES: Final = frozenset({"flood_fill"})
 # Raster backends a ``path`` may name (ADR-023). The schema accepts the label; whether

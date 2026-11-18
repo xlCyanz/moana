@@ -44,7 +44,7 @@ def test_capabilities_list_masks_and_regions_as_available() -> None:
     assert "regions" not in listing.planned_collections
     assert "mask_id" not in listing.planned_layer_fields
     assert "resolve_region" in listing.functions
-    assert listing.estimator_version == "budget-v7"
+    assert listing.estimator_version == "budget-v8"
     mapping = listing.to_mapping()
     assert mapping["collections"] == ["masks", "regions"]
     assert list(mapping) == sorted(mapping)
@@ -70,7 +70,7 @@ def test_inspect_reports_masks_regions_and_layer_masks() -> None:
     assert report.masks[2] == MaskSummary("eye_left_shape", "rect", ())
     assert report.regions[0] == RegionSummary("eye_left", "eye_left_shape", ("iris_left",))
     assert [layer.mask_id for layer in report.layers] == ["face_shape", "eyes_open", "eyes_open"]
-    assert report.budget.within_limits and report.budget.estimator_version == "budget-v7"
+    assert report.budget.within_limits and report.budget.estimator_version == "budget-v8"
     mapping = report.to_mapping()
     assert json.loads(json.dumps(mapping)) == mapping
     regions = mapping["regions"]

@@ -6,7 +6,7 @@ Estado: aceptado · 2026-11-18 · Issue: [MOANA-021](../../issues/MOANA-021.md).
 
 MOANA.md §16 exige separar `schema_version` de la versión del paquete y del renderer, que el lector estricto soporte versiones explícitas sin «tolerar» versiones nuevas, y que las migraciones sean funciones puras probadas por fixture que preservan la copia original y registran la versión de origen, sin migrar destructivamente al abrir. §3 asigna las migraciones a `project`, que depende de `core`, `schema` y `editing`.
 
-El issue registra un riesgo: no inventar un formato histórico publicado. Schema 1.0 es la única versión que ha existido; no hay tags ni paquete publicado, y las ampliaciones de 1.0 (ADR-022 a ADR-028) son la excepción previa a la primera publicación, que no exige migración. Una migración real de producción no tiene hoy ningún origen.
+El issue registra un riesgo: no inventar un formato histórico publicado. Schema 1.0 es la única versión que ha existido; no hay tags ni paquete publicado, y las ampliaciones de 1.0 (ADR-022 a ADR-030) son la excepción previa a la primera publicación, que no exige migración. Una migración real de producción no tiene hoy ningún origen.
 
 ## Decisión
 

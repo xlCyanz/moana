@@ -12,7 +12,11 @@ memory). The analysis never modifies anything and never cleans up. MOANA-015
 (ADR-028) adds band shading: a discrete :class:`ShadeLight`, authored facings
 (:func:`exposure`, :func:`band_level`), the clamped ramp index of a band
 (:func:`band_index`) and last-listed-wins priority (:func:`last_wins`,
-:func:`resolve_bands`). No normal is inferred and no colour is computed.
+:func:`resolve_bands`). No normal is inferred and no colour is computed. MOANA-017
+(ADR-030) adds the textures of the five versioned material presets
+(:class:`MaterialTexture`, :func:`texture_step`, :func:`texture_mask`): integer cells
+marked by the per-cell hash of MOANA.md section 14 that move a band pixel by one
+ramp step.
 """
 
 from moana.techniques.clusters import (
@@ -42,6 +46,19 @@ from moana.techniques.dither import (
     dither_cells,
     dither_mask,
     split_dither,
+)
+from moana.techniques.materials import (
+    DENSITY_STEPS,
+    MATERIAL_PRESET_NAMES,
+    MATERIAL_PRESETS,
+    MaterialPreset,
+    MaterialTexture,
+    PresetName,
+    is_candidate,
+    split_texture,
+    texture_cells,
+    texture_mask,
+    texture_step,
 )
 from moana.techniques.outline import (
     MAX_OUTLINE_WIDTH,
@@ -76,11 +93,14 @@ __all__ = [
     "CLUSTER_RUN_BYTES",
     "CONNECTIVITIES",
     "COSINE",
+    "DENSITY_STEPS",
     "DITHER_PARTS",
     "DITHER_SIZES",
     "EXPOSURE_SCALE",
     "FACINGS",
     "LIGHT_DIRECTIONS",
+    "MATERIAL_PRESETS",
+    "MATERIAL_PRESET_NAMES",
     "MAX_LIGHT_HEIGHT",
     "MAX_OUTLINE_WIDTH",
     "MAX_RAMP_STEP",
@@ -95,8 +115,11 @@ __all__ = [
     "DitherPart",
     "Facing",
     "LightDirection",
+    "MaterialPreset",
+    "MaterialTexture",
     "OrderedDither",
     "OutlineSide",
+    "PresetName",
     "Severity",
     "ShadeLight",
     "analyze_clusters",
@@ -108,9 +131,14 @@ __all__ = [
     "dither_cells",
     "dither_mask",
     "exposure",
+    "is_candidate",
     "last_wins",
     "outline_mask",
     "ramp_index",
     "resolve_bands",
     "split_dither",
+    "split_texture",
+    "texture_cells",
+    "texture_mask",
+    "texture_step",
 ]

@@ -7,7 +7,13 @@ Patch, no command that rewrites ``id``, ``schema_version`` or ``revision``, and 
 dynamic import. Batches from bytes or mappings go through the same bounded reader as
 documents (8 MiB, depth 32, 20 000 nodes) before the strict models see them.
 
-``geometry`` (``set_geometry``) and ``operation`` (``insert_operation``) are plain
+``set_parameters`` (ADR-030) replaces plain value members of an operation that the
+type table lists as ``parameters`` (a light, ``ramp_order``, a material's
+``density``/``scale``/``origin``, an outline width...), so a material or a light is
+tuned without replacing the operation and its IDs.
+
+``geometry`` (``set_geometry``), ``parameters`` (``set_parameters``) and
+``operation`` (``insert_operation``) are plain
 JSON objects here: their grammar depends on the target, so they are validated with
 the schema models when the command is applied, with pointers inside the command.
 """
@@ -51,6 +57,7 @@ __all__ = [
     "ReplacePaletteColor",
     "SetColor",
     "SetGeometry",
+    "SetParameters",
     "SetVisibility",
     "Translate",
     "parse_edit_batch",
@@ -69,10 +76,12 @@ COMMAND_TYPES: Final = (
     "replace_palette_color",
     "set_color",
     "set_geometry",
+    "set_parameters",
     "set_visibility",
     "translate",
 )
-"""The section 15 catalogue; nothing else is a command."""
+"""The section 15 catalogue plus ``set_parameters`` (ADR-030); nothing else is a
+command."""
 
 
 def _command_array(value: object) -> object:
@@ -114,6 +123,19 @@ class SetGeometry(_Command):
     type: Literal["set_geometry"]
     target_id: Id
     geometry: JsonObject
+
+
+class SetParameters(_Command):
+    """Replace parameter members of an operation in place (ADR-030).
+
+    ``parameters`` holds one or more members that the target type lists as
+    ``parameters`` in the type table; IDs, references, items and geometry are never
+    parameters. The patched operation is validated with the schema models.
+    """
+
+    type: Literal["set_parameters"]
+    target_id: Id
+    parameters: JsonObject
 
 
 class Translate(_Command):
@@ -168,6 +190,7 @@ class Reorder(_Command):
 EditCommand = Annotated[
     SetColor
     | SetGeometry
+    | SetParameters
     | Translate
     | SetVisibility
     | ReplacePaletteColor

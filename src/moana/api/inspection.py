@@ -10,7 +10,9 @@ with a tested version; otherwise it is listed as planned and ``backends`` says w
 (ADR-023).
 Semantic masks and regions (ADR-022) are listed with their references, so an agent can
 find "the left eye" by ID; :func:`moana.schema.resolve_region` resolves one.
-``edit_commands`` lists the edit catalogue of section 15 (ADR-024).
+``edit_commands`` lists the edit catalogue of section 15 (ADR-024) plus
+``set_parameters`` (ADR-030); ``material`` and ``selective_outline`` are available
+operations (ADR-030).
 """
 
 from __future__ import annotations
@@ -159,7 +161,7 @@ class ExceededResource:
 
 @dataclass(frozen=True, slots=True)
 class BudgetReport:
-    """Estimate of one render against the request limits (``budget-v7``, ADR-025 to ADR-028).
+    """Estimate of one render against the request limits (``budget-v8``, ADR-025 to ADR-030).
 
     ``operations`` counts the operations of the document and ``fills`` the raster
     fills of the compositor (two per ``dither``). An ``operations`` entry of

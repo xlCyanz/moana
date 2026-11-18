@@ -27,12 +27,19 @@ from typing import Final
 
 import numpy as np
 
-from moana.core.coordinates import Point
+from moana.core.coordinates import Box, Point, require_int
 from moana.core.dither import PATTERN_INDEX_BYTES
 from moana.core.errors import ValidationError
+from moana.core.materials import MAX_MATERIAL_SCALE
 from moana.geometry.mask import Mask
 
-__all__ = ["MAX_PATTERN_SIZE", "PATTERN_INDEX_BYTES", "CellTable", "select_periodic"]
+__all__ = [
+    "MAX_PATTERN_SIZE",
+    "PATTERN_INDEX_BYTES",
+    "CellTable",
+    "select_cells",
+    "select_periodic",
+]
 
 MAX_PATTERN_SIZE: Final = 64
 """Largest cell table side: patterns are small authored periods, not images."""
@@ -85,6 +92,57 @@ def select_periodic(mask: Mask, cells: Sequence[Sequence[bool]], origin: Point) 
     columns = np.remainder(np.arange(box.x0, box.x1, dtype=np.int64) - origin.x, width)
     periods = np.take(table, columns, axis=1)  # one canvas-wide row per cell row
     bits = np.take(periods, rows, axis=0)
+    np.logical_and(bits, mask._bits, out=bits)
+    if not bits.any():
+        return Mask.empty()
+    return Mask._adopt(box, np.ascontiguousarray(bits))
+
+
+def select_cells(
+    mask: Mask, cells: bytes, span: Box, scale: int, origin: Point, value: int
+) -> Mask:
+    """Pixels of ``mask`` whose cell of the grid ``cells`` holds ``value``.
+
+    ``cells`` holds one byte per cell of ``span`` (a box of cell indexes), row-major;
+    cell ``(cx, cy)`` covers the ``scale x scale`` pixels from
+    ``(ox + scale·cx, oy + scale·cy)``. ``span`` must cover every cell of the mask's
+    storage box (``field: cells``, ``grid_too_small``); ``len(cells)`` must equal its
+    area (``size_mismatch``). ``scale`` is in ``1..8`` and ``value`` in ``0..255``.
+    """
+    if not isinstance(mask, Mask):
+        raise TypeError("mask must be a Mask value")
+    if not isinstance(span, Box):
+        raise TypeError("span must be a Box value")
+    if not isinstance(origin, Point):
+        raise TypeError("origin must be a Point value")
+    if type(cells) is not bytes:
+        raise TypeError("cells must be bytes")
+    require_int(scale, "scale", minimum=1, maximum=MAX_MATERIAL_SCALE)
+    require_int(value, "value", minimum=0, maximum=255)
+    if len(cells) != span.area:
+        raise _invalid("cells must hold one byte per cell of span", "size_mismatch")
+    box = mask.box
+    if box is None:
+        return Mask.empty()
+    # one int64 index array per axis, divided in place (no temporary copy)
+    rows = np.arange(box.y0 - origin.y, box.y1 - origin.y, dtype=np.int64)
+    rows //= scale
+    columns = np.arange(box.x0 - origin.x, box.x1 - origin.x, dtype=np.int64)
+    columns //= scale
+    if (
+        int(rows[0]) < span.y0
+        or int(rows[-1]) >= span.y1
+        or int(columns[0]) < span.x0
+        or int(columns[-1]) >= span.x1
+    ):
+        raise _invalid("span must cover every cell of the mask box", "grid_too_small")
+    rows -= span.y0
+    columns -= span.x0
+    table = np.frombuffer(cells, dtype=np.uint8).reshape(span.height, span.width) == value
+    periods = np.take(table, columns, axis=1)  # one box-wide row per cell row
+    del table
+    bits = np.take(periods, rows, axis=0)
+    del periods
     np.logical_and(bits, mask._bits, out=bits)
     if not bits.any():
         return Mask.empty()
