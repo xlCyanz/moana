@@ -4,14 +4,16 @@ Every invocation prints exactly one JSON object on stdout (sorted keys, ASCII, o
 line) with ``"ok"`` and ``"command"``; failures add an ``"error"`` object and a short
 line on stderr. Only ``--help`` and ``--version`` print text for humans. The exit code
 is the ``exit_code`` of the domain error (ADR-010, ADR-020): 0 success, 2 invalid input
-(including usage errors and planned capabilities), 3 budget, 4 edit conflict, 5 I/O
+(including usage errors and unsupported capabilities), 3 budget, 4 edit conflict, 5 I/O
 (including a stdout that can no longer be written), 1 internal failure and 130 when
 interrupted (an ``INTERRUPTED`` error object). Tracebacks are only printed with
 ``--debug``, accepted before or after the command.
 
 The command opens only the paths passed as arguments and reports file names, never
-resolved paths. ``--help`` lists available commands apart from planned ones; a planned
-command (``edit``) answers ``UNSUPPORTED_OPERATION``.
+resolved paths. ``edit DOC BATCH`` (MOANA-018, ADR-024) applies a batch file atomically
+and prints the new revision, its snapshot, the affected IDs and the normalised new
+document; it writes no file, and a stale base is ``EDIT_CONFLICT`` (exit code 4).
+:data:`PLANNED_COMMANDS` is empty since every command of section 13 is available.
 """
 
 from __future__ import annotations
@@ -28,16 +30,16 @@ from typing import Final, NoReturn
 from moana import __version__
 from moana.api import (
     MAX_SCALE,
-    PLANNED_FUNCTIONS,
     RenderResult,
     capabilities,
+    edit_document,
     export_png,
     inspect_document,
     load_document,
     render,
     snapshot_digest,
 )
-from moana.core.errors import ErrorDetail, MoanaError, UnsupportedOperation, ValidationError
+from moana.core.errors import ErrorDetail, MoanaError, ValidationError
 
 __all__ = [
     "AVAILABLE_COMMANDS",
@@ -49,8 +51,8 @@ __all__ = [
     "main",
 ]
 
-AVAILABLE_COMMANDS: Final = ("capabilities", "export", "inspect", "render", "validate")
-PLANNED_COMMANDS: Final = ("edit",)
+AVAILABLE_COMMANDS: Final = ("capabilities", "edit", "export", "inspect", "render", "validate")
+PLANNED_COMMANDS: Final[tuple[str, ...]] = ()
 
 EXIT_INTERRUPTED: Final = 130
 """Exit code after Ctrl+C (128 + SIGINT); stdout carries an ``INTERRUPTED`` error."""
@@ -61,12 +63,11 @@ USAGE_MESSAGE: Final = "invalid command line usage"
 """Fixed message of a usage error; argparse's own explanation goes to stderr only."""
 
 _DESCRIPTION: Final = (
-    "Deterministic pixel art engine: validate, inspect, render and export static "
+    "Deterministic pixel art engine: validate, inspect, render, export and edit "
     "Moana documents (schema 1.0). Each command prints one JSON object on stdout."
 )
 _EPILOG: Final = (
-    "available commands: capabilities, export, inspect, render, validate\n"
-    "planned commands (NOT available in this version): edit\n"
+    "available commands: capabilities, edit, export, inspect, render, validate\n"
     "\n"
     "exit codes: 0 success, 2 invalid input or unsupported capability, 3 budget "
     "exceeded,\n"
@@ -148,15 +149,9 @@ def _capabilities(args: argparse.Namespace) -> _Payload:
     return {"capabilities": listing}
 
 
-def _planned(args: argparse.Namespace) -> _Payload:
-    raise UnsupportedOperation(
-        "this command is planned but not available in this version",
-        context={
-            "reason": "planned_command",
-            "command": args.command,
-            "planned_functions": PLANNED_FUNCTIONS,
-        },
-    )
+def _edit(args: argparse.Namespace) -> _Payload:
+    result = edit_document(load_document(args.document), args.batch)
+    return {"edit": result.to_mapping()}
 
 
 def _scale(text: str) -> int:
@@ -232,15 +227,16 @@ def build_parser() -> argparse.ArgumentParser:
     edit = _command(
         commands,
         "edit",
-        _planned,
-        "PLANNED, NOT AVAILABLE: apply an edit batch (fails with exit code 2)",
+        _edit,
+        "apply an edit batch atomically and print the new revision (writes no file)",
         description=(
-            "PLANNED, NOT AVAILABLE in this version: editing documents with batches "
-            "(apply_edit). Any invocation answers UNSUPPORTED_OPERATION with exit code 2."
+            "Apply the typed edit batch of BATCH (MOANA.md section 15) to DOC atomically "
+            "and print the new revision, its snapshot digest, the affected IDs and the "
+            "normalised new document. No file is written. A batch whose base_revision "
+            "or base_snapshot is not DOC's fails with EDIT_CONFLICT (exit code 4)."
         ),
-        document=False,
     )
-    edit.add_argument("arguments", nargs=argparse.REMAINDER, help=argparse.SUPPRESS)
+    edit.add_argument("batch", help="path of a JSON edit batch (MOANA.md section 15)")
     return parser
 
 

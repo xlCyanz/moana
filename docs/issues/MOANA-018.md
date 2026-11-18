@@ -8,7 +8,7 @@
 - Aliases históricos: MOA-018
 - Phase: P3
 - Priority: P0
-- Status: ready
+- Status: review
 - Complexity: L (relativa, no estimación de tiempo)
 - Dependencies: [MOANA-002](MOANA-002.md), [MOANA-010](MOANA-010.md), [MOANA-012](MOANA-012.md), [MOANA-013](MOANA-013.md)
 - Related modules: editing, api
@@ -68,7 +68,7 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Guía para agentes de IA
 
-**Estado para agentes:** Listo: todas las dependencias están `done`; puede empezarse.
+**Estado para agentes:** En revisión: sólo correcciones de la revisión; no añadir alcance.
 
 ### 1. Preparación
 
@@ -139,4 +139,17 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Evidence
 
-Pendiente de implementación.
+- src/moana/editing/: batches atómicos con los ocho comandos de §15 (set_color, set_geometry, translate, set_visibility, replace_palette_color, insert_operation, remove, reorder) dirigidos por ID; EditBatch estricto (1–1024 comandos, MAX_EDIT_COMMANDS); los comandos se aplican sobre una copia normalizada y el resultado se revalida entero (DAG de máscaras, límites, perfil) antes de construir nada; el documento fuente nunca cambia.
+- Revisión optimista: base_revision y base_snapshot identifican conjuntamente la base; una revisión distinta (stale_revision) o un snapshot distinto (snapshot_mismatch) dan EditConflict (EDIT_CONFLICT, salida 4); revision_overflow se comprueba antes de aplicar.
+- Reglas por tipo leídas de la tabla moana.schema.OPERATION_MEMBERS/MASK_MEMBERS (ADR-025): remove rechaza referencias vivas (live_reference), set_color exige un único miembro de color (multiple_colors en dither), translate/set_geometry rechazan tipos sin geometría (not_geometric), insert valida todos los colores; un ID borrado no se reinserta en el mismo batch (reused_id); capas bloqueadas rechazadas salvo replace_palette_color, que no pertenece a ninguna capa.
+- Fachada: moana.api.apply_edit, edit_document y load_edit_batch (lectura acotada del batch); comando moana edit DOC BATCH que imprime revisión, snapshot, IDs afectados y el documento sin escribir archivos; capabilities con edit_commands y sin funciones ni comandos previstos.
+- affected_ids lista objetivos, insertados y eliminados; la caja de diferencia y las dependencias indirectas quedan para el manifiesto de historial de MOANA-020 (project), según §15 y ADR-024.
+- ADR-024 (docs/architecture/decisions/ADR-024-atomic-edits.md) con notas de cabecera en ADR-011, ADR-020 y ADR-025; MOANA.md 0.1.13-draft (§13, §15); contratos de módulos, índice de ADR, overview, README, guía de desarrollo, AGENTS.md y CLAUDE.md actualizados; scripts/check_wheel.py ejecuta moana edit con el wheel instalado.
+- Trazabilidad: R016 cubierto; R038 cubierto en edición (render, preview y edición desde API/CLI); la persistencia queda para MOANA-020. La evidencia de MOANA-012 que citaba el comando edit previsto queda sustituida por tests/unit/cli/test_cli_edit.py.
+- Gate: scripts/validate.py (1698 passed, src/moana al 100 % de líneas y ramas) y scripts/check_wheel.py verdes; mypy también con --platform win32; generate_schema --check al día. Sin ejecución en Windows real (matriz pendiente en main).
+- Revisión: moana-architect (cambios requeridos, aplicados: tabla de miembros por tipo compatible con dither, imports privados de schema listados y fijados, documentos de estado, capas bloqueadas y paleta, aplazamiento de bbox a MOANA-020), moana-python-engineer (aprobado; bajos aplicados: robustez con model_construct, tablas inmutables, dispatch tipado, mensajes de batch) y moana-qa-engineer (aprobado con cambios; aplicados: reinserción de IDs, coste de translate en paths, máscaras path/regiones, casos no-op y fuera de lienzo, rollback en la validación final, oráculo mínimo en Hypothesis, CLI sin escritura de archivos).
+- AC1: tests/unit/editing/test_editing_apply.py::test_ac1_recolor_changes_only_its_reference_and_the_revision (diff campo a campo: sólo /revision y /layers/0/operations/0/color), ::test_ac1_ids_order_and_untouched_members_are_preserved y ::test_no_op_and_off_canvas_batches_still_bump_the_revision.
+- AC2: tests/unit/editing/test_editing_apply.py::test_ac2_an_invalid_second_command_rolls_back_the_first, ::test_a_failure_in_the_final_validation_rolls_everything_back, ::test_property_failing_batch_is_all_or_nothing, ::test_ac2_stale_revision_is_an_edit_conflict, ::test_ac2_a_previous_revision_cannot_be_reused_after_an_edit y ::test_revision_overflow_is_rejected_before_any_command; tests/unit/cli/test_cli_edit.py (conflicto con salida 4).
+- T1: tests/unit/editing/test_editing_apply.py: casos válidos y negativos de cada comando (test_t1_*), reorder al principio (test_t1_reorder_to_the_start_and_after_a_sibling), dependencias vivas (test_t1_remove_rejects_live_references, test_t1_reorder_keeps_references_alive), ::test_removed_id_cannot_be_reinserted_in_the_same_batch y ::test_property_matches_a_minimal_oracle; tests/unit/editing/test_editing_dither.py (remove con referencias vivas, multiple_colors, not_geometric, insert y reorder de dither); tests/unit/editing/test_editing_members.py::test_every_geometric_member_has_a_translate_shape.
+- T2: tests/unit/editing/test_editing_apply.py::test_t2_source_document_is_byte_identical_after_success_and_failure, ::test_t2_render_before_and_after_a_recolor y ::test_t2_batch_without_visual_change_keeps_the_visual_digest; tests/unit/cli/test_cli_edit.py::test_edit_writes_no_files; tests/integration/test_cli_paths.py::test_cli_edit_in_a_fresh_process.
+- T3: tests/unit/editing/test_editing_apply.py::test_t3_branches_with_the_same_revision_reject_each_other (dos ramas con revision=1 se rechazan mutuamente con snapshot_mismatch y cada batch se acepta en su rama).

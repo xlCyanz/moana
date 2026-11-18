@@ -24,7 +24,7 @@ from typing import Final
 from moana.core.errors import ReadError, ValidationError
 from moana.schema import DEFAULT_PARSE_LIMITS, Document, ParseLimits, validate_document
 
-__all__ = ["MAX_REPORTED_NAME", "DocumentSource", "load_document"]
+__all__ = ["MAX_REPORTED_NAME", "DocumentSource", "load_document", "read_bounded", "source_path"]
 
 type DocumentSource = str | os.PathLike[str] | bytes | Mapping[str, object]
 """A path chosen by the caller, UTF-8 JSON bytes or an already parsed mapping."""
@@ -50,7 +50,11 @@ def _invalid_name() -> ValidationError:
     )
 
 
-def _source_path(path: str | os.PathLike[str]) -> Path:
+def source_path(path: str | os.PathLike[str]) -> Path:
+    """A caller-authorised path; JSON-looking, empty, NUL or unencodable text is rejected.
+
+    Internal to ``moana.api`` (shared with :mod:`moana.api.editing`), not re-exported.
+    """
     if isinstance(path, str) and path.lstrip().startswith(("{", "[")):
         raise ValidationError(
             "a str source is a path; pass bytes or a mapping for JSON content",
@@ -83,8 +87,11 @@ def _open(path: Path, name: str) -> int:
         raise _read_failure("io_error", name, exc) from None
 
 
-def _read_bounded(path: Path, limit: int) -> bytes:
-    """At most ``limit + 1`` bytes of a regular file, enough to detect an oversized one."""
+def read_bounded(path: Path, limit: int) -> bytes:
+    """At most ``limit + 1`` bytes of a regular file, enough to detect an oversized one.
+
+    Internal to ``moana.api`` (shared with :mod:`moana.api.editing`), not re-exported.
+    """
     name = path.name[:MAX_REPORTED_NAME]
     descriptor = _open(path, name)
     try:
@@ -119,6 +126,6 @@ def load_document(
     if isinstance(source, bytes | Mapping):
         return validate_document(source, limits=limits)
     if isinstance(source, str | os.PathLike):
-        data = _read_bounded(_source_path(source), limits.max_bytes)
+        data = read_bounded(source_path(source), limits.max_bytes)
         return validate_document(data, limits=limits)
     raise TypeError("source must be a path, bytes or a mapping")

@@ -55,7 +55,7 @@ Estado: 3/8 issues completados.
 - [MOANA-015](MOANA-015.md) — Añadir bandas de sombreado e iluminación (ready)
 - [MOANA-016](MOANA-016.md) — Implementar dithering ordenado (done)
 - [MOANA-017](MOANA-017.md) — Crear presets de materiales versionados (blocked)
-- [MOANA-018](MOANA-018.md) — Implementar batches de edición atómica (ready)
+- [MOANA-018](MOANA-018.md) — Implementar batches de edición atómica (review)
 - [MOANA-019](MOANA-019.md) — Añadir undo/redo e historial inmutable (blocked)
 
 ## P4 — Persistencia y animación
@@ -88,4 +88,4 @@ Estado: 0/8 issues completados.
 
 ## Siguiente paso
 
-Implementar [MOANA-018](MOANA-018.md): Implementar batches de edición atómica.
+Implementar [MOANA-014](MOANA-014.md): Crear contornos y análisis de clusters.

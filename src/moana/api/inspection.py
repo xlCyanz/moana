@@ -10,6 +10,7 @@ with a tested version; otherwise it is listed as planned and ``backends`` says w
 (ADR-023).
 Semantic masks and regions (ADR-022) are listed with their references, so an agent can
 find "the left eye" by ID; :func:`moana.schema.resolve_region` resolves one.
+``edit_commands`` lists the edit catalogue of section 15 (ADR-024).
 """
 
 from __future__ import annotations
@@ -20,6 +21,7 @@ from typing import TYPE_CHECKING, Final
 
 from moana.core.budget import DEFAULT_RENDER_LIMITS, RenderLimits
 from moana.core.errors import BudgetExceeded
+from moana.editing import COMMAND_TYPES
 from moana.geometry import TESTED_AGGDRAW_VERSIONS, path_backend
 from moana.render import (
     ESTIMATOR_VERSION,
@@ -67,16 +69,20 @@ __all__ = [
 ]
 
 AVAILABLE_FUNCTIONS: Final = (
+    "apply_edit",
     "capabilities",
+    "edit_document",
     "export_png",
     "inspect_document",
     "load_document",
+    "load_edit_batch",
     "render",
     "resolve_region",
 )
 """Functions of ``moana.api`` that work in this build."""
-PLANNED_FUNCTIONS: Final = ("apply_edit",)
-"""Functions of MOANA.md section 13 that are specified but not implemented."""
+PLANNED_FUNCTIONS: Final[tuple[str, ...]] = ()
+"""Functions of MOANA.md section 13 that are specified but not implemented (none
+since MOANA-018 added ``apply_edit``, ADR-024)."""
 _PATH_CAPABILITIES: Final = frozenset({"path"})
 """Operation and mask types that need the ``aggdraw-v1`` backend (ADR-023)."""
 
@@ -225,6 +231,7 @@ class Capabilities:
     export_formats: tuple[str, ...]
     functions: tuple[str, ...]
     planned_functions: tuple[str, ...]
+    edit_commands: tuple[str, ...]
     renderer_version: str
     estimator_version: str
     backends: tuple[BackendSummary, ...]
@@ -273,6 +280,7 @@ def capabilities() -> Capabilities:
         export_formats=("png",),
         functions=AVAILABLE_FUNCTIONS,
         planned_functions=PLANNED_FUNCTIONS,
+        edit_commands=COMMAND_TYPES,
         renderer_version=RENDERER_VERSION,
         estimator_version=ESTIMATOR_VERSION,
         backends=(summary,),

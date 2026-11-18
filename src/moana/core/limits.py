@@ -28,6 +28,7 @@ __all__ = [
     "DEFAULT_GEOMETRY_LIMITS",
     "MAX_COLORS_RGBA",
     "MAX_COLORS_STRICT",
+    "MAX_EDIT_COMMANDS",
     "MAX_GROUP_DEPTH",
     "MAX_LAYERS",
     "MAX_MASKS",
@@ -76,6 +77,11 @@ MAX_PATH_COMMANDS: Final = 4096
 MAX_PATH_SEGMENTS: Final = 65_536
 MAX_PATH_CURVE_SEGMENTS: Final = 64
 MAX_PATH_CELLS: Final = 2_097_152
+# Commands of one edit batch (MOANA.md section 15, ADR-024). Each command is applied
+# to a working copy in time linear in the document and only the final result is fully
+# revalidated, so this bounds the whole batch (worst case measured: about 2 s for 1024
+# translates of a 3001-command path).
+MAX_EDIT_COMMANDS: Final = 1024
 
 
 @dataclass(frozen=True, slots=True)

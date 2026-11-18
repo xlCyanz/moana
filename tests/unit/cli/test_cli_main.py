@@ -166,9 +166,18 @@ def test_capabilities_lists_available_apart_from_planned(run: Run) -> None:
     code, payload, _ = run("capabilities")
     assert code == 0
     listing = payload["capabilities"]
-    assert listing["commands"] == ["capabilities", "export", "inspect", "render", "validate"]
-    assert listing["planned_commands"] == ["edit"]
-    assert listing["planned_functions"] == ["apply_edit"]
+    assert listing["commands"] == [
+        "capabilities",
+        "edit",
+        "export",
+        "inspect",
+        "render",
+        "validate",
+    ]
+    # MOANA-018 moved edit/apply_edit to the available lists; nothing disappeared.
+    assert listing["planned_commands"] == []
+    assert listing["planned_functions"] == []
+    assert "apply_edit" in listing["functions"]
     assert set(listing["operations"]).isdisjoint(listing["planned_operations"])
     assert set(AVAILABLE_COMMANDS).isdisjoint(PLANNED_COMMANDS)
 
@@ -176,12 +185,11 @@ def test_capabilities_lists_available_apart_from_planned(run: Run) -> None:
 # --- help and version --------------------------------------------------------------
 
 
-def test_help_distinguishes_available_and_planned(capsys: pytest.CaptureFixture[str]) -> None:
+def test_help_lists_available_commands(capsys: pytest.CaptureFixture[str]) -> None:
     assert main(["--help"]) == 0
     text = capsys.readouterr().out
-    assert "available commands: capabilities, export, inspect, render, validate" in text
-    assert "planned commands (NOT available in this version): edit" in text
-    assert "PLANNED, NOT AVAILABLE" in text
+    assert "available commands: capabilities, edit, export, inspect, render, validate" in text
+    assert "PLANNED" not in text
     for code in ("0 success", "2 invalid input", "3 budget", "4 edit conflict", "5 I/O"):
         assert code in text
 
@@ -219,15 +227,14 @@ def test_parser_is_static() -> None:
 # --- failures ----------------------------------------------------------------------
 
 
-def test_planned_command_is_unsupported(run: Run) -> None:
+def test_edit_with_missing_files_is_an_io_error(run: Run) -> None:
     code, payload, err = run("edit", "doc.json", "batch.json")
-    assert code == 2
+    assert code == 5
     assert payload["ok"] is False
     assert payload["command"] == "edit"
     error = payload["error"]
-    assert (error["code"], error["exit_code"]) == ("UNSUPPORTED_OPERATION", 2)
-    assert error["context"]["reason"] == "planned_command"
-    assert "UNSUPPORTED_OPERATION" in err
+    assert (error["code"], error["exit_code"]) == ("READ_ERROR", 5)
+    assert "READ_ERROR" in err
 
 
 @pytest.mark.parametrize(
@@ -340,11 +347,12 @@ def test_debug_is_accepted_after_the_command(
     assert "Traceback" in capsys.readouterr().err
 
 
-def test_edit_help_says_it_is_planned(capsys: pytest.CaptureFixture[str]) -> None:
+def test_edit_help_describes_the_batch(capsys: pytest.CaptureFixture[str]) -> None:
     assert main(["edit", "--help"]) == 0
     text = capsys.readouterr().out
-    assert "PLANNED, NOT AVAILABLE in this version" in text
-    assert "UNSUPPORTED_OPERATION" in text
+    assert "PLANNED" not in text
+    assert "EDIT_CONFLICT" in text
+    assert "batch" in text
 
 
 def test_wrong_extension_is_invalid_input(run: Run, tmp_path: Path) -> None:

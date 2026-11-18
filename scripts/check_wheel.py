@@ -25,6 +25,7 @@ if __package__ in {None, ""}:
 from scripts.validate import ROOT, tool_environment, uv_executable
 
 EXAMPLE = ROOT / "examples" / "specs" / "minimal.moana.json"
+EDIT_EXAMPLE = ROOT / "examples" / "specs" / "recolor.edit.json"
 DECODE_PROBE = (
     "import sys; from PIL import Image; image = Image.open(sys.argv[1]); "
     "assert image.format == 'PNG' and image.mode == 'RGBA', image.mode; "
@@ -92,6 +93,12 @@ def check_cli(python: Path, root: Path) -> None:
         check=True,
         timeout=CLI_TIMEOUT,
     )
+    batch = Path("input files") / "recolor edit.json"
+    shutil.copyfile(EDIT_EXAMPLE, work / batch)
+    edited = run_cli(command, ["edit", str(document), str(batch)], work)
+    summary = edited.get("edit")
+    if not isinstance(summary, dict) or summary.get("revision") != 1:
+        raise RuntimeError(f"edit did not produce revision 1: {edited}")
     print("Installed CLI OK:", json.dumps(validated["document"], sort_keys=True))
 
 
@@ -179,7 +186,8 @@ def main() -> int:
             "assert files('moana').joinpath('export/__init__.py').is_file(); "
             "assert files('moana').joinpath('export/png.py').is_file(); "
             "assert files('moana').joinpath('export/atomic.py').is_file(); "
-            "import moana.api, moana.cli; assert not hasattr(moana.api, 'apply_edit'); "
+            "assert files('moana').joinpath('editing/apply.py').is_file(); "
+            "import moana.api, moana.cli; assert callable(moana.api.apply_edit); "
             "print('Isolated wheel OK:', moana.__version__)"
         )
         subprocess.run([str(python), "-I", "-c", probe], cwd=root, check=True)

@@ -1,6 +1,6 @@
 # Inventario del repositorio
 
-332 archivos actuales de fuente, documentación, configuración y pruebas al 2026-11-17. Incluye cambios locales todavía sin commit. Excluye entorno virtual, herramientas, cachés, artefactos y metadata Git.
+345 archivos actuales de fuente, documentación, configuración y pruebas al 2026-11-17. Incluye cambios locales todavía sin commit. Excluye entorno virtual, herramientas, cachés, artefactos y metadata Git.
 
 | Archivo |
 | --- |
@@ -105,6 +105,7 @@
 | [docs/architecture/decisions/ADR-021-cross-platform-determinism.md](../docs/architecture/decisions/ADR-021-cross-platform-determinism.md) |
 | [docs/architecture/decisions/ADR-022-masks-regions.md](../docs/architecture/decisions/ADR-022-masks-regions.md) |
 | [docs/architecture/decisions/ADR-023-aggdraw-paths.md](../docs/architecture/decisions/ADR-023-aggdraw-paths.md) |
+| [docs/architecture/decisions/ADR-024-atomic-edits.md](../docs/architecture/decisions/ADR-024-atomic-edits.md) |
 | [docs/architecture/decisions/ADR-025-ordered-dithering.md](../docs/architecture/decisions/ADR-025-ordered-dithering.md) |
 | [docs/architecture/module-contracts.md](../docs/architecture/module-contracts.md) |
 | [docs/architecture/overview.md](../docs/architecture/overview.md) |
@@ -219,6 +220,7 @@
 | [scripts/validate.py](../scripts/validate.py) |
 | [src/moana/__init__.py](../src/moana/__init__.py) |
 | [src/moana/api/__init__.py](../src/moana/api/__init__.py) |
+| [src/moana/api/editing.py](../src/moana/api/editing.py) |
 | [src/moana/api/inspection.py](../src/moana/api/inspection.py) |
 | [src/moana/api/loading.py](../src/moana/api/loading.py) |
 | [src/moana/api/services.py](../src/moana/api/services.py) |
@@ -237,6 +239,10 @@
 | [src/moana/core/pillow_adapter.py](../src/moana/core/pillow_adapter.py) |
 | [src/moana/core/procedural.py](../src/moana/core/procedural.py) |
 | [src/moana/core/vector_path.py](../src/moana/core/vector_path.py) |
+| [src/moana/editing/__init__.py](../src/moana/editing/__init__.py) |
+| [src/moana/editing/_tree.py](../src/moana/editing/_tree.py) |
+| [src/moana/editing/apply.py](../src/moana/editing/apply.py) |
+| [src/moana/editing/batch.py](../src/moana/editing/batch.py) |
 | [src/moana/export/__init__.py](../src/moana/export/__init__.py) |
 | [src/moana/export/atomic.py](../src/moana/export/atomic.py) |
 | [src/moana/export/png.py](../src/moana/export/png.py) |
@@ -281,9 +287,11 @@
 | [tests/test_planning.py](../tests/test_planning.py) |
 | [tests/test_repository_tools.py](../tests/test_repository_tools.py) |
 | [tests/unit/api/test_api_architecture.py](../tests/unit/api/test_api_architecture.py) |
+| [tests/unit/api/test_api_editing.py](../tests/unit/api/test_api_editing.py) |
 | [tests/unit/api/test_api_facade.py](../tests/unit/api/test_api_facade.py) |
 | [tests/unit/api/test_api_masks.py](../tests/unit/api/test_api_masks.py) |
 | [tests/unit/api/test_api_paths.py](../tests/unit/api/test_api_paths.py) |
+| [tests/unit/cli/test_cli_edit.py](../tests/unit/cli/test_cli_edit.py) |
 | [tests/unit/cli/test_cli_main.py](../tests/unit/cli/test_cli_main.py) |
 | [tests/unit/core/test_core_architecture.py](../tests/unit/core/test_core_architecture.py) |
 | [tests/unit/core/test_core_budget.py](../tests/unit/core/test_core_budget.py) |
@@ -294,6 +302,11 @@
 | [tests/unit/core/test_core_limits.py](../tests/unit/core/test_core_limits.py) |
 | [tests/unit/core/test_core_procedural.py](../tests/unit/core/test_core_procedural.py) |
 | [tests/unit/core/test_core_vector_path.py](../tests/unit/core/test_core_vector_path.py) |
+| [tests/unit/editing/test_editing_apply.py](../tests/unit/editing/test_editing_apply.py) |
+| [tests/unit/editing/test_editing_architecture.py](../tests/unit/editing/test_editing_architecture.py) |
+| [tests/unit/editing/test_editing_batch.py](../tests/unit/editing/test_editing_batch.py) |
+| [tests/unit/editing/test_editing_dither.py](../tests/unit/editing/test_editing_dither.py) |
+| [tests/unit/editing/test_editing_members.py](../tests/unit/editing/test_editing_members.py) |
 | [tests/unit/export/test_export_png.py](../tests/unit/export/test_export_png.py) |
 | [tests/unit/geometry/test_geometry_algebra.py](../tests/unit/geometry/test_geometry_algebra.py) |
 | [tests/unit/geometry/test_geometry_architecture.py](../tests/unit/geometry/test_geometry_architecture.py) |
