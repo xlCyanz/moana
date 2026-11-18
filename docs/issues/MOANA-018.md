@@ -8,7 +8,7 @@
 - Aliases históricos: MOA-018
 - Phase: P3
 - Priority: P0
-- Status: review
+- Status: done
 - Complexity: L (relativa, no estimación de tiempo)
 - Dependencies: [MOANA-002](MOANA-002.md), [MOANA-010](MOANA-010.md), [MOANA-012](MOANA-012.md), [MOANA-013](MOANA-013.md)
 - Related modules: editing, api
@@ -44,14 +44,14 @@ No protocolo JSON Patch arbitrario ni colaboración en tiempo real.
 
 ## Acceptance criteria
 
-- [ ] AC1: Recolor de body_fill modifica únicamente su referencia y la revisión preservando toda otra estructura
-- [ ] AC2: Un segundo comando inválido revierte también el primero; se devuelve EditConflict para base vieja
+- [x] AC1: Recolor de body_fill modifica únicamente su referencia y la revisión preservando toda otra estructura
+- [x] AC2: Un segundo comando inválido revierte también el primero; se devuelve EditConflict para base vieja
 
 ## Required tests
 
-- [ ] T1: Cada comando con caso válido/negativo, reorder al principio y dependencias vivas
-- [ ] T2: Comparar documento original byte a byte, render antes/después y batch sin cambio visual
-- [ ] T3: Dos ramas con revision=1 y contenidos distintos rechazan el batch de la otra rama mediante base_snapshot.
+- [x] T1: Cada comando con caso válido/negativo, reorder al principio y dependencias vivas
+- [x] T2: Comparar documento original byte a byte, render antes/después y batch sin cambio visual
+- [x] T3: Dos ramas con revision=1 y contenidos distintos rechazan el batch de la otra rama mediante base_snapshot.
 
 ## Expected deliverables
 
@@ -68,7 +68,7 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Guía para agentes de IA
 
-**Estado para agentes:** En revisión: sólo correcciones de la revisión; no añadir alcance.
+**Estado para agentes:** Completado; usar sólo como referencia del contrato entregado.
 
 ### 1. Preparación
 
@@ -148,6 +148,7 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 - Trazabilidad: R016 cubierto; R038 cubierto en edición (render, preview y edición desde API/CLI); la persistencia queda para MOANA-020. La evidencia de MOANA-012 que citaba el comando edit previsto queda sustituida por tests/unit/cli/test_cli_edit.py.
 - Gate: scripts/validate.py (1698 passed, src/moana al 100 % de líneas y ramas) y scripts/check_wheel.py verdes; mypy también con --platform win32; generate_schema --check al día. Sin ejecución en Windows real (matriz pendiente en main).
 - Revisión: moana-architect (cambios requeridos, aplicados: tabla de miembros por tipo compatible con dither, imports privados de schema listados y fijados, documentos de estado, capas bloqueadas y paleta, aplazamiento de bbox a MOANA-020), moana-python-engineer (aprobado; bajos aplicados: robustez con model_construct, tablas inmutables, dispatch tipado, mensajes de batch) y moana-qa-engineer (aprobado con cambios; aplicados: reinserción de IDs, coste de translate en paths, máscaras path/regiones, casos no-op y fuera de lienzo, rollback en la validación final, oráculo mínimo en Hypothesis, CLI sin escritura de archivos).
+- Aprobado por el propietario el 2026-11-17 tras revisión; PR #55 hacia develop.
 - AC1: tests/unit/editing/test_editing_apply.py::test_ac1_recolor_changes_only_its_reference_and_the_revision (diff campo a campo: sólo /revision y /layers/0/operations/0/color), ::test_ac1_ids_order_and_untouched_members_are_preserved y ::test_no_op_and_off_canvas_batches_still_bump_the_revision.
 - AC2: tests/unit/editing/test_editing_apply.py::test_ac2_an_invalid_second_command_rolls_back_the_first, ::test_a_failure_in_the_final_validation_rolls_everything_back, ::test_property_failing_batch_is_all_or_nothing, ::test_ac2_stale_revision_is_an_edit_conflict, ::test_ac2_a_previous_revision_cannot_be_reused_after_an_edit y ::test_revision_overflow_is_rejected_before_any_command; tests/unit/cli/test_cli_edit.py (conflicto con salida 4).
 - T1: tests/unit/editing/test_editing_apply.py: casos válidos y negativos de cada comando (test_t1_*), reorder al principio (test_t1_reorder_to_the_start_and_after_a_sibling), dependencias vivas (test_t1_remove_rejects_live_references, test_t1_reorder_keeps_references_alive), ::test_removed_id_cannot_be_reinserted_in_the_same_batch y ::test_property_matches_a_minimal_oracle; tests/unit/editing/test_editing_dither.py (remove con referencias vivas, multiple_colors, not_geometric, insert y reorder de dither); tests/unit/editing/test_editing_members.py::test_every_geometric_member_has_a_translate_shape.

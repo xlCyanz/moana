@@ -1187,7 +1187,7 @@
       "id": "MOANA-018",
       "title": "Implementar batches de edición atómica",
       "phase": "P3",
-      "status": "review",
+      "status": "done",
       "priority": "P0",
       "dependencies": [
         "MOANA-002",
@@ -1224,7 +1224,8 @@
         "ADR-024 (docs/architecture/decisions/ADR-024-atomic-edits.md) con notas de cabecera en ADR-011, ADR-020 y ADR-025; MOANA.md 0.1.13-draft (§13, §15); contratos de módulos, índice de ADR, overview, README, guía de desarrollo, AGENTS.md y CLAUDE.md actualizados; scripts/check_wheel.py ejecuta moana edit con el wheel instalado.",
         "Trazabilidad: R016 cubierto; R038 cubierto en edición (render, preview y edición desde API/CLI); la persistencia queda para MOANA-020. La evidencia de MOANA-012 que citaba el comando edit previsto queda sustituida por tests/unit/cli/test_cli_edit.py.",
         "Gate: scripts/validate.py (1698 passed, src/moana al 100 % de líneas y ramas) y scripts/check_wheel.py verdes; mypy también con --platform win32; generate_schema --check al día. Sin ejecución en Windows real (matriz pendiente en main).",
-        "Revisión: moana-architect (cambios requeridos, aplicados: tabla de miembros por tipo compatible con dither, imports privados de schema listados y fijados, documentos de estado, capas bloqueadas y paleta, aplazamiento de bbox a MOANA-020), moana-python-engineer (aprobado; bajos aplicados: robustez con model_construct, tablas inmutables, dispatch tipado, mensajes de batch) y moana-qa-engineer (aprobado con cambios; aplicados: reinserción de IDs, coste de translate en paths, máscaras path/regiones, casos no-op y fuera de lienzo, rollback en la validación final, oráculo mínimo en Hypothesis, CLI sin escritura de archivos)."
+        "Revisión: moana-architect (cambios requeridos, aplicados: tabla de miembros por tipo compatible con dither, imports privados de schema listados y fijados, documentos de estado, capas bloqueadas y paleta, aplazamiento de bbox a MOANA-020), moana-python-engineer (aprobado; bajos aplicados: robustez con model_construct, tablas inmutables, dispatch tipado, mensajes de batch) y moana-qa-engineer (aprobado con cambios; aplicados: reinserción de IDs, coste de translate en paths, máscaras path/regiones, casos no-op y fuera de lienzo, rollback en la validación final, oráculo mínimo en Hypothesis, CLI sin escritura de archivos).",
+        "Aprobado por el propietario el 2026-11-17 tras revisión; PR #55 hacia develop."
       ],
       "aliases": [
         "MOA-018"
@@ -1262,7 +1263,7 @@
       "id": "MOANA-019",
       "title": "Añadir undo/redo e historial inmutable",
       "phase": "P3",
-      "status": "blocked",
+      "status": "ready",
       "priority": "P1",
       "dependencies": [
         "MOANA-018"
@@ -1306,7 +1307,7 @@
       "risks": [
         "No usar el número de revisión como identidad global del historial."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-018",
+      "blocking_reason": null,
       "acceptance_evidence": {},
       "test_evidence": {}
     },
@@ -1362,7 +1363,7 @@
       "risks": [
         "Guardar el mismo asset path in-place antes del manifiesto rompe atomicidad; versiones inmutables necesarias."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-018, MOANA-019",
+      "blocking_reason": "Dependencias pendientes: MOANA-019",
       "acceptance_evidence": {},
       "test_evidence": {}
     },
@@ -1468,7 +1469,7 @@
       "risks": [
         "Un bucle infinito de playback no autoriza un render infinito; exportar secuencia finita."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-018, MOANA-019",
+      "blocking_reason": "Dependencias pendientes: MOANA-019",
       "acceptance_evidence": {},
       "test_evidence": {}
     },
@@ -2035,7 +2036,7 @@
       "risks": [
         "Si no hay beneficio, documentar decisión de no introducir caché y su evidencia."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-018, MOANA-031",
+      "blocking_reason": "Dependencias pendientes: MOANA-031",
       "acceptance_evidence": {},
       "test_evidence": {}
     },
@@ -2092,7 +2093,7 @@
       "risks": [
         "No documentar una API de diseño como importable antes de completar sus dependencias."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-018, MOANA-020, MOANA-026",
+      "blocking_reason": "Dependencias pendientes: MOANA-020, MOANA-026",
       "acceptance_evidence": {},
       "test_evidence": {}
     },
