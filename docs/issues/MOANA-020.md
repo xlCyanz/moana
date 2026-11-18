@@ -65,6 +65,7 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 ## Risks and notes
 
 - Guardar el mismo asset path in-place antes del manifiesto rompe atomicidad; versiones inmutables necesarias.
+- Convergencia del historial (MOANA-019, ADR-026 §4): un digest alcanzado desde otro padre se rechaza con EditConflict (existing_snapshot); permitirla exige separar la identidad de la entrada de historial (padre + batch + digest) del almacén por contenido, con un ADR nuevo antes de persistir.
 
 ## Guía para agentes de IA
 
