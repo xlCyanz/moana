@@ -1,6 +1,6 @@
 # ADR-026 — Historial de edición inmutable en memoria: snapshots por digest, cursor y ramas
 
-Estado: aceptado · 2026-11-18 · Issue: [MOANA-019](../../issues/MOANA-019.md). Amplía [ADR-024](ADR-024-atomic-edits.md) (el historial aplica cada edición con `apply_batch` sobre el documento del cursor), con dos límites nuevos, `MAX_HISTORY_SNAPSHOTS` y `MAX_HISTORY_BYTES`, en `moana.core.limits` junto a `MAX_EDIT_COMMANDS`. Aplica ADR-007 (identidad de snapshot), ADR-010 (`BudgetExceeded`, `ReferenceError`, `ValidationError`) y ADR-011 (`canonical_json`, `snapshot_digest`). No cambia la fachada ni el CLI de [ADR-020](ADR-020-public-api-cli.md).
+Estado: aceptado · 2026-11-18 · Issue: [MOANA-019](../../issues/MOANA-019.md). Amplía [ADR-024](ADR-024-atomic-edits.md) (el historial aplica cada edición con `apply_batch` sobre el documento del cursor), con dos límites nuevos, `MAX_HISTORY_SNAPSHOTS` y `MAX_HISTORY_BYTES`, en `moana.core.limits` junto a `MAX_EDIT_COMMANDS`. Aplica ADR-007 (identidad de snapshot), ADR-010 (`BudgetExceeded`, `ReferenceError`, `ValidationError`) y ADR-011 (`canonical_json`, `snapshot_digest`). No cambia la fachada ni el CLI de [ADR-020](ADR-020-public-api-cli.md). Ampliado por [ADR-029](ADR-029-project-persistence.md): `moana.project` persiste el historial (snapshots y batches canónicos por hash, entradas `{snapshot, parent, batch, redo}`) y lo reconstruye con el constructor validado tras reaplicar cada batch; la convergencia sigue rechazada (§4).
 
 ## Contexto
 

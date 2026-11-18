@@ -1,6 +1,6 @@
 # Inventario del repositorio
 
-373 archivos actuales de fuente, documentación, configuración y pruebas al 2026-11-18. Incluye cambios locales todavía sin commit. Excluye entorno virtual, herramientas, cachés, artefactos y metadata Git.
+391 archivos actuales de fuente, documentación, configuración y pruebas al 2026-11-18. Incluye cambios locales todavía sin commit. Excluye entorno virtual, herramientas, cachés, artefactos y metadata Git.
 
 | Archivo |
 | --- |
@@ -110,6 +110,7 @@
 | [docs/architecture/decisions/ADR-026-edit-history.md](../docs/architecture/decisions/ADR-026-edit-history.md) |
 | [docs/architecture/decisions/ADR-027-outlines-clusters.md](../docs/architecture/decisions/ADR-027-outlines-clusters.md) |
 | [docs/architecture/decisions/ADR-028-band-shading.md](../docs/architecture/decisions/ADR-028-band-shading.md) |
+| [docs/architecture/decisions/ADR-029-project-persistence.md](../docs/architecture/decisions/ADR-029-project-persistence.md) |
 | [docs/architecture/module-contracts.md](../docs/architecture/module-contracts.md) |
 | [docs/architecture/overview.md](../docs/architecture/overview.md) |
 | [docs/guides/agent-workflow.md](../docs/guides/agent-workflow.md) |
@@ -271,6 +272,15 @@
 | [src/moana/palette/__init__.py](../src/moana/palette/__init__.py) |
 | [src/moana/palette/colors.py](../src/moana/palette/colors.py) |
 | [src/moana/palette/table.py](../src/moana/palette/table.py) |
+| [src/moana/project/__init__.py](../src/moana/project/__init__.py) |
+| [src/moana/project/_fs.py](../src/moana/project/_fs.py) |
+| [src/moana/project/_json.py](../src/moana/project/_json.py) |
+| [src/moana/project/archive.py](../src/moana/project/archive.py) |
+| [src/moana/project/assets.py](../src/moana/project/assets.py) |
+| [src/moana/project/limits.py](../src/moana/project/limits.py) |
+| [src/moana/project/manifest.py](../src/moana/project/manifest.py) |
+| [src/moana/project/model.py](../src/moana/project/model.py) |
+| [src/moana/project/store.py](../src/moana/project/store.py) |
 | [src/moana/py.typed](../src/moana/py.typed) |
 | [src/moana/render/__init__.py](../src/moana/render/__init__.py) |
 | [src/moana/render/budget.py](../src/moana/render/budget.py) |
@@ -343,6 +353,14 @@
 | [tests/unit/palette/test_palette_architecture.py](../tests/unit/palette/test_palette_architecture.py) |
 | [tests/unit/palette/test_palette_colors.py](../tests/unit/palette/test_palette_colors.py) |
 | [tests/unit/palette/test_palette_table.py](../tests/unit/palette/test_palette_table.py) |
+| [tests/unit/project/__init__.py](../tests/unit/project/__init__.py) |
+| [tests/unit/project/conftest.py](../tests/unit/project/conftest.py) |
+| [tests/unit/project/test_project_atomic.py](../tests/unit/project/test_project_atomic.py) |
+| [tests/unit/project/test_project_budgets.py](../tests/unit/project/test_project_budgets.py) |
+| [tests/unit/project/test_project_manifest.py](../tests/unit/project/test_project_manifest.py) |
+| [tests/unit/project/test_project_model.py](../tests/unit/project/test_project_model.py) |
+| [tests/unit/project/test_project_roundtrip.py](../tests/unit/project/test_project_roundtrip.py) |
+| [tests/unit/project/test_project_security.py](../tests/unit/project/test_project_security.py) |
 | [tests/unit/render/test_render_architecture.py](../tests/unit/render/test_render_architecture.py) |
 | [tests/unit/render/test_render_budget.py](../tests/unit/render/test_render_budget.py) |
 | [tests/unit/render/test_render_dither.py](../tests/unit/render/test_render_dither.py) |
