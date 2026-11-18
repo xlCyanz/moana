@@ -13,7 +13,7 @@
 - Dependencies: [MOANA-007](MOANA-007.md), [MOANA-021](MOANA-021.md), [MOANA-023](MOANA-023.md), [MOANA-024](MOANA-024.md), [MOANA-025](MOANA-025.md), [MOANA-027](MOANA-027.md), [MOANA-029](MOANA-029.md), [MOANA-030](MOANA-030.md), [MOANA-032](MOANA-032.md), [MOANA-033](MOANA-033.md), [MOANA-034](MOANA-034.md)
 - Related modules: release, docs
 - Requirements: R031, R039, R036 ([trazabilidad](traceability.md))
-- Bloqueo: Dependencias pendientes: MOANA-021, MOANA-023, MOANA-024, MOANA-025, MOANA-027, MOANA-030, MOANA-032, MOANA-033, MOANA-034
+- Bloqueo: Dependencias pendientes: MOANA-023, MOANA-024, MOANA-025, MOANA-027, MOANA-030, MOANA-032, MOANA-033, MOANA-034
 
 ## Context
 

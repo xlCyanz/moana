@@ -8,7 +8,7 @@
 - Aliases históricos: MOA-021
 - Phase: P4
 - Priority: P1
-- Status: review
+- Status: done
 - Complexity: M (relativa, no estimación de tiempo)
 - Dependencies: [MOANA-020](MOANA-020.md)
 - Related modules: project, schema
@@ -43,13 +43,13 @@ No prometer compatibilidad con formatos que no tengan contrato de migración reg
 
 ## Acceptance criteria
 
-- [ ] AC1: Una fixture de versión anterior migra a v1 conservando semántica y render
-- [ ] AC2: Abrir un archivo no lo sobrescribe ni aplica migración destructiva silenciosa
+- [x] AC1: Una fixture de versión anterior migra a v1 conservando semántica y render
+- [x] AC2: Abrir un archivo no lo sobrescribe ni aplica migración destructiva silenciosa
 
 ## Required tests
 
-- [ ] T1: Fixtures de migración, migración repetida/idempotencia del destino y versión futura
-- [ ] T2: Simular fallo intermedio y comprobar que el original permanece intacto
+- [x] T1: Fixtures de migración, migración repetida/idempotencia del destino y versión futura
+- [x] T2: Simular fallo intermedio y comprobar que el original permanece intacto
 
 ## Expected deliverables
 
@@ -66,7 +66,7 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Guía para agentes de IA
 
-**Estado para agentes:** En revisión: sólo correcciones de la revisión; no añadir alcance.
+**Estado para agentes:** Completado; usar sólo como referencia del contrato entregado.
 
 ### 1. Preparación
 
@@ -145,6 +145,7 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 - Sin CLI ni fachada (MOANA.md §13 no prevé migrate). ADR-031 (docs/architecture/decisions/ADR-031-format-versions-migrations.md) con notas de cabecera en ADR-011 y ADR-029; MOANA.md 0.1.18-draft (§16); contratos de módulos, índice de ADR, overview, README, AGENTS.md y CLAUDE.md actualizados; tests/__init__.py añadido (descubrimiento y tests/visual sin cambios).
 - Gate sobre 55e564e: scripts/validate.py (2419 passed, src/moana al 100 % de líneas y ramas) y scripts/check_wheel.py verdes; mypy también con --platform win32; generate_schema --check al día. Evidencia de plataforma: local macOS; matriz pendiente en main.
 - Revisión: moana-architect (aprobado; medios aplicados: member en MigrationRecord, módulo interno _load sin importar privados, fuente única de versiones), moana-python-engineer con foco en seguridad (cambios requeridos, aplicados: cualquier excepción de un paso como migration_failed sin filtrar datos, hojas no JSON rechazadas, registros estrictos y únicos, destino dentro de la fuente rechazado) y moana-qa-engineer (cambios menores, aplicados: origen ZIP en AC1/AC2, estado de directorios en las comprobaciones, bordes de versión y presupuesto, fallo en el segundo paso, Hypothesis contra 1.0 construido a mano).
+- Aprobado por el propietario el 2026-11-17 tras revisión; PR #60 hacia develop.
 - AC1: tests/unit/schema/test_schema_migrations.py::test_ac1_test_only_fixture_migrates_to_v1_keeping_semantics_and_render; tests/unit/project/test_project_migrations.py::test_ac1_document_fixture_migrates_into_a_new_project, ::test_ac1_project_fixture_keeps_assets_and_render, ::test_ac1_migration_records_survive_saving_again, ::test_ac1_a_migrated_project_can_be_migrated_again, ::test_ac1_archive_fixture_migrates_and_stays_intact.
 - AC2: tests/unit/project/test_project_migrations.py::test_ac2_opening_an_old_file_neither_writes_nor_migrates, ::test_ac2_migration_never_replaces_an_existing_project, ::test_ac2_destination_inside_the_source_is_refused, ::test_ac2_a_document_migrated_beside_itself_stays_intact, ::test_ac2_unresolvable_paths_are_compared_as_absolute.
 - T1: tests/unit/schema/test_schema_migrations.py::test_t1_production_registry_claims_no_unpublished_format, ::test_t1_format_versions_are_distinct_from_package_and_renderer, ::test_t1_parse_version, ::test_t1_future_and_unknown_versions_are_rejected, ::test_t1_registered_older_version_requires_explicit_migration, ::test_t1_registry_is_checked_on_construction, ::test_t1_chains_longer_than_the_limit_are_rejected, ::test_t1_migrating_the_destination_again_is_the_identity, ::test_t1_step_failures_are_domain_errors, ::test_t1_intermediate_trees_stay_bounded, ::test_t1_hostile_step_output_is_a_migration_failure, ::test_t1_malformed_test_only_sources_fail_with_the_step_id, ::test_t1_step_exceptions_never_leak_document_data, ::test_t1_non_json_input_is_rejected_before_any_step, ::test_t1_migration_result_is_validated, ::test_t1_registry_must_target_the_current_document_schema, ::test_t1_non_string_version_is_left_to_validation, ::test_t1_version_spelling_variants_are_unknown, ::test_t1_supported_versions_have_one_source, ::test_t1_property_migration_preserves_ids_and_is_idempotent; tests/unit/project/test_project_migrations.py::test_t1_migrating_the_destination_again_writes_nothing, ::test_t1_unknown_document_versions_are_rejected_before_writing, ::test_t1_unknown_project_versions_are_rejected, ::test_t1_envelope_errors_keep_their_pointers, ::test_t1_history_has_no_migration_contract, ::test_t1_registry_must_migrate_documents_to_the_current_schema, ::test_t1_preserved_originals_are_verified_and_bounded, ::test_t1_migration_records_are_strict, ::test_t1_each_original_is_preserved_once, ::test_t1_migration_budget_is_checked_before_writing, ::test_t1_future_envelope_wins_over_an_old_document, ::test_t1_backups_are_checked_in_memory.
