@@ -1,6 +1,6 @@
 # Arquitectura prevista de Moana
 
-Estado: **diseño para implementación**. El paquete actual implementa `core` (con el lienzo RGBA), `schema`, `palette`, `geometry` (primitivas, flood fill y transformaciones), `layers` (árbol y composición) `render` (plan de coste y orquestador determinista) `export` (PNG RGBA/indexado con escritura atómica) y `api`/`cli` (fachada y comando estático `moana`, ADR-020) (ver [module-contracts.md](module-contracts.md)); el resto de cajas de este documento no representan módulos ya entregados. La fuente normativa es [MOANA.md](../../MOANA.md). El [índice de arquitectura](README.md) conserva las decisiones originales y [module-contracts.md](module-contracts.md) concreta las fronteras.
+Estado: **diseño para implementación**. El paquete actual implementa `core` (con el lienzo RGBA), `schema`, `palette`, `geometry` (primitivas, flood fill y transformaciones), `layers` (árbol, composición y máscaras por capa, ADR-022) `render` (plan de coste y orquestador determinista) `export` (PNG RGBA/indexado con escritura atómica) y `api`/`cli` (fachada y comando estático `moana`, ADR-020) (ver [module-contracts.md](module-contracts.md)); el resto de cajas de este documento no representan módulos ya entregados. La fuente normativa es [MOANA.md](../../MOANA.md). El [índice de arquitectura](README.md) conserva las decisiones originales y [module-contracts.md](module-contracts.md) concreta las fronteras.
 
 ## Propósito y límites del sistema
 

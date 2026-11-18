@@ -235,7 +235,7 @@ def test_planned_command_is_unsupported(run: Run) -> None:
     [
         (b"{not json", "VALIDATION_ERROR", 2),
         (variant(schema_version="9.0"), "UNSUPPORTED_VERSION", 2),
-        (variant(masks=[{"id": "m"}]), "UNSUPPORTED_OPERATION", 2),
+        (variant(materials=[{"id": "m"}]), "UNSUPPORTED_OPERATION", 2),
         (variant(seed=-1), "VALIDATION_ERROR", 2),
         (over_budget(), "BUDGET_EXCEEDED", 3),
     ],

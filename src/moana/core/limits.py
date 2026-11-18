@@ -30,8 +30,12 @@ __all__ = [
     "MAX_COLORS_STRICT",
     "MAX_GROUP_DEPTH",
     "MAX_LAYERS",
+    "MAX_MASKS",
+    "MAX_MASK_DEPTH",
+    "MAX_MASK_OPERANDS",
     "MAX_OPERATIONS",
     "MAX_RAMP_ENTRIES",
+    "MAX_REGIONS",
     "MAX_VERTICES",
     "GeometryLimits",
 ]
@@ -49,6 +53,12 @@ MAX_COLORS_RGBA: Final = 4096
 # reach it (its reader admits at most 20 000 JSON nodes); it bounds the cost of
 # palettes built outside the schema reader (ADR-014).
 MAX_RAMP_ENTRIES: Final = 20_000
+# Semantic masks and regions (MOANA.md section 11, ADR-022): node counts, operands of
+# one boolean node and the longest chain of mask references (a leaf has depth 1).
+MAX_MASKS: Final = 1024
+MAX_MASK_OPERANDS: Final = 64
+MAX_MASK_DEPTH: Final = 16
+MAX_REGIONS: Final = 1024
 
 
 @dataclass(frozen=True, slots=True)

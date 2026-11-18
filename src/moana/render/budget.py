@@ -1,9 +1,9 @@
 """Cost plan of a validated document, checked before any buffer exists (MOANA-003).
 
-The estimator (``budget-v2``, ADR-018) is pure integer arithmetic over the document:
-it never allocates pixels, imports NumPy or Pillow, or iterates over pixels. It is an
-upper bound that the rasterisers and compositor respect; a change in their memory or
-work pattern updates these formulas and :data:`ESTIMATOR_VERSION`.
+The estimator (``budget-v3``, ADR-018 and ADR-022) is pure integer arithmetic over
+the document: it never allocates pixels, imports NumPy or Pillow, or iterates over
+pixels. It is an upper bound that the rasterisers and compositor respect; a change in
+their memory or work pattern updates these formulas and :data:`ESTIMATOR_VERSION`.
 
 For a canvas of ``A = width * height`` pixels and ``frames`` frames, every operation
 has a *mask box*, :func:`mask_box`: the storage box of its rasterised mask, clipped
@@ -25,6 +25,23 @@ to the canvas.
   never below the compositor's own bound ``14A + 80 x tile`` (tile =
   ``min(4096, max(1, A // 4))`` pixels), which only exceeds it on canvases of one or
   two pixels.
+* **Semantic masks** (``budget-v3``, ADR-022; a document without masks costs exactly
+  as in ``budget-v2``): for a visible layer with ``mask_id`` the mask expression is
+  expanded without a memo, so a shared mask counts once per reference. Every
+  evaluated node costs at least :data:`MASK_NODE_VISITS` (the floor that keeps an
+  expanded DAG of empty masks from being free). A node whose result box is empty
+  costs that floor alone: neither its operands nor a leaf's raster are evaluated. A
+  non-empty leaf adds its raster work (as above, without the paint pass); a
+  non-empty combination adds ``2 x`` its result box (zeroing and final scan) plus,
+  per operand, the operand's cost and one fold over the operand's box. Copying the
+  result's bits adds its box and clearing the layer outside the mask adds ``A``.
+  Bytes: the evaluation peak (a leaf's box, or a combination's box plus its most
+  expensive operand; ``0`` when empty) plus one copy of the result, which takes the
+  place of the largest operation mask when larger. The result box
+  (:func:`moana.core.coordinates.combined_box`) is the hull of the operand boxes for
+  ``union``/``xor``, their intersection for ``intersect`` and the first operand's
+  box for ``subtract``. These are the formulas of
+  :func:`moana.layers.mask_cost` plus each evaluated leaf's raster work.
 * **Frame pixels**: ``frames x A``.
 """
 
@@ -34,29 +51,40 @@ from dataclasses import dataclass
 from typing import Final, assert_never
 
 from moana.core.budget import DEFAULT_RENDER_LIMITS, Deadline, RenderLimits
-from moana.core.coordinates import Box, Dimensions, require_int
-from moana.core.errors import BudgetExceeded, ErrorDetail
+from moana.core.coordinates import Box, Dimensions, combined_box, require_int
+from moana.core.errors import BudgetExceeded, ErrorDetail, ReferenceError
 from moana.schema import (
+    CombinationMask,
     Document,
+    EllipseMask,
     EllipseOperation,
+    LineMask,
     LineOperation,
+    MaskNode,
     Operation,
+    PixelMask,
     PixelOperation,
+    PolygonMask,
     PolygonOperation,
+    RectMask,
     RectOperation,
+    ShapeMask,
 )
 
 __all__ = [
     "ESTIMATOR_VERSION",
+    "MASK_NODE_VISITS",
     "MAX_FRAMES",
     "CostEstimate",
+    "MaskEstimate",
     "OperationCost",
     "estimate_cost",
     "mask_box",
+    "mask_estimates",
     "plan_budget",
 ]
 
-ESTIMATOR_VERSION: Final = "budget-v2"
+ESTIMATOR_VERSION: Final = "budget-v3"
 RGBA_BYTES: Final = 4
 COMPOSITE_BYTES_PER_PIXEL: Final = 32
 MASK_BYTES_PER_PIXEL: Final = 1
@@ -67,17 +95,36 @@ MAX_FRAMES: Final = 256
 COMPOSITOR_BYTES_PER_PIXEL: Final = 14
 COMPOSITOR_TILE_BYTES: Final = 80
 COMPOSITOR_MAX_TILE: Final = 4096
+# Cost floor of one evaluated mask node reference (ADR-022); equals
+# moana.layers.MASK_NODE_VISITS, which this module cannot import (no NumPy here).
+MASK_NODE_VISITS: Final = 1
 # Operations between two cooperative deadline checks.
 CHECKPOINT_EVERY: Final = 256
+
+Geometry = Operation | ShapeMask
+"""Anything rasterised from primitive geometry: an operation or a mask leaf."""
 
 
 @dataclass(frozen=True, slots=True)
 class OperationCost:
-    """Estimated work and temporary mask of one operation, located by pointer."""
+    """Estimated work and temporary mask of one operation, located by pointer.
+
+    A layer clipped by a semantic mask also gets one entry, at ``.../mask_id``, with
+    the work and bytes of evaluating its mask and clearing the layer outside it.
+    """
 
     json_pointer: str
     pixel_visits: int
     mask_bytes: int
+
+
+@dataclass(frozen=True, slots=True)
+class MaskEstimate:
+    """Result box, expanded work and evaluation peak bytes of one mask (ADR-022)."""
+
+    box: Box | None
+    pixel_visits: int
+    buffer_bytes: int
 
 
 @dataclass(frozen=True, slots=True)
@@ -94,7 +141,7 @@ class CostEstimate:
     operation_costs: tuple[OperationCost, ...]
 
 
-def _polygon_bounds(operation: PolygonOperation) -> Box | None:
+def _polygon_bounds(operation: PolygonOperation | PolygonMask) -> Box | None:
     """Box of every pixel whose centre can lie inside the polygon, if any."""
     xs = [x for x, _ in operation.points]
     ys = [y for _, y in operation.points]
@@ -104,46 +151,121 @@ def _polygon_bounds(operation: PolygonOperation) -> Box | None:
     return Box(x0, y0, x1, y1)
 
 
-def _line_bounds(operation: LineOperation) -> Box:
+def _line_bounds(operation: LineOperation | LineMask) -> Box:
     (x0, y0), (x1, y1) = operation.start, operation.end
     return Box(min(x0, x1), min(y0, y1), max(x0, x1) + 1, max(y0, y1) + 1)
 
 
-def mask_box(operation: Operation, dimensions: Dimensions) -> Box | None:
-    """Storage box of the operation's mask clipped to the canvas, ``None`` if empty.
+def mask_box(operation: Geometry, dimensions: Dimensions) -> Box | None:
+    """Storage box of an operation's (or mask leaf's) mask clipped to the canvas.
 
-    It equals the box of the mask that :mod:`moana.geometry` returns (a polygon with
-    collinear bounds has none), so ``render`` can declare it before rasterising.
+    ``None`` if empty. It equals the box of the mask that :mod:`moana.geometry`
+    returns (a polygon with collinear bounds has none), so ``render`` can declare it
+    before rasterising.
     """
     match operation:
-        case PixelOperation():
+        case PixelOperation() | PixelMask():
             box: Box | None = Box.from_point(operation.point)
-        case LineOperation():
+        case LineOperation() | LineMask():
             box = _line_bounds(operation)
-        case RectOperation() | EllipseOperation():
+        case RectOperation() | EllipseOperation() | RectMask() | EllipseMask():
             box = operation.bbox
-        case PolygonOperation():
+        case PolygonOperation() | PolygonMask():
             box = _polygon_bounds(operation)
         case _:  # pragma: no cover - a new operation type must add its box
             assert_never(operation)
     return None if box is None else box.clip_to(dimensions)
 
 
-def _operation_cost(operation: Operation, dimensions: Dimensions, pointer: str) -> OperationCost:
-    box = mask_box(operation, dimensions)
-    area = 0 if box is None else box.area
+def _area(box: Box | None) -> int:
+    return 0 if box is None else box.area
+
+
+def _raster_work(operation: Geometry, box: Box | None) -> int:
+    """Visits of rasterising ``operation`` into its clipped mask ``box`` (no paint)."""
     match operation:
         case PixelOperation() | RectOperation() | EllipseOperation():
-            raster = area
-        case LineOperation():
+            return _area(box)
+        case PixelMask() | RectMask() | EllipseMask():
+            return _area(box)
+        case LineOperation() | LineMask():
             (x0, y0), (x1, y1) = operation.start, operation.end
-            raster = max(abs(x1 - x0), abs(y1 - y0)) + 1
-        case PolygonOperation():
+            return max(abs(x1 - x0), abs(y1 - y0)) + 1
+        case PolygonOperation() | PolygonMask():
             rows = 0 if box is None else box.height
-            raster = area + rows * len(operation.points)
+            return _area(box) + rows * len(operation.points)
         case _:  # pragma: no cover - a new operation type must add its formula
             assert_never(operation)
-    return OperationCost(pointer, raster + area, area * MASK_BYTES_PER_PIXEL)
+
+
+def _operation_cost(operation: Operation, dimensions: Dimensions, pointer: str) -> OperationCost:
+    box = mask_box(operation, dimensions)
+    area = _area(box)
+    return OperationCost(pointer, _raster_work(operation, box) + area, area * MASK_BYTES_PER_PIXEL)
+
+
+def _leaf_estimate(mask: ShapeMask, dimensions: Dimensions) -> MaskEstimate:
+    box = mask_box(mask, dimensions)
+    work = 0 if box is None else _raster_work(mask, box)  # an empty leaf is not built
+    return MaskEstimate(box, MASK_NODE_VISITS + work, _area(box))
+
+
+def _combination_estimate(
+    operator: str, operands: list[MaskEstimate], dimensions: Dimensions
+) -> MaskEstimate:
+    box = combined_box(operator, [operand.box for operand in operands], dimensions)
+    if box is None:
+        return MaskEstimate(None, MASK_NODE_VISITS, 0)  # empty: no operand is evaluated
+    area = box.area
+    visits = 2 * area + sum(operand.pixel_visits + _area(operand.box) for operand in operands)
+    peak = area + max(operand.buffer_bytes for operand in operands)
+    return MaskEstimate(box, MASK_NODE_VISITS + visits, peak)
+
+
+def _unknown_mask() -> ReferenceError:
+    return ReferenceError(
+        "mask does not exist", context={"field": "mask_id", "reason": "unknown_mask"}
+    )
+
+
+def mask_estimates(document: Document) -> dict[str, MaskEstimate]:
+    """Estimate of every mask of ``document``, keyed by mask ID.
+
+    Operands are estimated before the masks that use them. A shared mask is
+    estimated once here, while its users count its cost once per reference. A
+    document that skipped validation is still safe: a reference to a missing mask
+    raises ``ReferenceError`` (``unknown_mask``) and a cycle ``ReferenceError``
+    (``mask_cycle``), in time linear in the references.
+    """
+    dimensions = document.canvas.dimensions
+    masks: dict[str, MaskNode] = {mask.id: mask for mask in document.masks}
+    estimates: dict[str, MaskEstimate] = {}
+    expanding: set[str] = set()  # the current path; membership only, never order
+    for mask in document.masks:
+        work: list[tuple[MaskNode, bool]] = [(mask, False)]
+        while work:
+            node, ready = work.pop()
+            if node.id in estimates:
+                continue
+            if not isinstance(node, CombinationMask):
+                estimates[node.id] = _leaf_estimate(node, dimensions)
+            elif ready:
+                expanding.discard(node.id)
+                operands = [estimates[name] for name in node.masks]
+                estimates[node.id] = _combination_estimate(node.type, operands, dimensions)
+            elif node.id in expanding:
+                raise ReferenceError(
+                    "mask references form a cycle",
+                    context={"field": "masks", "reason": "mask_cycle"},
+                )
+            else:
+                expanding.add(node.id)
+                work.append((node, True))
+                for name in reversed(node.masks):
+                    if name not in masks:
+                        raise _unknown_mask()
+                    work.append((masks[name], False))
+    return estimates
 
 
 def estimate_cost(
@@ -151,10 +273,10 @@ def estimate_cost(
 ) -> CostEstimate:
     """Estimate work and memory of rendering ``frames`` frames of ``document``.
 
-    Pure arithmetic in time linear in the number of operations and vertices.
-    ``frames`` counts identical renders of this document; an animation whose frames
-    differ must sum one estimate per evaluated frame. ``deadline`` is checked per
-    layer and every :data:`CHECKPOINT_EVERY` operations.
+    Pure arithmetic in time linear in the number of operations, vertices and mask
+    references. ``frames`` counts identical renders of this document; an animation
+    whose frames differ must sum one estimate per evaluated frame. ``deadline`` is
+    checked per layer and every :data:`CHECKPOINT_EVERY` operations.
     """
     require_int(frames, "frames", minimum=1, maximum=MAX_FRAMES)
     dimensions: Dimensions = document.canvas.dimensions
@@ -163,6 +285,7 @@ def estimate_cost(
     frame_visits = 3 * area  # clear the canvas, normalise alpha, copy the result
     largest_mask = 0
     operations = 0
+    masks = mask_estimates(document)
     for layer_index, layer in enumerate(document.layers):
         if deadline is not None:
             deadline.checkpoint("estimate_layer")
@@ -175,6 +298,19 @@ def estimate_cost(
                 deadline.checkpoint("estimate_operation")
             pointer = f"/layers/{layer_index}/operations/{index}"
             cost = _operation_cost(operation, dimensions, pointer)
+            costs.append(cost)
+            frame_visits += cost.pixel_visits
+            largest_mask = max(largest_mask, cost.mask_bytes)
+        if layer.mask_id is not None:
+            if layer.mask_id not in masks:
+                raise _unknown_mask()
+            mask = masks[layer.mask_id]
+            copy = _area(mask.box)
+            cost = OperationCost(
+                f"/layers/{layer_index}/mask_id",
+                mask.pixel_visits + copy + area,  # evaluate, copy its bits, clear outside
+                mask.buffer_bytes + copy,  # evaluation peak + result copy
+            )
             costs.append(cost)
             frame_visits += cost.pixel_visits
             largest_mask = max(largest_mask, cost.mask_bytes)
@@ -209,6 +345,21 @@ def _most_expensive(estimate: CostEstimate) -> str | None:
     return max(estimate.operation_costs, key=lambda cost: cost.pixel_visits).json_pointer
 
 
+def _located_geometry(document: Document) -> list[tuple[str, Geometry]]:
+    """Every operation and mask leaf with its pointer, in document order."""
+    located: list[tuple[str, Geometry]] = [
+        (f"/layers/{layer_index}/operations/{index}", operation)
+        for layer_index, layer in enumerate(document.layers)
+        for index, operation in enumerate(layer.operations)
+    ]
+    located += [
+        (f"/masks/{index}", mask)
+        for index, mask in enumerate(document.masks)
+        if not isinstance(mask, CombinationMask)
+    ]
+    return located
+
+
 def _geometry_details(
     document: Document, limits: RenderLimits, deadline: Deadline | None
 ) -> list[ErrorDetail]:
@@ -225,28 +376,26 @@ def _geometry_details(
         details.append(
             _exceeded("canvas_area", geometry.max_area, canvas.dimensions.area, "/canvas")
         )
-    for layer_index, layer in enumerate(document.layers):
-        for index, operation in enumerate(layer.operations):
-            if deadline is not None and index % CHECKPOINT_EVERY == CHECKPOINT_EVERY - 1:
-                deadline.checkpoint("check_geometry")
-            reach = _coordinate_reach(operation)
-            if reach > geometry.max_coordinate:
-                pointer = f"/layers/{layer_index}/operations/{index}"
-                details.append(_exceeded("coordinate", geometry.max_coordinate, reach, pointer))
+    for position, (pointer, operation) in enumerate(_located_geometry(document)):
+        if deadline is not None and position % CHECKPOINT_EVERY == CHECKPOINT_EVERY - 1:
+            deadline.checkpoint("check_geometry")
+        reach = _coordinate_reach(operation)
+        if reach > geometry.max_coordinate:
+            details.append(_exceeded("coordinate", geometry.max_coordinate, reach, pointer))
     return details
 
 
-def _coordinate_reach(operation: Operation) -> int:
-    """Largest absolute pixel coordinate an operation names (excluded edges - 1)."""
+def _coordinate_reach(operation: Geometry) -> int:
+    """Largest absolute pixel coordinate a geometry names (excluded edges - 1)."""
     match operation:
-        case PixelOperation():
+        case PixelOperation() | PixelMask():
             values: tuple[int, ...] = operation.at
-        case LineOperation():
+        case LineOperation() | LineMask():
             values = (*operation.start, *operation.end)
-        case RectOperation() | EllipseOperation():
+        case RectOperation() | EllipseOperation() | RectMask() | EllipseMask():
             x0, y0, x1, y1 = operation.box
             values = (x0, y0, x1 - 1, y1 - 1)
-        case PolygonOperation():
+        case PolygonOperation() | PolygonMask():
             values = tuple(c for point in operation.points for c in point)
         case _:  # pragma: no cover - a new operation type must add its reach
             assert_never(operation)
@@ -264,8 +413,11 @@ def plan_budget(
 
     Raises :class:`BudgetExceeded` listing every exceeded resource in ``details``
     (``resource``, ``limit`` and ``estimated`` in each context; the pointer locates
-    the canvas, the offending operation or the most expensive operation). A request
-    exactly at a limit is admitted.
+    the canvas, the offending operation or mask, or the most expensive operation or
+    layer mask). A request exactly at a limit is admitted. ``document`` should be
+    valid (:func:`moana.schema.validate_document`); a missing or cyclic mask
+    reference still raises ``ReferenceError`` instead of looping (see
+    :func:`mask_estimates`).
     """
     require_int(frames, "frames", minimum=1, maximum=MAX_FRAMES)
     layers = len(document.layers)

@@ -1,6 +1,6 @@
 """Cost plan before raster: hand-computed oracles, exact limits and no allocation.
 
-Expected values are derived by hand from the budget-v2 formulas documented in
+Expected values are derived by hand from the budget-v3 formulas documented in
 ``moana.render.budget`` and MOANA.md section 20, never from the implementation.
 """
 
@@ -65,7 +65,7 @@ def test_minimal_rect_matches_hand_oracle() -> None:
     assert estimate.buffer_bytes == 40 * A128 + rect + 4 * A128 == 724_352
     assert estimate.frame_pixels == A128
     assert (estimate.operations, estimate.layers, estimate.frames) == (1, 1, 1)
-    assert estimate.estimator_version == "budget-v2"
+    assert estimate.estimator_version == "budget-v3"
     (cost,) = estimate.operation_costs
     assert (cost.json_pointer, cost.pixel_visits, cost.mask_bytes) == (
         "/layers/0/operations/0",

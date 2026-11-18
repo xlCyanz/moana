@@ -8,11 +8,16 @@
    ``None`` (schema 1.0 has no animations).
 2. **Resolution**: the schema palette becomes a :class:`moana.palette.Palette` and
    every operation colour is resolved to its ``Rgba``; an operation type without a
-   registered rasteriser is ``UNSUPPORTED_OPERATION``.
+   registered rasteriser is ``UNSUPPORTED_OPERATION``. Mask and region references
+   were already resolved as a DAG by validation: unknown references and cycles fail
+   there, before anything is rasterised (ADR-022).
 3. **Budget**: :func:`moana.render.budget.plan_budget` rejects the request before any
    pixel buffer exists.
 4. **Plan**: a :class:`moana.layers.LayerTree` whose fills are deferred masks with
-   their declared boxes; nothing is rasterised yet.
+   their declared boxes; a layer with ``mask_id`` gets the mask expression as
+   :class:`moana.layers.MaskShape` leaves (deferred too) and
+   :class:`moana.layers.MaskCombination` nodes, one object per document mask, so
+   shared masks stay shared. Nothing is rasterised yet.
 5. **Raster and composition**: :func:`moana.layers.compose` builds one mask at a time,
    in array order, between deadline checks.
 
@@ -38,7 +43,16 @@ from moana.geometry import (
     rasterize_polygon,
     rasterize_rect,
 )
-from moana.layers import DeferredMask, Fill, Layer, LayerTree, compose
+from moana.layers import (
+    DeferredMask,
+    Fill,
+    Layer,
+    LayerTree,
+    MaskCombination,
+    MaskNode,
+    MaskShape,
+    compose,
+)
 from moana.palette import Palette
 from moana.render.budget import mask_box, plan_budget
 from moana.render.result import (
@@ -49,18 +63,26 @@ from moana.render.result import (
     RenderWarning,
 )
 from moana.schema import (
+    CombinationMask,
     Document,
+    EllipseMask,
     EllipseOperation,
+    LineMask,
     LineOperation,
     Operation,
+    PixelMask,
     PixelOperation,
+    PolygonMask,
     PolygonOperation,
+    RectMask,
     RectOperation,
+    ShapeMask,
     normalize_document,
     snapshot_digest,
     validate_document,
 )
 from moana.schema import Layer as DocumentLayer
+from moana.schema import MaskNode as DocumentMask
 
 __all__ = ["RENDERABLE_OPERATION_TYPES", "render"]
 
@@ -71,18 +93,18 @@ EMPTY_BOUNDS: Final = "empty_bounds"
 """Warning: the operation's bounds clipped to the canvas are empty (nothing to draw)."""
 
 
-def _rasterize(operation: Operation, dimensions: Dimensions) -> Mask:
-    """Mask of one operation clipped to the canvas (the explicit rasteriser registry)."""
+def _rasterize(operation: Operation | ShapeMask, dimensions: Dimensions) -> Mask:
+    """Mask of one operation or mask leaf clipped to the canvas (the rasteriser registry)."""
     match operation:
-        case PixelOperation():
+        case PixelOperation() | PixelMask():
             return rasterize_pixel(operation.point, dimensions)
-        case LineOperation():
+        case LineOperation() | LineMask():
             return rasterize_line(Point(*operation.start), Point(*operation.end), dimensions)
-        case RectOperation():
+        case RectOperation() | RectMask():
             return rasterize_rect(operation.bbox, dimensions)
-        case EllipseOperation():
+        case EllipseOperation() | EllipseMask():
             return rasterize_ellipse(operation.bbox, dimensions)
-        case PolygonOperation():
+        case PolygonOperation() | PolygonMask():
             return rasterize_polygon([Point(*point) for point in operation.points], dimensions)
         case _:  # pragma: no cover - a new operation type must register its rasteriser
             assert_never(operation)
@@ -108,12 +130,43 @@ def _check_renderable(document: Document) -> None:
                 )
 
 
+def _plan_masks(document: Document, dimensions: Dimensions) -> dict[str, MaskNode]:
+    """Layer-tree mask nodes of every mask a layer uses, keyed by document mask ID.
+
+    Built operands first (post-order over the operand arrays), one node per document
+    mask; the document is valid, so the references are acyclic and resolved.
+    """
+    masks: dict[str, DocumentMask] = {mask.id: mask for mask in document.masks}
+    nodes: dict[str, MaskNode] = {}
+    for layer in document.layers:
+        if layer.mask_id is None:
+            continue
+        work: list[tuple[DocumentMask, bool]] = [(masks[layer.mask_id], False)]
+        while work:
+            mask, ready = work.pop()
+            if mask.id in nodes:
+                continue
+            if not isinstance(mask, CombinationMask):
+                deferred = DeferredMask(
+                    mask_box(mask, dimensions), partial(_rasterize, mask, dimensions)
+                )
+                nodes[mask.id] = MaskShape(mask.id, deferred)
+            elif ready:
+                operands = tuple(nodes[name] for name in mask.masks)
+                nodes[mask.id] = MaskCombination(mask.id, mask.type, operands)
+            else:
+                work.append((mask, True))
+                work.extend((masks[name], False) for name in reversed(mask.masks))
+    return nodes
+
+
 def _plan_layer(
     layer: DocumentLayer,
     layer_index: int,
     palette: Palette,
     dimensions: Dimensions,
     warnings: list[RenderWarning],
+    masks: dict[str, MaskNode],
 ) -> Layer:
     fills: list[Fill] = []
     for index, operation in enumerate(layer.operations):
@@ -136,6 +189,7 @@ def _plan_layer(
         locked=layer.locked,
         opacity=layer.opacity,
         blend=layer.blend,
+        mask=None if layer.mask_id is None else masks[layer.mask_id],
     )
 
 
@@ -175,10 +229,11 @@ def render(
     dimensions = document.canvas.dimensions
     warnings: list[RenderWarning] = []
     layers: list[Layer] = []
+    masks = _plan_masks(document, dimensions)
     for layer_index, layer in enumerate(document.layers):
         if deadline is not None:
             deadline.checkpoint("plan_layer")
-        layers.append(_plan_layer(layer, layer_index, palette, dimensions, warnings))
+        layers.append(_plan_layer(layer, layer_index, palette, dimensions, warnings, masks))
     tree = LayerTree(dimensions, tuple(layers), profile=profile)
 
     canvas = compose(tree, limits=limits, deadline=deadline)

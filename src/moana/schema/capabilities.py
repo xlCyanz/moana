@@ -16,9 +16,14 @@ __all__ = [
     "PLANNED_BLEND_MODES",
     "PLANNED_COLLECTIONS",
     "PLANNED_LAYER_FIELDS",
+    "PLANNED_MASK_TYPES",
     "PLANNED_OPERATION_TYPES",
     "SCHEMA_VERSION",
     "SUPPORTED_BLEND_MODES",
+    "SUPPORTED_COLLECTIONS",
+    "SUPPORTED_MASK_OPERATORS",
+    "SUPPORTED_MASK_SHAPES",
+    "SUPPORTED_MASK_TYPES",
     "SUPPORTED_OPERATION_TYPES",
     "SUPPORTED_PROFILES",
     "SUPPORTED_SCHEMA_VERSIONS",
@@ -35,7 +40,16 @@ PLANNED_BLEND_MODES: Final = frozenset({"multiply", "screen"})
 
 SUPPORTED_PROFILES: Final = frozenset({"rgba", "strict"})
 
+# Semantic masks and regions (ADR-022): leaves reuse the primitive geometry in canvas
+# coordinates; combinations fold mask IDs. Path masks arrive with paths (MOANA-007).
+SUPPORTED_MASK_SHAPES: Final = frozenset({"ellipse", "line", "pixel", "polygon", "rect"})
+SUPPORTED_MASK_OPERATORS: Final = frozenset({"intersect", "subtract", "union", "xor"})
+SUPPORTED_MASK_TYPES: Final = SUPPORTED_MASK_SHAPES | SUPPORTED_MASK_OPERATORS
+PLANNED_MASK_TYPES: Final = frozenset({"path"})
+
+# Optional root collections with a 1.0 grammar.
+SUPPORTED_COLLECTIONS: Final = frozenset({"masks", "regions"})
 # Root collections reserved for future capabilities: accepted only when empty.
-PLANNED_COLLECTIONS: Final = frozenset({"animations", "masks", "materials", "regions"})
-# Layer members of planned features: masks (mask_id) and groups (children, transform).
-PLANNED_LAYER_FIELDS: Final = frozenset({"children", "mask_id", "transform"})
+PLANNED_COLLECTIONS: Final = frozenset({"animations", "materials"})
+# Layer members of planned features: groups (children, transform).
+PLANNED_LAYER_FIELDS: Final = frozenset({"children", "transform"})

@@ -6,8 +6,10 @@ Phases (MOANA.md sections 3, 12 and 20), each reported with its own error class:
 2. **Version** — ``schema_version`` other than ``"1.0"`` raises ``UnsupportedVersion``.
 3. **Structure and capabilities** — strict models. Planned capabilities produce
    ``UNSUPPORTED_OPERATION`` details; any other problem makes it a ``ValidationError``.
-4. **Semantics** — global ID uniqueness, profile and count limits (``VALIDATION_ERROR``)
-   and colour references (``REFERENCE_ERROR``).
+4. **Semantics** — global ID uniqueness, profile and count limits (``VALIDATION_ERROR``),
+   colour references (``REFERENCE_ERROR``) and the mask/region reference DAG
+   (:mod:`moana.schema.references`: unknown references and cycles are
+   ``REFERENCE_ERROR``; repeated references and excessive depth ``VALIDATION_ERROR``).
 
 Every raised error lists all problems of its phase in ``details``, sorted by pointer
 (array indexes compared numerically) and code; the error's own ``json_pointer`` is
@@ -37,6 +39,7 @@ from moana.schema._pointers import detail_sort_key
 from moana.schema._reader import DEFAULT_PARSE_LIMITS, ParseLimits, read_json_bytes, read_mapping
 from moana.schema.capabilities import SCHEMA_VERSION, SUPPORTED_SCHEMA_VERSIONS
 from moana.schema.models import Document
+from moana.schema.references import reference_details
 
 __all__ = [
     "JSON_SCHEMA_DIALECT",
@@ -97,6 +100,10 @@ def _identities(document: Document) -> Iterator[tuple[str, str]]:
         yield layer.id, f"/layers/{layer_index}/id"
         for index, operation in enumerate(layer.operations):
             yield operation.id, f"/layers/{layer_index}/operations/{index}/id"
+    for index, mask in enumerate(document.masks):
+        yield mask.id, f"/masks/{index}/id"
+    for index, region in enumerate(document.regions):
+        yield region.id, f"/regions/{index}/id"
 
 
 def _semantic_details(document: Document) -> list[ErrorDetail]:
@@ -150,6 +157,7 @@ def _semantic_details(document: Document) -> list[ErrorDetail]:
     if total_operations > MAX_OPERATIONS:
         invalid("/layers", "Document has too many operations", "too_many", maximum=MAX_OPERATIONS)
 
+    details.extend(reference_details(document))
     if document.canvas.profile == "strict":
         details.extend(_strict_profile_details(document))
     return details
@@ -246,7 +254,9 @@ def document_json_schema() -> dict[str, object]:
         "Structural schema of a Moana sprite document. validate_document also rejects "
         "duplicate member names, NaN/Infinity, documents over 8 MiB, deeper than 32 or "
         "with more than 20000 nodes, repeated IDs, unknown color references, more than "
-        "10000 operations, and strict-profile violations (alpha other than 00/FF, layer "
-        "opacity other than 255, more than 256 colors)."
+        "10000 operations, strict-profile violations (alpha other than 00/FF, layer "
+        "opacity other than 255, more than 256 colors), unknown or repeated mask, "
+        "region and operation references, mask reference cycles and mask reference "
+        "chains longer than 16."
     )
     return schema

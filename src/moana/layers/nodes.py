@@ -12,19 +12,31 @@ depth-first order (the tree is built by code, not edited as a document).
 A fill may carry a :class:`DeferredMask` instead of a mask: a declared box plus a
 builder called during composition, so a caller with thousands of operations never
 holds more than one rasterised mask at a time (ADR-018).
+
+A layer may also carry a semantic ``mask`` (ADR-022): a :class:`MaskShape` leaf or a
+:class:`MaskCombination` of union/intersect/subtract/xor over other mask nodes. Mask
+nodes are immutable and built bottom-up, so the expression is a DAG by construction
+(cycles are rejected earlier, by ``schema``). Masks are in canvas coordinates: they
+never depend on a layer render and are not moved by the geometry of the layer.
 """
 
 from __future__ import annotations
 
 from collections.abc import Callable, Iterator
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Final, Literal
 
 from moana.core.coordinates import Box, Dimensions, require_int
 from moana.core.errors import ValidationError
 from moana.core.ids import check_id
-from moana.core.limits import MAX_GROUP_DEPTH, MAX_LAYERS, MAX_OPERATIONS
-from moana.geometry import Mask
+from moana.core.limits import (
+    MAX_GROUP_DEPTH,
+    MAX_LAYERS,
+    MAX_MASK_DEPTH,
+    MAX_MASK_OPERANDS,
+    MAX_OPERATIONS,
+)
+from moana.geometry import MASK_OPERATORS, Mask, MaskOperator
 from moana.palette import ColorProfile, Rgba
 
 __all__ = [
@@ -35,7 +47,11 @@ __all__ = [
     "Group",
     "Layer",
     "LayerTree",
+    "MaskCombination",
+    "MaskNode",
+    "MaskShape",
     "Node",
+    "mask_leaves",
 ]
 
 MAX_NAME_BYTES: Final = 4096
@@ -120,8 +136,99 @@ class Fill:
 
 
 @dataclass(frozen=True, slots=True)
+class MaskShape:
+    """Leaf of a semantic mask: primitive geometry already in canvas coordinates."""
+
+    id: str
+    mask: Mask | DeferredMask
+
+    def __post_init__(self) -> None:
+        check_id(self.id)
+        if not isinstance(self.mask, Mask | DeferredMask):
+            raise TypeError("mask must be a Mask or DeferredMask value")
+
+    @property
+    def box(self) -> Box | None:
+        """Storage box of the mask (declared box for a deferred mask)."""
+        return self.mask.box
+
+    @property
+    def depth(self) -> int:
+        """Length of the longest reference chain below and including this node."""
+        return 1
+
+
+@dataclass(frozen=True, slots=True, eq=False)
+class MaskCombination:
+    """Boolean node: ``operator`` over 2 to 64 ``operands``, folded in order.
+
+    ``depth`` (derived) is one more than the deepest operand and at most 16.
+    Equality is identity, as for :class:`DeferredMask`: a structural ``==`` or hash
+    of a DAG with shared nodes would cost as much as expanding it.
+    """
+
+    id: str
+    operator: MaskOperator
+    operands: tuple[MaskNode, ...]
+    depth: int = field(init=False, compare=False)
+
+    def __post_init__(self) -> None:
+        check_id(self.id)
+        if self.operator not in MASK_OPERATORS:
+            raise _invalid(
+                "operator must be union, intersect, subtract or xor",
+                field="operator",
+                reason="unknown_operator",
+            )
+        if type(self.operands) is not tuple:
+            raise TypeError("operands must be a tuple of mask nodes")
+        for operand in self.operands:
+            if not isinstance(operand, MaskShape | MaskCombination):
+                raise TypeError("operands must be a tuple of mask nodes")
+        if not 2 <= len(self.operands) <= MAX_MASK_OPERANDS:
+            raise _invalid(
+                f"a mask combination needs 2 to {MAX_MASK_OPERANDS} operands",
+                field="operands",
+                reason="out_of_range",
+                minimum=2,
+                maximum=MAX_MASK_OPERANDS,
+            )
+        depth = 1 + max(operand.depth for operand in self.operands)
+        if depth > MAX_MASK_DEPTH:
+            raise _invalid(
+                "mask references are nested too deeply",
+                field="operands",
+                reason="too_deep",
+                maximum=MAX_MASK_DEPTH,
+            )
+        object.__setattr__(self, "depth", depth)
+
+
+MaskNode = MaskShape | MaskCombination
+
+
+def mask_leaves(root: MaskNode) -> Iterator[MaskShape]:
+    """Distinct leaves of a mask DAG, depth first in operand order (shared nodes once)."""
+    seen: set[int] = set()  # identities only deduplicate; the order comes from operands
+    stack: list[MaskNode] = [root]
+    while stack:
+        node = stack.pop()
+        if id(node) in seen:
+            continue
+        seen.add(id(node))
+        if isinstance(node, MaskShape):
+            yield node
+        else:
+            stack.extend(reversed(node.operands))
+
+
+@dataclass(frozen=True, slots=True)
 class Layer:
-    """Leaf node: ordered fills composited onto a transparent layer buffer."""
+    """Leaf node: ordered fills composited onto a transparent layer buffer.
+
+    With ``mask``, the layer buffer is cleared outside the mask before it is
+    composited, so the layer changes no pixel outside it (ADR-022).
+    """
 
     id: str
     name: str
@@ -130,9 +237,12 @@ class Layer:
     locked: bool = False
     opacity: int = 255
     blend: Literal["normal"] = "normal"
+    mask: MaskNode | None = None
 
     def __post_init__(self) -> None:
         _check_node_fields(self.id, self.name, self.visible, self.locked, self.opacity)
+        if self.mask is not None and not isinstance(self.mask, MaskShape | MaskCombination):
+            raise TypeError("mask must be a MaskShape, a MaskCombination or None")
         if type(self.fills) is not tuple:
             raise TypeError("fills must be a tuple of Fill values")
         if len(self.fills) > MAX_OPERATIONS:
@@ -248,6 +358,17 @@ class LayerTree:
                 self._check_fills(node, canvas)
 
     def _check_fills(self, layer: Layer, canvas: Box) -> None:
+        if layer.mask is not None:
+            for leaf in mask_leaves(layer.mask):
+                box = leaf.box
+                if box is not None and box.intersection(canvas) != box:
+                    raise _invalid(
+                        "layer mask lies outside the canvas",
+                        field="mask",
+                        reason="outside_canvas",
+                        node_id=layer.id,
+                        mask_id=leaf.id,
+                    )
         for index, fill in enumerate(layer.fills):
             box = fill.box
             if box is not None and box.intersection(canvas) != box:

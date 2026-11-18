@@ -22,7 +22,9 @@ from moana.schema.capabilities import (
     PLANNED_BLEND_MODES,
     PLANNED_COLLECTIONS,
     PLANNED_LAYER_FIELDS,
+    PLANNED_MASK_TYPES,
     PLANNED_OPERATION_TYPES,
+    SUPPORTED_MASK_TYPES,
     SUPPORTED_OPERATION_TYPES,
 )
 
@@ -33,6 +35,16 @@ _OWN_MESSAGES: Final = {
     "union_tag_invalid": "Operation type is not part of schema 1.0",
     "union_tag_not_found": "Operation requires a 'type' member",
 }
+_MASK_MESSAGES: Final = {
+    "union_tag_invalid": "Mask type is not part of schema 1.0",
+    "union_tag_not_found": "Mask requires a 'type' member",
+}
+_TAGGED_TYPES: Final = SUPPORTED_OPERATION_TYPES | SUPPORTED_MASK_TYPES
+
+
+def _in_masks(error: ErrorDetails) -> bool:
+    """Whether an error lies in the root ``masks`` collection (mask discriminator)."""
+    return error["loc"][:1] == ("masks",)
 
 
 def pointer_for(tree: object, location: Sequence[str | int]) -> str:
@@ -59,7 +71,7 @@ def _is_label(current: object, segment: str, is_last: bool) -> bool:
         return current is not None or not is_last  # labels below a scalar input
     if not isinstance(current, dict):
         return True
-    if current.get("type") == segment and segment in SUPPORTED_OPERATION_TYPES and not is_last:
+    if current.get("type") == segment and segment in _TAGGED_TYPES and not is_last:
         return True  # discriminator tag, even if the input also has such a member
     return segment not in current and not is_last
 
@@ -67,7 +79,8 @@ def _is_label(current: object, segment: str, is_last: bool) -> bool:
 def _context(error: ErrorDetails) -> dict[str, object]:
     context: dict[str, object] = {"reason": error["type"]}
     if error["type"] in {"union_tag_invalid", "union_tag_not_found"}:
-        context["expected"] = tuple(sorted(SUPPORTED_OPERATION_TYPES))
+        expected = SUPPORTED_MASK_TYPES if _in_masks(error) else SUPPORTED_OPERATION_TYPES
+        context["expected"] = tuple(sorted(expected))
     for key, value in (error.get("ctx") or {}).items():
         if _is_safe_context(key, value):
             context[key] = value
@@ -85,7 +98,8 @@ def _planned_capability(error: ErrorDetails) -> str | None:
     kind, location, value = error["type"], error["loc"], error.get("input")
     if kind == "union_tag_invalid":
         tag = (error.get("ctx") or {}).get("tag")
-        return tag if isinstance(tag, str) and tag in PLANNED_OPERATION_TYPES else None
+        planned = PLANNED_MASK_TYPES if _in_masks(error) else PLANNED_OPERATION_TYPES
+        return tag if isinstance(tag, str) and tag in planned else None
     if kind == "literal_error" and location[-1:] == ("blend",):
         return value if isinstance(value, str) and value in PLANNED_BLEND_MODES else None
     if kind == "unsupported_capability" and location[-1:] and location[-1] in PLANNED_COLLECTIONS:
@@ -119,7 +133,9 @@ def pydantic_details(tree: object, errors: Iterable[ErrorDetails]) -> list[Error
         details.append(
             ErrorDetail(
                 ValidationError.code,
-                _OWN_MESSAGES.get(error["type"], error["msg"]),
+                (_MASK_MESSAGES if _in_masks(error) else _OWN_MESSAGES).get(
+                    error["type"], error["msg"]
+                ),
                 json_pointer=pointer,
                 context=_context(error),
             )

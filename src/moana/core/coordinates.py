@@ -17,6 +17,7 @@ These types are pure values: no NumPy, no buffers, no I/O.
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import Final
 
@@ -31,6 +32,7 @@ __all__ = [
     "Box",
     "Dimensions",
     "Point",
+    "combined_box",
     "require_int",
 ]
 
@@ -187,3 +189,37 @@ class Box:
     def clip_to(self, dimensions: Dimensions) -> Box | None:
         """Clip to a canvas without wraparound; ``None`` if nothing remains visible."""
         return self.intersection(Box.from_dimensions(dimensions))
+
+
+def combined_box(operator: str, boxes: Sequence[Box | None], dimensions: Dimensions) -> Box | None:
+    """Box bounding a set combination of operands stored in ``boxes``, clipped.
+
+    ``None`` stands for an empty operand and for an empty result. ``"subtract"``
+    keeps the first box, ``"intersect"`` the part common to every box and any other
+    operator (``"union"``, ``"xor"``) the hull of the non-empty boxes; checking the
+    operator name is the caller's job. Pure arithmetic shared by the mask algebra of
+    :mod:`moana.geometry` and the cost plan of :mod:`moana.render` (ADR-022).
+    """
+    if not boxes:
+        raise ValueError("a mask operator needs at least one operand")
+    for box in boxes:
+        if box is not None and not isinstance(box, Box):
+            raise TypeError("boxes must be Box values or None")
+    result: Box | None
+    if operator == "subtract":
+        result = boxes[0]
+    elif operator == "intersect":
+        result = boxes[0]
+        for box in boxes[1:]:
+            result = None if result is None or box is None else result.intersection(box)
+    else:
+        present = [box for box in boxes if box is not None]
+        result = None
+        if present:
+            result = Box(
+                min(box.x0 for box in present),
+                min(box.y0 for box in present),
+                max(box.x1 for box in present),
+                max(box.y1 for box in present),
+            )
+    return None if result is None else result.clip_to(dimensions)

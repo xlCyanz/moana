@@ -5,6 +5,8 @@ without rendering: a request over budget is reported (``within_limits`` false an
 exceeded resources), not raised, so a caller can see why ``render`` would refuse it.
 :func:`capabilities` lists the implemented vocabulary and, separately, what is only
 planned, so help and agents never present a future capability as available.
+Semantic masks and regions (ADR-022) are listed with their references, so an agent can
+find "the left eye" by ID; :func:`moana.schema.resolve_region` resolves one.
 """
 
 from __future__ import annotations
@@ -26,11 +28,15 @@ from moana.schema import (
     PLANNED_BLEND_MODES,
     PLANNED_COLLECTIONS,
     PLANNED_LAYER_FIELDS,
+    PLANNED_MASK_TYPES,
     PLANNED_OPERATION_TYPES,
     SUPPORTED_BLEND_MODES,
+    SUPPORTED_COLLECTIONS,
+    SUPPORTED_MASK_TYPES,
     SUPPORTED_OPERATION_TYPES,
     SUPPORTED_PROFILES,
     SUPPORTED_SCHEMA_VERSIONS,
+    CombinationMask,
     Document,
     snapshot_digest,
 )
@@ -46,7 +52,9 @@ __all__ = [
     "DocumentReport",
     "ExceededResource",
     "LayerSummary",
+    "MaskSummary",
     "OperationSummary",
+    "RegionSummary",
     "capabilities",
     "inspect_document",
 ]
@@ -57,6 +65,7 @@ AVAILABLE_FUNCTIONS: Final = (
     "inspect_document",
     "load_document",
     "render",
+    "resolve_region",
 )
 """Functions of ``moana.api`` that work in this build."""
 PLANNED_FUNCTIONS: Final = ("apply_edit",)
@@ -97,6 +106,25 @@ class LayerSummary:
     opacity: int
     blend: str
     operations: tuple[OperationSummary, ...]
+    mask_id: str | None
+
+
+@dataclass(frozen=True, slots=True)
+class MaskSummary:
+    """One semantic mask: its ID, type and, for a combination, its operand mask IDs."""
+
+    id: str
+    type: str
+    masks: tuple[str, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class RegionSummary:
+    """One semantic region: its ID, mask and targeted operation IDs."""
+
+    id: str
+    mask_id: str
+    operation_ids: tuple[str, ...]
 
 
 @dataclass(frozen=True, slots=True)
@@ -139,6 +167,8 @@ class DocumentReport:
     colors: tuple[str, ...]
     ramps: tuple[str, ...]
     layers: tuple[LayerSummary, ...]
+    masks: tuple[MaskSummary, ...]
+    regions: tuple[RegionSummary, ...]
     budget: BudgetReport
 
     def to_mapping(self) -> dict[str, object]:
@@ -154,6 +184,9 @@ class Capabilities:
     profiles: tuple[str, ...]
     operations: tuple[str, ...]
     planned_operations: tuple[str, ...]
+    mask_types: tuple[str, ...]
+    planned_mask_types: tuple[str, ...]
+    collections: tuple[str, ...]
     blend_modes: tuple[str, ...]
     planned_blend_modes: tuple[str, ...]
     planned_collections: tuple[str, ...]
@@ -183,6 +216,9 @@ def capabilities() -> Capabilities:
         profiles=tuple(sorted(SUPPORTED_PROFILES)),
         operations=tuple(sorted(renderable)),
         planned_operations=tuple(sorted(planned)),
+        mask_types=tuple(sorted(SUPPORTED_MASK_TYPES)),
+        planned_mask_types=tuple(sorted(PLANNED_MASK_TYPES)),
+        collections=tuple(sorted(SUPPORTED_COLLECTIONS)),
         blend_modes=tuple(sorted(SUPPORTED_BLEND_MODES)),
         planned_blend_modes=tuple(sorted(PLANNED_BLEND_MODES)),
         planned_collections=tuple(sorted(PLANNED_COLLECTIONS)),
@@ -252,8 +288,17 @@ def inspect_document(document: Document, *, limits: RenderLimits | None = None) 
                 OperationSummary(operation.id, operation.type, operation.color)
                 for operation in layer.operations
             ),
+            mask_id=layer.mask_id,
         )
         for layer in document.layers
+    )
+    masks = tuple(
+        MaskSummary(mask.id, mask.type, mask.masks if isinstance(mask, CombinationMask) else ())
+        for mask in document.masks
+    )
+    regions = tuple(
+        RegionSummary(region.id, region.mask_id, region.operation_ids)
+        for region in document.regions
     )
     palette = document.palette
     return DocumentReport(
@@ -269,5 +314,7 @@ def inspect_document(document: Document, *, limits: RenderLimits | None = None) 
         colors=tuple(color.id for color in palette.colors),
         ramps=tuple(ramp.id for ramp in palette.ramps),
         layers=layers,
+        masks=masks,
+        regions=regions,
         budget=_budget(document, limits),
     )

@@ -501,6 +501,7 @@ def test_inspect_reports_structure_and_budget() -> None:
             "blend": "normal",
             "id": "body",
             "locked": False,
+            "mask_id": None,
             "name": "Cuerpo",
             "opacity": 255,
             "operations": [{"color": "cloth", "id": "body_fill", "type": "rect"}],

@@ -1,6 +1,6 @@
 # ADR-018 — Orquestador de render determinista, máscaras diferidas y `budget-v2`
 
-Estado: aceptado · 2026-11-17 · Issue: [MOANA-010](../../issues/MOANA-010.md). Sustituye la fórmula de visitas por operación del punto 2 de [ADR-012](ADR-012-request-budgets.md), amplía [ADR-017](ADR-017-layers-composition.md) con `DeferredMask` y sustituye la consecuencia de [ADR-015](ADR-015-raster-primitives.md) sobre `import moana.render`; el resto sigue vigente.
+Estado: aceptado · 2026-11-17 · Issue: [MOANA-010](../../issues/MOANA-010.md). Sustituye la fórmula de visitas por operación del punto 2 de [ADR-012](ADR-012-request-budgets.md), amplía [ADR-017](ADR-017-layers-composition.md) con `DeferredMask` y sustituye la consecuencia de [ADR-015](ADR-015-raster-primitives.md) sobre `import moana.render`; el resto sigue vigente. Ampliado por [ADR-022](ADR-022-masks-regions.md): `budget-v3` añade el coste de las máscaras de capa (idéntico a `budget-v2` sin máscaras) y el plan traduce `masks`/`mask_id` a nodos de máscara diferidos.
 
 ## Contexto
 
