@@ -38,7 +38,8 @@ from moana.schema._issues import pydantic_details
 from moana.schema._pointers import detail_sort_key
 from moana.schema._reader import DEFAULT_PARSE_LIMITS, ParseLimits, read_json_bytes, read_mapping
 from moana.schema.capabilities import SCHEMA_VERSION, SUPPORTED_SCHEMA_VERSIONS
-from moana.schema.models import Document
+from moana.schema.members import OPERATION_MEMBERS
+from moana.schema.models import Document, Operation
 from moana.schema.references import reference_details
 
 __all__ = [
@@ -106,6 +107,12 @@ def _identities(document: Document) -> Iterator[tuple[str, str]]:
         yield region.id, f"/regions/{index}/id"
 
 
+def _color_references(operation: Operation) -> tuple[tuple[str, str], ...]:
+    """``(member, colour ID)`` of every palette reference of ``operation``."""
+    members = OPERATION_MEMBERS[operation.type].colors
+    return tuple((member, str(getattr(operation, member))) for member in members)
+
+
 def _semantic_details(document: Document) -> list[ErrorDetail]:
     details: list[ErrorDetail] = []
 
@@ -152,8 +159,9 @@ def _semantic_details(document: Document) -> list[ErrorDetail]:
     for layer_index, layer in enumerate(document.layers):
         total_operations += len(layer.operations)
         for index, operation in enumerate(layer.operations):
-            if operation.color not in color_ids:
-                missing_color(f"/layers/{layer_index}/operations/{index}/color")
+            for member, color_id in _color_references(operation):
+                if color_id not in color_ids:
+                    missing_color(f"/layers/{layer_index}/operations/{index}/{member}")
     if total_operations > MAX_OPERATIONS:
         invalid("/layers", "Document has too many operations", "too_many", maximum=MAX_OPERATIONS)
 

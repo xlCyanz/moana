@@ -1,6 +1,6 @@
 # ADR-015 — Máscaras enteras de primitivas y flood fill acotado en `geometry`
 
-Estado: aceptado · 2026-11-17 · Issue: [MOANA-006](../../issues/MOANA-006.md). Aplica ADR-012 (presupuestos) y ADR-013 (lienzo) a los rasterizadores. [ADR-018](ADR-018-render-pipeline.md) usó el nombre `budget-v2` para la pasada de pintado; la fórmula de `flood_fill` reservada en el punto 5 pasa a la siguiente versión del estimador. La consecuencia sobre `import moana.render` queda sustituida por ADR-018: ahora la garantía es que `render/budget.py` no importa código raster. Ampliado por [ADR-023](ADR-023-aggdraw-paths.md): `geometry` añade `rasterize_path`, un adaptador AggDraw con garantía limitada que no forma parte del perfil entero de este ADR.
+Estado: aceptado · 2026-11-17 · Issue: [MOANA-006](../../issues/MOANA-006.md). Aplica ADR-012 (presupuestos) y ADR-013 (lienzo) a los rasterizadores. [ADR-018](ADR-018-render-pipeline.md) usó el nombre `budget-v2` para la pasada de pintado; la fórmula de `flood_fill` reservada en el punto 5 pasa a la siguiente versión del estimador. La consecuencia sobre `import moana.render` queda sustituida por ADR-018: ahora la garantía es que `render/budget.py` no importa código raster. Ampliado por [ADR-023](ADR-023-aggdraw-paths.md): `geometry` añade `rasterize_path`, un adaptador AggDraw con garantía limitada que no forma parte del perfil entero de este ADR. Ampliado por [ADR-025](ADR-025-ordered-dithering.md): `geometry` añade `select_periodic`, una selección periódica anclada en el lienzo con módulo matemático.
 
 ## Contexto
 

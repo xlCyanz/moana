@@ -29,6 +29,7 @@ from moana.render import (
     plan_budget,
 )
 from moana.schema import (
+    OPERATION_MEMBERS,
     PLANNED_BLEND_MODES,
     PLANNED_COLLECTIONS,
     PLANNED_LAYER_FIELDS,
@@ -42,6 +43,7 @@ from moana.schema import (
     SUPPORTED_SCHEMA_VERSIONS,
     CombinationMask,
     Document,
+    Operation,
     snapshot_digest,
 )
 
@@ -95,7 +97,7 @@ def _fields(value: DataclassInstance) -> dict[str, object]:
 
 @dataclass(frozen=True, slots=True)
 class OperationSummary:
-    """One operation: its ID, type and colour reference."""
+    """One operation: its ID, type and colour reference (colour A of a ``dither``)."""
 
     id: str
     type: str
@@ -146,13 +148,19 @@ class ExceededResource:
 
 @dataclass(frozen=True, slots=True)
 class BudgetReport:
-    """Estimate of one render against the request limits (``budget-v4``, ADR-023)."""
+    """Estimate of one render against the request limits (``budget-v5``, ADR-025).
+
+    ``operations`` counts the operations of the document and ``fills`` the raster
+    fills of the compositor (two per ``dither``). An ``operations`` entry of
+    ``exceeded`` compares ``fills`` with the limit: its ``estimated`` is ``fills``.
+    """
 
     estimator_version: str
     pixel_visits: int
     buffer_bytes: int
     frame_pixels: int
     operations: int
+    fills: int
     layers: int
     within_limits: bool
     exceeded: tuple[ExceededResource, ...]
@@ -271,6 +279,11 @@ def capabilities() -> Capabilities:
     )
 
 
+def _primary_color(operation: Operation) -> str:
+    """The colour an operation summary names: ``color``, or colour A of a ``dither``."""
+    return str(getattr(operation, OPERATION_MEMBERS[operation.type].colors[0]))
+
+
 def _exceeded(error: BudgetExceeded) -> tuple[ExceededResource, ...]:
     """Typed view of the ``resource``/``limit``/``estimated`` context of each detail."""
     resources: list[ExceededResource] = []
@@ -302,6 +315,7 @@ def _budget(document: Document, limits: RenderLimits) -> BudgetReport:
         buffer_bytes=estimate.buffer_bytes,
         frame_pixels=estimate.frame_pixels,
         operations=estimate.operations,
+        fills=estimate.fills,
         layers=estimate.layers,
         within_limits=not exceeded,
         exceeded=exceeded,
@@ -325,7 +339,7 @@ def inspect_document(document: Document, *, limits: RenderLimits | None = None) 
             opacity=layer.opacity,
             blend=layer.blend,
             operations=tuple(
-                OperationSummary(operation.id, operation.type, operation.color)
+                OperationSummary(operation.id, operation.type, _primary_color(operation))
                 for operation in layer.operations
             ),
             mask_id=layer.mask_id,

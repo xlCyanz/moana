@@ -55,6 +55,81 @@
       "title": "Color",
       "type": "object"
     },
+    "DitherOperation": {
+      "additionalProperties": false,
+      "description": "Ordered Bayer dithering of the pixels of mask ``mask_id`` (ADR-025).\n\nPixel ``(x, y)`` of the mask takes ``color_b`` when\n``M[(y - oy) mod size][(x - ox) mod size] < coverage`` (mathematical modulo,\n``origin = [ox, oy]``) and ``color_a`` otherwise; nothing outside the mask is\ndrawn. ``coverage`` is an integer in ``0..size^2``.",
+      "properties": {
+        "color_a": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Color A",
+          "type": "string"
+        },
+        "color_b": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Color B",
+          "type": "string"
+        },
+        "coverage": {
+          "maximum": 16,
+          "minimum": 0,
+          "title": "Coverage",
+          "type": "integer"
+        },
+        "id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "mask_id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Mask Id",
+          "type": "string"
+        },
+        "origin": {
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "maximum": 1048576,
+              "minimum": -1048576,
+              "type": "integer"
+            },
+            {
+              "maximum": 1048576,
+              "minimum": -1048576,
+              "type": "integer"
+            }
+          ],
+          "title": "Origin",
+          "type": "array"
+        },
+        "size": {
+          "enum": [
+            2,
+            4
+          ],
+          "title": "Size",
+          "type": "integer"
+        },
+        "type": {
+          "const": "dither",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "size",
+        "coverage",
+        "origin",
+        "color_a",
+        "color_b",
+        "mask_id"
+      ],
+      "title": "DitherOperation",
+      "type": "object"
+    },
     "EllipseMask": {
       "additionalProperties": false,
       "description": "Mask of the ellipse inscribed in a half-open box (same rule as ``ellipse``).",
@@ -237,6 +312,7 @@
           "items": {
             "discriminator": {
               "mapping": {
+                "dither": "#/$defs/DitherOperation",
                 "ellipse": "#/$defs/EllipseOperation",
                 "line": "#/$defs/LineOperation",
                 "path": "#/$defs/PathOperation",
@@ -264,6 +340,9 @@
               },
               {
                 "$ref": "#/$defs/PathOperation"
+              },
+              {
+                "$ref": "#/$defs/DitherOperation"
               }
             ]
           },

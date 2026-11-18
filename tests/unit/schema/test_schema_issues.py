@@ -113,6 +113,7 @@ def test_unknown_type_lists_supported_operations(minimal: dict[str, Any]) -> Non
     with pytest.raises(errors.ValidationError) as raised:
         validate_document(minimal)
     assert raised.value.details[0].context["expected"] == (
+        "dither",
         "ellipse",
         "line",
         "path",

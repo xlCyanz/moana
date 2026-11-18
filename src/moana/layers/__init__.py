@@ -19,6 +19,7 @@ from moana.layers.composite import (
     MaskCost,
     compose,
     composition_cost,
+    evaluate_mask,
     mask_cost,
     tile_pixels,
 )
@@ -57,6 +58,7 @@ __all__ = [
     "Node",
     "compose",
     "composition_cost",
+    "evaluate_mask",
     "mask_cost",
     "mask_leaves",
     "tile_pixels",

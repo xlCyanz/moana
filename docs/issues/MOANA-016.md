@@ -8,7 +8,7 @@
 - Aliases históricos: MOA-016
 - Phase: P3
 - Priority: P1
-- Status: ready
+- Status: done
 - Complexity: M (relativa, no estimación de tiempo)
 - Dependencies: [MOANA-005](MOANA-005.md), [MOANA-013](MOANA-013.md)
 - Related modules: techniques
@@ -43,13 +43,13 @@ No error diffusion ni dithering automático global.
 
 ## Acceptance criteria
 
-- [ ] AC1: Coverage 0 produce sólo A y N² sólo B dentro de la máscara
-- [ ] AC2: Patrones con origen negativo y traducciones múltiplo del período coinciden exactamente
+- [x] AC1: Coverage 0 produce sólo A y N² sólo B dentro de la máscara
+- [x] AC2: Patrones con origen negativo y traducciones múltiplo del período coinciden exactamente
 
 ## Required tests
 
-- [ ] T1: Todos los thresholds, coberturas y posiciones del período
-- [ ] T2: Máscaras no rectangulares, costuras entre tiles y repetición temporal sin parpadeo
+- [x] T1: Todos los thresholds, coberturas y posiciones del período
+- [x] T2: Máscaras no rectangulares, costuras entre tiles y repetición temporal sin parpadeo
 
 ## Expected deliverables
 
@@ -66,7 +66,7 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Guía para agentes de IA
 
-**Estado para agentes:** Listo: todas las dependencias están `done`; puede empezarse.
+**Estado para agentes:** Completado; usar sólo como referencia del contrato entregado.
 
 ### 1. Preparación
 
@@ -135,4 +135,17 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Evidence
 
-Pendiente de implementación.
+- src/moana/techniques/dither.py: dithering ordenado Bayer 2×2/4×4 con las matrices normativas de §10; t = M[(y−oy) mod N][(x−ox) mod N] con módulo matemático; B si t < coverage, A en el resto; split_dither reparte exactamente la máscara en dos partes disjuntas; techniques sólo importa core y geometry.
+- src/moana/geometry/pattern.py: select_periodic genérico sobre la caja recortada de la máscara (sin reservar fuera de ella); src/moana/core/dither.py: DITHER_SIZES y PATTERN_INDEX_BYTES compartidos.
+- src/moana/schema/: operación dither en schema 1.0 (size 2|4, coverage 0..size², origin, color_a, color_b, mask_id obligatorios) como ampliación previa a la primera publicación; referencias de color y máscara validadas antes del render; tabla de miembros por tipo OPERATION_MEMBERS/MASK_MEMBERS (NodeMembers: colores, máscaras, geometría) con prueba de exhaustividad.
+- src/moana/render/: cada dither son dos fills diferidos sobre la caja de su máscara (layers.evaluate_mask, una máscara construida a la vez); budget-v5 (idéntico a budget-v4 sin dither) con CostEstimate.fills/BudgetReport.fills y el recurso operations comparando fills (2 por dither).
+- Ejemplo examples/specs/dither-dusk.moana.json: bandas del cielo de 4 filas alineadas con el período 4×4 (coberturas 6/8/10, rampa night/dusk/ember/glow), duna a contraluz más oscura que el horizonte con núcleo sólido y transición 2×2 con origen [0,-1] que difiere visiblemente de [0,0]; revisado a 1× y 8× por agente (sin aprobación artística humana).
+- ADR-025 (docs/architecture/decisions/ADR-025-ordered-dithering.md) con notas de cabecera en ADR-011, ADR-012, ADR-015, ADR-017, ADR-018, ADR-020 y ADR-022; MOANA.md 0.1.12-draft (§10, §12, §13, §20); contratos de módulos, índice de ADR, overview, README, guía de desarrollo, AGENTS.md y CLAUDE.md actualizados.
+- Trazabilidad: R009 cubierto (dithering ordenado). Seguimientos documentados en ADR-025: coste por nodo de máscara (budget-v6) e inspect sólo con color A.
+- Gate: scripts/validate.py (1548 passed, src/moana al 100 % de líneas y ramas) y scripts/check_wheel.py verdes; mypy también con --platform win32; generate_schema --check al día. Determinismo entre procesos en macOS; matriz pendiente en main.
+- Revisión: moana-graphics-engineer (aprobado; riesgo heredado de coste por nodo documentado), moana-architect (cambios requeridos, aplicados: fills separado de operations, nota en ADR-012, constantes en core, tabla de miembros para integrar MOANA-018) y moana-pixel-artist (cambios requeridos, aplicados: contraste duna/horizonte, anclaje negativo visible, bandas alineadas al período, rampa con ember, núcleo de sombra sólido).
+- Aprobado por el propietario el 2026-11-17 tras revisión; PR #54 hacia develop.
+- AC1: tests/unit/techniques/test_techniques_dither.py::test_ac1_extreme_coverages_inside_non_rectangular_masks; tests/unit/render/test_render_dither.py::test_ac1_extreme_coverages_paint_only_a_or_only_b_inside_the_mask, ::test_dither_without_background_leaves_outside_transparent y ::test_transparent_colour_b_keeps_the_background.
+- AC2: tests/unit/techniques/test_techniques_dither.py::test_ac2_negative_origin_and_period_translations_match y ::test_ac2_negative_origin_uses_the_floor_modulo; tests/unit/render/test_render_dither.py::test_ac2_origin_translations_by_the_period_give_identical_bytes; tests/integration/test_dither_determinism.py::test_example_dune_matches_hand_computed_pixels (origen [0,-1] distinto de [0,0]).
+- T1: tests/unit/techniques/test_techniques_dither.py::test_matrices_are_the_normative_ones, ::test_t1_every_threshold_position_and_coverage y ::test_t1_every_coverage_on_a_full_canvas_period_counts; tests/unit/render/test_render_dither.py::test_t1_every_coverage_matches_the_literal_matrix; tests/integration/test_dither_determinism.py::test_example_sky_matches_the_hand_computed_bayer_bands.
+- T2: tests/unit/techniques/test_techniques_dither.py::test_t2_non_rectangular_masks_split_exactly, ::test_t2_adjacent_tiles_with_a_shared_anchor_have_no_seam, ::test_t2_repeated_dithering_is_identical y ::test_property_parts_partition_the_mask_like_the_oracle; tests/unit/render/test_render_dither.py::test_t2_combined_non_rectangular_mask, ::test_t2_adjacent_tiles_with_a_shared_anchor_have_no_seam y ::test_t2_repeated_renders_never_flicker; tests/integration/test_dither_determinism.py::test_t2_fresh_processes_with_any_hash_seed_agree y ::test_t2_repeated_renders_in_one_process_agree.

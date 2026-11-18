@@ -6,7 +6,8 @@ every problem by JSON Pointer. :func:`canonical_json` and :func:`snapshot_digest
 implement the canonical normalisation of section 14; :func:`document_json_schema`
 generates the versioned JSON Schema stored in ``schemas/``. Masks and regions form a
 reference DAG checked by :mod:`moana.schema.references`; :func:`resolve_region`
-resolves a semantic region by ID (ADR-022).
+resolves a semantic region by ID (ADR-022). A ``dither`` operation names two palette
+colours and a clipping mask (ADR-025).
 """
 
 from moana.schema._reader import DEFAULT_PARSE_LIMITS, ParseLimits
@@ -35,10 +36,12 @@ from moana.schema.document import (
     snapshot_digest,
     validate_document,
 )
+from moana.schema.members import MASK_MEMBERS, OPERATION_MEMBERS, NodeMembers
 from moana.schema.models import (
     Canvas,
     Color,
     CombinationMask,
+    DitherOperation,
     Document,
     EllipseMask,
     EllipseOperation,
@@ -62,6 +65,7 @@ from moana.schema.models import (
     RectOperation,
     Region,
     ShapeMask,
+    ShapeOperation,
     SubtractMask,
     UnionMask,
     XorMask,
@@ -71,6 +75,8 @@ from moana.schema.references import ResolvedRegion, mask_dependencies, resolve_r
 __all__ = [
     "DEFAULT_PARSE_LIMITS",
     "JSON_SCHEMA_DIALECT",
+    "MASK_MEMBERS",
+    "OPERATION_MEMBERS",
     "PLANNED_BLEND_MODES",
     "PLANNED_COLLECTIONS",
     "PLANNED_LAYER_FIELDS",
@@ -89,6 +95,7 @@ __all__ = [
     "Canvas",
     "Color",
     "CombinationMask",
+    "DitherOperation",
     "Document",
     "EllipseMask",
     "EllipseOperation",
@@ -98,6 +105,7 @@ __all__ = [
     "LineOperation",
     "MaskNode",
     "Metadata",
+    "NodeMembers",
     "Operation",
     "Palette",
     "ParseLimits",
@@ -114,6 +122,7 @@ __all__ = [
     "Region",
     "ResolvedRegion",
     "ShapeMask",
+    "ShapeOperation",
     "SubtractMask",
     "UnionMask",
     "XorMask",
