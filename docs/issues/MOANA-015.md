@@ -8,7 +8,7 @@
 - Aliases históricos: MOA-015
 - Phase: P3
 - Priority: P1
-- Status: review
+- Status: done
 - Complexity: M (relativa, no estimación de tiempo)
 - Dependencies: [MOANA-005](MOANA-005.md), [MOANA-013](MOANA-013.md)
 - Related modules: techniques, palette
@@ -43,13 +43,13 @@ No sombreado 3D físico ni multiplicación RGB que cree colores ocultos.
 
 ## Acceptance criteria
 
-- [ ] AC1: Solapamientos toman la última banda y todos los colores pertenecen a la rampa
-- [ ] AC2: Modificar una máscara de sombra conserva geometría/IDs y da un diff localizado documentado
+- [x] AC1: Solapamientos toman la última banda y todos los colores pertenecen a la rampa
+- [x] AC2: Modificar una máscara de sombra conserva geometría/IDs y da un diff localizado documentado
 
 ## Required tests
 
-- [ ] T1: Bandas vacías, solapamientos, clamp y cambios de orientación
-- [ ] T2: Fixtures manuales con rampa de 3/5 tonos y píxeles de frontera
+- [x] T1: Bandas vacías, solapamientos, clamp y cambios de orientación
+- [x] T2: Fixtures manuales con rampa de 3/5 tonos y píxeles de frontera
 
 ## Expected deliverables
 
@@ -66,7 +66,7 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Guía para agentes de IA
 
-**Estado para agentes:** En revisión: sólo correcciones de la revisión; no añadir alcance.
+**Estado para agentes:** Completado; usar sólo como referencia del contrato entregado.
 
 ### 1. Preparación
 
@@ -145,6 +145,7 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 - ADR-028 (docs/architecture/decisions/ADR-028-band-shading.md) con notas de cabecera en ADR-011, 014, 018, 020, 022, 024, 025 y 027; MOANA.md 0.1.16-draft (§9, §10, §12, §13, §15, §17, §20); contratos de módulos, índice de ADR, overview, README, AGENTS.md y CLAUDE.md actualizados. El issue toca también schema, render, editing y api (justificado en ADR-028).
 - Gate sobre 6793f4b: scripts/validate.py (2098 passed, src/moana al 100 % de líneas y ramas) y scripts/check_wheel.py verdes; mypy también con --platform win32; generate_schema --check al día. Evidencia de plataforma: local macOS; matriz pendiente en main.
 - Revisión: moana-architect (cambios requeridos, aplicados: IDs de banda en reused_id/affected_ids, document_ids público, filas anidadas acotadas, selective outline asignado, docstrings), moana-graphics-engineer (cambios requeridos, aplicados: cota por fill general con SHADE_FOLD_BYTES de 3 operandos y test por banda en cajas desplazadas, fixture 1×1), moana-qa-engineer (aprobado con menores, aplicados: cifra de cobertura, propiedad AC1 de documento, bordes de schema, rampa de 1 tono, field en ramp_warnings) y moana-pixel-artist (cambios requeridos, aplicados: terminadores ne/sw y rebote limitado al cuadrante se, 0 singletons).
+- Aprobado por el propietario el 2026-11-17 tras revisión; PR #58 hacia develop.
 - AC1: tests/unit/techniques/test_techniques_shading.py::test_ac1_overlap_goes_to_the_last_listed_band y ::test_ac1_visible_parts_are_disjoint_and_cover_the_union; tests/unit/render/test_render_shade.py::test_ac1_overlap_takes_the_last_band_and_only_ramp_colours, ::test_ac1_every_pixel_takes_the_ramp_step_of_the_last_band_containing_it (Hypothesis contra oráculo de conjuntos), ::test_ac1_exact_pixels_on_a_one_pixel_canvas y ::test_ac1_translucent_ramp_steps_never_blend_two_bands.
 - AC2: tests/unit/editing/test_editing_shade.py::test_ac2_moving_the_shadow_mask_keeps_ids_and_changes_one_column (diff documentado: columna x=4, 8 píxeles; también en ADR-028 §6) y ::test_ac2_any_shadow_edit_only_changes_pixels_of_the_old_or_new_mask (diferencia simétrica); ::test_removing_a_shade_retires_its_band_ids, ::test_an_inserted_band_id_must_be_new y ::test_removing_a_layer_reports_the_band_ids_of_its_shades.
 - T1: tests/unit/techniques/test_techniques_shading.py::test_t1_turning_the_light_swaps_the_lit_and_the_shadowed_band, ::test_t1_rotating_light_and_facings_together_changes_nothing, ::test_t1_opposite_facings_get_opposite_levels_within_intensity, ::test_t1_steps_are_clamped_to_the_ramp, ::test_t1_offsets_beyond_the_ramp_are_clamped y ::test_t1_empty_bands_and_fully_covered_bands; tests/unit/render/test_render_shade.py::test_t1_listing_order_decides_the_overlap, ::test_t1_turning_the_light_swaps_the_tones_without_touching_the_masks, ::test_t1_offsets_are_clamped_to_the_ramp y ::test_t1_empty_bands_paint_nothing.

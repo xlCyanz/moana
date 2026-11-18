@@ -1028,7 +1028,7 @@
       "id": "MOANA-015",
       "title": "Añadir bandas de sombreado e iluminación",
       "phase": "P3",
-      "status": "review",
+      "status": "done",
       "priority": "P1",
       "dependencies": [
         "MOANA-005",
@@ -1061,7 +1061,8 @@
         "Contorno selectivo de §8 pendiente: ADR-028 lo asigna a MOANA-017, con nota técnica en el catálogo.",
         "ADR-028 (docs/architecture/decisions/ADR-028-band-shading.md) con notas de cabecera en ADR-011, 014, 018, 020, 022, 024, 025 y 027; MOANA.md 0.1.16-draft (§9, §10, §12, §13, §15, §17, §20); contratos de módulos, índice de ADR, overview, README, AGENTS.md y CLAUDE.md actualizados. El issue toca también schema, render, editing y api (justificado en ADR-028).",
         "Gate sobre 6793f4b: scripts/validate.py (2098 passed, src/moana al 100 % de líneas y ramas) y scripts/check_wheel.py verdes; mypy también con --platform win32; generate_schema --check al día. Evidencia de plataforma: local macOS; matriz pendiente en main.",
-        "Revisión: moana-architect (cambios requeridos, aplicados: IDs de banda en reused_id/affected_ids, document_ids público, filas anidadas acotadas, selective outline asignado, docstrings), moana-graphics-engineer (cambios requeridos, aplicados: cota por fill general con SHADE_FOLD_BYTES de 3 operandos y test por banda en cajas desplazadas, fixture 1×1), moana-qa-engineer (aprobado con menores, aplicados: cifra de cobertura, propiedad AC1 de documento, bordes de schema, rampa de 1 tono, field en ramp_warnings) y moana-pixel-artist (cambios requeridos, aplicados: terminadores ne/sw y rebote limitado al cuadrante se, 0 singletons)."
+        "Revisión: moana-architect (cambios requeridos, aplicados: IDs de banda en reused_id/affected_ids, document_ids público, filas anidadas acotadas, selective outline asignado, docstrings), moana-graphics-engineer (cambios requeridos, aplicados: cota por fill general con SHADE_FOLD_BYTES de 3 operandos y test por banda en cajas desplazadas, fixture 1×1), moana-qa-engineer (aprobado con menores, aplicados: cifra de cobertura, propiedad AC1 de documento, bordes de schema, rampa de 1 tono, field en ramp_warnings) y moana-pixel-artist (cambios requeridos, aplicados: terminadores ne/sw y rebote limitado al cuadrante se, 0 singletons).",
+        "Aprobado por el propietario el 2026-11-17 tras revisión; PR #58 hacia develop."
       ],
       "aliases": [
         "MOA-015"
@@ -1167,7 +1168,7 @@
       "id": "MOANA-017",
       "title": "Crear presets de materiales versionados",
       "phase": "P3",
-      "status": "blocked",
+      "status": "ready",
       "priority": "P1",
       "dependencies": [
         "MOANA-014",
@@ -1215,7 +1216,7 @@
       "risks": [
         "Una receta reproducible puede seguir siendo visualmente mala; separar evaluación humana."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-015",
+      "blocking_reason": null,
       "acceptance_evidence": {},
       "test_evidence": {}
     },
@@ -1735,7 +1736,7 @@
       "risks": [
         "Un score no debe presentarse como garantía profesional ni como aprobación humana."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-015, MOANA-022",
+      "blocking_reason": "Dependencias pendientes: MOANA-022",
       "acceptance_evidence": {},
       "test_evidence": {}
     },
