@@ -474,7 +474,7 @@
       "id": "MOANA-007",
       "title": "Añadir adaptador de paths AggDraw",
       "phase": "P3",
-      "status": "review",
+      "status": "done",
       "priority": "P2",
       "dependencies": [
         "MOANA-006",
@@ -508,7 +508,8 @@
         "ADR-023 (docs/architecture/decisions/ADR-023-aggdraw-paths.md) con notas de cabecera en ADR-005, ADR-011, ADR-015, ADR-018, ADR-020 y ADR-022; MOANA.md 0.1.10-draft (§6, §12, §13, §14, §20); ejemplo examples/specs/path-sail.moana.json; contratos de módulos, índice de ADR, overview, README, guía de desarrollo, AGENTS.md y CLAUDE.md actualizados.",
         "Trazabilidad: R004 cubierto; R015 cubierto para aggdraw-v1 sólo en procesos locales (matriz pendiente en main).",
         "Gate: scripts/validate.py (1414 passed, src/moana al 100 % de líneas y ramas) y scripts/check_wheel.py verdes; mypy también con --platform win32; generate_schema --check al día. Sin ejecución en Linux ni Windows reales.",
-        "Revisión: moana-graphics-engineer (cambios requeridos, aplicados: garantías de ADR-023 §4 corregidas con contraejemplos, corte no local por caja, memoria nativa de AGG en el presupuesto, oráculo independiente del error de cuerda), moana-architect (cambios requeridos, aplicados: contrato de provenance y de capacidad de ejecución, path_cells informado en inspect, evidencia T2 parcial, constante de backend probada) y moana-python-engineer (cambios requeridos, aplicados: parseo único por modelo, FixedPath autovalidado, punteros por comando, constructor único de backend_unavailable, carga robusta de aggdraw, versión de Pillow por metadatos, timeouts en subprocess)."
+        "Revisión: moana-graphics-engineer (cambios requeridos, aplicados: garantías de ADR-023 §4 corregidas con contraejemplos, corte no local por caja, memoria nativa de AGG en el presupuesto, oráculo independiente del error de cuerda), moana-architect (cambios requeridos, aplicados: contrato de provenance y de capacidad de ejecución, path_cells informado en inspect, evidencia T2 parcial, constante de backend probada) y moana-python-engineer (cambios requeridos, aplicados: parseo único por modelo, FixedPath autovalidado, punteros por comando, constructor único de backend_unavailable, carga robusta de aggdraw, versión de Pillow por metadatos, timeouts en subprocess).",
+        "Aprobado por el propietario el 2026-11-17 tras revisión; PR #53 hacia develop."
       ],
       "aliases": [
         "MOA-007"
@@ -2177,7 +2178,7 @@
       "risks": [
         "No declarar CI remoto de cambios locales ni licencia decidida sin evidencia del propietario."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-007, MOANA-021, MOANA-023, MOANA-024, MOANA-025, MOANA-027, MOANA-030, MOANA-032, MOANA-033, MOANA-034",
+      "blocking_reason": "Dependencias pendientes: MOANA-021, MOANA-023, MOANA-024, MOANA-025, MOANA-027, MOANA-030, MOANA-032, MOANA-033, MOANA-034",
       "acceptance_evidence": {},
       "test_evidence": {}
     }

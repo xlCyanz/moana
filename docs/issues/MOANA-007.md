@@ -8,7 +8,7 @@
 - Aliases históricos: MOA-007
 - Phase: P3
 - Priority: P2
-- Status: review
+- Status: done
 - Complexity: M (relativa, no estimación de tiempo)
 - Dependencies: [MOANA-006](MOANA-006.md), [MOANA-010](MOANA-010.md), [MOANA-028](MOANA-028.md)
 - Related modules: geometry, render
@@ -43,13 +43,13 @@ No fuentes, SVG completo ni rasterización vectorial genérica.
 
 ## Acceptance criteria
 
-- [ ] AC1: Paths cerrados producen únicamente máscara binaria y no introducen colores por AA
-- [ ] AC2: Entradas desconocidas o excesivas fallan antes del adaptador; ausencia de capacidad da error explícito
+- [x] AC1: Paths cerrados producen únicamente máscara binaria y no introducen colores por AA
+- [x] AC2: Entradas desconocidas o excesivas fallan antes del adaptador; ausencia de capacidad da error explícito
 
 ## Required tests
 
-- [ ] T1: Fixtures de curvas pequeñas, joins, cierres y curvas fuera de lienzo
-- [ ] T2: Repetición con entorno fijado y comparación backend por plataforma sin prometer equivalencia al raster entero
+- [x] T1: Fixtures de curvas pequeñas, joins, cierres y curvas fuera de lienzo
+- [x] T2: Repetición con entorno fijado y comparación backend por plataforma sin prometer equivalencia al raster entero
 
 ## Expected deliverables
 
@@ -66,7 +66,7 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Guía para agentes de IA
 
-**Estado para agentes:** En revisión: sólo correcciones de la revisión; no añadir alcance.
+**Estado para agentes:** Completado; usar sólo como referencia del contrato entregado.
 
 ### 1. Preparación
 
@@ -145,6 +145,7 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 - Trazabilidad: R004 cubierto; R015 cubierto para aggdraw-v1 sólo en procesos locales (matriz pendiente en main).
 - Gate: scripts/validate.py (1414 passed, src/moana al 100 % de líneas y ramas) y scripts/check_wheel.py verdes; mypy también con --platform win32; generate_schema --check al día. Sin ejecución en Linux ni Windows reales.
 - Revisión: moana-graphics-engineer (cambios requeridos, aplicados: garantías de ADR-023 §4 corregidas con contraejemplos, corte no local por caja, memoria nativa de AGG en el presupuesto, oráculo independiente del error de cuerda), moana-architect (cambios requeridos, aplicados: contrato de provenance y de capacidad de ejecución, path_cells informado en inspect, evidencia T2 parcial, constante de backend probada) y moana-python-engineer (cambios requeridos, aplicados: parseo único por modelo, FixedPath autovalidado, punteros por comando, constructor único de backend_unavailable, carga robusta de aggdraw, versión de Pillow por metadatos, timeouts en subprocess).
+- Aprobado por el propietario el 2026-11-17 tras revisión; PR #53 hacia develop.
 - AC1: tests/unit/geometry/test_geometry_paths.py::test_ac1_paths_give_binary_masks_inside_their_box, ::test_integer_rectangles_equal_the_integer_rect_mask, ::test_polygon_paths_agree_with_the_integer_polygon_where_guaranteed, ::test_curves_stay_within_the_hull_of_their_control_points, ::test_fill_rule_is_nonzero_winding, ::test_the_box_cut_is_not_local, ::test_result_is_a_moana_mask_without_backend_objects; tests/unit/render/test_render_paths.py::test_ac1_render_has_only_palette_colours_inside_the_path_boxes y ::test_ac1_rgba_profile_keeps_binary_coverage; tests/unit/api/test_api_paths.py::test_example_with_paths_loads_inspects_and_renders.
 - AC2: tests/unit/core/test_core_vector_path.py::test_invalid_commands_raise_located_validation_errors, ::test_fixed_paths_validate_themselves; tests/unit/schema/test_schema_paths.py::test_invalid_path_payloads_are_located_validation_errors y ::test_order_errors_carry_the_command_index; tests/unit/render/test_render_paths.py::test_ac2_unvalidated_models_fail_validation_before_the_adapter, ::test_ac2_missing_backend_fails_before_budget_and_raster, ::test_ac2_untested_version_names_the_version_and_the_mask_leaf y ::test_renderer_and_adapter_report_the_same_backend_error; tests/unit/geometry/test_geometry_paths.py::test_missing_backend_is_an_explicit_unsupported_operation, ::test_a_backend_without_the_used_api_is_incompatible; tests/unit/api/test_api_paths.py::test_capabilities_move_path_to_planned_without_the_backend y ::test_cli_render_without_backend_is_unsupported_operation.
 - T1: tests/unit/geometry/test_geometry_paths.py::test_convex_and_join_fixtures_lie_between_the_geometric_oracles, ::test_explicit_and_implicit_close_fill_the_same_pixels, ::test_partly_off_canvas_paths_are_clipped_without_wraparound, ::test_degenerate_paths_of_zero_area_draw_nothing, ::test_far_away_coordinates_cost_nothing_and_still_clip, ::test_case_a_one_pixel_wall_between_two_holes_is_out, ::test_case_b_winding_minus_one_strip_through_a_shared_vertex_is_out, ::test_case_c_stacked_slivers_let_in_a_pixel_far_from_the_outline, ::test_case_d_four_stacked_eighth_pixel_strips_fill_two_rows; tests/unit/core/test_core_vector_path.py::test_chosen_steps_bound_the_chord_error; tests/unit/render/test_render_paths.py::test_budget_v4_hand_oracle_for_a_square_path, ::test_plan_budget_admission_means_render_succeeds_with_paths y ::test_path_cells_over_the_engine_limit_are_rejected_by_the_plan.
