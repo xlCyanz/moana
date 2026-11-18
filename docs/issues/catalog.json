@@ -956,7 +956,7 @@
       "id": "MOANA-014",
       "title": "Crear contornos y análisis de clusters",
       "phase": "P3",
-      "status": "review",
+      "status": "done",
       "priority": "P1",
       "dependencies": [
         "MOANA-013",
@@ -990,7 +990,8 @@
         "Ejemplo examples/specs/outlined-slime.moana.json: contorno exterior ink, contorno interior slime_dark recortado al lado en sombra (capa body_shade) y dos glints singleton conservados por la excepción eye_glints (0 avisos con ella, 2 sin ella); revisión artística de agente (no aprobación humana).",
         "ADR-027 (docs/architecture/decisions/ADR-027-outlines-clusters.md) con notas de cabecera en ADR-011, ADR-015, ADR-018, ADR-020, ADR-022 y ADR-025; MOANA.md 0.1.15-draft (§8, §12, §13, §19, §20); contratos de módulos, índice de ADR, overview, README, AGENTS.md y CLAUDE.md actualizados; JSON Schema regenerado; sin módulo quality (MOANA-026).",
         "Gate sobre develop 74dae10 (MOANA-019 incluido): scripts/validate.py (1932 passed, src/moana al 100 % de líneas y ramas) y scripts/check_wheel.py verdes; mypy también con --platform win32; generate_schema --check al día. Evidencia de plataforma: local macOS; matriz pendiente en main.",
-        "Revisión: moana-graphics-engineer (cambios requeridos, aplicados: morphology_bytes como cota real con cumsum en el sitio y término de búferes de iteración, test de pico en 42 cajas/radios), moana-architect (cambios requeridos, aplicados: deadline y cota en la supresión, presupuesto por solicitud, rebase sobre MOANA-019, comentarios y contratos), moana-qa-engineer (cambios requeridos, aplicados: MaskCover y MAX_CLUSTER_EXCEPTIONS, memoria de clusters acotada, casos límite exactos, test de escalera corregido, severity Literal) y moana-pixel-artist (cambios requeridos, aplicados: sombreado según la luz y sheen separado del ojo)."
+        "Revisión: moana-graphics-engineer (cambios requeridos, aplicados: morphology_bytes como cota real con cumsum en el sitio y término de búferes de iteración, test de pico en 42 cajas/radios), moana-architect (cambios requeridos, aplicados: deadline y cota en la supresión, presupuesto por solicitud, rebase sobre MOANA-019, comentarios y contratos), moana-qa-engineer (cambios requeridos, aplicados: MaskCover y MAX_CLUSTER_EXCEPTIONS, memoria de clusters acotada, casos límite exactos, test de escalera corregido, severity Literal) y moana-pixel-artist (cambios requeridos, aplicados: sombreado según la luz y sheen separado del ojo).",
+        "Aprobado por el propietario el 2026-11-17 tras revisión; PR #57 hacia develop."
       ],
       "aliases": [
         "MOA-014"
@@ -1196,7 +1197,7 @@
       "risks": [
         "Una receta reproducible puede seguir siendo visualmente mala; separar evaluación humana."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-014, MOANA-015",
+      "blocking_reason": "Dependencias pendientes: MOANA-015",
       "acceptance_evidence": {},
       "test_evidence": {}
     },
@@ -1716,7 +1717,7 @@
       "risks": [
         "Un score no debe presentarse como garantía profesional ni como aprobación humana."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-014, MOANA-015, MOANA-022",
+      "blocking_reason": "Dependencias pendientes: MOANA-015, MOANA-022",
       "acceptance_evidence": {},
       "test_evidence": {}
     },

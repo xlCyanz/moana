@@ -8,7 +8,7 @@
 - Aliases históricos: MOA-014
 - Phase: P3
 - Priority: P1
-- Status: review
+- Status: done
 - Complexity: L (relativa, no estimación de tiempo)
 - Dependencies: [MOANA-013](MOANA-013.md), [MOANA-005](MOANA-005.md)
 - Related modules: techniques, quality
@@ -43,13 +43,13 @@ No clasificar intención artística como error matemático ni borrar detalles au
 
 ## Acceptance criteria
 
-- [ ] AC1: Contornos internos/externos respetan ancho, huecos y clipping
-- [ ] AC2: Un brillo aislado puede conservarse mediante excepción; el análisis no cambia el documento
+- [x] AC1: Contornos internos/externos respetan ancho, huecos y clipping
+- [x] AC2: Un brillo aislado puede conservarse mediante excepción; el análisis no cambia el documento
 
 ## Required tests
 
-- [ ] T1: Máscaras con huecos, contactos de esquina, diagonal y borde de canvas
-- [ ] T2: Componentes conocidos, outline de ancho 1/2 y operación editable que reproduce la máscara
+- [x] T1: Máscaras con huecos, contactos de esquina, diagonal y borde de canvas
+- [x] T2: Componentes conocidos, outline de ancho 1/2 y operación editable que reproduce la máscara
 
 ## Expected deliverables
 
@@ -66,7 +66,7 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Guía para agentes de IA
 
-**Estado para agentes:** En revisión: sólo correcciones de la revisión; no añadir alcance.
+**Estado para agentes:** Completado; usar sólo como referencia del contrato entregado.
 
 ### 1. Preparación
 
@@ -146,6 +146,7 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 - ADR-027 (docs/architecture/decisions/ADR-027-outlines-clusters.md) con notas de cabecera en ADR-011, ADR-015, ADR-018, ADR-020, ADR-022 y ADR-025; MOANA.md 0.1.15-draft (§8, §12, §13, §19, §20); contratos de módulos, índice de ADR, overview, README, AGENTS.md y CLAUDE.md actualizados; JSON Schema regenerado; sin módulo quality (MOANA-026).
 - Gate sobre develop 74dae10 (MOANA-019 incluido): scripts/validate.py (1932 passed, src/moana al 100 % de líneas y ramas) y scripts/check_wheel.py verdes; mypy también con --platform win32; generate_schema --check al día. Evidencia de plataforma: local macOS; matriz pendiente en main.
 - Revisión: moana-graphics-engineer (cambios requeridos, aplicados: morphology_bytes como cota real con cumsum en el sitio y término de búferes de iteración, test de pico en 42 cajas/radios), moana-architect (cambios requeridos, aplicados: deadline y cota en la supresión, presupuesto por solicitud, rebase sobre MOANA-019, comentarios y contratos), moana-qa-engineer (cambios requeridos, aplicados: MaskCover y MAX_CLUSTER_EXCEPTIONS, memoria de clusters acotada, casos límite exactos, test de escalera corregido, severity Literal) y moana-pixel-artist (cambios requeridos, aplicados: sombreado según la luz y sheen separado del ojo).
+- Aprobado por el propietario el 2026-11-17 tras revisión; PR #57 hacia develop.
 - AC1: tests/unit/techniques/test_techniques_outline.py::test_ac1_outer_width_1_rings_the_square_and_fills_its_hole, ::test_ac1_inner_width_1_follows_the_border_and_the_hole, ::test_ac1_width_2_doubles_the_ring_on_both_sides, ::test_ac1_inner_width_2_around_a_single_pixel_hole, ::test_ac1_clipping_at_the_canvas_corner y ::test_outline_matches_the_set_oracle (Hypothesis contra oráculo de conjuntos); tests/unit/render/test_render_outline.py::test_ac1_document_outline_at_the_canvas_edge; tests/unit/geometry/test_geometry_morphology.py::test_width_16_matches_the_set_oracle_on_explicit_masks.
 - AC2: tests/unit/api/test_api_clusters.py::test_ac2_without_exception_the_glint_warns, ::test_ac2_region_exception_keeps_the_glint_without_warning (canonical_json, snapshot_digest y normalize_document idénticos) y ::test_example_outlined_slime_keeps_its_glints_by_exception; tests/unit/techniques/test_techniques_clusters.py::test_ac2_region_exception_suppresses_and_keeps_the_finding_visible y ::test_many_exceptions_cost_one_cover_query_per_finding.
 - T1: tests/unit/techniques/test_techniques_outline.py::test_t1_full_canvas_has_no_outer_outline_and_an_edge_inner_one, ::test_t1_corner_contact_fills_the_notches y ::test_t1_diagonal_line; tests/unit/techniques/test_techniques_clusters.py::test_t1_corner_contact_is_two_clusters_with_4_and_one_with_8, ::test_t1_hole_does_not_split_a_ring_and_the_hole_colour_is_its_own_cluster y ::test_t1_canvas_edges_never_wrap; tests/unit/geometry/test_geometry_morphology.py::test_a_hole_shrinks_under_dilation_and_grows_under_erosion, ::test_corner_contact_and_diagonal, ::test_dilation_clips_to_the_canvas_without_wraparound, ::test_erosion_treats_the_off_canvas_exterior_as_transparent y ::test_operators_match_the_set_oracle.
