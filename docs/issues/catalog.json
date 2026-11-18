@@ -1725,7 +1725,7 @@
       "id": "MOANA-029",
       "title": "Verificar determinismo entre procesos y plataformas",
       "phase": "P2",
-      "status": "review",
+      "status": "done",
       "priority": "P1",
       "dependencies": [
         "MOANA-010",
@@ -1758,7 +1758,8 @@
         "ADR-021 (docs/architecture/decisions/ADR-021-cross-platform-determinism.md): entre plataformas se garantizan píxeles decodificados (digest §14); bytes PNG sólo con el mismo codec (ADR-019). Contratos de módulos, índice de ADR, guía de desarrollo, AGENTS.md y CLAUDE.md actualizados.",
         "Evidencia entre plataformas: sólo local en macOS arm64 / Python 3.12 (Pillow 13.0.0, zlib-ng 1.3.1); la matriz Linux/macOS/Windows × 3.12/3.13/3.14 queda pendiente de la ejecución del workflow Quality en main.",
         "Gate: scripts/validate.py verde; scripts/determinism.py al 100 % de líneas y ramas con sus tests; mypy también con --platform win32.",
-        "Revisión: moana-qa-engineer (cambios menores, aplicados: cobertura de plataformas y duplicados en compare, informe de error por sonda fallida, ramas negativas, test de workflow con shlex) y moana-graphics-engineer (valores recalculados a mano correctos; cambios aplicados: empate .5, orden lexicográfico de Bresenham, línea no diagonal recortada, modo PNG exigido al decodificar, aviso de bytes dentro del mismo codec, redacción de ADR-021)."
+        "Revisión: moana-qa-engineer (cambios menores, aplicados: cobertura de plataformas y duplicados en compare, informe de error por sonda fallida, ramas negativas, test de workflow con shlex) y moana-graphics-engineer (valores recalculados a mano correctos; cambios aplicados: empate .5, orden lexicográfico de Bresenham, línea no diagonal recortada, modo PNG exigido al decodificar, aviso de bytes dentro del mismo codec, redacción de ADR-021).",
+        "Aprobado por el propietario el 2026-11-17 tras revisión; PR #50 hacia develop."
       ],
       "aliases": [
         "MOA-029"
@@ -2126,7 +2127,7 @@
       "risks": [
         "No declarar CI remoto de cambios locales ni licencia decidida sin evidencia del propietario."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-007, MOANA-021, MOANA-023, MOANA-024, MOANA-025, MOANA-027, MOANA-029, MOANA-030, MOANA-032, MOANA-033, MOANA-034",
+      "blocking_reason": "Dependencias pendientes: MOANA-007, MOANA-021, MOANA-023, MOANA-024, MOANA-025, MOANA-027, MOANA-030, MOANA-032, MOANA-033, MOANA-034",
       "acceptance_evidence": {},
       "test_evidence": {}
     }

@@ -8,7 +8,7 @@
 - Aliases históricos: MOA-029
 - Phase: P2
 - Priority: P1
-- Status: review
+- Status: done
 - Complexity: M (relativa, no estimación de tiempo)
 - Dependencies: [MOANA-010](MOANA-010.md), [MOANA-011](MOANA-011.md), [MOANA-028](MOANA-028.md)
 - Related modules: ci, tests.integration
@@ -43,13 +43,13 @@ No afirmar portabilidad de backend AggDraw fuera de combinaciones realmente veri
 
 ## Acceptance criteria
 
-- [ ] AC1: Perfil entero produce mismos digests en Linux/macOS/Windows
-- [ ] AC2: CI publica evidencia útil cuando hay divergencia y no actualiza goldens automáticamente
+- [x] AC1: Perfil entero produce mismos digests en Linux/macOS/Windows
+- [x] AC2: CI publica evidencia útil cuando hay divergencia y no actualiza goldens automáticamente
 
 ## Required tests
 
-- [ ] T1: Fixtures de diagonales, alpha, grupos, transparencias y clipping
-- [ ] T2: Subprocesos con semillas distintas, orden de claves y export/decode frente a RGBA maestro
+- [x] T1: Fixtures de diagonales, alpha, grupos, transparencias y clipping
+- [x] T2: Subprocesos con semillas distintas, orden de claves y export/decode frente a RGBA maestro
 
 ## Expected deliverables
 
@@ -66,7 +66,7 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Guía para agentes de IA
 
-**Estado para agentes:** En revisión: sólo correcciones de la revisión; no añadir alcance.
+**Estado para agentes:** Completado; usar sólo como referencia del contrato entregado.
 
 ### 1. Preparación
 
@@ -144,6 +144,7 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 - Evidencia entre plataformas: sólo local en macOS arm64 / Python 3.12 (Pillow 13.0.0, zlib-ng 1.3.1); la matriz Linux/macOS/Windows × 3.12/3.13/3.14 queda pendiente de la ejecución del workflow Quality en main.
 - Gate: scripts/validate.py verde; scripts/determinism.py al 100 % de líneas y ramas con sus tests; mypy también con --platform win32.
 - Revisión: moana-qa-engineer (cambios menores, aplicados: cobertura de plataformas y duplicados en compare, informe de error por sonda fallida, ramas negativas, test de workflow con shlex) y moana-graphics-engineer (valores recalculados a mano correctos; cambios aplicados: empate .5, orden lexicográfico de Bresenham, línea no diagonal recortada, modo PNG exigido al decodificar, aviso de bytes dentro del mismo codec, redacción de ADR-021).
+- Aprobado por el propietario el 2026-11-17 tras revisión; PR #50 hacia develop.
 - AC1: Job determinism de .github/workflows/ci.yml (--expected-reports 9 --expected-platforms Darwin,Linux,Windows; pendiente de la primera ejecución en main); tests/integration/test_cross_platform_determinism.py::test_ac1_compare_accepts_the_full_matrix, ::test_ac2_compare_rejects_duplicate_and_missing_platforms y ::test_ac1_t2_fresh_processes_seeds_and_key_orders_agree (local macOS); tests/test_repository_tools.py::test_ci_publishes_and_compares_determinism_reports.
 - AC2: tests/integration/test_cross_platform_determinism.py::test_ac2_pixel_divergence_writes_diagnostics_and_keeps_the_manifest (expected/actual/diff, píxeles distintos y bbox, manifiesto intacto), ::test_ac2_failing_probe_still_writes_an_error_report, ::test_ac2_compare_separates_codec_from_pixel_differences, ::test_ac2_compare_warns_when_bytes_differ_within_one_codec y el resto de test_ac2_*; tests/test_repository_tools.py::test_ci_actions_are_pinned_and_permissions_minimal.
 - T1: tests/integration/test_cross_platform_determinism.py::test_t1_manifest_is_the_independent_oracle, ::test_t1_corpus_covers_the_required_fixtures, ::test_t1_hand_values_of_the_semitransparent_cases, ::test_t1_rounding_case_detects_half_even, ::test_t1_line_masks_depend_on_sorting_and_clip_order y ::test_t1_render_matches_manifest (6 casos × 3 variantes).
