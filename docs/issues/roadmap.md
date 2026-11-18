@@ -51,7 +51,7 @@ Estado: 5/8 issues completados.
 
 - [MOANA-007](MOANA-007.md) — Añadir adaptador de paths AggDraw (done)
 - [MOANA-013](MOANA-013.md) — Añadir máscaras y regiones semánticas (done)
-- [MOANA-014](MOANA-014.md) — Crear contornos y análisis de clusters (ready)
+- [MOANA-014](MOANA-014.md) — Crear contornos y análisis de clusters (review)
 - [MOANA-015](MOANA-015.md) — Añadir bandas de sombreado e iluminación (ready)
 - [MOANA-016](MOANA-016.md) — Implementar dithering ordenado (done)
 - [MOANA-017](MOANA-017.md) — Crear presets de materiales versionados (blocked)
@@ -88,4 +88,4 @@ Estado: 0/8 issues completados.
 
 ## Siguiente paso
 
-Implementar [MOANA-014](MOANA-014.md): Crear contornos y análisis de clusters.
+Implementar [MOANA-015](MOANA-015.md): Añadir bandas de sombreado e iluminación.

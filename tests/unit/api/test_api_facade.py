@@ -530,7 +530,16 @@ def test_inspect_type_checks() -> None:
 
 def test_capabilities_separate_available_from_planned() -> None:
     listing = capabilities()
-    assert listing.operations == ("dither", "ellipse", "line", "path", "pixel", "polygon", "rect")
+    assert listing.operations == (
+        "dither",
+        "ellipse",
+        "line",
+        "outline",
+        "path",
+        "pixel",
+        "polygon",
+        "rect",
+    )
     assert set(listing.operations).isdisjoint(listing.planned_operations)
     assert set(listing.blend_modes).isdisjoint(listing.planned_blend_modes)
     # MOANA-018: apply_edit moved from planned to available (ADR-024).

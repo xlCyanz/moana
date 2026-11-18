@@ -33,6 +33,7 @@ __all__ = [
     "Dimensions",
     "Point",
     "combined_box",
+    "grown_box",
     "require_int",
 ]
 
@@ -223,3 +224,21 @@ def combined_box(operator: str, boxes: Sequence[Box | None], dimensions: Dimensi
                 max(box.y1 for box in present),
             )
     return None if result is None else result.clip_to(dimensions)
+
+
+def grown_box(box: Box | None, radius: int, dimensions: Dimensions) -> Box | None:
+    """``box`` clipped to the canvas, grown by ``radius`` pixels per side, clipped again.
+
+    The storage box of a Chebyshev dilation of radius ``radius`` of a mask stored in
+    ``box`` (MOANA.md section 8, ADR-027); ``None`` stands for an empty box. Pure
+    arithmetic shared by :mod:`moana.geometry` and the cost plan of :mod:`moana.render`.
+    ``radius`` must be an ``int`` in ``0..MAX_DIMENSION``.
+    """
+    require_int(radius, "radius", minimum=0, maximum=MAX_DIMENSION)
+    if box is not None and not isinstance(box, Box):
+        raise TypeError("box must be a Box value or None")
+    clipped = None if box is None else box.clip_to(dimensions)
+    if clipped is None:
+        return None
+    grown = Box(clipped.x0 - radius, clipped.y0 - radius, clipped.x1 + radius, clipped.y1 + radius)
+    return grown.clip_to(dimensions)

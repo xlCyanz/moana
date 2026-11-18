@@ -11,7 +11,9 @@ names from here instead of testing model classes, so a new type only adds a row:
 
 A ``dither`` has two colours and one mask reference; its ``origin`` anchors a
 pattern phase and is deliberately not listed as geometry (a later ADR decides how
-editing treats it). Every listed member exists on its model; a test enforces both
+editing treats it). An ``outline`` (ADR-027) has one colour, one mask reference and
+no geometry: its ``width`` and ``side`` derive pixels from the mask and are not
+coordinates. Every listed member exists on its model; a test enforces both
 that and that the keys match the unions exactly.
 """
 
@@ -49,6 +51,7 @@ OPERATION_MEMBERS: Final[MappingProxyType[str, NodeMembers]] = MappingProxyType(
             for kind, geometry in _GEOMETRY.items()
         },
         "dither": NodeMembers(colors=("color_a", "color_b"), masks=("mask_id",), geometry=()),
+        "outline": NodeMembers(colors=("color",), masks=("mask_id",), geometry=()),
     }
 )
 """Members of every operation ``type`` of schema 1.0."""

@@ -33,9 +33,10 @@ __all__ = [
 SCHEMA_VERSION: Final = "1.0"
 SUPPORTED_SCHEMA_VERSIONS: Final = frozenset({SCHEMA_VERSION})
 
-# ``dither`` (ordered Bayer dithering clipped by a mask) arrived with MOANA-016, ADR-025.
+# ``dither`` (ordered Bayer dithering clipped by a mask) arrived with MOANA-016, ADR-025;
+# ``outline`` (outer/inner outline of a mask) with MOANA-014, ADR-027.
 SUPPORTED_OPERATION_TYPES: Final = frozenset(
-    {"dither", "ellipse", "line", "path", "pixel", "polygon", "rect"}
+    {"dither", "ellipse", "line", "outline", "path", "pixel", "polygon", "rect"}
 )
 PLANNED_OPERATION_TYPES: Final = frozenset({"flood_fill"})
 # Raster backends a ``path`` may name (ADR-023). The schema accepts the label; whether

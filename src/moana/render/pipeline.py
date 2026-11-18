@@ -29,6 +29,10 @@ mask with :func:`moana.layers.evaluate_mask` and keeps its part with
 :func:`moana.techniques.dither_mask`; the parts are disjoint, so their order never
 changes a pixel, and nothing outside the mask is painted.
 
+An ``outline`` operation (ADR-027) becomes one deferred fill declared over the
+outline box of its mask (:func:`moana.render.budget.outline_box`): it evaluates the
+mask and keeps :func:`moana.techniques.outline_mask` of it.
+
 A document with paths records the backend and the AggDraw and Pillow versions in
 its :class:`Provenance` (``vector_backend``, ``vector_backend_versions``); others leave
 them empty. Order comes only from document arrays: no sets, ``hash()``, clock, locale, global
@@ -70,7 +74,14 @@ from moana.layers import (
     evaluate_mask,
 )
 from moana.palette import Palette
-from moana.render.budget import MaskEstimate, mask_box, mask_estimates, plan_budget
+from moana.render.budget import (
+    CostEstimate,
+    MaskEstimate,
+    mask_box,
+    mask_estimates,
+    outline_box,
+    plan_budget,
+)
 from moana.render.result import (
     RENDERER_BACKEND,
     RENDERER_VERSION,
@@ -87,6 +98,7 @@ from moana.schema import (
     LineMask,
     LineOperation,
     Operation,
+    OutlineOperation,
     PathMask,
     PathOperation,
     PixelMask,
@@ -103,7 +115,7 @@ from moana.schema import (
 )
 from moana.schema import Layer as DocumentLayer
 from moana.schema import MaskNode as DocumentMask
-from moana.techniques import DitherPart, OrderedDither, dither_mask
+from moana.techniques import DitherPart, OrderedDither, dither_mask, outline_mask
 
 __all__ = ["RENDERABLE_OPERATION_TYPES", "render"]
 
@@ -115,6 +127,7 @@ RENDERABLE_OPERATION_TYPES: Final = (
     "polygon",
     "path",
     "dither",
+    "outline",
 )
 """Operation types with a registered rasteriser, in registration order."""
 
@@ -151,6 +164,14 @@ def _dither_part(
     """Pixels of the clipping mask that ``operation`` paints with colour ``part``."""
     dither = OrderedDither(operation.size, operation.coverage, operation.anchor)
     return dither_mask(evaluate_mask(mask, dimensions, deadline=deadline), dither, part)
+
+
+def _outline(
+    operation: OutlineOperation, mask: MaskNode, dimensions: Dimensions, deadline: Deadline | None
+) -> Mask:
+    """Pixels of the outline of the mask of ``operation``."""
+    evaluated = evaluate_mask(mask, dimensions, deadline=deadline)
+    return outline_mask(evaluated, operation.width, operation.side, dimensions)
 
 
 def _check_frame(frame_id: str | None) -> None:
@@ -203,24 +224,31 @@ def _backend_versions(backend: PathBackend | None) -> tuple[str, ...]:
 
 
 def _used_masks(document: Document) -> list[str]:
-    """Mask IDs that layers and ``dither`` operations reference, in document order."""
+    """Mask IDs that layers, ``dither`` and ``outline`` operations reference, in order."""
     used: list[str] = []
     for layer in document.layers:
         if layer.mask_id is not None:
             used.append(layer.mask_id)
-        used.extend(op.mask_id for op in layer.operations if isinstance(op, DitherOperation))
+        used.extend(
+            op.mask_id
+            for op in layer.operations
+            if isinstance(op, DitherOperation | OutlineOperation)
+        )
     return used
 
 
-def _plan_masks(document: Document, dimensions: Dimensions) -> dict[str, MaskNode]:
-    """Layer-tree mask nodes of every mask a layer or dither uses, keyed by mask ID.
+def _plan_masks(
+    document: Document, dimensions: Dimensions, used: list[str] | None = None
+) -> dict[str, MaskNode]:
+    """Layer-tree mask nodes of every mask a layer or operation uses, keyed by mask ID.
 
     Built operands first (post-order over the operand arrays), one node per document
-    mask; the document is valid, so the references are acyclic and resolved.
+    mask; the document is valid, so the references are acyclic and resolved. ``used``
+    replaces the masks to plan (by default those that layers and operations use).
     """
     masks: dict[str, DocumentMask] = {mask.id: mask for mask in document.masks}
     nodes: dict[str, MaskNode] = {}
-    for mask_id in _used_masks(document):
+    for mask_id in _used_masks(document) if used is None else used:
         work: list[tuple[DocumentMask, bool]] = [(masks[mask_id], False)]
         while work:
             mask, ready = work.pop()
@@ -253,6 +281,12 @@ class _Plan:
 
 def _operation_fills(operation: Operation, plan: _Plan) -> tuple[Box | None, list[Fill]]:
     """Declared box and deferred fills of one operation (two for a ``dither``)."""
+    if isinstance(operation, OutlineOperation):
+        estimate = plan.estimates[operation.mask_id]
+        box = outline_box(estimate.box, operation.width, operation.side, plan.dimensions)
+        node = plan.masks[operation.mask_id]
+        build = partial(_outline, operation, node, plan.dimensions, plan.deadline)
+        return box, [Fill(DeferredMask(box, build), plan.palette.color(operation.color))]
     if not isinstance(operation, DitherOperation):
         box = mask_box(operation, plan.dimensions)
         mask = DeferredMask(box, partial(_rasterize, operation, plan.dimensions))
@@ -312,6 +346,18 @@ def render(
     ``BudgetExceeded`` (budgets and the cooperative ``deadline``, checked before
     each layer is planned and before each node and operation is drawn).
     """
+    limits = _check_request(document, limits, deadline)
+    if frame_id is not None and type(frame_id) is not str:
+        raise TypeError("frame_id must be a str or None")
+    document = validate_document(normalize_document(document))
+    _check_frame(frame_id)
+    backend = _check_renderable(document)
+    estimate = plan_budget(document, limits, deadline=deadline)
+    return _render_validated(document, frame_id, limits, deadline, backend, estimate)
+
+
+def _check_request(document: object, limits: object, deadline: object) -> RenderLimits:
+    """Type checks shared by the render entry points; ``None`` limits are the defaults."""
     if not isinstance(document, Document):
         raise TypeError("document must be a moana.schema.Document")
     if limits is None:
@@ -320,16 +366,20 @@ def render(
         raise TypeError("limits must be a RenderLimits value")
     if deadline is not None and not isinstance(deadline, Deadline):
         raise TypeError("deadline must be a Deadline or None")
-    if frame_id is not None and type(frame_id) is not str:
-        raise TypeError("frame_id must be a str or None")
+    return limits
 
-    document = validate_document(normalize_document(document))
-    _check_frame(frame_id)
-    backend = _check_renderable(document)
+
+def _render_validated(
+    document: Document,
+    frame_id: str | None,
+    limits: RenderLimits,
+    deadline: Deadline | None,
+    backend: PathBackend | None,
+    estimate: CostEstimate,
+) -> RenderResult:
+    """Plan, compose and describe a validated document already admitted by ``estimate``."""
     profile = document.canvas.profile
     palette = Palette.from_mapping(document.palette.model_dump(mode="json"), profile=profile)
-    estimate = plan_budget(document, limits, deadline=deadline)
-
     dimensions = document.canvas.dimensions
     warnings: list[RenderWarning] = []
     layers: list[Layer] = []

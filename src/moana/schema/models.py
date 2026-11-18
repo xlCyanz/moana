@@ -47,6 +47,7 @@ from moana.core.limits import (
     MAX_LAYERS,
     MAX_MASK_OPERANDS,
     MAX_MASKS,
+    MAX_MORPHOLOGY_RADIUS,
     MAX_OPERATIONS,
     MAX_PATH_COMMANDS,
     MAX_REGIONS,
@@ -88,6 +89,7 @@ __all__ = [
     "MaskNode",
     "Metadata",
     "Operation",
+    "OutlineOperation",
     "Palette",
     "PathCommand",
     "PathMask",
@@ -443,6 +445,22 @@ class DitherOperation(_Model):
         return Point(*self.origin)
 
 
+class OutlineOperation(_Model):
+    """Outline of mask ``mask_id``, ``width`` pixels wide, painted with ``color`` (ADR-027).
+
+    ``side`` ``outer`` paints ``dilate(mask, width) - mask`` and ``inner`` paints
+    ``mask - erode(mask, width)``, with the Chebyshev neighbourhood and a transparent
+    exterior (MOANA.md section 8). ``width`` is an integer in ``1..16``.
+    """
+
+    id: Id
+    type: Literal["outline"]
+    mask_id: Id
+    width: Annotated[int, Field(ge=1, le=MAX_MORPHOLOGY_RADIUS)]
+    side: Literal["outer", "inner"]
+    color: Id
+
+
 ShapeOperation = (
     PixelOperation
     | LineOperation
@@ -460,7 +478,8 @@ Operation = Annotated[
     | EllipseOperation
     | PolygonOperation
     | PathOperation
-    | DitherOperation,
+    | DitherOperation
+    | OutlineOperation,
     Field(discriminator="type"),
 ]
 """Operations of schema 1.0, discriminated by ``type``."""

@@ -7,7 +7,8 @@ implement the canonical normalisation of section 14; :func:`document_json_schema
 generates the versioned JSON Schema stored in ``schemas/``. Masks and regions form a
 reference DAG checked by :mod:`moana.schema.references`; :func:`resolve_region`
 resolves a semantic region by ID (ADR-022). A ``dither`` operation names two palette
-colours and a clipping mask (ADR-025).
+colours and a clipping mask (ADR-025); an ``outline`` operation names one colour and
+the mask it outlines (ADR-027).
 """
 
 from moana.schema._reader import DEFAULT_PARSE_LIMITS, ParseLimits
@@ -52,6 +53,7 @@ from moana.schema.models import (
     MaskNode,
     Metadata,
     Operation,
+    OutlineOperation,
     Palette,
     PathCommand,
     PathMask,
@@ -107,6 +109,7 @@ __all__ = [
     "Metadata",
     "NodeMembers",
     "Operation",
+    "OutlineOperation",
     "Palette",
     "ParseLimits",
     "PathCommand",

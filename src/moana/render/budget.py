@@ -1,7 +1,7 @@
 """Cost plan of a validated document, checked before any buffer exists (MOANA-003).
 
-The estimator (``budget-v5``, ADR-018, ADR-022, ADR-023 and ADR-025) is pure integer
-arithmetic over
+The estimator (``budget-v6``, ADR-018, ADR-022, ADR-023, ADR-025 and ADR-027) is pure
+integer arithmetic over
 the document: it never allocates pixels, imports NumPy or Pillow, or iterates over
 pixels. It is an upper bound that the rasterisers and compositor respect; a change in
 their memory or work pattern updates these formulas and :data:`ESTIMATOR_VERSION`.
@@ -66,6 +66,19 @@ to the canvas.
   ``int64`` row and column indexes, one box-wide row per pattern row and the cell
   table), ``N`` being the matrix side. Since both fills reach the
   compositor, the ``operations`` budget counts raster fills: a ``dither`` counts 2.
+* **Outlines** (``budget-v6``, ADR-027; a document without ``outline`` costs exactly
+  as in ``budget-v5``): an ``outline`` paints one deferred fill that evaluates its
+  mask ``mask_id`` (estimate ``M``, result box ``Bm``) and runs one dilation
+  (``outer``) or erosion (``inner``) of radius ``w`` = ``width`` over the work box
+  ``X``: ``Bm`` grown by ``w`` and clipped for ``outer``
+  (:func:`moana.core.coordinates.grown_box`), ``Bm`` for ``inner``. With
+  ``P = (width(X) + 2w + 1) x (height(X) + 2w + 1)`` (the padded box of the prefix
+  sums), it costs ``M.pixel_visits +`` :data:`OUTLINE_PASSES` ``x P`` visits (source
+  copy, two prefix-sum passes, compare, the subtraction fold and scan and the paint
+  pass, all bounded by ``P``) and ``M.buffer_bytes + area(Bm) +
+  morphology_bytes(X, w) + 2 x area(X)`` bytes (evaluation peak, the mask kept
+  during the morphology, :func:`moana.core.morphology.morphology_bytes`, and the
+  operand and result of the subtraction). An empty ``M`` costs ``M`` alone.
 * **Frame pixels**: ``frames x A``.
 """
 
@@ -75,10 +88,11 @@ from dataclasses import dataclass
 from typing import Final, assert_never
 
 from moana.core.budget import DEFAULT_RENDER_LIMITS, Deadline, RenderLimits
-from moana.core.coordinates import Box, Dimensions, combined_box, require_int
+from moana.core.coordinates import Box, Dimensions, combined_box, grown_box, require_int
 from moana.core.dither import PATTERN_INDEX_BYTES
 from moana.core.errors import BudgetExceeded, ErrorDetail, ReferenceError
 from moana.core.limits import MAX_PATH_CELLS
+from moana.core.morphology import morphology_bytes
 from moana.core.vector_path import (
     PATH_BACKEND_FIXED_BYTES,
     PATH_BUFFER_MARGIN,
@@ -99,6 +113,7 @@ from moana.schema import (
     LineOperation,
     MaskNode,
     Operation,
+    OutlineOperation,
     PathMask,
     PathOperation,
     PixelMask,
@@ -118,6 +133,7 @@ __all__ = [
     "ESTIMATOR_VERSION",
     "MASK_NODE_VISITS",
     "MAX_FRAMES",
+    "OUTLINE_PASSES",
     "PATH_BACKEND_FIXED_BYTES",
     "PATH_BUFFER_MARGIN",
     "PATH_CELL_BYTES",
@@ -130,10 +146,12 @@ __all__ = [
     "fill_count",
     "mask_box",
     "mask_estimates",
+    "outline_box",
+    "outline_cost",
     "plan_budget",
 ]
 
-ESTIMATOR_VERSION: Final = "budget-v5"
+ESTIMATOR_VERSION: Final = "budget-v6"
 RGBA_BYTES: Final = 4
 COMPOSITE_BYTES_PER_PIXEL: Final = 32
 MASK_BYTES_PER_PIXEL: Final = 1
@@ -155,6 +173,8 @@ MASK_NODE_VISITS: Final = 1
 DITHER_FILLS: Final = 2
 DITHER_PASSES: Final = 4
 DITHER_FIXED_BYTES: Final = 4096
+# Outlines (ADR-027): passes over the padded work box of one outline fill.
+OUTLINE_PASSES: Final = 16
 # Operations between two cooperative deadline checks.
 CHECKPOINT_EVERY: Final = 256
 
@@ -290,6 +310,24 @@ def dither_cost(mask: MaskEstimate, size: int) -> tuple[int, int]:
     return visits, mask.buffer_bytes + box.area + indexes + DITHER_FIXED_BYTES
 
 
+def outline_box(mask: Box | None, width: int, side: str, dimensions: Dimensions) -> Box | None:
+    """Storage (and work) box of an outline of ``width`` of a mask stored in ``mask``."""
+    return grown_box(mask, width if side == "outer" else 0, dimensions)
+
+
+def outline_cost(
+    mask: MaskEstimate, width: int, side: str, dimensions: Dimensions
+) -> tuple[int, int]:
+    """``(visits, bytes)`` of an ``outline`` of ``width`` on ``side`` of ``mask``."""
+    work = outline_box(mask.box, width, side, dimensions)
+    if work is None:
+        return mask.pixel_visits, mask.buffer_bytes
+    side_pixels = 2 * width + 1
+    padded = (work.width + side_pixels) * (work.height + side_pixels)
+    peak = mask.buffer_bytes + _area(mask.box) + morphology_bytes(work, width) + 2 * work.area
+    return mask.pixel_visits + OUTLINE_PASSES * padded, peak
+
+
 def fill_count(document: Document) -> int:
     """Raster fills the compositor receives: one per operation, two per ``dither``."""
     return sum(
@@ -306,6 +344,12 @@ def _operation_cost(
         if operation.mask_id not in masks:
             raise _unknown_mask()
         visits, peak = dither_cost(masks[operation.mask_id], operation.size)
+        return OperationCost(pointer, visits, peak)
+    if isinstance(operation, OutlineOperation):
+        if operation.mask_id not in masks:
+            raise _unknown_mask()
+        mask = masks[operation.mask_id]
+        visits, peak = outline_cost(mask, operation.width, operation.side, dimensions)
         return OperationCost(pointer, visits, peak)
     box = mask_box(operation, dimensions)
     area = _area(box)
@@ -515,6 +559,8 @@ def _coordinate_reach(operation: Located) -> int:
             return operation.path.reach
         case DitherOperation():
             values = operation.origin
+        case OutlineOperation():
+            return 0  # no coordinates: its pixels derive from a checked mask
         case _:  # pragma: no cover - a new operation type must add its reach
             assert_never(operation)
     return max(abs(value) for value in values)

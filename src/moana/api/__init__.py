@@ -14,7 +14,10 @@ The facade composes the implemented services and adds no algorithm of its own:
 * :func:`apply_edit` and :func:`edit_document` apply a typed edit batch atomically
   (section 15, ADR-024) and :func:`load_edit_batch` reads one, delegating to
   :mod:`moana.editing`; a stale ``base_revision``/``base_snapshot`` is
-  ``EditConflict``.
+  ``EditConflict``;
+* :func:`analyze_clusters` reports the pixel clusters of the render and their
+  artistic warnings, with region exceptions as evaluation configuration (sections 8
+  and 19, ADR-027); it never modifies the document.
 
 Every return value is frozen and holds no NumPy array or Pillow image. Errors are
 ``moana.core.errors`` classes (``ReadError`` for unreadable input files is
@@ -24,6 +27,7 @@ such as the CLI need nothing below the facade. :data:`PLANNED_FUNCTIONS` is empt
 every function of section 13 is implemented.
 """
 
+from moana.api.analysis import analyze_clusters
 from moana.api.editing import BatchSource, apply_edit, edit_document, load_edit_batch
 from moana.api.inspection import (
     AVAILABLE_FUNCTIONS,
@@ -54,9 +58,17 @@ from moana.schema import (
     resolve_region,
     snapshot_digest,
 )
+from moana.techniques import (
+    CLUSTER_RULES,
+    Cluster,
+    ClusterException,
+    ClusterFinding,
+    ClusterReport,
+)
 
 __all__ = [
     "AVAILABLE_FUNCTIONS",
+    "CLUSTER_RULES",
     "COMMAND_TYPES",
     "MAX_SCALE",
     "PLANNED_FUNCTIONS",
@@ -64,6 +76,10 @@ __all__ = [
     "BatchSource",
     "BudgetReport",
     "Capabilities",
+    "Cluster",
+    "ClusterException",
+    "ClusterFinding",
+    "ClusterReport",
     "Deadline",
     "Document",
     "DocumentReport",
@@ -83,6 +99,7 @@ __all__ = [
     "RenderResult",
     "RenderWarning",
     "ResolvedRegion",
+    "analyze_clusters",
     "apply_edit",
     "capabilities",
     "edit_document",
