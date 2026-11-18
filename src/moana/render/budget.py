@@ -1,6 +1,7 @@
 """Cost plan of a validated document, checked before any buffer exists (MOANA-003).
 
-The estimator (``budget-v7``, ADR-018, ADR-022, ADR-023, ADR-025, ADR-027 and ADR-028)
+The estimator (``budget-v8``, ADR-018, ADR-022, ADR-023, ADR-025, ADR-027, ADR-028 and
+ADR-030)
 is pure integer arithmetic over
 the document: it never allocates pixels, imports NumPy or Pillow, or iterates over
 pixels. It is an upper bound that the rasterisers and compositor respect; a change in
@@ -93,6 +94,25 @@ to the canvas.
   is never built and costs nothing. The operation's visits are the sum over its
   bands and its bytes the largest band (fills run one at a time); the ``operations``
   budget counts one fill per band. A ``shade`` has no coordinates of its own.
+* **Materials** (``budget-v8``, ADR-030; a document without ``material`` or
+  ``selective_outline`` costs exactly as in ``budget-v7``): a ``material`` paints one
+  deferred fill per band and per part of its preset (``len(parts)`` offsets). The
+  fill of band ``i`` and part ``p`` builds the band's visible part exactly as a
+  ``shade`` band (its share of :func:`shade_cost`) and then the texture over the
+  band box ``Bi``: with ``C`` the cells of :func:`moana.core.materials.cell_span` of
+  ``Bi`` (``Cw x Ch``) and ``k`` the preset's hash channels, it adds
+  ``C x (k x`` :data:`MATERIAL_HASH_VISITS` ``+ 2) +`` :data:`MATERIAL_PASSES`
+  ``x area(Bi)`` visits (hashes, cell loop and comparison; gather, AND and emptiness
+  scan) and its peak is ``max(band peak, 2 x area(Bi) +`` :data:`MATERIAL_CELL_BYTES`
+  ``x C + Ch x width(Bi) + 8 x (width(Bi) + height(Bi)) +``
+  :data:`MATERIAL_FIXED_BYTES` ``)`` bytes (visible part, selection, cell bytes and
+  comparison, one box-wide row per cell row, ``int64`` indexes, hashing objects). A
+  ``selective_outline`` paints a base fill over the outline box ``X`` (the ring of
+  :func:`outline_cost` minus every segment mask whose box meets ``X``) and one fill
+  per segment over the intersection of its box with ``X`` (the segment's visible
+  part as a ``shade`` band, intersected with the ring); see
+  :func:`selective_outline_cost`. ``operations`` counts ``len(bands) x len(parts)``
+  fills per ``material`` and ``1 + len(segments)`` per ``selective_outline``.
 * **Frame pixels**: ``frames x A``.
 """
 
@@ -106,6 +126,7 @@ from moana.core.coordinates import Box, Dimensions, combined_box, grown_box, req
 from moana.core.dither import PATTERN_INDEX_BYTES
 from moana.core.errors import BudgetExceeded, ErrorDetail, ReferenceError
 from moana.core.limits import MAX_PATH_CELLS
+from moana.core.materials import MaterialPreset, cell_span, preset
 from moana.core.morphology import morphology_bytes
 from moana.core.vector_path import (
     PATH_BACKEND_FIXED_BYTES,
@@ -126,6 +147,7 @@ from moana.schema import (
     LineMask,
     LineOperation,
     MaskNode,
+    MaterialOperation,
     Operation,
     OutlineOperation,
     PathMask,
@@ -136,6 +158,7 @@ from moana.schema import (
     PolygonOperation,
     RectMask,
     RectOperation,
+    SelectiveOutlineOperation,
     ShadeOperation,
     ShapeMask,
     ShapeOperation,
@@ -147,6 +170,10 @@ __all__ = [
     "DITHER_PASSES",
     "ESTIMATOR_VERSION",
     "MASK_NODE_VISITS",
+    "MATERIAL_CELL_BYTES",
+    "MATERIAL_FIXED_BYTES",
+    "MATERIAL_HASH_VISITS",
+    "MATERIAL_PASSES",
     "MAX_FRAMES",
     "OUTLINE_PASSES",
     "PATH_BACKEND_FIXED_BYTES",
@@ -164,14 +191,16 @@ __all__ = [
     "fill_count",
     "mask_box",
     "mask_estimates",
+    "material_cost",
     "outline_box",
     "outline_cost",
     "plan_budget",
+    "selective_outline_cost",
     "shade_cost",
     "shade_later",
 ]
 
-ESTIMATOR_VERSION: Final = "budget-v7"
+ESTIMATOR_VERSION: Final = "budget-v8"
 RGBA_BYTES: Final = 4
 COMPOSITE_BYTES_PER_PIXEL: Final = 32
 MASK_BYTES_PER_PIXEL: Final = 1
@@ -205,6 +234,14 @@ OUTLINE_PASSES: Final = 16
 SHADE_PASSES: Final = 4
 SHADE_FIXED_BYTES: Final = 8192
 SHADE_FOLD_BYTES: Final = 3 * 8192
+# Materials (ADR-030): one hashed cell is weighted as 64 pixel visits (a SHA-256 of a
+# short key in Python against a NumPy byte pass); gather, AND and emptiness scan of
+# the texture selection; bytes per cell (gate and sign bytes, the bytearray, its bytes
+# copy and the comparison) and the measured fixed overhead of hashing and the fill.
+MATERIAL_HASH_VISITS: Final = 64
+MATERIAL_PASSES: Final = 3
+MATERIAL_CELL_BYTES: Final = 5
+MATERIAL_FIXED_BYTES: Final = 16384
 # Operations between two cooperative deadline checks.
 CHECKPOINT_EVERY: Final = 256
 
@@ -376,19 +413,96 @@ def shade_later(boxes: list[Box | None], index: int) -> tuple[int, ...]:
 
 def shade_cost(bands: list[MaskEstimate]) -> tuple[int, int]:
     """``(visits, bytes)`` of a ``shade`` whose band masks have estimates ``bands``."""
+    costs = [_band_cost(bands, index) for index in range(len(bands))]
+    return sum(visits for visits, _ in costs), max([0, *(peak for _, peak in costs)])
+
+
+def _band_cost(bands: list[MaskEstimate], index: int) -> tuple[int, int]:
+    """``(visits, bytes)`` of the visible part of band ``index`` (``shade`` rule)."""
+    box = bands[index].box
+    if box is None:
+        return 0, 0
     boxes = [band.box for band in bands]
+    later = [bands[position] for position in shade_later(boxes, index)]
+    area = box.area
+    visits = bands[index].pixel_visits + SHADE_PASSES * area
+    visits += sum(mask.pixel_visits + area for mask in later)
+    evaluation = max([bands[index].buffer_bytes, *(mask.buffer_bytes for mask in later)])
+    fold = SHADE_FOLD_BYTES if later else 0
+    return visits, area + evaluation + SHADE_FIXED_BYTES + fold
+
+
+def _recipe(operation: MaterialOperation) -> MaterialPreset:
+    row = preset(operation.preset, operation.version)
+    if row is None:
+        raise ReferenceError(
+            "material preset does not exist",
+            context={"field": "version", "reason": "unknown_preset_version"},
+        )
+    return row
+
+
+def material_cost(
+    bands: list[MaskEstimate], recipe: MaterialPreset, scale: int, origin: tuple[int, int]
+) -> tuple[int, int]:
+    """``(visits, bytes)`` of a ``material`` of ``recipe`` with band estimates ``bands``."""
     visits = peak = 0
     for index, band in enumerate(bands):
         box = band.box
         if box is None:
-            continue  # the fill is never built
-        later = [bands[position] for position in shade_later(boxes, index)]
-        area = box.area
-        visits += band.pixel_visits + SHADE_PASSES * area
-        visits += sum(mask.pixel_visits + area for mask in later)
-        evaluation = max([band.buffer_bytes, *(mask.buffer_bytes for mask in later)])
-        fold = SHADE_FOLD_BYTES if later else 0
-        peak = max(peak, area + evaluation + SHADE_FIXED_BYTES + fold)
+            continue  # no fill of this band is built
+        band_visits, band_peak = _band_cost(bands, index)
+        span = cell_span(box, scale, origin)
+        cells = span.area
+        texture_visits = cells * (recipe.channels * MATERIAL_HASH_VISITS + 2)
+        texture_visits += MATERIAL_PASSES * box.area
+        texture_bytes = (
+            2 * box.area
+            + MATERIAL_CELL_BYTES * cells
+            + span.height * box.width
+            + PATTERN_INDEX_BYTES * (box.width + box.height)
+            + MATERIAL_FIXED_BYTES
+        )
+        visits += len(recipe.parts) * (band_visits + texture_visits)
+        peak = max(peak, band_peak, texture_bytes)
+    return visits, peak
+
+
+def selective_outline_cost(
+    mask: MaskEstimate,
+    width: int,
+    side: str,
+    segments: list[MaskEstimate],
+    dimensions: Dimensions,
+) -> tuple[int, int]:
+    """``(visits, bytes)`` of a ``selective_outline`` of ``mask`` with ``segments``.
+
+    Base fill over the outline box ``X``: the ring (:func:`outline_cost`), then every
+    segment mask whose box meets ``X`` folded out of it. Fill of segment ``i`` over
+    the intersection ``D`` of its box ``Bi`` with ``X``: its visible part (a ``shade``
+    band), then the ring while that part is held, then their intersection. A fill
+    with an empty box is never built.
+    """
+    work = outline_box(mask.box, width, side, dimensions)
+    ring_visits, ring_peak = outline_cost(mask, width, side, dimensions)
+    if work is None:
+        return ring_visits, ring_peak
+    area = work.area
+    meeting = [s for s in segments if s.box is not None and s.box.intersection(work)]
+    visits = ring_visits + SHADE_PASSES * area
+    visits += sum(segment.pixel_visits + area for segment in meeting)
+    evaluation = max([0, *(segment.buffer_bytes for segment in meeting)])
+    fold = SHADE_FOLD_BYTES if meeting else 0
+    peak = max(ring_peak, 2 * area, area + evaluation + fold) + SHADE_FIXED_BYTES
+    for index, segment in enumerate(segments):
+        box = segment.box
+        part = None if box is None else box.intersection(work)
+        if box is None or part is None:
+            continue
+        band_visits, band_peak = _band_cost(segments, index)
+        visits += band_visits + ring_visits + 3 * part.area + box.area + area
+        held = box.area + area + part.area + SHADE_FOLD_BYTES
+        peak = max(peak, band_peak, box.area + ring_peak, held + SHADE_FIXED_BYTES)
     return visits, peak
 
 
@@ -397,12 +511,17 @@ def _fills(operation: Operation) -> int:
         return DITHER_FILLS
     if isinstance(operation, ShadeOperation):
         return len(operation.bands)
+    if isinstance(operation, MaterialOperation):
+        return len(operation.bands) * len(_recipe(operation).parts)
+    if isinstance(operation, SelectiveOutlineOperation):
+        return 1 + len(operation.segments)
     return 1
 
 
 def fill_count(document: Document) -> int:
     """Raster fills the compositor receives: one per operation, two per ``dither``,
-    one per band of a ``shade``."""
+    one per band of a ``shade``, one per band and part of a ``material`` and one plus
+    one per segment of a ``selective_outline``."""
     return sum(_fills(operation) for layer in document.layers for operation in layer.operations)
 
 
@@ -424,6 +543,22 @@ def _operation_cost(
             raise _unknown_mask()
         mask = masks[operation.mask_id]
         visits, peak = outline_cost(mask, operation.width, operation.side, dimensions)
+        return OperationCost(pointer, visits, peak)
+    if isinstance(operation, MaterialOperation):
+        if any(band.mask_id not in masks for band in operation.bands):
+            raise _unknown_mask()
+        bands = [masks[band.mask_id] for band in operation.bands]
+        recipe = _recipe(operation)
+        visits, peak = material_cost(bands, recipe, operation.scale, operation.origin)
+        return OperationCost(pointer, visits, peak)
+    if isinstance(operation, SelectiveOutlineOperation):
+        names = [operation.mask_id, *(segment.mask_id for segment in operation.segments)]
+        if any(name not in masks for name in names):
+            raise _unknown_mask()
+        segments = [masks[segment.mask_id] for segment in operation.segments]
+        visits, peak = selective_outline_cost(
+            masks[operation.mask_id], operation.width, operation.side, segments, dimensions
+        )
         return OperationCost(pointer, visits, peak)
     box = mask_box(operation, dimensions)
     area = _area(box)
@@ -631,9 +766,9 @@ def _coordinate_reach(operation: Located) -> int:
             values = tuple(c for point in operation.points for c in point)
         case PathOperation() | PathMask():
             return operation.path.reach
-        case DitherOperation():
+        case DitherOperation() | MaterialOperation():
             values = operation.origin
-        case OutlineOperation() | ShadeOperation():
+        case OutlineOperation() | ShadeOperation() | SelectiveOutlineOperation():
             return 0  # no coordinates: its pixels derive from checked masks
         case _:  # pragma: no cover - a new operation type must add its reach
             assert_never(operation)

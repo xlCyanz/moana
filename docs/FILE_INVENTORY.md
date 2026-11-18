@@ -1,6 +1,6 @@
 # Inventario del repositorio
 
-405 archivos actuales de fuente, documentación, configuración y pruebas al 2026-11-18. Incluye cambios locales todavía sin commit. Excluye entorno virtual, herramientas, cachés, artefactos y metadata Git.
+420 archivos actuales de fuente, documentación, configuración y pruebas al 2026-11-18. Incluye cambios locales todavía sin commit. Excluye entorno virtual, herramientas, cachés, artefactos y metadata Git.
 
 | Archivo |
 | --- |
@@ -111,6 +111,7 @@
 | [docs/architecture/decisions/ADR-027-outlines-clusters.md](../docs/architecture/decisions/ADR-027-outlines-clusters.md) |
 | [docs/architecture/decisions/ADR-028-band-shading.md](../docs/architecture/decisions/ADR-028-band-shading.md) |
 | [docs/architecture/decisions/ADR-029-project-persistence.md](../docs/architecture/decisions/ADR-029-project-persistence.md) |
+| [docs/architecture/decisions/ADR-030-material-presets.md](../docs/architecture/decisions/ADR-030-material-presets.md) |
 | [docs/architecture/decisions/ADR-031-format-versions-migrations.md](../docs/architecture/decisions/ADR-031-format-versions-migrations.md) |
 | [docs/architecture/module-contracts.md](../docs/architecture/module-contracts.md) |
 | [docs/architecture/overview.md](../docs/architecture/overview.md) |
@@ -204,6 +205,11 @@
 | [examples/README.md](../examples/README.md) |
 | [examples/specs/dither-dusk.moana.json](../examples/specs/dither-dusk.moana.json) |
 | [examples/specs/masked-eyes.moana.json](../examples/specs/masked-eyes.moana.json) |
+| [examples/specs/material-cloth.moana.json](../examples/specs/material-cloth.moana.json) |
+| [examples/specs/material-metal.moana.json](../examples/specs/material-metal.moana.json) |
+| [examples/specs/material-skin.moana.json](../examples/specs/material-skin.moana.json) |
+| [examples/specs/material-stone.moana.json](../examples/specs/material-stone.moana.json) |
+| [examples/specs/material-wood.moana.json](../examples/specs/material-wood.moana.json) |
 | [examples/specs/minimal.moana.json](../examples/specs/minimal.moana.json) |
 | [examples/specs/outlined-slime.moana.json](../examples/specs/outlined-slime.moana.json) |
 | [examples/specs/path-sail.moana.json](../examples/specs/path-sail.moana.json) |
@@ -244,6 +250,7 @@
 | [src/moana/core/errors.py](../src/moana/core/errors.py) |
 | [src/moana/core/ids.py](../src/moana/core/ids.py) |
 | [src/moana/core/limits.py](../src/moana/core/limits.py) |
+| [src/moana/core/materials.py](../src/moana/core/materials.py) |
 | [src/moana/core/morphology.py](../src/moana/core/morphology.py) |
 | [src/moana/core/pillow_adapter.py](../src/moana/core/pillow_adapter.py) |
 | [src/moana/core/procedural.py](../src/moana/core/procedural.py) |
@@ -304,6 +311,7 @@
 | [src/moana/techniques/__init__.py](../src/moana/techniques/__init__.py) |
 | [src/moana/techniques/clusters.py](../src/moana/techniques/clusters.py) |
 | [src/moana/techniques/dither.py](../src/moana/techniques/dither.py) |
+| [src/moana/techniques/materials.py](../src/moana/techniques/materials.py) |
 | [src/moana/techniques/outline.py](../src/moana/techniques/outline.py) |
 | [src/moana/techniques/shading.py](../src/moana/techniques/shading.py) |
 | [tests/__init__.py](../tests/__init__.py) |
@@ -318,6 +326,7 @@
 | [tests/integration/test_cli_paths.py](../tests/integration/test_cli_paths.py) |
 | [tests/integration/test_cross_platform_determinism.py](../tests/integration/test_cross_platform_determinism.py) |
 | [tests/integration/test_dither_determinism.py](../tests/integration/test_dither_determinism.py) |
+| [tests/integration/test_material_determinism.py](../tests/integration/test_material_determinism.py) |
 | [tests/integration/test_path_determinism.py](../tests/integration/test_path_determinism.py) |
 | [tests/integration/test_render_determinism.py](../tests/integration/test_render_determinism.py) |
 | [tests/test_environment.py](../tests/test_environment.py) |
@@ -338,6 +347,7 @@
 | [tests/unit/core/test_core_errors.py](../tests/unit/core/test_core_errors.py) |
 | [tests/unit/core/test_core_ids.py](../tests/unit/core/test_core_ids.py) |
 | [tests/unit/core/test_core_limits.py](../tests/unit/core/test_core_limits.py) |
+| [tests/unit/core/test_core_materials.py](../tests/unit/core/test_core_materials.py) |
 | [tests/unit/core/test_core_procedural.py](../tests/unit/core/test_core_procedural.py) |
 | [tests/unit/core/test_core_vector_path.py](../tests/unit/core/test_core_vector_path.py) |
 | [tests/unit/editing/test_editing_apply.py](../tests/unit/editing/test_editing_apply.py) |
@@ -345,11 +355,13 @@
 | [tests/unit/editing/test_editing_batch.py](../tests/unit/editing/test_editing_batch.py) |
 | [tests/unit/editing/test_editing_dither.py](../tests/unit/editing/test_editing_dither.py) |
 | [tests/unit/editing/test_editing_history.py](../tests/unit/editing/test_editing_history.py) |
+| [tests/unit/editing/test_editing_material.py](../tests/unit/editing/test_editing_material.py) |
 | [tests/unit/editing/test_editing_members.py](../tests/unit/editing/test_editing_members.py) |
 | [tests/unit/editing/test_editing_shade.py](../tests/unit/editing/test_editing_shade.py) |
 | [tests/unit/export/test_export_png.py](../tests/unit/export/test_export_png.py) |
 | [tests/unit/geometry/test_geometry_algebra.py](../tests/unit/geometry/test_geometry_algebra.py) |
 | [tests/unit/geometry/test_geometry_architecture.py](../tests/unit/geometry/test_geometry_architecture.py) |
+| [tests/unit/geometry/test_geometry_cells.py](../tests/unit/geometry/test_geometry_cells.py) |
 | [tests/unit/geometry/test_geometry_cover.py](../tests/unit/geometry/test_geometry_cover.py) |
 | [tests/unit/geometry/test_geometry_fill.py](../tests/unit/geometry/test_geometry_fill.py) |
 | [tests/unit/geometry/test_geometry_mask.py](../tests/unit/geometry/test_geometry_mask.py) |
@@ -378,6 +390,7 @@
 | [tests/unit/render/test_render_budget.py](../tests/unit/render/test_render_budget.py) |
 | [tests/unit/render/test_render_dither.py](../tests/unit/render/test_render_dither.py) |
 | [tests/unit/render/test_render_masks.py](../tests/unit/render/test_render_masks.py) |
+| [tests/unit/render/test_render_material.py](../tests/unit/render/test_render_material.py) |
 | [tests/unit/render/test_render_outline.py](../tests/unit/render/test_render_outline.py) |
 | [tests/unit/render/test_render_paths.py](../tests/unit/render/test_render_paths.py) |
 | [tests/unit/render/test_render_pipeline.py](../tests/unit/render/test_render_pipeline.py) |
@@ -389,6 +402,7 @@
 | [tests/unit/schema/test_schema_document.py](../tests/unit/schema/test_schema_document.py) |
 | [tests/unit/schema/test_schema_issues.py](../tests/unit/schema/test_schema_issues.py) |
 | [tests/unit/schema/test_schema_masks.py](../tests/unit/schema/test_schema_masks.py) |
+| [tests/unit/schema/test_schema_material.py](../tests/unit/schema/test_schema_material.py) |
 | [tests/unit/schema/test_schema_members.py](../tests/unit/schema/test_schema_members.py) |
 | [tests/unit/schema/test_schema_migrations.py](../tests/unit/schema/test_schema_migrations.py) |
 | [tests/unit/schema/test_schema_outline.py](../tests/unit/schema/test_schema_outline.py) |
@@ -398,6 +412,7 @@
 | [tests/unit/schema/test_schema_shade.py](../tests/unit/schema/test_schema_shade.py) |
 | [tests/unit/techniques/test_techniques_clusters.py](../tests/unit/techniques/test_techniques_clusters.py) |
 | [tests/unit/techniques/test_techniques_dither.py](../tests/unit/techniques/test_techniques_dither.py) |
+| [tests/unit/techniques/test_techniques_materials.py](../tests/unit/techniques/test_techniques_materials.py) |
 | [tests/unit/techniques/test_techniques_outline.py](../tests/unit/techniques/test_techniques_outline.py) |
 | [tests/unit/techniques/test_techniques_shading.py](../tests/unit/techniques/test_techniques_shading.py) |
 | [tests/unit/test_claude_hooks.py](../tests/unit/test_claude_hooks.py) |

@@ -534,11 +534,13 @@ def test_capabilities_separate_available_from_planned() -> None:
         "dither",
         "ellipse",
         "line",
+        "material",
         "outline",
         "path",
         "pixel",
         "polygon",
         "rect",
+        "selective_outline",
         "shade",
     )
     assert set(listing.operations).isdisjoint(listing.planned_operations)
@@ -553,6 +555,7 @@ def test_capabilities_separate_available_from_planned() -> None:
         "replace_palette_color",
         "set_color",
         "set_geometry",
+        "set_parameters",
         "set_visibility",
         "translate",
     )

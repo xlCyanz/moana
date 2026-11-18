@@ -315,11 +315,13 @@
                 "dither": "#/$defs/DitherOperation",
                 "ellipse": "#/$defs/EllipseOperation",
                 "line": "#/$defs/LineOperation",
+                "material": "#/$defs/MaterialOperation",
                 "outline": "#/$defs/OutlineOperation",
                 "path": "#/$defs/PathOperation",
                 "pixel": "#/$defs/PixelOperation",
                 "polygon": "#/$defs/PolygonOperation",
                 "rect": "#/$defs/RectOperation",
+                "selective_outline": "#/$defs/SelectiveOutlineOperation",
                 "shade": "#/$defs/ShadeOperation"
               },
               "propertyName": "type"
@@ -351,6 +353,12 @@
               },
               {
                 "$ref": "#/$defs/ShadeOperation"
+              },
+              {
+                "$ref": "#/$defs/MaterialOperation"
+              },
+              {
+                "$ref": "#/$defs/SelectiveOutlineOperation"
               }
             ]
           },
@@ -543,6 +551,108 @@
         "end"
       ],
       "title": "LineOperation",
+      "type": "object"
+    },
+    "MaterialOperation": {
+      "additionalProperties": false,
+      "description": "Band shading of ramp ``ramp`` with the texture of a versioned preset (ADR-030).\n\nThe bands, ``light`` and ``ramp_order`` behave exactly as in ``shade``\n(ADR-028); then each pixel moves by the ramp-step offset of its texture cell\n(:mod:`moana.techniques.materials`), and the index is clamped to the ramp again.\n``(preset, version)`` names a recipe of :data:`moana.core.materials.MATERIAL_PRESETS`\n(``unknown_preset_version``), whose row bounds ``density`` (sixty-fourths) and\n``scale`` (cell side). ``origin`` anchors the cells on the canvas. No code,\nformula or shader is read from the document.",
+      "properties": {
+        "bands": {
+          "items": {
+            "$ref": "#/$defs/ShadeBand"
+          },
+          "maxItems": 64,
+          "minItems": 1,
+          "title": "Bands",
+          "type": "array"
+        },
+        "density": {
+          "maximum": 64,
+          "minimum": 0,
+          "title": "Density",
+          "type": "integer"
+        },
+        "id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "light": {
+          "$ref": "#/$defs/Light"
+        },
+        "origin": {
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "maximum": 2048,
+              "minimum": -2048,
+              "type": "integer"
+            },
+            {
+              "maximum": 2048,
+              "minimum": -2048,
+              "type": "integer"
+            }
+          ],
+          "title": "Origin",
+          "type": "array"
+        },
+        "preset": {
+          "enum": [
+            "skin",
+            "cloth",
+            "metal",
+            "wood",
+            "stone"
+          ],
+          "title": "Preset",
+          "type": "string"
+        },
+        "ramp": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Ramp",
+          "type": "string"
+        },
+        "ramp_order": {
+          "enum": [
+            "monotonic",
+            "stylized"
+          ],
+          "title": "Ramp Order",
+          "type": "string"
+        },
+        "scale": {
+          "maximum": 8,
+          "minimum": 1,
+          "title": "Scale",
+          "type": "integer"
+        },
+        "type": {
+          "const": "material",
+          "title": "Type",
+          "type": "string"
+        },
+        "version": {
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "preset",
+        "version",
+        "ramp",
+        "ramp_order",
+        "light",
+        "density",
+        "scale",
+        "origin",
+        "bands"
+      ],
+      "title": "MaterialOperation",
       "type": "object"
     },
     "Metadata": {
@@ -1352,6 +1462,85 @@
         "mask_id"
       ],
       "title": "Region",
+      "type": "object"
+    },
+    "SelectiveOutlineOperation": {
+      "additionalProperties": false,
+      "description": "Outline of mask ``mask_id`` whose segments take ramp steps from the light (ADR-030).\n\nThe ring is that of ``outline`` (``width``, ``side``, ADR-027). A ring pixel inside\na ``segments`` mask takes ``ramp[band_index(facing, offset, light)]`` of the last\nlisted segment that contains it (the ``shade`` rule of ADR-028, not a second light\nrule); every other ring pixel takes ``color``. 1 to 64 segments.",
+      "properties": {
+        "color": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Color",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "light": {
+          "$ref": "#/$defs/Light"
+        },
+        "mask_id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Mask Id",
+          "type": "string"
+        },
+        "ramp": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Ramp",
+          "type": "string"
+        },
+        "ramp_order": {
+          "enum": [
+            "monotonic",
+            "stylized"
+          ],
+          "title": "Ramp Order",
+          "type": "string"
+        },
+        "segments": {
+          "items": {
+            "$ref": "#/$defs/ShadeBand"
+          },
+          "maxItems": 64,
+          "minItems": 1,
+          "title": "Segments",
+          "type": "array"
+        },
+        "side": {
+          "enum": [
+            "outer",
+            "inner"
+          ],
+          "title": "Side",
+          "type": "string"
+        },
+        "type": {
+          "const": "selective_outline",
+          "title": "Type",
+          "type": "string"
+        },
+        "width": {
+          "maximum": 16,
+          "minimum": 1,
+          "title": "Width",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "mask_id",
+        "width",
+        "side",
+        "color",
+        "ramp",
+        "ramp_order",
+        "light",
+        "segments"
+      ],
+      "title": "SelectiveOutlineOperation",
       "type": "object"
     },
     "ShadeBand": {

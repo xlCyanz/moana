@@ -19,15 +19,27 @@ import hashlib
 import json
 from typing import Final
 
-from moana.core.coordinates import MAX_COORDINATE, require_int
+from moana.core.budget import Deadline
+from moana.core.coordinates import MAX_COORDINATE, Box, require_int
 from moana.core.ids import check_id
 
-__all__ = ["MAX_CHANNEL", "MAX_SEED", "RNG_VERSION", "cell_choice", "cell_unit"]
+__all__ = [
+    "MAX_CHANNEL",
+    "MAX_GRID_CHOICES",
+    "MAX_SEED",
+    "RNG_VERSION",
+    "cell_choice",
+    "cell_choices",
+    "cell_unit",
+]
 
 RNG_VERSION: Final = "cell-sha256-v1"
 MAX_SEED: Final = 2**64 - 1
 MAX_CHANNEL: Final = 2**32 - 1
 _UNIT_RANGE: Final = 2**64
+MAX_GRID_CHOICES: Final = 256
+"""Largest ``n`` of :func:`cell_choices`: every value fits in one byte."""
+_GRID_CHECKPOINT_ROWS: Final = 16
 
 
 def _key(seed: int, operation_id: str, x: int, y: int, channel: int, version: str) -> bytes:
@@ -63,3 +75,44 @@ def cell_choice(
     """A value in ``range(n)`` for one cell: ``u * n // 2**64`` (``1 <= n <= 2**64``)."""
     require_int(n, "n", minimum=1, maximum=_UNIT_RANGE)
     return cell_unit(seed, operation_id, x, y, channel, version=version) * n // _UNIT_RANGE
+
+
+def cell_choices(
+    seed: int,
+    operation_id: str,
+    span: Box,
+    channel: int,
+    n: int,
+    *,
+    deadline: Deadline | None = None,
+) -> bytes:
+    """:func:`cell_choice` of every cell of ``span``, row-major, one byte per cell.
+
+    Byte ``(cy - span.y0) * span.width + (cx - span.x0)`` is
+    ``cell_choice(seed, operation_id, cx, cy, channel, n)`` exactly (same canonical
+    JSON key and digest), computed by reusing the hash state of the constant key
+    prefix. ``n`` is in ``1..256``.
+    ``deadline`` is checked every 16 rows of cells.
+    """
+    if not isinstance(span, Box):
+        raise TypeError("span must be a Box value")
+    require_int(n, "n", minimum=1, maximum=MAX_GRID_CHOICES)
+    if deadline is not None and not isinstance(deadline, Deadline):
+        raise TypeError("deadline must be a Deadline or None")
+    # Validate the members once with the scalar key builder; every cell of a Box is a
+    # valid coordinate, so the corner stands for all of them.
+    _key(seed, operation_id, span.x0, span.y0, channel, RNG_VERSION)
+    head = json.dumps([seed, operation_id], separators=(",", ":"), ensure_ascii=False)
+    prefix = hashlib.sha256(head[:-1].encode("utf-8") + b",")
+    tail = f",{channel},{json.dumps(RNG_VERSION, ensure_ascii=False)}]"
+    values = bytearray(span.area)
+    position = 0
+    for row, cy in enumerate(range(span.y0, span.y1)):
+        if deadline is not None and row % _GRID_CHECKPOINT_ROWS == 0:
+            deadline.checkpoint("material_cells")
+        for cx in range(span.x0, span.x1):
+            state = prefix.copy()
+            state.update(f"{cx},{cy}{tail}".encode())
+            values[position] = int.from_bytes(state.digest()[:8], "big") * n // _UNIT_RANGE
+            position += 1
+    return bytes(values)

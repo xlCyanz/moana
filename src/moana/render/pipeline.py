@@ -44,6 +44,19 @@ overlaps take the last listed band and the parts are disjoint. With
 (:meth:`moana.palette.Palette.ramp_warnings`) becomes a render warning located at
 the operation's ``ramp``; ``stylized`` keeps only the transparency findings.
 
+A ``material`` operation (ADR-030) becomes, per band and per part ``d`` of its
+preset (``-1``, ``0`` or ``+1``), one deferred fill over the band box painted with
+``ramp[clamp(band_index(...) + d)]``: the band's visible part (the ``shade`` rule)
+restricted to the pixels whose texture cell has offset ``d``
+(:func:`moana.techniques.texture_mask`, keyed by the document ``seed`` and the
+operation ID). The parts of a band are disjoint and cover its visible part, so every
+painted colour is a ramp colour. A ``selective_outline`` operation (ADR-030) becomes
+one fill over the outline box painted with ``color`` (the ring minus every segment
+mask that meets it) and, per segment, one fill over the segment box clipped to the
+outline box, painted with ``ramp[band_index(...)]``: the segment's visible part (the
+``shade`` rule, last listed wins) intersected with the ring. Ramp warnings follow
+``ramp_order`` as for ``shade``.
+
 A document with paths records the backend and the AggDraw and Pillow versions in
 its :class:`Provenance` (``vector_backend``, ``vector_backend_versions``); others leave
 them empty. Order comes only from document arrays: no sets, ``hash()``, clock, locale, global
@@ -55,6 +68,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from functools import partial
+from itertools import chain
 from typing import Final, assert_never
 
 from moana.core.budget import DEFAULT_RENDER_LIMITS, Deadline, RenderLimits
@@ -65,6 +79,7 @@ from moana.geometry import (
     Mask,
     PathBackend,
     backend_unavailable_error,
+    combine_masks,
     path_backend,
     rasterize_ellipse,
     rasterize_line,
@@ -109,6 +124,7 @@ from moana.schema import (
     EllipseOperation,
     LineMask,
     LineOperation,
+    MaterialOperation,
     Operation,
     OutlineOperation,
     PathMask,
@@ -119,6 +135,7 @@ from moana.schema import (
     PolygonOperation,
     RectMask,
     RectOperation,
+    SelectiveOutlineOperation,
     ShadeOperation,
     ShapeMask,
     ShapeOperation,
@@ -130,12 +147,15 @@ from moana.schema import Layer as DocumentLayer
 from moana.schema import MaskNode as DocumentMask
 from moana.techniques import (
     DitherPart,
+    MaterialTexture,
     OrderedDither,
     ShadeLight,
     band_index,
     dither_mask,
     last_wins,
     outline_mask,
+    ramp_index,
+    texture_mask,
 )
 
 __all__ = ["RENDERABLE_OPERATION_TYPES", "render"]
@@ -150,6 +170,8 @@ RENDERABLE_OPERATION_TYPES: Final = (
     "dither",
     "outline",
     "shade",
+    "material",
+    "selective_outline",
 )
 """Operation types with a registered rasteriser, in registration order."""
 
@@ -203,6 +225,56 @@ def _shade_band(
 ) -> Mask:
     """Pixels of the first band mask of ``nodes`` that no later one covers."""
     return last_wins(evaluate_mask(node, dimensions, deadline=deadline) for node in nodes)
+
+
+def _material_part(
+    nodes: tuple[MaskNode, ...],
+    texture: MaterialTexture,
+    part: int,
+    dimensions: Dimensions,
+    deadline: Deadline | None,
+) -> Mask:
+    """Pixels of a band's visible part whose texture offset is ``part`` (ADR-030)."""
+    visible = _shade_band(nodes, dimensions, deadline)
+    return texture_mask(visible, texture, part, deadline=deadline)
+
+
+def _ring(
+    operation: SelectiveOutlineOperation,
+    mask: MaskNode,
+    dimensions: Dimensions,
+    deadline: Deadline | None,
+) -> Mask:
+    evaluated = evaluate_mask(mask, dimensions, deadline=deadline)
+    return outline_mask(evaluated, operation.width, operation.side, dimensions)
+
+
+def _outline_base(
+    operation: SelectiveOutlineOperation,
+    mask: MaskNode,
+    segments: tuple[MaskNode, ...],
+    dimensions: Dimensions,
+    deadline: Deadline | None,
+) -> Mask:
+    """Ring pixels that no segment mask covers (painted with ``color``)."""
+    ring = _ring(operation, mask, dimensions, deadline)
+    rest = (evaluate_mask(node, dimensions, deadline=deadline) for node in segments)
+    return last_wins(chain((ring,), rest))
+
+
+def _outline_segment(
+    operation: SelectiveOutlineOperation,
+    mask: MaskNode,
+    nodes: tuple[MaskNode, ...],
+    dimensions: Dimensions,
+    deadline: Deadline | None,
+) -> Mask:
+    """Ring pixels of one segment's visible part (the ``shade`` rule)."""
+    part = _shade_band(nodes, dimensions, deadline)
+    if part.box is None:
+        return part
+    ring = _ring(operation, mask, dimensions, deadline)
+    return combine_masks("intersect", [part, ring], dimensions)
 
 
 def _check_frame(frame_id: str | None) -> None:
@@ -263,8 +335,11 @@ def _used_masks(document: Document) -> list[str]:
         for op in layer.operations:
             if isinstance(op, DitherOperation | OutlineOperation):
                 used.append(op.mask_id)
-            elif isinstance(op, ShadeOperation):
+            elif isinstance(op, ShadeOperation | MaterialOperation):
                 used.extend(band.mask_id for band in op.bands)
+            elif isinstance(op, SelectiveOutlineOperation):
+                used.append(op.mask_id)
+                used.extend(segment.mask_id for segment in op.segments)
     return used
 
 
@@ -308,13 +383,13 @@ class _Plan:
     masks: dict[str, MaskNode]
     estimates: dict[str, MaskEstimate]
     deadline: Deadline | None
+    seed: int
 
 
 def _shade_fills(operation: ShadeOperation, plan: _Plan) -> tuple[Box | None, list[Fill]]:
     """One deferred fill per band, in order, over the band mask box (ADR-028)."""
     ramp = plan.palette.ramp(operation.ramp)
-    spec = operation.light
-    light = ShadeLight(spec.direction, spec.height, spec.intensity, spec.ambient)
+    light = _light(operation)
     boxes = [plan.estimates[band.mask_id].box for band in operation.bands]
     fills: list[Fill] = []
     for index, band in enumerate(operation.bands):
@@ -328,10 +403,77 @@ def _shade_fills(operation: ShadeOperation, plan: _Plan) -> tuple[Box | None, li
     return combined_box("union", boxes, plan.dimensions), fills
 
 
+def _light(spec: ShadeOperation | MaterialOperation | SelectiveOutlineOperation) -> ShadeLight:
+    light = spec.light
+    return ShadeLight(light.direction, light.height, light.intensity, light.ambient)
+
+
+def _material_fills(operation: MaterialOperation, plan: _Plan) -> tuple[Box | None, list[Fill]]:
+    """One deferred fill per band and part of the preset, in order (ADR-030)."""
+    ramp = plan.palette.ramp(operation.ramp)
+    light = _light(operation)
+    texture = MaterialTexture(
+        operation.preset,
+        operation.version,
+        operation.density,
+        operation.scale,
+        operation.anchor,
+        plan.seed,
+        operation.id,
+    )
+    boxes = [plan.estimates[band.mask_id].box for band in operation.bands]
+    fills: list[Fill] = []
+    for index, band in enumerate(operation.bands):
+        later = shade_later(boxes, index)
+        names = (band.mask_id, *(operation.bands[j].mask_id for j in later))
+        nodes = tuple(plan.masks[name] for name in names)
+        step = band_index(band.facing, band.offset, light, len(ramp))
+        for part in texture.spec.parts:
+            build = partial(_material_part, nodes, texture, part, plan.dimensions, plan.deadline)
+            color = ramp[ramp_index(step + part, len(ramp))]
+            fills.append(Fill(DeferredMask(boxes[index], build), color))
+    return combined_box("union", boxes, plan.dimensions), fills
+
+
+def _selective_outline_fills(
+    operation: SelectiveOutlineOperation, plan: _Plan
+) -> tuple[Box | None, list[Fill]]:
+    """The base fill over the outline box, then one fill per segment (ADR-030)."""
+    ramp = plan.palette.ramp(operation.ramp)
+    light = _light(operation)
+    estimate = plan.estimates[operation.mask_id]
+    work = outline_box(estimate.box, operation.width, operation.side, plan.dimensions)
+    node = plan.masks[operation.mask_id]
+    boxes = [plan.estimates[segment.mask_id].box for segment in operation.segments]
+    meeting = tuple(
+        plan.masks[segment.mask_id]
+        for segment, box in zip(operation.segments, boxes, strict=True)
+        if work is not None and box is not None and box.intersection(work) is not None
+    )
+    base = partial(_outline_base, operation, node, meeting, plan.dimensions, plan.deadline)
+    fills = [Fill(DeferredMask(work, base), plan.palette.color(operation.color))]
+    for index, segment in enumerate(operation.segments):
+        box = boxes[index]
+        part = None if work is None or box is None else box.intersection(work)
+        names = (
+            segment.mask_id,
+            *(operation.segments[j].mask_id for j in shade_later(boxes, index)),
+        )
+        nodes = tuple(plan.masks[name] for name in names)
+        build = partial(_outline_segment, operation, node, nodes, plan.dimensions, plan.deadline)
+        color = ramp[band_index(segment.facing, segment.offset, light, len(ramp))]
+        fills.append(Fill(DeferredMask(part, build), color))
+    return work, fills
+
+
 def _operation_fills(operation: Operation, plan: _Plan) -> tuple[Box | None, list[Fill]]:
     """Declared box and deferred fills of one operation (two for a ``dither``)."""
     if isinstance(operation, ShadeOperation):
         return _shade_fills(operation, plan)
+    if isinstance(operation, MaterialOperation):
+        return _material_fills(operation, plan)
+    if isinstance(operation, SelectiveOutlineOperation):
+        return _selective_outline_fills(operation, plan)
     if isinstance(operation, OutlineOperation):
         estimate = plan.estimates[operation.mask_id]
         box = outline_box(estimate.box, operation.width, operation.side, plan.dimensions)
@@ -356,7 +498,9 @@ def _operation_fills(operation: Operation, plan: _Plan) -> tuple[Box | None, lis
 
 
 def _ramp_warnings(
-    operation: ShadeOperation, palette: Palette, pointer: str
+    operation: ShadeOperation | MaterialOperation | SelectiveOutlineOperation,
+    palette: Palette,
+    pointer: str,
 ) -> list[RenderWarning]:
     """Findings of the shade's ramp; ``stylized`` drops the luminance-order ones."""
     stylized = operation.ramp_order == "stylized"
@@ -373,7 +517,7 @@ def _plan_layer(
     fills: list[Fill] = []
     for index, operation in enumerate(layer.operations):
         box, operation_fills = _operation_fills(operation, plan)
-        if isinstance(operation, ShadeOperation):
+        if isinstance(operation, ShadeOperation | MaterialOperation | SelectiveOutlineOperation):
             pointer = f"/layers/{layer_index}/operations/{index}/ramp"
             warnings.extend(_ramp_warnings(operation, plan.palette, pointer))
         if box is None:
@@ -450,7 +594,7 @@ def _render_validated(
     warnings: list[RenderWarning] = []
     layers: list[Layer] = []
     masks = _plan_masks(document, dimensions)
-    plan = _Plan(palette, dimensions, masks, mask_estimates(document), deadline)
+    plan = _Plan(palette, dimensions, masks, mask_estimates(document), deadline, document.seed)
     for layer_index, layer in enumerate(document.layers):
         if deadline is not None:
             deadline.checkpoint("plan_layer")

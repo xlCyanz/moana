@@ -76,6 +76,7 @@ def test_shade_is_supported_with_a_ramp_and_band_masks() -> None:
         geometry=(),
         ramps=("ramp",),
         items=(("bands", NodeMembers(colors=(), masks=("mask_id",), geometry=())),),
+        parameters=("light", "ramp_order"),
     )
 
 

@@ -43,7 +43,7 @@ def invalid(source: dict[str, Any]) -> errors.ValidationError:
     return caught.value
 
 
-def test_catalogue_is_exactly_section_15() -> None:
+def test_catalogue_is_section_15_plus_set_parameters() -> None:
     assert COMMAND_TYPES == (
         "insert_operation",
         "remove",
@@ -51,6 +51,7 @@ def test_catalogue_is_exactly_section_15() -> None:
         "replace_palette_color",
         "set_color",
         "set_geometry",
+        "set_parameters",
         "set_visibility",
         "translate",
     )

@@ -352,7 +352,7 @@ def test_budget_v7_hand_oracle() -> None:
     # with tile = min(4096, max(1, A // 4)) = 8, i.e. 448 + 640 = 1088; then the largest
     # mask (the band peak) and one retained 4A = 128 result
     assert estimate.buffer_bytes == 1280 + 32808 + 128
-    assert estimate.estimator_version == ESTIMATOR_VERSION == "budget-v7"
+    assert estimate.estimator_version == ESTIMATOR_VERSION == "budget-v8"
     assert estimate.fills == fill_count(document) == 2
 
 

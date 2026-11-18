@@ -8,7 +8,7 @@
 - Aliases históricos: MOA-017
 - Phase: P3
 - Priority: P1
-- Status: ready
+- Status: done
 - Complexity: L (relativa, no estimación de tiempo)
 - Dependencies: [MOANA-014](MOANA-014.md), [MOANA-015](MOANA-015.md), [MOANA-016](MOANA-016.md)
 - Related modules: techniques, schema
@@ -44,13 +44,13 @@ No afirmar calidad profesional sólo por aprobar fixtures ni usar assets sin lic
 
 ## Acceptance criteria
 
-- [ ] AC1: Cada material puede editarse sin perder IDs ni introducir colores fuera del perfil
-- [ ] AC2: Misma semilla genera igual textura y una operación nueva no altera material existente
+- [x] AC1: Cada material puede editarse sin perder IDs ni introducir colores fuera del perfil
+- [x] AC2: Misma semilla genera igual textura y una operación nueva no altera material existente
 
 ## Required tests
 
-- [ ] T1: Fixtures pequeñas por material con máscara y límites de densidad/escala
-- [ ] T2: Pruebas de estabilidad entre frames y revisión visual a 1×/4× documentada como humana o pendiente
+- [x] T1: Fixtures pequeñas por material con máscara y límites de densidad/escala
+- [x] T2: Pruebas de estabilidad entre frames y revisión visual a 1×/4× documentada como humana o pendiente
 
 ## Expected deliverables
 
@@ -67,7 +67,7 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Guía para agentes de IA
 
-**Estado para agentes:** Listo: todas las dependencias están `done`; puede empezarse.
+**Estado para agentes:** Completado; usar sólo como referencia del contrato entregado.
 
 ### 1. Preparación
 
@@ -137,4 +137,17 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Evidence
 
-Pendiente de implementación.
+- Tabla de presets versionados de sólo lectura moana.core.materials.MATERIAL_PRESETS (MappingProxyType de filas frozen por (name, version)): v1 skin (poros, max_density 4), cloth (tejido en cesta), metal (veta diagonal), wood (veta horizontal) y stone (moteado); procedencia propia y licencia de las recetas por decidir; MAX_MATERIAL_SCALE=8 es margen para versiones futuras (ninguna fila v1 supera 4).
+- Textura por celdas determinista moana.techniques.materials: celdas scale×scale ancladas en origin con división entera hacia abajo (también negativos), puerta cell_choice(seed, op_id, cx, cy, 0, 64) < density con SHA-256 y enteros big-endian (cell_choices vectorizado igual byte a byte al escalar), paso ±1 de rampa con clamp; sin floats, hash() ni sets.
+- Operación material en schema 1.0 (excepción previa a la publicación, ADR-030 §8, que también cubre el comando set_parameters del batch 1.0; DOCUMENT_MIGRATIONS de ADR-031 sigue sin pasos): bandas con ID global y la misma regla de luz de shade (band_index, ADR-028), sin segunda regla; colección raíz materials aceptada sólo vacía.
+- Operación selective_outline: anillo de outline_mask como base y tramos authored con ramp[band_index]; partes disjuntas cuya unión es el anillo, cajas declaradas dentro de su máscara.
+- Edición: columna parameters en NodeMembers (lista blanca por tipo; outline y dither vacías a propósito) y comando set_parameters revalidado; el error not_parameter apunta a /commands/i/parameters sin repetir la clave del usuario. Mover un sprite con textura exige translate de las máscaras y set_parameters de origin en el mismo batch.
+- Presupuesto budget-v8: visitas y bytes por parte (banda + textura) medidos con tracemalloc en geometrías extremas (2048×1, 2048², orígenes ±2048, muchas bandas) sin superar la cota; documentos admitidos de mayor coste renderizan en <1 s.
+- Cinco ejemplos editables examples/specs/material-{skin,cloth,metal,wood,stone}.moana.json con sombra plana tras la textura (0 contactos del paso más oscuro con la tinta) y contorno selectivo; singletons c4 tras la revisión: skin 2, cloth 2 (antes 334), metal 67 (diagonales continuas, 0 en c8), wood 0, stone 7.
+- Revisiones de agente: gráficos aprobado; arquitectura, QA y pixel-art con correcciones aplicadas. Revisión artística humana a 1×/4×: PENDIENTE (registrada en metadata.provenance de los ejemplos y en ADR-030).
+- Gate local macOS: scripts/validate.py 2614 passed con src/moana al 100 %, check_wheel OK, mypy --platform win32 OK, JSON Schema al día, pre-commit OK; matriz pendiente en main.
+- Aprobado por el propietario el 2026-11-17 tras revisión; PR #61 hacia develop.
+- AC1: tests/unit/editing/test_editing_material.py::test_ac1_tuning_a_material_keeps_ids_and_stays_in_the_palette, ::test_ac1_material_edits_are_undoable_in_the_history; tests/unit/render/test_render_material.py::test_ac1_every_pixel_is_the_ramp_step_of_its_last_band_plus_its_texel, ::test_ac1_the_light_and_facings_follow_the_shade_rule
+- AC2: tests/unit/editing/test_editing_material.py::test_ac2_inserted_operation_keeps_existing_texture; tests/unit/render/test_render_material.py::test_ac2_same_seed_same_texture_and_another_operation_changes_nothing; tests/unit/techniques/test_techniques_materials.py::test_ac2_same_seed_same_texture_and_the_key_is_the_operation
+- T1: tests/unit/techniques/test_techniques_materials.py::test_t1_cloth_full_density_is_a_basket_weave, ::test_t1_metal_full_density_is_a_diagonal_streak_every_fourth_cell, ::test_t1_wood_full_density_is_horizontal_grain_every_third_row, ::test_t1_zero_density_never_moves_a_pixel, ::test_t1_every_preset_matches_the_independent_hash_oracle, ::test_t1_limits_of_density_and_scale, ::test_t1_marked_fraction_follows_the_density, ::test_t1_a_cell_marked_at_one_density_stays_marked_above_it, ::test_t1_every_pixel_of_a_cell_shares_its_offset; tests/unit/render/test_render_material.py::test_t1_cloth_weave_moves_basket_pixels_one_step_down, ::test_t1_metal_streak_moves_diagonal_pixels_one_step_up, ::test_t1_wood_grain_with_scale_two_and_an_offset_origin, ::test_t1_clamp_keeps_texture_steps_inside_the_ramp, ::test_t1_one_pixel_canvas, ::test_t1_band_entirely_off_the_canvas_paints_nothing, ::test_t1_zero_density_is_plain_band_shading, ::test_t1_seeded_presets_match_the_independent_oracle; límites de densidad/escala en tests/unit/schema/test_schema_material.py
+- T2: tests/unit/render/test_render_material.py::test_t2_a_frame_that_moves_mask_and_origin_together_moves_every_pixel, ::test_t2_recipe_golden_of_every_example, ::test_t2_recipe_golden_of_every_preset_row; tests/unit/techniques/test_techniques_materials.py::test_t2_texture_follows_its_origin; tests/integration/test_material_determinism.py::test_t2_fresh_processes_with_any_hash_seed_agree, ::test_t2_repeated_renders_in_one_process_agree, ::test_t2_the_texture_does_not_depend_on_the_order_of_json_keys; revisión visual a 1×/4×/8× por agentes (pixel-art); revisión humana PENDIENTE

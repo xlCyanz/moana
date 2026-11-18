@@ -58,6 +58,11 @@ def test_every_listed_member_exists_on_its_model(
         for name in listed:
             assert name in fields, (kind, name)
         assert {"id", "type"}.isdisjoint(listed)
+        # parameters (ADR-030) are plain values: never an ID, reference, item or geometry
+        assert set(members.parameters).isdisjoint({*listed, "id", "type"}), kind
+        assert len(set(members.parameters)) == len(members.parameters), kind
+        for name in members.parameters:
+            assert name in fields, (kind, name)
         for member, row in members.items:  # nested rows name members of the item model
             (item_model,) = [
                 arg
@@ -70,6 +75,7 @@ def test_every_listed_member_exists_on_its_model(
             assert row.masks, (kind, member)
             assert row.colors == row.ramps == row.geometry == (), (kind, member)
             assert row.items == (), (kind, member)
+            assert row.parameters == (), (kind, member)
             for name in row.masks:
                 assert name in item_model.model_fields, (kind, member, name)
 

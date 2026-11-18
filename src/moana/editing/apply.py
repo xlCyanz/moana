@@ -54,6 +54,7 @@ from moana.editing.batch import (
     ReplacePaletteColor,
     SetColor,
     SetGeometry,
+    SetParameters,
     SetVisibility,
     Translate,
     parse_edit_batch,
@@ -336,6 +337,31 @@ def _set_geometry(work: _Work, command: SetGeometry, pointer: str) -> tuple[str,
     return (command.target_id,)
 
 
+def _set_parameters(work: _Work, command: SetParameters, pointer: str) -> tuple[str, ...]:
+    node = _target(
+        index_nodes(work.tree), command.target_id, f"{pointer}/target_id", ("operation",)
+    )
+    allowed = node_members(_unlocked(node, pointer)).parameters
+    if not allowed:
+        raise _invalid(
+            f"{pointer}/target_id", "the operation has no editable parameters", "no_parameters"
+        )
+    prefix = f"{pointer}/parameters"
+    if not command.parameters:
+        raise _invalid(prefix, "parameters must name at least one member", "empty_parameters")
+    # An unknown key is untrusted input: it is never echoed, not even in the pointer.
+    if any(member not in allowed for member in command.parameters):
+        raise _invalid(
+            prefix,
+            "parameters name a member that is not a parameter of the target type",
+            "not_parameter",
+            expected=allowed,
+        )
+    candidate = {**node.value, **command.parameters}
+    _replace(node, _validated(_OperationNode, candidate, "parameters are invalid", prefix))
+    return (command.target_id,)
+
+
 def _translate(work: _Work, command: Translate, pointer: str) -> tuple[str, ...]:
     node, row = _geometric(work, command.target_id, pointer)
     moved: JsonObject = {}
@@ -454,6 +480,8 @@ def _apply(work: _Work, command: object, pointer: str) -> tuple[str, ...]:
             return _set_color(work, command, pointer)
         case SetGeometry():
             return _set_geometry(work, command, pointer)
+        case SetParameters():
+            return _set_parameters(work, command, pointer)
         case Translate():
             return _translate(work, command, pointer)
         case SetVisibility():
