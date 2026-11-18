@@ -59,6 +59,9 @@ def main() -> int:
             "assert files('moana').joinpath('render/result.py').is_file(); "
             "assert files('moana').joinpath('core/procedural.py').is_file(); "
             "assert files('moana').joinpath('core/digest.py').is_file(); "
+            "assert files('moana').joinpath('export/__init__.py').is_file(); "
+            "assert files('moana').joinpath('export/png.py').is_file(); "
+            "assert files('moana').joinpath('export/atomic.py').is_file(); "
             "print('Isolated wheel OK:', moana.__version__)"
         )
         subprocess.run([str(python), "-I", "-c", probe], cwd=root, check=True)

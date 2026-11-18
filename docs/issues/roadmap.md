@@ -39,7 +39,7 @@ Estado: 2/5 issues completados.
 
 - [MOANA-009](MOANA-009.md) — Implementar capas, grupos y composición (done)
 - [MOANA-010](MOANA-010.md) — Construir pipeline de render determinista (done)
-- [MOANA-011](MOANA-011.md) — Exportar PNG y manifiesto de salida (ready)
+- [MOANA-011](MOANA-011.md) — Exportar PNG y manifiesto de salida (review)
 - [MOANA-012](MOANA-012.md) — Exponer API pública y CLI estático (blocked)
 - [MOANA-029](MOANA-029.md) — Verificar determinismo entre procesos y plataformas (blocked)
 
@@ -88,4 +88,4 @@ Estado: 0/8 issues completados.
 
 ## Siguiente paso
 
-Implementar [MOANA-011](MOANA-011.md): Exportar PNG y manifiesto de salida.
+Implementar [MOANA-013](MOANA-013.md): Añadir máscaras y regiones semánticas.

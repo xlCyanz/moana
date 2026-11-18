@@ -1,6 +1,6 @@
 # Inventario del repositorio
 
-278 archivos actuales de fuente, documentación, configuración y pruebas al 2026-11-17. Incluye cambios locales todavía sin commit. Excluye entorno virtual, herramientas, cachés, artefactos y metadata Git.
+283 archivos actuales de fuente, documentación, configuración y pruebas al 2026-11-17. Incluye cambios locales todavía sin commit. Excluye entorno virtual, herramientas, cachés, artefactos y metadata Git.
 
 | Archivo |
 | --- |
@@ -100,6 +100,7 @@
 | [docs/architecture/decisions/ADR-016-pixel-transforms.md](../docs/architecture/decisions/ADR-016-pixel-transforms.md) |
 | [docs/architecture/decisions/ADR-017-layers-composition.md](../docs/architecture/decisions/ADR-017-layers-composition.md) |
 | [docs/architecture/decisions/ADR-018-render-pipeline.md](../docs/architecture/decisions/ADR-018-render-pipeline.md) |
+| [docs/architecture/decisions/ADR-019-png-export.md](../docs/architecture/decisions/ADR-019-png-export.md) |
 | [docs/architecture/module-contracts.md](../docs/architecture/module-contracts.md) |
 | [docs/architecture/overview.md](../docs/architecture/overview.md) |
 | [docs/guides/agent-workflow.md](../docs/guides/agent-workflow.md) |
@@ -218,6 +219,9 @@
 | [src/moana/core/limits.py](../src/moana/core/limits.py) |
 | [src/moana/core/pillow_adapter.py](../src/moana/core/pillow_adapter.py) |
 | [src/moana/core/procedural.py](../src/moana/core/procedural.py) |
+| [src/moana/export/__init__.py](../src/moana/export/__init__.py) |
+| [src/moana/export/atomic.py](../src/moana/export/atomic.py) |
+| [src/moana/export/png.py](../src/moana/export/png.py) |
 | [src/moana/geometry/__init__.py](../src/moana/geometry/__init__.py) |
 | [src/moana/geometry/fill.py](../src/moana/geometry/fill.py) |
 | [src/moana/geometry/mask.py](../src/moana/geometry/mask.py) |
@@ -253,6 +257,7 @@
 | [tests/unit/core/test_core_ids.py](../tests/unit/core/test_core_ids.py) |
 | [tests/unit/core/test_core_limits.py](../tests/unit/core/test_core_limits.py) |
 | [tests/unit/core/test_core_procedural.py](../tests/unit/core/test_core_procedural.py) |
+| [tests/unit/export/test_export_png.py](../tests/unit/export/test_export_png.py) |
 | [tests/unit/geometry/test_geometry_architecture.py](../tests/unit/geometry/test_geometry_architecture.py) |
 | [tests/unit/geometry/test_geometry_fill.py](../tests/unit/geometry/test_geometry_fill.py) |
 | [tests/unit/geometry/test_geometry_mask.py](../tests/unit/geometry/test_geometry_mask.py) |

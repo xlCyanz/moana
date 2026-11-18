@@ -8,7 +8,7 @@
 - Aliases históricos: MOA-011
 - Phase: P2
 - Priority: P1
-- Status: ready
+- Status: review
 - Complexity: M (relativa, no estimación de tiempo)
 - Dependencies: [MOANA-010](MOANA-010.md)
 - Related modules: export
@@ -67,7 +67,7 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Guía para agentes de IA
 
-**Estado para agentes:** Listo: todas las dependencias están `done`; puede empezarse.
+**Estado para agentes:** En revisión: sólo correcciones de la revisión; no añadir alcance.
 
 ### 1. Preparación
 
@@ -137,4 +137,14 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Evidence
 
-Pendiente de implementación.
+- src/moana/export/png.py: encode_png/export_png reciben cualquier RasterFrame (width, height, rgba bytes; RenderResult lo cumple sin que export importe render), validan marco, opciones y presupuesto (export_dimension, export_area, buffer_bytes 24 B/px) antes de reservar, codifican RGBA maestro o indexado (paleta declarada en orden, ≤256 entradas, tRNS explícito, sin cuantización) con compress_level 9 sin chunks volátiles, escalan nearest 1..64 como preview y verifican en memoria la ida y vuelta de píxeles y los chunks PLTE/tRNS antes de escribir.
+- src/moana/export/atomic.py: commit_bytes escribe un temporal hermano O_EXCL con fsync y hace commit con os.link (overwrite=False, nunca reemplaza; sin enlaces duros falla con no_replace_unavailable, también por winerror en Windows) u os.replace (overwrite=True); el temporal se borra siempre; errores ExportError con reason, nombre de archivo y errno, sin ruta completa; nombres no representables son invalid_name.
+- ExportManifest con path, media_type, mode, dimensiones, frames, scale, master, dimensiones y digest de origen, pixel_digest, file_sha256, byte_size y warnings (scaled_preview); to_mapping ordenado.
+- ADR-019 (docs/architecture/decisions/ADR-019-png-export.md); MOANA.md §13 indica que export_png ya existe; contratos de módulos, índice de ADR, overview, README, guía de desarrollo, AGENTS.md y CLAUDE.md actualizados; probe de check_wheel ampliado con export/.
+- Gate: scripts/validate.py y scripts/check_wheel.py verdes; moana.export al 100 % de líneas y ramas; mypy también con --platform win32.
+- Revisión: moana-python-engineer (cambios requeridos, aplicados: geteuid en win32, OSError de inspección envueltos sin rutas, nombres con NUL o no codificables, temporal con prefijo truncado para nombres largos, carrera determinista que tumba exists+replace, winerror sin enlaces duros, EEXIST tras link propio, rgba leído una vez) y moana-graphics-engineer (aprobado con cambios menores, aplicados: planos de índice sin int64 duplicado y desglose de memoria documentado, verificación de PLTE/tRNS, tests de chunks exactos, escala 64 sobre 1×1 indexado, bytes iguales entre procesos y presupuesto antes de cualquier temporal).
+- AC1: tests/unit/export/test_export_png.py::test_ac1_rgba_png_decodes_exactly_to_the_frame y ::test_ac1_rendered_document_round_trips (render de examples minimal.moana.json exportado y decodificado igual a RenderResult.rgba, source_digest == digest).
+- AC2: tests/unit/export/test_export_png.py::test_ac2_t2_failure_during_write_keeps_previous_content (fallos simulados en write, fsync, link y replace, con y sin overwrite: destino anterior intacto, sin temporales ni manifiesto), ::test_roundtrip_mismatch_writes_nothing y ::test_palette_chunks_are_verified.
+- T1: tests/unit/export/test_export_png.py::test_t1_nearest_scale_replicates_blocks[1,2,4], ::test_t1_indexed_round_trip_keeps_declared_order_and_transparency[1,2,4] (PLTE/tRNS exactos), ::test_t1_transparent_frame_round_trips_in_both_modes, ::test_maximum_scale_on_a_single_indexed_pixel, ::test_encoding_is_stable_and_has_no_volatile_chunks y ::test_encoded_bytes_agree_across_fresh_processes_and_hash_seeds.
+- T2: tests/unit/export/test_export_png.py::test_t2_palette_of_256_is_accepted_and_257_rejected, ::test_indexed_export_never_quantises, ::test_t2_existing_destination_is_kept_unless_overwrite, ::test_t2_permission_denied_leaves_nothing, ::test_unsearchable_parent_is_permission_denied, ::test_ac2_t2_failure_during_write_keeps_previous_content, ::test_budget_is_checked_before_scaling, ::test_unrepresentable_names_are_rejected_before_writing y ::test_errors_do_not_echo_full_paths.
+- T3: tests/unit/export/test_export_png.py::test_t3_competitor_created_between_checks_and_commit_is_never_replaced (determinista: falla con exists+replace), ::test_t3_two_threads_one_wins_the_other_fails_without_replacing (25 repeticiones con barrera) y ::test_t3_two_processes_race_for_the_same_name.

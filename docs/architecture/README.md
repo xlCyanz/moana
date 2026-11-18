@@ -49,6 +49,7 @@ El paquete contiene `src/moana/__init__.py`, `py.typed` y `src/moana/core/` (MOA
 - [ADR-016: transformaciones pixel-perfect sobre índices](decisions/ADR-016-pixel-transforms.md).
 - [ADR-017: árbol de capas y composición source-over entera](decisions/ADR-017-layers-composition.md).
 - [ADR-018: orquestador de render determinista, máscaras diferidas y `budget-v2`](decisions/ADR-018-render-pipeline.md).
+- [ADR-019: exportación PNG verificada y escritura atómica sin sobrescritura](decisions/ADR-019-png-export.md).
 - [Modelo de amenazas](SECURITY_MODEL.md).
 
 Un ADR nuevo registra contexto, decisión, alternativas, consecuencias y evidencia. Cambiar un ADR aceptado se hace mediante otro que lo sustituya y actualizando el contrato principal.
