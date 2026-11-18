@@ -41,7 +41,7 @@ Estado: 3/5 issues completados.
 - [MOANA-010](MOANA-010.md) — Construir pipeline de render determinista (done)
 - [MOANA-011](MOANA-011.md) — Exportar PNG y manifiesto de salida (done)
 - [MOANA-012](MOANA-012.md) — Exponer API pública y CLI estático (ready)
-- [MOANA-029](MOANA-029.md) — Verificar determinismo entre procesos y plataformas (ready)
+- [MOANA-029](MOANA-029.md) — Verificar determinismo entre procesos y plataformas (review)
 
 ## P3 — Arte y edición
 

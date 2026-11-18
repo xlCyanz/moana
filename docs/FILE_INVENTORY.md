@@ -1,6 +1,6 @@
 # Inventario del repositorio
 
-283 archivos actuales de fuente, documentación, configuración y pruebas al 2026-11-17. Incluye cambios locales todavía sin commit. Excluye entorno virtual, herramientas, cachés, artefactos y metadata Git.
+288 archivos actuales de fuente, documentación, configuración y pruebas al 2026-11-17. Incluye cambios locales todavía sin commit. Excluye entorno virtual, herramientas, cachés, artefactos y metadata Git.
 
 | Archivo |
 | --- |
@@ -101,6 +101,7 @@
 | [docs/architecture/decisions/ADR-017-layers-composition.md](../docs/architecture/decisions/ADR-017-layers-composition.md) |
 | [docs/architecture/decisions/ADR-018-render-pipeline.md](../docs/architecture/decisions/ADR-018-render-pipeline.md) |
 | [docs/architecture/decisions/ADR-019-png-export.md](../docs/architecture/decisions/ADR-019-png-export.md) |
+| [docs/architecture/decisions/ADR-021-cross-platform-determinism.md](../docs/architecture/decisions/ADR-021-cross-platform-determinism.md) |
 | [docs/architecture/module-contracts.md](../docs/architecture/module-contracts.md) |
 | [docs/architecture/overview.md](../docs/architecture/overview.md) |
 | [docs/guides/agent-workflow.md](../docs/guides/agent-workflow.md) |
@@ -201,6 +202,7 @@
 | [scripts/check_repository.py](../scripts/check_repository.py) |
 | [scripts/check_wheel.py](../scripts/check_wheel.py) |
 | [scripts/claude_hooks.py](../scripts/claude_hooks.py) |
+| [scripts/determinism.py](../scripts/determinism.py) |
 | [scripts/generate_schema.py](../scripts/generate_schema.py) |
 | [scripts/github_sync.py](../scripts/github_sync.py) |
 | [scripts/planning.py](../scripts/planning.py) |
@@ -245,6 +247,9 @@
 | [src/moana/schema/capabilities.py](../src/moana/schema/capabilities.py) |
 | [src/moana/schema/document.py](../src/moana/schema/document.py) |
 | [src/moana/schema/models.py](../src/moana/schema/models.py) |
+| [tests/fixtures/determinism/corpus.json](../tests/fixtures/determinism/corpus.json) |
+| [tests/fixtures/determinism/expected.json](../tests/fixtures/determinism/expected.json) |
+| [tests/integration/test_cross_platform_determinism.py](../tests/integration/test_cross_platform_determinism.py) |
 | [tests/integration/test_render_determinism.py](../tests/integration/test_render_determinism.py) |
 | [tests/test_environment.py](../tests/test_environment.py) |
 | [tests/test_planning.py](../tests/test_planning.py) |

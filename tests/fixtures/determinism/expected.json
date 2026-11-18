@@ -1,0 +1,188 @@
+{
+  "format": "moana-determinism-expected/1",
+  "provenance": "P\u00edxeles calculados con el or\u00e1culo independiente de tests/integration/test_cross_platform_determinism.py (m\u00e1scaras a mano seg\u00fan MOANA.md \u00a76 y f\u00f3rmula escalar de \u00a711), sin ejecutar el renderer; digest \u00a714 con hashlib. Revisado a mano; nunca se regenera desde un render ni en CI.",
+  "cases": {
+    "alpha": {
+      "width": 4,
+      "height": 3,
+      "digest": "sha256:7d880551fa58859f4e0d8229ef9f1000ca34d4b153b5b4322409dcf04d980d8f",
+      "warnings": [],
+      "rows": [
+        [
+          "#FF000080",
+          "#5500AAC0",
+          "#5500AAC0",
+          "#0000FF80"
+        ],
+        [
+          "#FF000080",
+          "#5500AAC0",
+          "#B692DBE0",
+          "#0000FF80"
+        ],
+        [
+          "#00FF0080",
+          "#0000FF80",
+          "#0000FF80",
+          "#0000FF80"
+        ]
+      ]
+    },
+    "clipping": {
+      "width": 5,
+      "height": 4,
+      "digest": "sha256:e5087cd8fd097e79ac6b749c3189fb0c12dfa3ec42849abb7495efd2a6016fe1",
+      "warnings": [
+        "/layers/0/operations/4",
+        "/layers/0/operations/5"
+      ],
+      "rows": [
+        [
+          "#102030FF",
+          "#102030FF",
+          "#FAC800FF",
+          "#FAC800FF",
+          "#00000000"
+        ],
+        [
+          "#3CC88CFF",
+          "#3CC88CFF",
+          "#3CC88CFF",
+          "#00000000",
+          "#00000000"
+        ],
+        [
+          "#00000000",
+          "#00000000",
+          "#00000000",
+          "#3CC88CFF",
+          "#3CC88CFF"
+        ],
+        [
+          "#C83C5AFF",
+          "#C83C5AFF",
+          "#C83C5AFF",
+          "#C83C5AFF",
+          "#C83C5AFF"
+        ]
+      ]
+    },
+    "diagonals": {
+      "width": 8,
+      "height": 6,
+      "digest": "sha256:c2c092aff6fb87a7633f520dd48883f12e9558081ecdd43a6f93c2d46cdbf4d9",
+      "warnings": [],
+      "rows": [
+        [
+          "#102030FF",
+          "#00000000",
+          "#00000000",
+          "#00000000",
+          "#00000000",
+          "#FAC800FF",
+          "#00000000",
+          "#00000000"
+        ],
+        [
+          "#00000000",
+          "#102030FF",
+          "#00000000",
+          "#00000000",
+          "#FAC800FF",
+          "#C83C5AFF",
+          "#00000000",
+          "#00000000"
+        ],
+        [
+          "#00000000",
+          "#00000000",
+          "#102030FF",
+          "#FAC800FF",
+          "#00000000",
+          "#00000000",
+          "#C83C5AFF",
+          "#C83C5AFF"
+        ],
+        [
+          "#00000000",
+          "#00000000",
+          "#FAC800FF",
+          "#102030FF",
+          "#00000000",
+          "#00000000",
+          "#00000000",
+          "#00000000"
+        ],
+        [
+          "#00000000",
+          "#FAC800FF",
+          "#00000000",
+          "#00000000",
+          "#102030FF",
+          "#00000000",
+          "#1E5A8CFF",
+          "#1E5A8CFF"
+        ],
+        [
+          "#FAC800FF",
+          "#00000000",
+          "#00000000",
+          "#00000000",
+          "#1E5A8CFF",
+          "#1E5A8CFF",
+          "#00000000",
+          "#00000000"
+        ]
+      ]
+    },
+    "groups": {
+      "width": 4,
+      "height": 2,
+      "digest": "sha256:b81a5ff713f5d0d6d2e01828f0390274dfc8e2b9a104d573c64dae4e4e8e1c35",
+      "warnings": [],
+      "rows": [
+        [
+          "#FF000080",
+          "#0000FF80",
+          "#007F80FF",
+          "#00FF00FF"
+        ],
+        [
+          "#FF000080",
+          "#0000FF80",
+          "#0000FF80",
+          "#FFFFFF64"
+        ]
+      ]
+    },
+    "rounding": {
+      "width": 1,
+      "height": 1,
+      "digest": "sha256:70c43adaff0deadca8979195def1dba7f2acdf98d22874c34b671399bb79d4ef",
+      "warnings": [],
+      "rows": [
+        [
+          "#410000C0"
+        ]
+      ]
+    },
+    "transparency": {
+      "width": 3,
+      "height": 2,
+      "digest": "sha256:70c82fb54165b56361061f471d79d9f63225303c8379f4eb82f7132115e9b689",
+      "warnings": [],
+      "rows": [
+        [
+          "#3366CCFF",
+          "#3366CCFF",
+          "#20406080"
+        ],
+        [
+          "#00000000",
+          "#00000000",
+          "#FF804001"
+        ]
+      ]
+    }
+  }
+}
