@@ -8,7 +8,7 @@
 - Aliases históricos: MOA-013
 - Phase: P3
 - Priority: P1
-- Status: review
+- Status: done
 - Complexity: L (relativa, no estimación de tiempo)
 - Dependencies: [MOANA-009](MOANA-009.md), [MOANA-010](MOANA-010.md)
 - Related modules: layers, schema
@@ -43,13 +43,13 @@ No inferencia automática de regiones desde un PNG.
 
 ## Acceptance criteria
 
-- [ ] AC1: Una operación enmascarada no modifica píxeles fuera de su máscara
-- [ ] AC2: Regiones permiten resolver ojo izquierdo por ID; ciclos y referencias rotas se rechazan antes de render
+- [x] AC1: Una operación enmascarada no modifica píxeles fuera de su máscara
+- [x] AC2: Regiones permiten resolver ojo izquierdo por ID; ciclos y referencias rotas se rechazan antes de render
 
 ## Required tests
 
-- [ ] T1: Álgebra de conjuntos en fixtures 1/8/128 píxeles y máscaras vacías
-- [ ] T2: Ciclos directos/indirectos, máscara fuera del canvas y grupos transformados
+- [x] T1: Álgebra de conjuntos en fixtures 1/8/128 píxeles y máscaras vacías
+- [x] T2: Ciclos directos/indirectos, máscara fuera del canvas y grupos transformados
 
 ## Expected deliverables
 
@@ -66,7 +66,7 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Guía para agentes de IA
 
-**Estado para agentes:** En revisión: sólo correcciones de la revisión; no añadir alcance.
+**Estado para agentes:** Completado; usar sólo como referencia del contrato entregado.
 
 ### 1. Preparación
 
@@ -145,6 +145,7 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 - Trazabilidad: R012 cubierto. La hoja path queda prevista para MOANA-007.
 - Gate: scripts/validate.py (1223 passed, src/moana al 100 % de líneas y ramas) y scripts/check_wheel.py verdes; mypy también con --platform win32; generate_schema --check al día. Sin ejecución en Windows real (matriz pendiente en main).
 - Revisión: moana-graphics-engineer (cambios requeridos, aplicados: coste exponencial de DAG con hojas vacías, trabajo no contado en _clear_outside, oráculo de caja independiente) y moana-architect (cambios requeridos, aplicados: el mismo riesgo exponencial, excepción de versión del schema documentada frente a §16, ciclos en documentos sin validar, aritmética de cajas extraída a core, MaskNode homónimos aclarados, MaskCombination con eq=False, regla de grupos transformados como norma futura).
+- Aprobado por el propietario el 2026-11-17 tras revisión; PR #52 hacia develop.
 - AC1: tests/unit/layers/test_layers_masks.py::test_ac1_masked_layer_changes_no_pixel_outside_its_mask, ::test_ac1_layer_opacity_is_applied_once_inside_the_mask, ::test_ac1_random_masks_match_the_scalar_oracle, ::test_each_operator_clips_the_layer_to_its_set; tests/unit/render/test_render_masks.py::test_ac1_masked_operation_changes_no_pixel_outside_its_mask, ::test_ac1_mask_reaching_outside_the_canvas_is_clipped y ::test_example_renders_to_the_hand_computed_face.
 - AC2: tests/unit/schema/test_schema_masks.py::test_ac2_left_eye_resolves_by_id, ::test_ac2_region_resolution_does_not_depend_on_array_order, ::test_ac2_unknown_region_or_mask_is_a_reference_error, ::test_unvalidated_cycles_and_broken_references_fail_fast; tests/unit/api/test_api_masks.py::test_ac2_resolve_region_through_the_facade y ::test_inspect_of_an_unvalidated_cycle_fails_fast; tests/unit/render/test_render_masks.py::test_ac2_cycles_and_broken_references_fail_before_any_raster.
 - T1: tests/unit/geometry/test_geometry_algebra.py::test_fixtures_have_the_documented_sizes (1/8/128 píxeles), ::test_t1_binary_operators_match_set_oracle, ::test_t1_hand_results_on_the_fixtures, ::test_t1_associative_and_commutative_operators, ::test_t1_subtract_is_left_fold_and_not_commutative, ::test_t1_empty_mask_identities, ::test_t1_results_are_clipped_to_the_canvas y ::test_t1_property_matches_python_sets (caja esperada calculada desde los conjuntos).

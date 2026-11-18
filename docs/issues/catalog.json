@@ -868,7 +868,7 @@
       "id": "MOANA-013",
       "title": "Añadir máscaras y regiones semánticas",
       "phase": "P3",
-      "status": "review",
+      "status": "done",
       "priority": "P1",
       "dependencies": [
         "MOANA-009",
@@ -901,7 +901,8 @@
         "ADR-022 (docs/architecture/decisions/ADR-022-masks-regions.md), con notas de cabecera en ADR-011, ADR-017, ADR-018 y ADR-020; MOANA.md 0.1.9-draft (§11, §12, §13, §16, §20): schema 1.0 ampliado como excepción previa a la primera publicación, después toda ampliación sube el minor; ejemplo examples/specs/masked-eyes.moana.json; contratos de módulos, índice de ADR, overview, README, guía de desarrollo, AGENTS.md y CLAUDE.md actualizados.",
         "Trazabilidad: R012 cubierto. La hoja path queda prevista para MOANA-007.",
         "Gate: scripts/validate.py (1223 passed, src/moana al 100 % de líneas y ramas) y scripts/check_wheel.py verdes; mypy también con --platform win32; generate_schema --check al día. Sin ejecución en Windows real (matriz pendiente en main).",
-        "Revisión: moana-graphics-engineer (cambios requeridos, aplicados: coste exponencial de DAG con hojas vacías, trabajo no contado en _clear_outside, oráculo de caja independiente) y moana-architect (cambios requeridos, aplicados: el mismo riesgo exponencial, excepción de versión del schema documentada frente a §16, ciclos en documentos sin validar, aritmética de cajas extraída a core, MaskNode homónimos aclarados, MaskCombination con eq=False, regla de grupos transformados como norma futura)."
+        "Revisión: moana-graphics-engineer (cambios requeridos, aplicados: coste exponencial de DAG con hojas vacías, trabajo no contado en _clear_outside, oráculo de caja independiente) y moana-architect (cambios requeridos, aplicados: el mismo riesgo exponencial, excepción de versión del schema documentada frente a §16, ciclos en documentos sin validar, aritmética de cajas extraída a core, MaskNode homónimos aclarados, MaskCombination con eq=False, regla de grupos transformados como norma futura).",
+        "Aprobado por el propietario el 2026-11-17 tras revisión; PR #52 hacia develop."
       ],
       "aliases": [
         "MOA-013"
@@ -938,7 +939,7 @@
       "id": "MOANA-014",
       "title": "Crear contornos y análisis de clusters",
       "phase": "P3",
-      "status": "blocked",
+      "status": "ready",
       "priority": "P1",
       "dependencies": [
         "MOANA-013",
@@ -984,7 +985,7 @@
       "risks": [
         "No eliminar ojos o partículas por ser singletons; las métricas no inferirán intención."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-013",
+      "blocking_reason": null,
       "acceptance_evidence": {},
       "test_evidence": {}
     },
@@ -992,7 +993,7 @@
       "id": "MOANA-015",
       "title": "Añadir bandas de sombreado e iluminación",
       "phase": "P3",
-      "status": "blocked",
+      "status": "ready",
       "priority": "P1",
       "dependencies": [
         "MOANA-005",
@@ -1037,7 +1038,7 @@
       "risks": [
         "La estética de una rampa puede contradecir luminancia monótona; emitir advertencia configurable."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-013",
+      "blocking_reason": null,
       "acceptance_evidence": {},
       "test_evidence": {}
     },
@@ -1045,7 +1046,7 @@
       "id": "MOANA-016",
       "title": "Implementar dithering ordenado",
       "phase": "P3",
-      "status": "blocked",
+      "status": "ready",
       "priority": "P1",
       "dependencies": [
         "MOANA-005",
@@ -1089,7 +1090,7 @@
       "risks": [
         "El módulo negativo y los overrides temporales deben tener tests propios."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-013",
+      "blocking_reason": null,
       "acceptance_evidence": {},
       "test_evidence": {}
     },
@@ -1152,7 +1153,7 @@
       "id": "MOANA-018",
       "title": "Implementar batches de edición atómica",
       "phase": "P3",
-      "status": "blocked",
+      "status": "ready",
       "priority": "P0",
       "dependencies": [
         "MOANA-002",
@@ -1202,7 +1203,7 @@
       "risks": [
         "Tras undo pueden existir revisiones numéricas iguales en ramas distintas; verificar también identidad del snapshot."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-013",
+      "blocking_reason": null,
       "acceptance_evidence": {},
       "test_evidence": {}
     },
