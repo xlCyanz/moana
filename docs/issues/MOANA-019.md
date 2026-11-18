@@ -8,7 +8,7 @@
 - Aliases históricos: MOA-019
 - Phase: P3
 - Priority: P1
-- Status: review
+- Status: done
 - Complexity: L (relativa, no estimación de tiempo)
 - Dependencies: [MOANA-018](MOANA-018.md)
 - Related modules: editing
@@ -44,13 +44,13 @@ No persistir todavía un contenedor de proyecto ni fusionar ramas automáticamen
 
 ## Acceptance criteria
 
-- [ ] AC1: Undo y redo recuperan documento y RGBA exactos
-- [ ] AC2: Editar después de undo invalida sólo redo activo sin eliminar estados ya persistidos
+- [x] AC1: Undo y redo recuperan documento y RGBA exactos
+- [x] AC2: Editar después de undo invalida sólo redo activo sin eliminar estados ya persistidos
 
 ## Required tests
 
-- [ ] T1: Secuencias de 1/10/100 ediciones y navegación a límites
-- [ ] T2: Fallo de batch no agrega snapshot; ramas, revisiones y budget de historial
+- [x] T1: Secuencias de 1/10/100 ediciones y navegación a límites
+- [x] T2: Fallo de batch no agrega snapshot; ramas, revisiones y budget de historial
 
 ## Expected deliverables
 
@@ -67,7 +67,7 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Guía para agentes de IA
 
-**Estado para agentes:** En revisión: sólo correcciones de la revisión; no añadir alcance.
+**Estado para agentes:** Completado; usar sólo como referencia del contrato entregado.
 
 ### 1. Preparación
 
@@ -144,6 +144,7 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 - ADR-026 (docs/architecture/decisions/ADR-026-edit-history.md) con nota de cabecera en ADR-024; MOANA.md 0.1.14-draft (§15); contratos de módulos, índice de ADR, overview, README, AGENTS.md y CLAUDE.md actualizados. Sin cambios en api, cli, schema ni capabilities: la persistencia y su exposición quedan para MOANA-020.
 - Gate: scripts/validate.py (1750 passed, src/moana al 100 % de líneas y ramas) y scripts/check_wheel.py verdes; mypy también con --platform win32; generate_schema --check al día. Evidencia de plataforma: local macOS; matriz pendiente en main.
 - Revisión: moana-architect (cambios requeridos, aplicados: presupuesto de bytes rebajado y documentado como medida no-RAM, existing_snapshot como EditConflict, constructor validado, hash coherente, parse_limits) y moana-qa-engineer/python (cambios requeridos, aplicados: test de memoria trazada, propiedades Hypothesis con checkout e invariantes de árbol, reutilización con otro batch, casos de límite exactos, equivalencia de canonical_batch).
+- Aprobado por el propietario el 2026-11-17 tras revisión; PR #56 hacia develop.
 - AC1: tests/unit/editing/test_editing_history.py::test_ac1_undo_and_redo_restore_document_and_rgba (documento y RGBA idénticos tras undo/redo) y ::test_ac1_oracles_are_consistent_with_the_fixture.
 - AC2: tests/unit/editing/test_editing_history.py::test_ac2_edit_after_undo_replaces_only_the_active_redo y ::test_ac2_undo_of_an_old_branch_reactivates_its_redo; propiedades ::test_property_history_matches_a_list_and_cursor_model y ::test_property_history_with_checkouts_matches_a_path_tree.
 - T1: tests/unit/editing/test_editing_history.py::test_t1_sequences_and_navigation_limits[1], [10] y [100]; ::test_t1_snapshot_records_parent_batch_revision_and_size.

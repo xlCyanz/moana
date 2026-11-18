@@ -1263,7 +1263,7 @@
       "id": "MOANA-019",
       "title": "Añadir undo/redo e historial inmutable",
       "phase": "P3",
-      "status": "review",
+      "status": "done",
       "priority": "P1",
       "dependencies": [
         "MOANA-018"
@@ -1294,7 +1294,8 @@
         "El constructor de History valida y congela un historial hecho a mano (ValidationError reason invalid_history; BudgetExceeded sobre límites), base de la reconstrucción desde persistencia en MOANA-020; los métodos usan un constructor interno sin revalidación.",
         "ADR-026 (docs/architecture/decisions/ADR-026-edit-history.md) con nota de cabecera en ADR-024; MOANA.md 0.1.14-draft (§15); contratos de módulos, índice de ADR, overview, README, AGENTS.md y CLAUDE.md actualizados. Sin cambios en api, cli, schema ni capabilities: la persistencia y su exposición quedan para MOANA-020.",
         "Gate: scripts/validate.py (1750 passed, src/moana al 100 % de líneas y ramas) y scripts/check_wheel.py verdes; mypy también con --platform win32; generate_schema --check al día. Evidencia de plataforma: local macOS; matriz pendiente en main.",
-        "Revisión: moana-architect (cambios requeridos, aplicados: presupuesto de bytes rebajado y documentado como medida no-RAM, existing_snapshot como EditConflict, constructor validado, hash coherente, parse_limits) y moana-qa-engineer/python (cambios requeridos, aplicados: test de memoria trazada, propiedades Hypothesis con checkout e invariantes de árbol, reutilización con otro batch, casos de límite exactos, equivalencia de canonical_batch)."
+        "Revisión: moana-architect (cambios requeridos, aplicados: presupuesto de bytes rebajado y documentado como medida no-RAM, existing_snapshot como EditConflict, constructor validado, hash coherente, parse_limits) y moana-qa-engineer/python (cambios requeridos, aplicados: test de memoria trazada, propiedades Hypothesis con checkout e invariantes de árbol, reutilización con otro batch, casos de límite exactos, equivalencia de canonical_batch).",
+        "Aprobado por el propietario el 2026-11-17 tras revisión; PR #56 hacia develop."
       ],
       "aliases": [
         "MOA-019"
@@ -1330,7 +1331,7 @@
       "id": "MOANA-020",
       "title": "Persistir proyectos y assets seguros",
       "phase": "P4",
-      "status": "blocked",
+      "status": "ready",
       "priority": "P1",
       "dependencies": [
         "MOANA-018",
@@ -1379,7 +1380,7 @@
         "Guardar el mismo asset path in-place antes del manifiesto rompe atomicidad; versiones inmutables necesarias.",
         "Convergencia del historial (MOANA-019, ADR-026 §4): un digest alcanzado desde otro padre se rechaza con EditConflict (existing_snapshot); permitirla exige separar la identidad de la entrada de historial (padre + batch + digest) del almacén por contenido, con un ADR nuevo antes de persistir."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-019",
+      "blocking_reason": null,
       "acceptance_evidence": {},
       "test_evidence": {}
     },
@@ -1439,7 +1440,7 @@
       "id": "MOANA-022",
       "title": "Implementar timeline y evaluación de frames",
       "phase": "P4",
-      "status": "blocked",
+      "status": "ready",
       "priority": "P1",
       "dependencies": [
         "MOANA-018",
@@ -1485,7 +1486,7 @@
       "risks": [
         "Un bucle infinito de playback no autoriza un render infinito; exportar secuencia finita."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-019",
+      "blocking_reason": null,
       "acceptance_evidence": {},
       "test_evidence": {}
     },
