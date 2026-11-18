@@ -65,7 +65,7 @@ def test_minimal_rect_matches_hand_oracle() -> None:
     assert estimate.buffer_bytes == 40 * A128 + rect + 4 * A128 == 724_352
     assert estimate.frame_pixels == A128
     assert (estimate.operations, estimate.layers, estimate.frames) == (1, 1, 1)
-    assert estimate.estimator_version == "budget-v4"
+    assert estimate.estimator_version == "budget-v5"
     (cost,) = estimate.operation_costs
     assert (cost.json_pointer, cost.pixel_visits, cost.mask_bytes) == (
         "/layers/0/operations/0",

@@ -82,22 +82,35 @@ VALID: dict[str, Mutation] = {
         deleter(("canvas", "profile")),
         *(deleter(("layers", 0, key)) for key in ("visible", "locked", "opacity", "blend")),
     ),
-    "all_primitives": setter(
-        ("layers", 0, "operations"),
-        [
-            {"id": "p", "type": "pixel", "at": [-1_048_576, 1_048_576], "color": "ink"},
-            {"id": "l", "type": "line", "start": [0, 0], "end": [5, 9], "color": "ink"},
-            {"id": "r", "type": "rect", "box": [0, 0, 1_048_577, 1], "color": "ink"},
-            {"id": "e", "type": "ellipse", "box": [-3, -3, 3, 3], "color": "cloth"},
-            {"id": "g", "type": "polygon", "points": [[0, 0], [4, 0], [0, 4]], "color": "ink"},
-            {
-                "id": "v",
-                "type": "path",
-                "backend": "aggdraw-v1",
-                "commands": [["M", 0, 0], ["L", 1024, 0], ["Q", 1024, 1024, 0, 1024], ["Z"]],
-                "color": "ink",
-            },
-        ],
+    "all_primitives": both(
+        setter(("masks",), [{"id": "area", "type": "rect", "box": [0, 0, 4, 4]}]),
+        setter(
+            ("layers", 0, "operations"),
+            [
+                {"id": "p", "type": "pixel", "at": [-1_048_576, 1_048_576], "color": "ink"},
+                {"id": "l", "type": "line", "start": [0, 0], "end": [5, 9], "color": "ink"},
+                {"id": "r", "type": "rect", "box": [0, 0, 1_048_577, 1], "color": "ink"},
+                {"id": "e", "type": "ellipse", "box": [-3, -3, 3, 3], "color": "cloth"},
+                {"id": "g", "type": "polygon", "points": [[0, 0], [4, 0], [0, 4]], "color": "ink"},
+                {
+                    "id": "v",
+                    "type": "path",
+                    "backend": "aggdraw-v1",
+                    "commands": [["M", 0, 0], ["L", 1024, 0], ["Q", 1024, 1024, 0, 1024], ["Z"]],
+                    "color": "ink",
+                },
+                {
+                    "id": "d",
+                    "type": "dither",
+                    "size": 4,
+                    "coverage": 16,
+                    "origin": [-1_048_576, 1_048_576],
+                    "color_a": "ink",
+                    "color_b": "cloth",
+                    "mask_id": "area",
+                },
+            ],
+        ),
     ),
     "rgba_profile_partial_alpha": both(
         setter(("canvas", "profile"), "rgba"),

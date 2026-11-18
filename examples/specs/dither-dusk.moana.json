@@ -1,0 +1,96 @@
+{
+  "schema_version": "1.0",
+  "id": "dither_dusk",
+  "revision": 0,
+  "seed": 0,
+  "canvas": {"width": 32, "height": 32, "profile": "strict"},
+  "palette": {
+    "id": "palette_dusk",
+    "colors": [
+      {"id": "night", "rgba": "#1B1A3AFF"},
+      {"id": "dusk", "rgba": "#5A2F5EFF"},
+      {"id": "ember", "rgba": "#B8545EFF"},
+      {"id": "glow", "rgba": "#E89A5CFF"},
+      {"id": "sand", "rgba": "#A9814FFF"},
+      {"id": "sand_shadow", "rgba": "#6A4E3AFF"}
+    ],
+    "ramps": [
+      {"id": "sky_ramp", "colors": ["night", "dusk", "ember", "glow"]},
+      {"id": "dune_ramp", "colors": ["sand_shadow", "sand"]}
+    ]
+  },
+  "masks": [
+    {"id": "band_night_dusk", "type": "rect", "box": [0, 4, 32, 8]},
+    {"id": "band_dusk_ember", "type": "rect", "box": [0, 8, 32, 12]},
+    {"id": "band_ember_glow", "type": "rect", "box": [0, 12, 32, 16]},
+    {"id": "dune_inner", "type": "ellipse", "box": [-10, 21, 42, 53]},
+    {"id": "dune_core", "type": "ellipse", "box": [-8, 25, 40, 57]},
+    {"id": "dune_shoulder", "type": "subtract", "masks": ["dune_inner", "dune_core"]}
+  ],
+  "regions": [
+    {"id": "dune_shading", "mask_id": "dune_shoulder", "operation_ids": ["dune_dither"]}
+  ],
+  "layers": [
+    {
+      "id": "sky",
+      "name": "Cielo: bandas Bayer 4x4 de un período de alto",
+      "operations": [
+        {"id": "sky_night", "type": "rect", "box": [0, 0, 32, 4], "color": "night"},
+        {
+          "id": "sky_night_dusk",
+          "type": "dither",
+          "size": 4,
+          "coverage": 6,
+          "origin": [0, 0],
+          "color_a": "night",
+          "color_b": "dusk",
+          "mask_id": "band_night_dusk"
+        },
+        {
+          "id": "sky_dusk_ember",
+          "type": "dither",
+          "size": 4,
+          "coverage": 8,
+          "origin": [0, 0],
+          "color_a": "dusk",
+          "color_b": "ember",
+          "mask_id": "band_dusk_ember"
+        },
+        {
+          "id": "sky_ember_glow",
+          "type": "dither",
+          "size": 4,
+          "coverage": 10,
+          "origin": [0, 0],
+          "color_a": "ember",
+          "color_b": "glow",
+          "mask_id": "band_ember_glow"
+        },
+        {"id": "sky_glow", "type": "rect", "box": [0, 16, 32, 32], "color": "glow"}
+      ]
+    },
+    {
+      "id": "dune",
+      "name": "Duna a contraluz",
+      "operations": [
+        {"id": "dune_rim", "type": "ellipse", "box": [-12, 18, 44, 50], "color": "sand"},
+        {
+          "id": "dune_dither",
+          "type": "dither",
+          "size": 2,
+          "coverage": 2,
+          "origin": [0, -1],
+          "color_a": "sand",
+          "color_b": "sand_shadow",
+          "mask_id": "dune_shoulder"
+        },
+        {"id": "dune_body", "type": "ellipse", "box": [-8, 25, 40, 57], "color": "sand_shadow"}
+      ]
+    }
+  ],
+  "metadata": {
+    "title": "Atardecer con dithering ordenado",
+    "description": "Ejemplo de MOANA-016: tres bandas Bayer 4x4 de un período de alto (cobertura 6, 8 y 10 de 16, mismo origen) en el cielo y una duna a contraluz con borde iluminado, transición Bayer 2x2 anclada en [0, -1] dentro de una máscara subtract y núcleo sólido en sombra. El sol queda detrás del centro de la duna.",
+    "provenance": "Creado a mano para el repositorio Moana (MOANA-016); sin recursos externos."
+  }
+}

@@ -39,6 +39,7 @@ from moana.core.coordinates import (
     Dimensions,
     Point,
 )
+from moana.core.dither import DITHER_SIZES
 from moana.core.errors import ValidationError as DomainValidationError
 from moana.core.limits import (
     MAX_COLORS_RGBA,
@@ -59,6 +60,7 @@ from moana.core.vector_path import (
 )
 
 __all__ = [
+    "DITHER_SIZES",
     "MAX_COLORS_RGBA",
     "MAX_COLORS_STRICT",
     "MAX_LAYERS",
@@ -75,6 +77,7 @@ __all__ = [
     "Canvas",
     "Color",
     "CombinationMask",
+    "DitherOperation",
     "Document",
     "EllipseMask",
     "EllipseOperation",
@@ -98,6 +101,7 @@ __all__ = [
     "RectOperation",
     "Region",
     "ShapeMask",
+    "ShapeOperation",
     "SubtractMask",
     "UnionMask",
     "XorMask",
@@ -393,13 +397,70 @@ class PathOperation(_Operation, _CachedPath):
         return self._cached(self.commands)
 
 
+def _check_dither_size(value: int) -> int:
+    if value not in DITHER_SIZES:
+        raise PydanticCustomError("unsupported_size", "Dither size should be 2 or 4")
+    return value
+
+
+class DitherOperation(_Model):
+    """Ordered Bayer dithering of the pixels of mask ``mask_id`` (ADR-025).
+
+    Pixel ``(x, y)`` of the mask takes ``color_b`` when
+    ``M[(y - oy) mod size][(x - ox) mod size] < coverage`` (mathematical modulo,
+    ``origin = [ox, oy]``) and ``color_a`` otherwise; nothing outside the mask is
+    drawn. ``coverage`` is an integer in ``0..size^2``.
+    """
+
+    id: Id
+    type: Literal["dither"]
+    size: Annotated[
+        int,
+        AfterValidator(_check_dither_size),
+        WithJsonSchema({"type": "integer", "enum": list(DITHER_SIZES)}),
+    ]
+    coverage: Annotated[int, Field(ge=0, le=max(DITHER_SIZES) ** 2)]
+    origin: PointValue
+    color_a: Id
+    color_b: Id
+    mask_id: Id
+
+    def model_post_init(self, context: Any, /) -> None:
+        """Bound ``coverage`` by ``size^2`` (it depends on two members)."""
+        maximum = self.size * self.size
+        if self.coverage > maximum:
+            reason = PydanticCustomError(
+                "less_than_equal",
+                "Input should be less than or equal to {le}",
+                {"le": maximum},
+            )
+            detail = InitErrorDetails(type=reason, loc=("coverage",), input=self.coverage)
+            raise PydanticValidationError.from_exception_data(type(self).__name__, [detail])
+
+    @property
+    def anchor(self) -> Point:
+        """The pattern origin as a ``core`` value."""
+        return Point(*self.origin)
+
+
+ShapeOperation = (
+    PixelOperation
+    | LineOperation
+    | RectOperation
+    | EllipseOperation
+    | PolygonOperation
+    | PathOperation
+)
+"""Operations that rasterise primitive geometry and paint it with one ``color``."""
+
 Operation = Annotated[
     PixelOperation
     | LineOperation
     | RectOperation
     | EllipseOperation
     | PolygonOperation
-    | PathOperation,
+    | PathOperation
+    | DitherOperation,
     Field(discriminator="type"),
 ]
 """Operations of schema 1.0, discriminated by ``type``."""

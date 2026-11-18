@@ -7,7 +7,9 @@ act on pixel indices about a pivot pixel (ADR-016). Fixed-point paths
 come from the AggDraw adapter :mod:`moana.geometry.paths` (backend ``aggdraw-v1``,
 ADR-023), which imports AggDraw only when a path is rasterised or the backend is
 probed; stroke widths are out of scope. Masks combine through the set algebra of
-:mod:`moana.geometry.algebra` (union, intersect, subtract, xor; ADR-022).
+:mod:`moana.geometry.algebra` (union, intersect, subtract, xor; ADR-022). A periodic
+cell table anchored on the canvas selects mask pixels with the mathematical modulo
+(:func:`select_periodic`, ADR-025), the geometry under ordered dithering.
 """
 
 from moana.geometry.algebra import (
@@ -31,6 +33,12 @@ from moana.geometry.paths import (
     path_mask_box,
     rasterize_path,
 )
+from moana.geometry.pattern import (
+    MAX_PATTERN_SIZE,
+    PATTERN_INDEX_BYTES,
+    CellTable,
+    select_periodic,
+)
 from moana.geometry.primitives import (
     MIN_POLYGON_VERTICES,
     rasterize_ellipse,
@@ -52,11 +60,14 @@ __all__ = [
     "COVERAGE_THRESHOLD",
     "FLOOD_FILL_BYTES_PER_PIXEL",
     "MASK_OPERATORS",
+    "MAX_PATTERN_SIZE",
     "MAX_SCALE",
     "MIN_POLYGON_VERTICES",
     "PATH_BUFFER_MARGIN",
+    "PATTERN_INDEX_BYTES",
     "QUARTER_TURNS",
     "TESTED_AGGDRAW_VERSIONS",
+    "CellTable",
     "Mask",
     "MaskBuilder",
     "MaskOperator",
@@ -76,6 +87,7 @@ __all__ = [
     "rasterize_pixel",
     "rasterize_polygon",
     "rasterize_rect",
+    "select_periodic",
     "transform_box",
     "transform_mask",
 ]

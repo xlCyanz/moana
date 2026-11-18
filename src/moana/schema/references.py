@@ -4,7 +4,8 @@ Masks reference other masks by ID, layers reference a mask through ``mask_id`` a
 regions reference a mask and, optionally, operations. :func:`reference_details`
 checks every reference of a structurally valid document before any raster:
 
-* an operand, ``mask_id`` or region mask that names no mask is ``REFERENCE_ERROR``
+* an operand, ``mask_id`` (of a layer or of a ``dither`` operation, ADR-025) or
+  region mask that names no mask is ``REFERENCE_ERROR``
   (``unknown_mask``), and a region operation that names no operation is
   ``unknown_operation``; a repeated operand or region operation is a
   ``VALIDATION_ERROR`` (``duplicate_reference``), since it has no meaning of its own;
@@ -26,6 +27,7 @@ from dataclasses import dataclass
 
 from moana.core.errors import ErrorDetail, ReferenceError, ValidationError
 from moana.core.limits import MAX_MASK_DEPTH
+from moana.schema.members import OPERATION_MEMBERS
 from moana.schema.models import CombinationMask, Document, MaskNode
 
 __all__ = ["ResolvedRegion", "mask_dependencies", "reference_details", "resolve_region"]
@@ -195,6 +197,11 @@ def reference_details(document: Document) -> list[ErrorDetail]:
     for layer_index, layer in enumerate(document.layers):
         if layer.mask_id is not None and layer.mask_id not in index:
             details.append(_unknown_mask(f"/layers/{layer_index}/mask_id"))
+        for position, operation in enumerate(layer.operations):
+            for member in OPERATION_MEMBERS[operation.type].masks:
+                if getattr(operation, member) not in index:
+                    pointer = f"/layers/{layer_index}/operations/{position}/{member}"
+                    details.append(_unknown_mask(pointer))
     operations = _operation_layers(document)
     for region_index, region in enumerate(document.regions):
         if region.mask_id not in index:

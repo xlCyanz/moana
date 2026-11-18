@@ -64,6 +64,7 @@ __all__ = [
     "MaskCost",
     "compose",
     "composition_cost",
+    "evaluate_mask",
     "mask_cost",
     "tile_pixels",
 ]
@@ -356,6 +357,21 @@ def _evaluate(node: MaskNode, costs: dict[int, MaskCost], deadline: Deadline | N
     for operand in node.operands:
         builder.add(_evaluate(operand, costs, deadline))
     return builder.finish()
+
+
+def evaluate_mask(
+    root: MaskNode, dimensions: Dimensions, *, deadline: Deadline | None = None
+) -> Mask:
+    """The mask of ``root``, evaluated exactly as for a layer mask (ADR-022).
+
+    Same order, work and peak as :func:`mask_cost` describes; ``deadline`` is checked
+    before each node. ``render`` uses it to clip a ``dither`` operation (ADR-025).
+    """
+    if not isinstance(root, MaskShape | MaskCombination):
+        raise TypeError("root must be a MaskShape or MaskCombination value")
+    if not isinstance(dimensions, Dimensions):
+        raise TypeError("dimensions must be a Dimensions value")
+    return _evaluate(root, _mask_costs(root, dimensions), deadline)
 
 
 def _clear_outside(buffer: Pixels, mask: Mask) -> None:

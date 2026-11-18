@@ -23,6 +23,12 @@
 5. **Raster and composition**: :func:`moana.layers.compose` builds one mask at a time,
    in array order, between deadline checks.
 
+A ``dither`` operation (ADR-025) becomes two deferred fills, colour A then colour B,
+both declared over the result box of its mask ``mask_id``. Each one evaluates that
+mask with :func:`moana.layers.evaluate_mask` and keeps its part with
+:func:`moana.techniques.dither_mask`; the parts are disjoint, so their order never
+changes a pixel, and nothing outside the mask is painted.
+
 A document with paths records the backend and the AggDraw and Pillow versions in
 its :class:`Provenance` (``vector_backend``, ``vector_backend_versions``); others leave
 them empty. Order comes only from document arrays: no sets, ``hash()``, clock, locale, global
@@ -32,11 +38,12 @@ read from or written to disk.
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from functools import partial
 from typing import Final, assert_never
 
 from moana.core.budget import DEFAULT_RENDER_LIMITS, Deadline, RenderLimits
-from moana.core.coordinates import Dimensions, Point
+from moana.core.coordinates import Box, Dimensions, Point
 from moana.core.errors import ReferenceError, UnsupportedOperation
 from moana.core.procedural import RNG_VERSION
 from moana.geometry import (
@@ -60,9 +67,10 @@ from moana.layers import (
     MaskNode,
     MaskShape,
     compose,
+    evaluate_mask,
 )
 from moana.palette import Palette
-from moana.render.budget import mask_box, plan_budget
+from moana.render.budget import MaskEstimate, mask_box, mask_estimates, plan_budget
 from moana.render.result import (
     RENDERER_BACKEND,
     RENDERER_VERSION,
@@ -72,6 +80,7 @@ from moana.render.result import (
 )
 from moana.schema import (
     CombinationMask,
+    DitherOperation,
     Document,
     EllipseMask,
     EllipseOperation,
@@ -87,23 +96,33 @@ from moana.schema import (
     RectMask,
     RectOperation,
     ShapeMask,
+    ShapeOperation,
     normalize_document,
     snapshot_digest,
     validate_document,
 )
 from moana.schema import Layer as DocumentLayer
 from moana.schema import MaskNode as DocumentMask
+from moana.techniques import DitherPart, OrderedDither, dither_mask
 
 __all__ = ["RENDERABLE_OPERATION_TYPES", "render"]
 
-RENDERABLE_OPERATION_TYPES: Final = ("pixel", "line", "rect", "ellipse", "polygon", "path")
+RENDERABLE_OPERATION_TYPES: Final = (
+    "pixel",
+    "line",
+    "rect",
+    "ellipse",
+    "polygon",
+    "path",
+    "dither",
+)
 """Operation types with a registered rasteriser, in registration order."""
 
 EMPTY_BOUNDS: Final = "empty_bounds"
 """Warning: the operation's bounds clipped to the canvas are empty (nothing to draw)."""
 
 
-def _rasterize(operation: Operation | ShapeMask, dimensions: Dimensions) -> Mask:
+def _rasterize(operation: ShapeOperation | ShapeMask, dimensions: Dimensions) -> Mask:
     """Mask of one operation or mask leaf clipped to the canvas (the rasteriser registry)."""
     match operation:
         case PixelOperation() | PixelMask():
@@ -120,6 +139,18 @@ def _rasterize(operation: Operation | ShapeMask, dimensions: Dimensions) -> Mask
             return rasterize_path(operation.path, dimensions)
         case _:  # pragma: no cover - a new operation type must register its rasteriser
             assert_never(operation)
+
+
+def _dither_part(
+    operation: DitherOperation,
+    mask: MaskNode,
+    dimensions: Dimensions,
+    deadline: Deadline | None,
+    part: DitherPart,
+) -> Mask:
+    """Pixels of the clipping mask that ``operation`` paints with colour ``part``."""
+    dither = OrderedDither(operation.size, operation.coverage, operation.anchor)
+    return dither_mask(evaluate_mask(mask, dimensions, deadline=deadline), dither, part)
 
 
 def _check_frame(frame_id: str | None) -> None:
@@ -171,18 +202,26 @@ def _backend_versions(backend: PathBackend | None) -> tuple[str, ...]:
     return tuple(versions)
 
 
+def _used_masks(document: Document) -> list[str]:
+    """Mask IDs that layers and ``dither`` operations reference, in document order."""
+    used: list[str] = []
+    for layer in document.layers:
+        if layer.mask_id is not None:
+            used.append(layer.mask_id)
+        used.extend(op.mask_id for op in layer.operations if isinstance(op, DitherOperation))
+    return used
+
+
 def _plan_masks(document: Document, dimensions: Dimensions) -> dict[str, MaskNode]:
-    """Layer-tree mask nodes of every mask a layer uses, keyed by document mask ID.
+    """Layer-tree mask nodes of every mask a layer or dither uses, keyed by mask ID.
 
     Built operands first (post-order over the operand arrays), one node per document
     mask; the document is valid, so the references are acyclic and resolved.
     """
     masks: dict[str, DocumentMask] = {mask.id: mask for mask in document.masks}
     nodes: dict[str, MaskNode] = {}
-    for layer in document.layers:
-        if layer.mask_id is None:
-            continue
-        work: list[tuple[DocumentMask, bool]] = [(masks[layer.mask_id], False)]
+    for mask_id in _used_masks(document):
+        work: list[tuple[DocumentMask, bool]] = [(masks[mask_id], False)]
         while work:
             mask, ready = work.pop()
             if mask.id in nodes:
@@ -201,17 +240,42 @@ def _plan_masks(document: Document, dimensions: Dimensions) -> dict[str, MaskNod
     return nodes
 
 
+@dataclass(frozen=True, slots=True)
+class _Plan:
+    """What every layer of one render shares while it is planned."""
+
+    palette: Palette
+    dimensions: Dimensions
+    masks: dict[str, MaskNode]
+    estimates: dict[str, MaskEstimate]
+    deadline: Deadline | None
+
+
+def _operation_fills(operation: Operation, plan: _Plan) -> tuple[Box | None, list[Fill]]:
+    """Declared box and deferred fills of one operation (two for a ``dither``)."""
+    if not isinstance(operation, DitherOperation):
+        box = mask_box(operation, plan.dimensions)
+        mask = DeferredMask(box, partial(_rasterize, operation, plan.dimensions))
+        return box, [Fill(mask, plan.palette.color(operation.color))]
+    box = plan.estimates[operation.mask_id].box
+    node = plan.masks[operation.mask_id]
+    fills = []
+    parts: tuple[tuple[DitherPart, str], ...] = (
+        ("a", operation.color_a),
+        ("b", operation.color_b),
+    )
+    for part, color_id in parts:
+        build = partial(_dither_part, operation, node, plan.dimensions, plan.deadline, part)
+        fills.append(Fill(DeferredMask(box, build), plan.palette.color(color_id)))
+    return box, fills
+
+
 def _plan_layer(
-    layer: DocumentLayer,
-    layer_index: int,
-    palette: Palette,
-    dimensions: Dimensions,
-    warnings: list[RenderWarning],
-    masks: dict[str, MaskNode],
+    layer: DocumentLayer, layer_index: int, plan: _Plan, warnings: list[RenderWarning]
 ) -> Layer:
     fills: list[Fill] = []
     for index, operation in enumerate(layer.operations):
-        box = mask_box(operation, dimensions)
+        box, operation_fills = _operation_fills(operation, plan)
         if box is None:
             warnings.append(
                 RenderWarning(
@@ -220,8 +284,7 @@ def _plan_layer(
                     f"/layers/{layer_index}/operations/{index}",
                 )
             )
-        mask = DeferredMask(box, partial(_rasterize, operation, dimensions))
-        fills.append(Fill(mask, palette.color(operation.color)))
+        fills.extend(operation_fills)
     return Layer(
         layer.id,
         layer.name,
@@ -230,7 +293,7 @@ def _plan_layer(
         locked=layer.locked,
         opacity=layer.opacity,
         blend=layer.blend,
-        mask=None if layer.mask_id is None else masks[layer.mask_id],
+        mask=None if layer.mask_id is None else plan.masks[layer.mask_id],
     )
 
 
@@ -271,10 +334,11 @@ def render(
     warnings: list[RenderWarning] = []
     layers: list[Layer] = []
     masks = _plan_masks(document, dimensions)
+    plan = _Plan(palette, dimensions, masks, mask_estimates(document), deadline)
     for layer_index, layer in enumerate(document.layers):
         if deadline is not None:
             deadline.checkpoint("plan_layer")
-        layers.append(_plan_layer(layer, layer_index, palette, dimensions, warnings, masks))
+        layers.append(_plan_layer(layer, layer_index, plan, warnings))
     tree = LayerTree(dimensions, tuple(layers), profile=profile)
 
     canvas = compose(tree, limits=limits, deadline=deadline)

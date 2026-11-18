@@ -1,6 +1,6 @@
 # ADR-012 — Presupuestos de solicitud y plan de coste previo al render
 
-Estado: aceptado · 2026-11-17 · Issue: [MOANA-003](../../issues/MOANA-003.md). La frase de §3 sobre MOANA-004 queda sustituida parcialmente por [ADR-013](ADR-013-canvas-buffer.md). Las visitas por operación del punto 2 (`budget-v1`) quedan sustituidas por `budget-v2` en [ADR-018](ADR-018-render-pipeline.md).
+Estado: aceptado · 2026-11-17 · Issue: [MOANA-003](../../issues/MOANA-003.md). La frase de §3 sobre MOANA-004 queda sustituida parcialmente por [ADR-013](ADR-013-canvas-buffer.md). Las visitas por operación del punto 2 (`budget-v1`) quedan sustituidas por `budget-v2` en [ADR-018](ADR-018-render-pipeline.md). Ampliado por [ADR-025](ADR-025-ordered-dithering.md): el recurso `operations` compara con `max_operations` los fills rasterizados (`CostEstimate.fills`, 2 por `dither`), que son su `estimated`; `CostEstimate.operations` sigue contando operaciones del documento.
 
 ## Contexto
 

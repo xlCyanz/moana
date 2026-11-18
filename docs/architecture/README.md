@@ -54,6 +54,7 @@ El paquete contiene `src/moana/__init__.py`, `py.typed` y `src/moana/core/` (MOA
 - [ADR-021: contrato de determinismo entre procesos y plataformas](decisions/ADR-021-cross-platform-determinism.md).
 - [ADR-022: máscaras semánticas en DAG, regiones por ID y `budget-v3`](decisions/ADR-022-masks-regions.md).
 - [ADR-023: paths de punto fijo con el backend `aggdraw-v1` y `budget-v4`](decisions/ADR-023-aggdraw-paths.md).
+- [ADR-025: dithering ordenado Bayer con cobertura entera, anclaje explícito y `budget-v5`](decisions/ADR-025-ordered-dithering.md).
 - [Modelo de amenazas](SECURITY_MODEL.md).
 
 Un ADR nuevo registra contexto, decisión, alternativas, consecuencias y evidencia. Cambiar un ADR aceptado se hace mediante otro que lo sustituya y actualizando el contrato principal.

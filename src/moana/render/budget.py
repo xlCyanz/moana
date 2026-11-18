@@ -1,6 +1,7 @@
 """Cost plan of a validated document, checked before any buffer exists (MOANA-003).
 
-The estimator (``budget-v4``, ADR-018, ADR-022 and ADR-023) is pure integer arithmetic over
+The estimator (``budget-v5``, ADR-018, ADR-022, ADR-023 and ADR-025) is pure integer
+arithmetic over
 the document: it never allocates pixels, imports NumPy or Pillow, or iterates over
 pixels. It is an upper bound that the rasterisers and compositor respect; a change in
 their memory or work pattern updates these formulas and :data:`ESTIMATOR_VERSION`.
@@ -54,6 +55,17 @@ to the canvas.
   :data:`~moana.core.limits.MAX_PATH_CELLS` is rejected (``path_cells``): the
   backend would drop cells silently. This is an engine limit that no
   ``RenderLimits`` raises.
+* **Dithering** (``budget-v5``, ADR-025; a document without ``dither`` costs exactly
+  as in ``budget-v4``): a ``dither`` operation paints two deferred fills, colour A and
+  colour B, and each one evaluates the clipping mask ``mask_id`` again. With ``M``
+  the :func:`mask_estimates` entry of that mask (result box ``Bm``), the operation
+  costs ``2 x (M.pixel_visits + 4 x area(Bm))`` visits (evaluation, the periodic
+  selection's gather, AND and emptiness scan, and the paint pass) and
+  ``M.buffer_bytes + area(Bm) + 8 x (width(Bm) + height(Bm)) + N x width(Bm) +``
+  :data:`DITHER_FIXED_BYTES` bytes (evaluation peak, the selected copy, the
+  ``int64`` row and column indexes, one box-wide row per pattern row and the cell
+  table), ``N`` being the matrix side. Since both fills reach the
+  compositor, the ``operations`` budget counts raster fills: a ``dither`` counts 2.
 * **Frame pixels**: ``frames x A``.
 """
 
@@ -64,6 +76,7 @@ from typing import Final, assert_never
 
 from moana.core.budget import DEFAULT_RENDER_LIMITS, Deadline, RenderLimits
 from moana.core.coordinates import Box, Dimensions, combined_box, require_int
+from moana.core.dither import PATTERN_INDEX_BYTES
 from moana.core.errors import BudgetExceeded, ErrorDetail, ReferenceError
 from moana.core.limits import MAX_PATH_CELLS
 from moana.core.vector_path import (
@@ -78,6 +91,7 @@ from moana.core.vector_path import (
 )
 from moana.schema import (
     CombinationMask,
+    DitherOperation,
     Document,
     EllipseMask,
     EllipseOperation,
@@ -94,9 +108,13 @@ from moana.schema import (
     RectMask,
     RectOperation,
     ShapeMask,
+    ShapeOperation,
 )
 
 __all__ = [
+    "DITHER_FILLS",
+    "DITHER_FIXED_BYTES",
+    "DITHER_PASSES",
     "ESTIMATOR_VERSION",
     "MASK_NODE_VISITS",
     "MAX_FRAMES",
@@ -107,13 +125,15 @@ __all__ = [
     "CostEstimate",
     "MaskEstimate",
     "OperationCost",
+    "dither_cost",
     "estimate_cost",
+    "fill_count",
     "mask_box",
     "mask_estimates",
     "plan_budget",
 ]
 
-ESTIMATOR_VERSION: Final = "budget-v4"
+ESTIMATOR_VERSION: Final = "budget-v5"
 RGBA_BYTES: Final = 4
 COMPOSITE_BYTES_PER_PIXEL: Final = 32
 MASK_BYTES_PER_PIXEL: Final = 1
@@ -129,11 +149,19 @@ COMPOSITOR_MAX_TILE: Final = 4096
 MASK_NODE_VISITS: Final = 1
 # Path backend (ADR-023): PATH_BUFFER_MARGIN, PATH_CELL_BYTES, PATH_COMMAND_BYTES and
 # PATH_BACKEND_FIXED_BYTES come from moana.core.vector_path, shared with the adapter.
+# Dithering (ADR-025): fills per dither operation, passes of the periodic selection
+# plus the paint pass per fill and the cell table's fixed overhead; the int64 index
+# bytes are moana.core.dither.PATTERN_INDEX_BYTES, shared with geometry.
+DITHER_FILLS: Final = 2
+DITHER_PASSES: Final = 4
+DITHER_FIXED_BYTES: Final = 4096
 # Operations between two cooperative deadline checks.
 CHECKPOINT_EVERY: Final = 256
 
-Geometry = Operation | ShapeMask
-"""Anything rasterised from primitive geometry: an operation or a mask leaf."""
+Geometry = ShapeOperation | ShapeMask
+"""Anything rasterised from primitive geometry: a shape operation or a mask leaf."""
+Located = Operation | ShapeMask
+"""Anything whose coordinates the plan checks: an operation or a mask leaf."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -160,7 +188,14 @@ class MaskEstimate:
 
 @dataclass(frozen=True, slots=True)
 class CostEstimate:
-    """Whole-request estimate; compare it with :class:`RenderLimits` before raster."""
+    """Whole-request estimate; compare it with :class:`RenderLimits` before raster.
+
+    ``operations`` counts the operations of the document; ``fills`` the raster fills
+    the compositor receives (:func:`fill_count`: one per operation, two per
+    ``dither``; ``budget-v5``, ADR-025). The ``operations`` budget of
+    :func:`plan_budget` compares ``fills`` with ``RenderLimits.max_operations``, so
+    its ``estimated`` value is ``fills``.
+    """
 
     estimator_version: str
     frames: int
@@ -168,6 +203,7 @@ class CostEstimate:
     buffer_bytes: int
     frame_pixels: int
     operations: int
+    fills: int
     layers: int
     operation_costs: tuple[OperationCost, ...]
 
@@ -244,7 +280,33 @@ def _raster_work(operation: Geometry, box: Box | None) -> int:
             assert_never(operation)
 
 
-def _operation_cost(operation: Operation, dimensions: Dimensions, pointer: str) -> OperationCost:
+def dither_cost(mask: MaskEstimate, size: int) -> tuple[int, int]:
+    """``(visits, bytes)`` of a ``dither`` of side ``size`` clipped by ``mask``."""
+    box = mask.box
+    if box is None:
+        return DITHER_FILLS * mask.pixel_visits, mask.buffer_bytes
+    visits = DITHER_FILLS * (mask.pixel_visits + DITHER_PASSES * box.area)
+    indexes = PATTERN_INDEX_BYTES * (box.width + box.height) + size * box.width
+    return visits, mask.buffer_bytes + box.area + indexes + DITHER_FIXED_BYTES
+
+
+def fill_count(document: Document) -> int:
+    """Raster fills the compositor receives: one per operation, two per ``dither``."""
+    return sum(
+        DITHER_FILLS if isinstance(operation, DitherOperation) else 1
+        for layer in document.layers
+        for operation in layer.operations
+    )
+
+
+def _operation_cost(
+    operation: Operation, dimensions: Dimensions, pointer: str, masks: dict[str, MaskEstimate]
+) -> OperationCost:
+    if isinstance(operation, DitherOperation):
+        if operation.mask_id not in masks:
+            raise _unknown_mask()
+        visits, peak = dither_cost(masks[operation.mask_id], operation.size)
+        return OperationCost(pointer, visits, peak)
     box = mask_box(operation, dimensions)
     area = _area(box)
     return OperationCost(pointer, _raster_work(operation, box) + area, _mask_bytes(operation, box))
@@ -343,7 +405,7 @@ def estimate_cost(
             if deadline is not None and index % CHECKPOINT_EVERY == CHECKPOINT_EVERY - 1:
                 deadline.checkpoint("estimate_operation")
             pointer = f"/layers/{layer_index}/operations/{index}"
-            cost = _operation_cost(operation, dimensions, pointer)
+            cost = _operation_cost(operation, dimensions, pointer, masks)
             costs.append(cost)
             frame_visits += cost.pixel_visits
             largest_mask = max(largest_mask, cost.mask_bytes)
@@ -371,6 +433,7 @@ def estimate_cost(
         buffer_bytes=working + frames * RGBA_BYTES * area,
         frame_pixels=frames * area,
         operations=operations,
+        fills=fill_count(document),
         layers=len(document.layers),
         operation_costs=tuple(costs),
     )
@@ -391,9 +454,9 @@ def _most_expensive(estimate: CostEstimate) -> str | None:
     return max(estimate.operation_costs, key=lambda cost: cost.pixel_visits).json_pointer
 
 
-def _located_geometry(document: Document) -> list[tuple[str, Geometry]]:
+def _located_geometry(document: Document) -> list[tuple[str, Located]]:
     """Every operation and mask leaf with its pointer, in document order."""
-    located: list[tuple[str, Geometry]] = [
+    located: list[tuple[str, Located]] = [
         (f"/layers/{layer_index}/operations/{index}", operation)
         for layer_index, layer in enumerate(document.layers)
         for index, operation in enumerate(layer.operations)
@@ -436,7 +499,7 @@ def _geometry_details(
     return details
 
 
-def _coordinate_reach(operation: Geometry) -> int:
+def _coordinate_reach(operation: Located) -> int:
     """Largest absolute pixel coordinate a geometry names (excluded edges - 1)."""
     match operation:
         case PixelOperation() | PixelMask():
@@ -450,6 +513,8 @@ def _coordinate_reach(operation: Geometry) -> int:
             values = tuple(c for point in operation.points for c in point)
         case PathOperation() | PathMask():
             return operation.path.reach
+        case DitherOperation():
+            values = operation.origin
         case _:  # pragma: no cover - a new operation type must add its reach
             assert_never(operation)
     return max(abs(value) for value in values)
@@ -474,10 +539,10 @@ def plan_budget(
     """
     require_int(frames, "frames", minimum=1, maximum=MAX_FRAMES)
     layers = len(document.layers)
-    operations = sum(len(layer.operations) for layer in document.layers)
+    fills = fill_count(document)  # what the compositor counts (ADR-025)
     counts = (
         ("layers", limits.max_layers, layers, "/layers"),
-        ("operations", limits.max_operations, operations, "/layers"),
+        ("operations", limits.max_operations, fills, "/layers"),
     )
     _raise_if_any(  # cheap counts first: reject before costing every operation
         [
