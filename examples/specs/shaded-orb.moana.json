@@ -1,0 +1,80 @@
+{
+  "schema_version": "1.0",
+  "id": "shaded_orb",
+  "revision": 0,
+  "seed": 0,
+  "canvas": {"width": 24, "height": 24, "profile": "strict"},
+  "palette": {
+    "id": "palette_orb",
+    "colors": [
+      {"id": "ink", "rgba": "#1A1428FF"},
+      {"id": "orb_0", "rgba": "#2B2160FF"},
+      {"id": "orb_1", "rgba": "#3F3C9AFF"},
+      {"id": "orb_2", "rgba": "#4F70C8FF"},
+      {"id": "orb_3", "rgba": "#6FA8E0FF"},
+      {"id": "orb_4", "rgba": "#C6ECF5FF"}
+    ],
+    "ramps": [{"id": "orb_ramp", "colors": ["orb_0", "orb_1", "orb_2", "orb_3", "orb_4"]}]
+  },
+  "masks": [
+    {"id": "orb", "type": "ellipse", "box": [4, 4, 20, 20]},
+    {"id": "orb_down_right", "type": "ellipse", "box": [7, 7, 23, 23]},
+    {"id": "orb_up_left", "type": "ellipse", "box": [1, 1, 17, 17]},
+    {"id": "orb_rim_shift", "type": "ellipse", "box": [3, 3, 19, 19]},
+    {"id": "lit_side", "type": "subtract", "masks": ["orb", "orb_down_right"]},
+    {"id": "shadow_side", "type": "subtract", "masks": ["orb", "orb_up_left"]},
+    {"id": "bounce_rim", "type": "intersect", "masks": ["bounce_rim_full", "bounce_zone"]},
+    {"id": "highlight", "type": "ellipse", "box": [7, 7, 11, 10]},
+    {"id": "orb_core", "type": "ellipse", "box": [6, 6, 18, 18]},
+    {"id": "orb_ring", "type": "subtract", "masks": ["orb", "orb_core"]},
+    {
+      "id": "terminator_ne_zone",
+      "type": "polygon",
+      "points": [[22, 0], [24, 0], [24, 3], [13, 13], [11, 11]]
+    },
+    {
+      "id": "terminator_sw_zone",
+      "type": "polygon",
+      "points": [[0, 22], [11, 11], [13, 13], [3, 24], [0, 24]]
+    },
+    {"id": "terminator_ne", "type": "intersect", "masks": ["orb_ring", "terminator_ne_zone"]},
+    {"id": "terminator_sw", "type": "intersect", "masks": ["orb_ring", "terminator_sw_zone"]},
+    {"id": "bounce_rim_full", "type": "subtract", "masks": ["orb", "orb_rim_shift"]},
+    {"id": "bounce_zone", "type": "polygon", "points": [[24, 9], [24, 24], [9, 24]]}
+  ],
+  "regions": [
+    {"id": "orb_shadow", "mask_id": "shadow_side", "operation_ids": ["orb_shading"]}
+  ],
+  "layers": [
+    {
+      "id": "orb_layer",
+      "name": "Orbe",
+      "operations": [
+        {
+          "id": "orb_shading",
+          "type": "shade",
+          "ramp": "orb_ramp",
+          "ramp_order": "monotonic",
+          "light": {"direction": "nw", "height": 1, "intensity": 3, "ambient": 1},
+          "bands": [
+            {"id": "band_body", "mask_id": "orb", "facing": "front", "offset": 0},
+            {"id": "band_shadow", "mask_id": "shadow_side", "facing": "se", "offset": 0},
+            {"id": "band_lit", "mask_id": "lit_side", "facing": "nw", "offset": 0},
+            {"id": "band_terminator_ne", "mask_id": "terminator_ne", "facing": "ne", "offset": 1},
+            {"id": "band_terminator_sw", "mask_id": "terminator_sw", "facing": "sw", "offset": 1},
+            {"id": "band_bounce", "mask_id": "bounce_rim", "facing": "se", "offset": 2},
+            {"id": "band_highlight", "mask_id": "highlight", "facing": "nw", "offset": 1}
+          ]
+        },
+        {
+          "id": "orb_outline",
+          "type": "outline",
+          "mask_id": "orb",
+          "width": 1,
+          "side": "outer",
+          "color": "ink"
+        }
+      ]
+    }
+  ]
+}

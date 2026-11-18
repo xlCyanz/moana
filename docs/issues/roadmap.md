@@ -52,7 +52,7 @@ Estado: 6/8 issues completados.
 - [MOANA-007](MOANA-007.md) — Añadir adaptador de paths AggDraw (done)
 - [MOANA-013](MOANA-013.md) — Añadir máscaras y regiones semánticas (done)
 - [MOANA-014](MOANA-014.md) — Crear contornos y análisis de clusters (done)
-- [MOANA-015](MOANA-015.md) — Añadir bandas de sombreado e iluminación (ready)
+- [MOANA-015](MOANA-015.md) — Añadir bandas de sombreado e iluminación (review)
 - [MOANA-016](MOANA-016.md) — Implementar dithering ordenado (done)
 - [MOANA-017](MOANA-017.md) — Crear presets de materiales versionados (blocked)
 - [MOANA-018](MOANA-018.md) — Implementar batches de edición atómica (done)
@@ -88,4 +88,4 @@ Estado: 0/8 issues completados.
 
 ## Siguiente paso
 
-Implementar [MOANA-015](MOANA-015.md): Añadir bandas de sombreado e iluminación.
+Implementar [MOANA-020](MOANA-020.md): Persistir proyectos y assets seguros.

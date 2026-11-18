@@ -53,6 +53,14 @@ from moana.core.limits import (
     MAX_REGIONS,
     MAX_VERTICES,
 )
+from moana.core.shading import (
+    MAX_LIGHT_HEIGHT,
+    MAX_RAMP_STEP,
+    MAX_SHADE_BANDS,
+    Facing,
+    LightDirection,
+    RampOrder,
+)
 from moana.core.vector_path import (
     MAX_PATH_COORDINATE,
     MIN_PATH_COMMANDS,
@@ -84,6 +92,7 @@ __all__ = [
     "EllipseOperation",
     "IntersectMask",
     "Layer",
+    "Light",
     "LineMask",
     "LineOperation",
     "MaskNode",
@@ -102,6 +111,8 @@ __all__ = [
     "RectMask",
     "RectOperation",
     "Region",
+    "ShadeBand",
+    "ShadeOperation",
     "ShapeMask",
     "ShapeOperation",
     "SubtractMask",
@@ -461,6 +472,72 @@ class OutlineOperation(_Model):
     color: Id
 
 
+RampStep = Annotated[int, Field(ge=0, le=MAX_RAMP_STEP)]
+"""A non-negative number of ramp steps (``0..4095``)."""
+
+
+class Light(_Model):
+    """Discrete artistic light of a ``shade`` operation (MOANA.md section 9, ADR-028).
+
+    ``direction``: eight picture-plane orientations or ``front``; ``height`` ``0..3``
+    (0 grazes the plane, 3 faces the viewer; unused by ``front``); ``intensity``: ramp
+    steps between a facing that looks at the light and the ambient step;
+    ``ambient``: ramp index of an unexposed facing. No normal is inferred.
+    """
+
+    direction: LightDirection
+    height: Annotated[int, Field(ge=0, le=MAX_LIGHT_HEIGHT)]
+    intensity: RampStep
+    ambient: RampStep
+
+
+class ShadeBand(_Model):
+    """One authored band: mask ``mask_id``, its ``facing`` and an ``offset`` in steps.
+
+    The ID is global like any other; ``facing`` is a light direction or ``none``.
+    """
+
+    id: Id
+    mask_id: Id
+    facing: Facing
+    offset: Annotated[int, Field(ge=-MAX_RAMP_STEP, le=MAX_RAMP_STEP)]
+
+
+def _band_array(value: object) -> object:
+    """Array to tuple, rejecting an empty array before reading any band.
+
+    As for path commands, ``min_length`` would count only the bands that validated
+    and report a spurious ``too_short`` next to the real error of an invalid band.
+    """
+    value = _as_tuple(value)
+    if value == ():
+        raise PydanticCustomError(
+            "too_short", "Shade should have at least {min_length} band", {"min_length": 1}
+        )
+    return value
+
+
+class ShadeOperation(_Model):
+    """Band shading with colours of ramp ``ramp`` chosen by index (ADR-028).
+
+    Each band paints ``ramp[clamp(ambient + level + offset)]`` over its mask, with
+    ``level`` from the band ``facing`` and the ``light``; where bands overlap the last
+    listed wins. ``ramp_order`` ``monotonic`` reports a render warning when the ramp
+    luminance does not grow; ``stylized`` documents the exception. 1 to 64 bands.
+    """
+
+    id: Id
+    type: Literal["shade"]
+    ramp: Id
+    ramp_order: RampOrder
+    light: Light
+    bands: Annotated[
+        tuple[ShadeBand, ...],
+        Field(max_length=MAX_SHADE_BANDS, json_schema_extra={"minItems": 1}),
+        BeforeValidator(_band_array),
+    ]
+
+
 ShapeOperation = (
     PixelOperation
     | LineOperation
@@ -479,7 +556,8 @@ Operation = Annotated[
     | PolygonOperation
     | PathOperation
     | DitherOperation
-    | OutlineOperation,
+    | OutlineOperation
+    | ShadeOperation,
     Field(discriminator="type"),
 ]
 """Operations of schema 1.0, discriminated by ``type``."""

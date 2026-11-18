@@ -539,6 +539,7 @@ def test_capabilities_separate_available_from_planned() -> None:
         "pixel",
         "polygon",
         "rect",
+        "shade",
     )
     assert set(listing.operations).isdisjoint(listing.planned_operations)
     assert set(listing.blend_modes).isdisjoint(listing.planned_blend_modes)

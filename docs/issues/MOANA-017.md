@@ -35,6 +35,7 @@ No afirmar calidad profesional sólo por aprobar fixtures ni usar assets sin lic
 
 - Semilla por operación/coordenada según §14; ningún shader ejecutable en JSON
 - Parámetros con rango, fuente, versión y recetas reproducibles; registrar procedencia de ejemplos
+- Contorno selectivo de MOANA.md §8 (pendiente desde MOANA-015, ADR-028): reutilizar ShadeLight/exposure/band_index de moana.techniques.shading para decidir qué tramos del outline se aclaran u oscurecen, sin una segunda regla de luz.
 
 ## Proposed implementation
 

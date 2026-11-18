@@ -174,7 +174,7 @@ def test_provenance_records_the_backend_and_versions_only_with_paths() -> None:
     )
     mapping = with_paths.to_mapping()
     assert mapping["vector_backend_versions"] == list(with_paths.vector_backend_versions)
-    assert with_paths.estimator_version == ESTIMATOR_VERSION == "budget-v6"
+    assert with_paths.estimator_version == ESTIMATOR_VERSION == "budget-v7"
     plain = render(doc(8, 8, [{"id": "r", "type": "rect", "box": [0, 0, 2, 2], "color": "ink"}]))
     assert plain.provenance.vector_backend is None
     assert plain.provenance.vector_backend_versions == ()
@@ -293,7 +293,7 @@ def test_budget_v4_hand_oracle_for_a_square_path() -> None:
     Bytes = max(40A, 14A + 80*16) + 133496 + 4A = 2560 + 133496 + 256 = 136312.
     """
     estimate = estimate_cost(doc(8, 8, [path_op("sq", SQUARE)]))
-    assert estimate.estimator_version == "budget-v6"
+    assert estimate.estimator_version == "budget-v7"
     assert estimate.operation_costs[0].pixel_visits == 172
     assert estimate.operation_costs[0].mask_bytes == 133496
     assert estimate.pixel_visits == 492

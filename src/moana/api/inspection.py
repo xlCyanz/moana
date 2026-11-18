@@ -104,11 +104,15 @@ def _fields(value: DataclassInstance) -> dict[str, object]:
 
 @dataclass(frozen=True, slots=True)
 class OperationSummary:
-    """One operation: its ID, type and colour reference (colour A of a ``dither``)."""
+    """One operation: its ID, type and colour reference (colour A of a ``dither``).
+
+    ``color`` is ``None`` for an operation without a colour member: a ``shade``
+    (ADR-028) takes its colours from a ramp by index.
+    """
 
     id: str
     type: str
-    color: str
+    color: str | None
 
 
 @dataclass(frozen=True, slots=True)
@@ -155,7 +159,7 @@ class ExceededResource:
 
 @dataclass(frozen=True, slots=True)
 class BudgetReport:
-    """Estimate of one render against the request limits (``budget-v6``, ADR-025 and ADR-027).
+    """Estimate of one render against the request limits (``budget-v7``, ADR-025 to ADR-028).
 
     ``operations`` counts the operations of the document and ``fills`` the raster
     fills of the compositor (two per ``dither``). An ``operations`` entry of
@@ -288,9 +292,10 @@ def capabilities() -> Capabilities:
     )
 
 
-def _primary_color(operation: Operation) -> str:
-    """The colour an operation summary names: ``color``, or colour A of a ``dither``."""
-    return str(getattr(operation, OPERATION_MEMBERS[operation.type].colors[0]))
+def _primary_color(operation: Operation) -> str | None:
+    """The colour an operation summary names: ``color``, colour A of a ``dither`` or none."""
+    colors = OPERATION_MEMBERS[operation.type].colors
+    return str(getattr(operation, colors[0])) if colors else None
 
 
 def _exceeded(error: BudgetExceeded) -> tuple[ExceededResource, ...]:

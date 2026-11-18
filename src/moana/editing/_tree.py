@@ -14,6 +14,9 @@ The table is :data:`moana.schema.OPERATION_MEMBERS` / :data:`moana.schema.MASK_M
 (ADR-025), re-bound here so the editor reads it from one module. A ``dither`` has
 two colours, a mask reference and no geometry: ``set_color`` rejects it
 (``multiple_colors``) and ``translate``/``set_geometry`` reject it (``not_geometric``).
+A ``shade`` (ADR-028) has no colour, a ramp reference and ``bands`` whose IDs are
+indexed as ``item`` nodes (so a new ID cannot reuse them) and whose masks are live
+references; no command targets an ``item``.
 :data:`GEOMETRY_SHAPES` stays here: how ``translate`` moves a geometric member is an
 editing rule.
 """
@@ -36,6 +39,7 @@ __all__ = [
     "Node",
     "NodeMembers",
     "index_nodes",
+    "item_ids",
     "live_references",
     "node_members",
 ]
@@ -66,7 +70,8 @@ class Node:
     """A node with an ID: its kind, the list that holds it and its owning layer.
 
     ``kind`` is ``document``, ``palette``, ``color``, ``ramp``, ``layer``,
-    ``operation``, ``shape_mask``, ``combination_mask`` or ``region``. ``container``
+    ``operation``, ``item`` (an object with its own ID inside an operation, such as a
+    ``shade`` band, ADR-028), ``shape_mask``, ``combination_mask`` or ``region``. ``container``
     is ``None`` for the document and the palette, which are not in a list.
     """
 
@@ -106,9 +111,22 @@ def _members(tree: JsonObject) -> Iterator[Node]:
     for layer in tree["layers"]:
         yield Node("layer", layer, tree["layers"])
         operations = layer["operations"]
-        yield from (Node("operation", item, operations, layer) for item in operations)
+        for operation in operations:
+            yield Node("operation", operation, operations, layer)
+            for member, _ in OPERATION_MEMBERS[operation["type"]].items:
+                items = operation[member]
+                yield from (Node("item", item, items, layer) for item in items)
     yield from (Node(_mask_kind(item), item, tree["masks"]) for item in tree["masks"])
     yield from (Node("region", item, tree["regions"]) for item in tree["regions"])
+
+
+def item_ids(operation: JsonObject) -> tuple[str, ...]:
+    """IDs of the items of an operation (``shade`` bands, ADR-028), in order."""
+    return tuple(
+        item["id"]
+        for member, _ in OPERATION_MEMBERS[operation["type"]].items
+        for item in operation[member]
+    )
 
 
 def index_nodes(tree: JsonObject) -> dict[str, Node]:
@@ -142,7 +160,11 @@ def _all_references(tree: JsonObject) -> Iterator[_Reference]:
         for index, operation in enumerate(layer["operations"]):
             row = OPERATION_MEMBERS[operation["type"]]
             pointer = f"/layers/{layer_index}/operations/{index}"
-            yield from _references(operation, row.colors + row.masks, pointer)
+            yield from _references(operation, row.colors + row.masks + row.ramps, pointer)
+            for member, item_row in row.items:
+                for position, item in enumerate(operation[member]):
+                    item_pointer = f"{pointer}/{member}/{position}"
+                    yield from _references(item, item_row.masks, item_pointer)
     for index, mask in enumerate(tree["masks"]):
         yield from _references(mask, MASK_MEMBERS[mask["type"]].masks, f"/masks/{index}")
     for index, region in enumerate(tree["regions"]):

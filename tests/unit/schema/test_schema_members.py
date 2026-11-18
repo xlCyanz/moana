@@ -52,11 +52,26 @@ def test_every_listed_member_exists_on_its_model(
     models = _models(union)
     for kind, members in table.items():
         fields = models[kind].model_fields
-        listed = members.colors + members.masks + members.geometry
+        items = tuple(member for member, _ in members.items)
+        listed = members.colors + members.masks + members.geometry + members.ramps + items
         assert len(set(listed)) == len(listed), kind
         for name in listed:
             assert name in fields, (kind, name)
         assert {"id", "type"}.isdisjoint(listed)
+        for member, row in members.items:  # nested rows name members of the item model
+            (item_model,) = [
+                arg
+                for arg in get_args(fields[member].annotation)
+                if isinstance(arg, type) and issubclass(arg, BaseModel)
+            ]
+            assert "id" in item_model.model_fields, (kind, member)
+            # editing and the reference checks only read the masks of a nested row
+            # (ADR-028 section 6): every other column stays empty
+            assert row.masks, (kind, member)
+            assert row.colors == row.ramps == row.geometry == (), (kind, member)
+            assert row.items == (), (kind, member)
+            for name in row.masks:
+                assert name in item_model.model_fields, (kind, member, name)
 
 
 def test_known_rows() -> None:
@@ -77,6 +92,8 @@ def test_every_colour_and_mask_member_is_named_by_the_table() -> None:
                     assert name in table[kind].colors, (kind, name)
                 if name in {"mask_id", "masks"}:
                     assert name in table[kind].masks, (kind, name)
+                if name == "ramp":
+                    assert name in table[kind].ramps, (kind, name)
 
 
 def test_tables_are_read_only() -> None:

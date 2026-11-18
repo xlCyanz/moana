@@ -101,7 +101,7 @@ def test_example_renders_to_the_hand_computed_face() -> None:
     result = render(document)
     assert pixels(result) == {key: expected.get(key, CLEAR) for key in pixels(result)}
     assert result.digest == hand_digest(16, 16, expected)
-    assert result.provenance.estimator_version == ESTIMATOR_VERSION == "budget-v6"
+    assert result.provenance.estimator_version == ESTIMATOR_VERSION == "budget-v7"
     assert result.warnings == ()
 
 

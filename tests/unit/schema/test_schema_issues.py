@@ -121,4 +121,5 @@ def test_unknown_type_lists_supported_operations(minimal: dict[str, Any]) -> Non
         "pixel",
         "polygon",
         "rect",
+        "shade",
     )
