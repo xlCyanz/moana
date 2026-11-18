@@ -12,6 +12,12 @@ from their hashes and the manifest is committed last.
 ``project`` depends on ``core``, ``schema`` and ``editing`` only (MOANA.md section 3),
 plus Pillow behind :mod:`moana.project.assets`; it renders nothing and never imports
 ``export`` or ``api``.
+
+Loading never migrates (ADR-031): another ``schema_version`` or ``project_version``
+is ``UnsupportedVersion``. :func:`migrate_project` migrates explicitly into a new
+destination with the pure steps of a :class:`~moana.schema.MigrationRegistry`,
+keeping the source untouched and recording provenance (:class:`MigrationRecord`)
+plus the preserved original (:class:`MigrationBackup`) in the new project.
 """
 
 from moana.project.archive import ZIP_MAGIC
@@ -20,12 +26,16 @@ from moana.project.limits import DEFAULT_PROJECT_LIMITS, ProjectLimits
 from moana.project.manifest import (
     MANIFEST_NAME,
     PROJECT_KIND,
+    PROJECT_MIGRATIONS,
     PROJECT_VERSION,
     AssetRef,
     HistoryEntry,
+    MigrationRecord,
     ProjectManifest,
+    migration_path,
 )
-from moana.project.model import Project
+from moana.project.migrate import MigrationReport, migrate_project
+from moana.project.model import MigrationBackup, Project
 from moana.project.store import (
     SaveReport,
     batch_path,
@@ -42,11 +52,15 @@ __all__ = [
     "MANIFEST_NAME",
     "PNG_MIME",
     "PROJECT_KIND",
+    "PROJECT_MIGRATIONS",
     "PROJECT_VERSION",
     "ZIP_MAGIC",
     "Asset",
     "AssetRef",
     "HistoryEntry",
+    "MigrationBackup",
+    "MigrationRecord",
+    "MigrationReport",
     "Project",
     "ProjectLimits",
     "ProjectManifest",
@@ -55,6 +69,8 @@ __all__ = [
     "batch_path",
     "encode_project",
     "load_project",
+    "migrate_project",
+    "migration_path",
     "save_document",
     "save_project",
     "save_project_archive",

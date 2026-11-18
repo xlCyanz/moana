@@ -3,7 +3,10 @@
 Phases (MOANA.md sections 3, 12 and 20), each reported with its own error class:
 
 1. **Read** — bounded bytes/mapping reading (:mod:`moana.schema._reader`).
-2. **Version** — ``schema_version`` other than ``"1.0"`` raises ``UnsupportedVersion``.
+2. **Version** — ``schema_version`` other than ``"1.0"`` raises ``UnsupportedVersion``
+   through the registry of :mod:`moana.schema.versions` (ADR-031): ``future``,
+   ``past`` or ``unknown`` versions, or ``migration_required`` for a registered older
+   version; reading never migrates.
 3. **Structure and capabilities** — strict models. Planned capabilities produce
    ``UNSUPPORTED_OPERATION`` details; any other problem makes it a ``ValidationError``.
 4. **Semantics** — global ID uniqueness, profile and count limits (``VALIDATION_ERROR``),
@@ -30,17 +33,17 @@ from moana.core.errors import (
     MoanaError,
     ReferenceError,
     UnsupportedOperation,
-    UnsupportedVersion,
     ValidationError,
 )
 from moana.core.limits import MAX_COLORS_STRICT, MAX_OPERATIONS
 from moana.schema._issues import pydantic_details
 from moana.schema._pointers import detail_sort_key
 from moana.schema._reader import DEFAULT_PARSE_LIMITS, ParseLimits, read_json_bytes, read_mapping
-from moana.schema.capabilities import SCHEMA_VERSION, SUPPORTED_SCHEMA_VERSIONS
+from moana.schema.capabilities import SCHEMA_VERSION
 from moana.schema.members import OPERATION_MEMBERS
 from moana.schema.models import Document, Operation
 from moana.schema.references import reference_details
+from moana.schema.versions import DOCUMENT_MIGRATIONS
 
 __all__ = [
     "JSON_SCHEMA_DIALECT",
@@ -75,19 +78,6 @@ def _raise_details(details: list[ErrorDetail]) -> None:
         context={"issue_count": count},
         details=details,
     )
-
-
-def _check_version(tree: Mapping[str, object]) -> None:
-    version = tree.get("schema_version")
-    if isinstance(version, str) and version not in SUPPORTED_SCHEMA_VERSIONS:
-        raise UnsupportedVersion(
-            "schema_version is not supported by this reader",
-            json_pointer="/schema_version",
-            context={
-                "reason": "unsupported_version",
-                "supported": tuple(sorted(SUPPORTED_SCHEMA_VERSIONS)),
-            },
-        )
 
 
 def _identities(document: Document) -> Iterator[tuple[str, str]]:
@@ -232,7 +222,7 @@ def validate_document(
         tree = read_json_bytes(source, limits)
     else:
         tree = read_mapping(source, limits)
-    _check_version(tree)
+    DOCUMENT_MIGRATIONS.check(tree)
     try:
         document = Document.model_validate(tree)
     except PydanticValidationError as exc:

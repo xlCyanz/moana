@@ -14,7 +14,8 @@ decompressed:
 * the expansion ratio of each entry (which bounds the whole archive too) and the
   total declared expanded bytes;
 * that every file entry is a name of the project layout (manifest, content-addressed
-  assets, snapshots and batches); directory entries of that layout are ignored.
+  assets, snapshots, batches and preserved migration originals, ADR-031); directory
+  entries of that layout are ignored.
 
 :class:`ArchiveReader` then decompresses only the entries ``project`` asks for, at
 most their declared size (``zipfile`` verifies each CRC). Problems are
@@ -53,10 +54,11 @@ _ZIP64_LOCATOR_SIZE: Final = 20
 # or comment, and the longest name of the layout is a snapshot path (87 bytes).
 _CENTRAL_RECORD_MAX: Final = 46 + len("history/snapshots/") + 64 + len(".json")
 _LAYOUT: Final = re.compile(
-    r"(?:assets/[0-9a-f]{64}\.png|history/(?:snapshots|batches)/[0-9a-f]{64}\.json)"
+    r"(?:assets/[0-9a-f]{64}\.png|history/(?:snapshots|batches)/[0-9a-f]{64}\.json"
+    r"|migrations/[0-9a-f]{64}\.json)"
 )
 _LAYOUT_DIRECTORIES: Final = frozenset(
-    {"assets/", "history/", "history/snapshots/", "history/batches/"}
+    {"assets/", "history/", "history/snapshots/", "history/batches/", "migrations/"}
 )
 _DRIVE: Final = re.compile(r"^[A-Za-z]:")
 _FIXED_TIME: Final = (1980, 1, 1, 0, 0, 0)

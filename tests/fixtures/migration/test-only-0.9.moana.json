@@ -1,0 +1,25 @@
+{
+  "schema_version": "0.9",
+  "test_only_format": "MOANA-021 test-only format; never published and unknown to moana",
+  "id": "legacy_sprite",
+  "seed": 7,
+  "canvas": {"width": 16, "height": 16, "profile": "strict"},
+  "palette": {
+    "id": "legacy_palette",
+    "colors": [
+      {"id": "ink", "value": "#182338FF"},
+      {"id": "cloth", "value": "#36AFA5FF"}
+    ],
+    "ramps": []
+  },
+  "layers": [
+    {
+      "id": "body",
+      "name": "Body",
+      "ops": [
+        {"id": "body_fill", "type": "rect", "box": [2, 3, 10, 12], "color": "cloth"},
+        {"id": "eye", "type": "pixel", "at": [5, 6], "color": "ink"}
+      ]
+    }
+  ]
+}

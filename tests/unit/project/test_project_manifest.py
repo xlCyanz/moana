@@ -79,6 +79,7 @@ def test_t3_envelope_rejects_extra_fields_without_touching_document_schema(
         "document",
         "assets",
         "history",
+        "migrations",  # optional, omitted when empty (MOANA-021, ADR-031)
     }
 
 
@@ -104,7 +105,7 @@ def test_t3_extra_document_member_keeps_its_document_error(
     ("change", "pointer", "reason"),
     [
         ({"kind": "moana-document"}, "/kind", None),
-        ({"project_version": "2.0"}, "/project_version", "literal_error"),
+        ({"project_version": 2}, "/project_version", "literal_error"),
         ({"assets": None}, "/assets", "tuple_type"),
         ({"document": []}, "/document", "model_type"),
         (

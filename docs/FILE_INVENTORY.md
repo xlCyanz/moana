@@ -1,6 +1,6 @@
 # Inventario del repositorio
 
-391 archivos actuales de fuente, documentación, configuración y pruebas al 2026-11-18. Incluye cambios locales todavía sin commit. Excluye entorno virtual, herramientas, cachés, artefactos y metadata Git.
+405 archivos actuales de fuente, documentación, configuración y pruebas al 2026-11-18. Incluye cambios locales todavía sin commit. Excluye entorno virtual, herramientas, cachés, artefactos y metadata Git.
 
 | Archivo |
 | --- |
@@ -111,6 +111,7 @@
 | [docs/architecture/decisions/ADR-027-outlines-clusters.md](../docs/architecture/decisions/ADR-027-outlines-clusters.md) |
 | [docs/architecture/decisions/ADR-028-band-shading.md](../docs/architecture/decisions/ADR-028-band-shading.md) |
 | [docs/architecture/decisions/ADR-029-project-persistence.md](../docs/architecture/decisions/ADR-029-project-persistence.md) |
+| [docs/architecture/decisions/ADR-031-format-versions-migrations.md](../docs/architecture/decisions/ADR-031-format-versions-migrations.md) |
 | [docs/architecture/module-contracts.md](../docs/architecture/module-contracts.md) |
 | [docs/architecture/overview.md](../docs/architecture/overview.md) |
 | [docs/guides/agent-workflow.md](../docs/guides/agent-workflow.md) |
@@ -275,10 +276,12 @@
 | [src/moana/project/__init__.py](../src/moana/project/__init__.py) |
 | [src/moana/project/_fs.py](../src/moana/project/_fs.py) |
 | [src/moana/project/_json.py](../src/moana/project/_json.py) |
+| [src/moana/project/_load.py](../src/moana/project/_load.py) |
 | [src/moana/project/archive.py](../src/moana/project/archive.py) |
 | [src/moana/project/assets.py](../src/moana/project/assets.py) |
 | [src/moana/project/limits.py](../src/moana/project/limits.py) |
 | [src/moana/project/manifest.py](../src/moana/project/manifest.py) |
+| [src/moana/project/migrate.py](../src/moana/project/migrate.py) |
 | [src/moana/project/model.py](../src/moana/project/model.py) |
 | [src/moana/project/store.py](../src/moana/project/store.py) |
 | [src/moana/py.typed](../src/moana/py.typed) |
@@ -294,15 +297,24 @@
 | [src/moana/schema/capabilities.py](../src/moana/schema/capabilities.py) |
 | [src/moana/schema/document.py](../src/moana/schema/document.py) |
 | [src/moana/schema/members.py](../src/moana/schema/members.py) |
+| [src/moana/schema/migrations.py](../src/moana/schema/migrations.py) |
 | [src/moana/schema/models.py](../src/moana/schema/models.py) |
 | [src/moana/schema/references.py](../src/moana/schema/references.py) |
+| [src/moana/schema/versions.py](../src/moana/schema/versions.py) |
 | [src/moana/techniques/__init__.py](../src/moana/techniques/__init__.py) |
 | [src/moana/techniques/clusters.py](../src/moana/techniques/clusters.py) |
 | [src/moana/techniques/dither.py](../src/moana/techniques/dither.py) |
 | [src/moana/techniques/outline.py](../src/moana/techniques/outline.py) |
 | [src/moana/techniques/shading.py](../src/moana/techniques/shading.py) |
+| [tests/__init__.py](../tests/__init__.py) |
+| [tests/fixtures/__init__.py](../tests/fixtures/__init__.py) |
 | [tests/fixtures/determinism/corpus.json](../tests/fixtures/determinism/corpus.json) |
 | [tests/fixtures/determinism/expected.json](../tests/fixtures/determinism/expected.json) |
+| [tests/fixtures/migration/__init__.py](../tests/fixtures/migration/__init__.py) |
+| [tests/fixtures/migration/expected-1.0.moana.json](../tests/fixtures/migration/expected-1.0.moana.json) |
+| [tests/fixtures/migration/formats.py](../tests/fixtures/migration/formats.py) |
+| [tests/fixtures/migration/test-only-0.8.moana.json](../tests/fixtures/migration/test-only-0.8.moana.json) |
+| [tests/fixtures/migration/test-only-0.9.moana.json](../tests/fixtures/migration/test-only-0.9.moana.json) |
 | [tests/integration/test_cli_paths.py](../tests/integration/test_cli_paths.py) |
 | [tests/integration/test_cross_platform_determinism.py](../tests/integration/test_cross_platform_determinism.py) |
 | [tests/integration/test_dither_determinism.py](../tests/integration/test_dither_determinism.py) |
@@ -358,6 +370,7 @@
 | [tests/unit/project/test_project_atomic.py](../tests/unit/project/test_project_atomic.py) |
 | [tests/unit/project/test_project_budgets.py](../tests/unit/project/test_project_budgets.py) |
 | [tests/unit/project/test_project_manifest.py](../tests/unit/project/test_project_manifest.py) |
+| [tests/unit/project/test_project_migrations.py](../tests/unit/project/test_project_migrations.py) |
 | [tests/unit/project/test_project_model.py](../tests/unit/project/test_project_model.py) |
 | [tests/unit/project/test_project_roundtrip.py](../tests/unit/project/test_project_roundtrip.py) |
 | [tests/unit/project/test_project_security.py](../tests/unit/project/test_project_security.py) |
@@ -377,6 +390,7 @@
 | [tests/unit/schema/test_schema_issues.py](../tests/unit/schema/test_schema_issues.py) |
 | [tests/unit/schema/test_schema_masks.py](../tests/unit/schema/test_schema_masks.py) |
 | [tests/unit/schema/test_schema_members.py](../tests/unit/schema/test_schema_members.py) |
+| [tests/unit/schema/test_schema_migrations.py](../tests/unit/schema/test_schema_migrations.py) |
 | [tests/unit/schema/test_schema_outline.py](../tests/unit/schema/test_schema_outline.py) |
 | [tests/unit/schema/test_schema_paths.py](../tests/unit/schema/test_schema_paths.py) |
 | [tests/unit/schema/test_schema_reader.py](../tests/unit/schema/test_schema_reader.py) |

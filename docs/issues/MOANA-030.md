@@ -13,7 +13,7 @@
 - Dependencies: [MOANA-003](MOANA-003.md), [MOANA-020](MOANA-020.md), [MOANA-021](MOANA-021.md), [MOANA-022](MOANA-022.md)
 - Related modules: tests.security
 - Requirements: R026, R027 ([trazabilidad](traceability.md))
-- Bloqueo: Dependencias pendientes: MOANA-021, MOANA-022
+- Bloqueo: Dependencias pendientes: MOANA-022
 
 ## Context
 

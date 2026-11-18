@@ -60,6 +60,7 @@ El paquete contiene `src/moana/__init__.py`, `py.typed` y `src/moana/core/` (MOA
 - [ADR-027: contornos por morfología Chebyshev, análisis de clusters con excepciones por región y `budget-v6`](decisions/ADR-027-outlines-clusters.md).
 - [ADR-028: sombreado por bandas con luz discreta, orientaciones authored y `budget-v7`](decisions/ADR-028-band-shading.md).
 - [ADR-029: persistencia de proyectos: sobre separado, almacén inmutable por hash y ZIP inspeccionado](decisions/ADR-029-project-persistence.md).
+- [ADR-031: versiones de formato y migraciones: registro explícito, pasos puros y copia original preservada](decisions/ADR-031-format-versions-migrations.md).
 - [Modelo de amenazas](SECURITY_MODEL.md).
 
 Un ADR nuevo registra contexto, decisión, alternativas, consecuencias y evidencia. Cambiar un ADR aceptado se hace mediante otro que lo sustituya y actualizando el contrato principal.
