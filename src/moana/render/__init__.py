@@ -4,7 +4,9 @@
 resolution, budget (:mod:`moana.render.budget`, MOANA-003), plan, raster and
 composition into an immutable :class:`RenderResult`. Per-cell randomness lives in
 :mod:`moana.core.procedural` so that techniques can use it. There is no cache and no
-concurrency.
+concurrency. :func:`render_with_regions` validates once, admits the render plus the
+masks of named regions against one budget and returns those masks lazily, for the
+region exceptions of a cluster analysis (ADR-027).
 """
 
 from moana.render.budget import (
@@ -16,6 +18,7 @@ from moana.render.budget import (
     plan_budget,
 )
 from moana.render.pipeline import RENDERABLE_OPERATION_TYPES, render
+from moana.render.regions import render_with_regions
 from moana.render.result import (
     RENDERER_BACKEND,
     RENDERER_VERSION,
@@ -38,4 +41,5 @@ __all__ = [
     "estimate_cost",
     "plan_budget",
     "render",
+    "render_with_regions",
 ]

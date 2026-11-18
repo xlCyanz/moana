@@ -283,7 +283,7 @@ def test_budget_v5_hand_oracle() -> None:
     assert estimate.pixel_visits == 3 * 16 + 2 * 16 + 82
     # working max(40A, 14A + 80 x 4) = 640, plus the dither peak, plus one result 4A
     assert estimate.buffer_bytes == 640 + 4168 + 64
-    assert estimate.estimator_version == ESTIMATOR_VERSION == "budget-v5"
+    assert estimate.estimator_version == ESTIMATOR_VERSION == "budget-v6"
     assert estimate.operations == 1 and estimate.fills == fill_count(document) == 2
 
 

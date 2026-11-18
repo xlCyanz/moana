@@ -8,7 +8,7 @@ Prioridades: P0 fundamento/bloqueante; P1 funcionalidad central; P2 avanzada; P3
 
 [Roadmap](roadmap.md) · [Dependencias](dependency-map.md) · [Trazabilidad](traceability.md) · [Ciclo de vida](../guides/issue-lifecycle.md).
 
-Estados: {'blocked': 13, 'done': 19, 'ready': 4}.
+Estados: {'blocked': 13, 'done': 20, 'ready': 3}.
 
 | Issue | Resultado | Fase | Prioridad | Estado | Dependencias directas |
 | --- | --- | --- | --- | --- | --- |
@@ -26,7 +26,7 @@ Estados: {'blocked': 13, 'done': 19, 'ready': 4}.
 | [MOANA-011](MOANA-011.md) | Exportar PNG y manifiesto de salida | P2 | P1 | done | MOANA-010 |
 | [MOANA-012](MOANA-012.md) | Exponer API pública y CLI estático | P2 | P1 | done | MOANA-010, MOANA-011 |
 | [MOANA-013](MOANA-013.md) | Añadir máscaras y regiones semánticas | P3 | P1 | done | MOANA-009, MOANA-010 |
-| [MOANA-014](MOANA-014.md) | Crear contornos y análisis de clusters | P3 | P1 | ready | MOANA-013, MOANA-005 |
+| [MOANA-014](MOANA-014.md) | Crear contornos y análisis de clusters | P3 | P1 | done | MOANA-013, MOANA-005 |
 | [MOANA-015](MOANA-015.md) | Añadir bandas de sombreado e iluminación | P3 | P1 | ready | MOANA-005, MOANA-013 |
 | [MOANA-016](MOANA-016.md) | Implementar dithering ordenado | P3 | P1 | done | MOANA-005, MOANA-013 |
 | [MOANA-017](MOANA-017.md) | Crear presets de materiales versionados | P3 | P1 | blocked | MOANA-014, MOANA-015, MOANA-016 |

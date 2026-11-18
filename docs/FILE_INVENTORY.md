@@ -1,6 +1,6 @@
 # Inventario del repositorio
 
-348 archivos actuales de fuente, documentación, configuración y pruebas al 2026-11-17. Incluye cambios locales todavía sin commit. Excluye entorno virtual, herramientas, cachés, artefactos y metadata Git.
+365 archivos actuales de fuente, documentación, configuración y pruebas al 2026-11-18. Incluye cambios locales todavía sin commit. Excluye entorno virtual, herramientas, cachés, artefactos y metadata Git.
 
 | Archivo |
 | --- |
@@ -108,6 +108,7 @@
 | [docs/architecture/decisions/ADR-024-atomic-edits.md](../docs/architecture/decisions/ADR-024-atomic-edits.md) |
 | [docs/architecture/decisions/ADR-025-ordered-dithering.md](../docs/architecture/decisions/ADR-025-ordered-dithering.md) |
 | [docs/architecture/decisions/ADR-026-edit-history.md](../docs/architecture/decisions/ADR-026-edit-history.md) |
+| [docs/architecture/decisions/ADR-027-outlines-clusters.md](../docs/architecture/decisions/ADR-027-outlines-clusters.md) |
 | [docs/architecture/module-contracts.md](../docs/architecture/module-contracts.md) |
 | [docs/architecture/overview.md](../docs/architecture/overview.md) |
 | [docs/guides/agent-workflow.md](../docs/guides/agent-workflow.md) |
@@ -201,6 +202,7 @@
 | [examples/specs/dither-dusk.moana.json](../examples/specs/dither-dusk.moana.json) |
 | [examples/specs/masked-eyes.moana.json](../examples/specs/masked-eyes.moana.json) |
 | [examples/specs/minimal.moana.json](../examples/specs/minimal.moana.json) |
+| [examples/specs/outlined-slime.moana.json](../examples/specs/outlined-slime.moana.json) |
 | [examples/specs/path-sail.moana.json](../examples/specs/path-sail.moana.json) |
 | [examples/specs/recolor.edit.json](../examples/specs/recolor.edit.json) |
 | [pyproject.toml](../pyproject.toml) |
@@ -221,6 +223,7 @@
 | [scripts/validate.py](../scripts/validate.py) |
 | [src/moana/__init__.py](../src/moana/__init__.py) |
 | [src/moana/api/__init__.py](../src/moana/api/__init__.py) |
+| [src/moana/api/analysis.py](../src/moana/api/analysis.py) |
 | [src/moana/api/editing.py](../src/moana/api/editing.py) |
 | [src/moana/api/inspection.py](../src/moana/api/inspection.py) |
 | [src/moana/api/loading.py](../src/moana/api/loading.py) |
@@ -237,6 +240,7 @@
 | [src/moana/core/errors.py](../src/moana/core/errors.py) |
 | [src/moana/core/ids.py](../src/moana/core/ids.py) |
 | [src/moana/core/limits.py](../src/moana/core/limits.py) |
+| [src/moana/core/morphology.py](../src/moana/core/morphology.py) |
 | [src/moana/core/pillow_adapter.py](../src/moana/core/pillow_adapter.py) |
 | [src/moana/core/procedural.py](../src/moana/core/procedural.py) |
 | [src/moana/core/vector_path.py](../src/moana/core/vector_path.py) |
@@ -250,8 +254,10 @@
 | [src/moana/export/png.py](../src/moana/export/png.py) |
 | [src/moana/geometry/__init__.py](../src/moana/geometry/__init__.py) |
 | [src/moana/geometry/algebra.py](../src/moana/geometry/algebra.py) |
+| [src/moana/geometry/cover.py](../src/moana/geometry/cover.py) |
 | [src/moana/geometry/fill.py](../src/moana/geometry/fill.py) |
 | [src/moana/geometry/mask.py](../src/moana/geometry/mask.py) |
+| [src/moana/geometry/morphology.py](../src/moana/geometry/morphology.py) |
 | [src/moana/geometry/paths.py](../src/moana/geometry/paths.py) |
 | [src/moana/geometry/pattern.py](../src/moana/geometry/pattern.py) |
 | [src/moana/geometry/primitives.py](../src/moana/geometry/primitives.py) |
@@ -266,6 +272,7 @@
 | [src/moana/render/__init__.py](../src/moana/render/__init__.py) |
 | [src/moana/render/budget.py](../src/moana/render/budget.py) |
 | [src/moana/render/pipeline.py](../src/moana/render/pipeline.py) |
+| [src/moana/render/regions.py](../src/moana/render/regions.py) |
 | [src/moana/render/result.py](../src/moana/render/result.py) |
 | [src/moana/schema/__init__.py](../src/moana/schema/__init__.py) |
 | [src/moana/schema/_issues.py](../src/moana/schema/_issues.py) |
@@ -277,7 +284,9 @@
 | [src/moana/schema/models.py](../src/moana/schema/models.py) |
 | [src/moana/schema/references.py](../src/moana/schema/references.py) |
 | [src/moana/techniques/__init__.py](../src/moana/techniques/__init__.py) |
+| [src/moana/techniques/clusters.py](../src/moana/techniques/clusters.py) |
 | [src/moana/techniques/dither.py](../src/moana/techniques/dither.py) |
+| [src/moana/techniques/outline.py](../src/moana/techniques/outline.py) |
 | [tests/fixtures/determinism/corpus.json](../tests/fixtures/determinism/corpus.json) |
 | [tests/fixtures/determinism/expected.json](../tests/fixtures/determinism/expected.json) |
 | [tests/integration/test_cli_paths.py](../tests/integration/test_cli_paths.py) |
@@ -289,6 +298,7 @@
 | [tests/test_planning.py](../tests/test_planning.py) |
 | [tests/test_repository_tools.py](../tests/test_repository_tools.py) |
 | [tests/unit/api/test_api_architecture.py](../tests/unit/api/test_api_architecture.py) |
+| [tests/unit/api/test_api_clusters.py](../tests/unit/api/test_api_clusters.py) |
 | [tests/unit/api/test_api_editing.py](../tests/unit/api/test_api_editing.py) |
 | [tests/unit/api/test_api_facade.py](../tests/unit/api/test_api_facade.py) |
 | [tests/unit/api/test_api_masks.py](../tests/unit/api/test_api_masks.py) |
@@ -313,9 +323,11 @@
 | [tests/unit/export/test_export_png.py](../tests/unit/export/test_export_png.py) |
 | [tests/unit/geometry/test_geometry_algebra.py](../tests/unit/geometry/test_geometry_algebra.py) |
 | [tests/unit/geometry/test_geometry_architecture.py](../tests/unit/geometry/test_geometry_architecture.py) |
+| [tests/unit/geometry/test_geometry_cover.py](../tests/unit/geometry/test_geometry_cover.py) |
 | [tests/unit/geometry/test_geometry_fill.py](../tests/unit/geometry/test_geometry_fill.py) |
 | [tests/unit/geometry/test_geometry_mask.py](../tests/unit/geometry/test_geometry_mask.py) |
 | [tests/unit/geometry/test_geometry_memory.py](../tests/unit/geometry/test_geometry_memory.py) |
+| [tests/unit/geometry/test_geometry_morphology.py](../tests/unit/geometry/test_geometry_morphology.py) |
 | [tests/unit/geometry/test_geometry_paths.py](../tests/unit/geometry/test_geometry_paths.py) |
 | [tests/unit/geometry/test_geometry_pattern.py](../tests/unit/geometry/test_geometry_pattern.py) |
 | [tests/unit/geometry/test_geometry_primitives.py](../tests/unit/geometry/test_geometry_primitives.py) |
@@ -330,8 +342,10 @@
 | [tests/unit/render/test_render_budget.py](../tests/unit/render/test_render_budget.py) |
 | [tests/unit/render/test_render_dither.py](../tests/unit/render/test_render_dither.py) |
 | [tests/unit/render/test_render_masks.py](../tests/unit/render/test_render_masks.py) |
+| [tests/unit/render/test_render_outline.py](../tests/unit/render/test_render_outline.py) |
 | [tests/unit/render/test_render_paths.py](../tests/unit/render/test_render_paths.py) |
 | [tests/unit/render/test_render_pipeline.py](../tests/unit/render/test_render_pipeline.py) |
+| [tests/unit/render/test_render_regions.py](../tests/unit/render/test_render_regions.py) |
 | [tests/unit/schema/conftest.py](../tests/unit/schema/conftest.py) |
 | [tests/unit/schema/test_schema_architecture.py](../tests/unit/schema/test_schema_architecture.py) |
 | [tests/unit/schema/test_schema_dither.py](../tests/unit/schema/test_schema_dither.py) |
@@ -339,10 +353,13 @@
 | [tests/unit/schema/test_schema_issues.py](../tests/unit/schema/test_schema_issues.py) |
 | [tests/unit/schema/test_schema_masks.py](../tests/unit/schema/test_schema_masks.py) |
 | [tests/unit/schema/test_schema_members.py](../tests/unit/schema/test_schema_members.py) |
+| [tests/unit/schema/test_schema_outline.py](../tests/unit/schema/test_schema_outline.py) |
 | [tests/unit/schema/test_schema_paths.py](../tests/unit/schema/test_schema_paths.py) |
 | [tests/unit/schema/test_schema_reader.py](../tests/unit/schema/test_schema_reader.py) |
 | [tests/unit/schema/test_schema_roundtrip.py](../tests/unit/schema/test_schema_roundtrip.py) |
+| [tests/unit/techniques/test_techniques_clusters.py](../tests/unit/techniques/test_techniques_clusters.py) |
 | [tests/unit/techniques/test_techniques_dither.py](../tests/unit/techniques/test_techniques_dither.py) |
+| [tests/unit/techniques/test_techniques_outline.py](../tests/unit/techniques/test_techniques_outline.py) |
 | [tests/unit/test_claude_hooks.py](../tests/unit/test_claude_hooks.py) |
 | [tests/unit/test_github_sync.py](../tests/unit/test_github_sync.py) |
 | [tests/unit/test_portability.py](../tests/unit/test_portability.py) |

@@ -9,7 +9,9 @@ ADR-023), which imports AggDraw only when a path is rasterised or the backend is
 probed; stroke widths are out of scope. Masks combine through the set algebra of
 :mod:`moana.geometry.algebra` (union, intersect, subtract, xor; ADR-022). A periodic
 cell table anchored on the canvas selects mask pixels with the mathematical modulo
-(:func:`select_periodic`, ADR-025), the geometry under ordered dithering.
+(:func:`select_periodic`, ADR-025), the geometry under ordered dithering. Bounded
+Chebyshev dilation and erosion with a transparent exterior (:func:`dilate`,
+:func:`erode`, ADR-027) are the geometry under outlines.
 """
 
 from moana.geometry.algebra import (
@@ -19,8 +21,21 @@ from moana.geometry.algebra import (
     combine_masks,
     combined_box,
 )
+from moana.geometry.cover import (
+    COVER_BYTES_PER_PIXEL,
+    MAX_COVER_MASKS,
+    MaskCover,
+    cover_bytes,
+)
 from moana.geometry.fill import FLOOD_FILL_BYTES_PER_PIXEL, flood_fill, flood_fill_cost
 from moana.geometry.mask import Mask
+from moana.geometry.morphology import (
+    MAX_MORPHOLOGY_RADIUS,
+    MORPHOLOGY_FIXED_BYTES,
+    dilate,
+    erode,
+    morphology_bytes,
+)
 from moana.geometry.paths import (
     AGGDRAW_BACKEND,
     COVERAGE_THRESHOLD,
@@ -58,11 +73,15 @@ from moana.geometry.transform import (
 __all__ = [
     "AGGDRAW_BACKEND",
     "COVERAGE_THRESHOLD",
+    "COVER_BYTES_PER_PIXEL",
     "FLOOD_FILL_BYTES_PER_PIXEL",
     "MASK_OPERATORS",
+    "MAX_COVER_MASKS",
+    "MAX_MORPHOLOGY_RADIUS",
     "MAX_PATTERN_SIZE",
     "MAX_SCALE",
     "MIN_POLYGON_VERTICES",
+    "MORPHOLOGY_FIXED_BYTES",
     "PATH_BUFFER_MARGIN",
     "PATTERN_INDEX_BYTES",
     "QUARTER_TURNS",
@@ -70,14 +89,19 @@ __all__ = [
     "CellTable",
     "Mask",
     "MaskBuilder",
+    "MaskCover",
     "MaskOperator",
     "PathBackend",
     "Transform",
     "backend_unavailable_error",
     "combine_masks",
     "combined_box",
+    "cover_bytes",
+    "dilate",
+    "erode",
     "flood_fill",
     "flood_fill_cost",
+    "morphology_bytes",
     "path_backend",
     "path_buffer_box",
     "path_mask_box",

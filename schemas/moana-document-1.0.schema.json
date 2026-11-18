@@ -315,6 +315,7 @@
                 "dither": "#/$defs/DitherOperation",
                 "ellipse": "#/$defs/EllipseOperation",
                 "line": "#/$defs/LineOperation",
+                "outline": "#/$defs/OutlineOperation",
                 "path": "#/$defs/PathOperation",
                 "pixel": "#/$defs/PixelOperation",
                 "polygon": "#/$defs/PolygonOperation",
@@ -343,6 +344,9 @@
               },
               {
                 "$ref": "#/$defs/DitherOperation"
+              },
+              {
+                "$ref": "#/$defs/OutlineOperation"
               }
             ]
           },
@@ -526,6 +530,56 @@
         }
       },
       "title": "Metadata",
+      "type": "object"
+    },
+    "OutlineOperation": {
+      "additionalProperties": false,
+      "description": "Outline of mask ``mask_id``, ``width`` pixels wide, painted with ``color`` (ADR-027).\n\n``side`` ``outer`` paints ``dilate(mask, width) - mask`` and ``inner`` paints\n``mask - erode(mask, width)``, with the Chebyshev neighbourhood and a transparent\nexterior (MOANA.md section 8). ``width`` is an integer in ``1..16``.",
+      "properties": {
+        "color": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Color",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "mask_id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Mask Id",
+          "type": "string"
+        },
+        "side": {
+          "enum": [
+            "outer",
+            "inner"
+          ],
+          "title": "Side",
+          "type": "string"
+        },
+        "type": {
+          "const": "outline",
+          "title": "Type",
+          "type": "string"
+        },
+        "width": {
+          "maximum": 16,
+          "minimum": 1,
+          "title": "Width",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "mask_id",
+        "width",
+        "side",
+        "color"
+      ],
+      "title": "OutlineOperation",
       "type": "object"
     },
     "Palette": {

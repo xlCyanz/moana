@@ -69,6 +69,7 @@ __all__ = [
 ]
 
 AVAILABLE_FUNCTIONS: Final = (
+    "analyze_clusters",
     "apply_edit",
     "capabilities",
     "edit_document",
@@ -154,7 +155,7 @@ class ExceededResource:
 
 @dataclass(frozen=True, slots=True)
 class BudgetReport:
-    """Estimate of one render against the request limits (``budget-v5``, ADR-025).
+    """Estimate of one render against the request limits (``budget-v6``, ADR-025 and ADR-027).
 
     ``operations`` counts the operations of the document and ``fills`` the raster
     fills of the compositor (two per ``dither``). An ``operations`` entry of

@@ -26,6 +26,8 @@ from moana.core.errors import ValidationError
 
 __all__ = [
     "DEFAULT_GEOMETRY_LIMITS",
+    "MAX_CLUSTER_EXCEPTIONS",
+    "MAX_CLUSTER_RUNS",
     "MAX_COLORS_RGBA",
     "MAX_COLORS_STRICT",
     "MAX_EDIT_COMMANDS",
@@ -36,6 +38,7 @@ __all__ = [
     "MAX_MASKS",
     "MAX_MASK_DEPTH",
     "MAX_MASK_OPERANDS",
+    "MAX_MORPHOLOGY_RADIUS",
     "MAX_OPERATIONS",
     "MAX_PATH_CELLS",
     "MAX_PATH_COMMANDS",
@@ -95,6 +98,22 @@ MAX_EDIT_COMMANDS: Final = 1024
 # 8 MiB documents only 4 versions fit.
 MAX_HISTORY_SNAPSHOTS: Final = 1024
 MAX_HISTORY_BYTES: Final = 32 * 1024 * 1024
+# Binary morphology and outlines (MOANA.md section 8, ADR-027): the largest Chebyshev
+# radius of a dilation or erosion, which is also the largest ``width`` of an
+# ``outline`` operation. Pixel-art outlines are one or two pixels wide; 16 keeps the
+# padded work box of one pass within ``(w + 33) x (h + 33)`` pixels.
+MAX_MORPHOLOGY_RADIUS: Final = 16
+# Cluster analysis (MOANA.md section 8, ADR-027): horizontal runs of equal opaque
+# colour an analysis may label. Runs are counted row by row (pure Python, grouped in
+# C) before the union-find starts, so a noisy image is rejected (``BudgetExceeded``,
+# ``cluster_runs``) before its time and memory grow; a 512 x 512 checkerboard is
+# exactly at the limit, a 128 x 128 sprite has at most 16 384 runs. The memory of an
+# analysis is bounded per run (``moana.techniques.cluster_bytes``).
+MAX_CLUSTER_RUNS: Final = 262_144
+# Region exceptions of one cluster analysis (MOANA.md section 19, ADR-027): each is
+# one bit of the per-pixel ``uint64`` cover of the region masks, so suppression costs
+# the pixels of the findings whatever the number of exceptions.
+MAX_CLUSTER_EXCEPTIONS: Final = 64
 
 
 @dataclass(frozen=True, slots=True)
