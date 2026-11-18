@@ -64,7 +64,7 @@ Puerta de salida: Proyecto reversible, atlas y timeline decodificado.
 
 Estado: 0/6 issues completados.
 
-- [MOANA-020](MOANA-020.md) — Persistir proyectos y assets seguros (ready)
+- [MOANA-020](MOANA-020.md) — Persistir proyectos y assets seguros (review)
 - [MOANA-021](MOANA-021.md) — Versionar y migrar formatos de proyecto (blocked)
 - [MOANA-022](MOANA-022.md) — Implementar timeline y evaluación de frames (ready)
 - [MOANA-023](MOANA-023.md) — Exportar spritesheets y manifest reversible (blocked)

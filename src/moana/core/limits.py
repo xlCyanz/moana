@@ -26,6 +26,12 @@ from moana.core.errors import ValidationError
 
 __all__ = [
     "DEFAULT_GEOMETRY_LIMITS",
+    "MAX_ARCHIVE_BYTES",
+    "MAX_ARCHIVE_ENTRIES",
+    "MAX_ARCHIVE_EXPANDED_BYTES",
+    "MAX_ARCHIVE_RATIO",
+    "MAX_ASSET_BYTES",
+    "MAX_ASSET_PIXELS",
     "MAX_CLUSTER_EXCEPTIONS",
     "MAX_CLUSTER_RUNS",
     "MAX_COLORS_RGBA",
@@ -44,6 +50,10 @@ __all__ = [
     "MAX_PATH_COMMANDS",
     "MAX_PATH_CURVE_SEGMENTS",
     "MAX_PATH_SEGMENTS",
+    "MAX_PROJECT_ASSETS",
+    "MAX_PROJECT_MANIFEST_BYTES",
+    "MAX_PROJECT_MANIFEST_DEPTH",
+    "MAX_PROJECT_MANIFEST_NODES",
     "MAX_RAMP_ENTRIES",
     "MAX_REGIONS",
     "MAX_VERTICES",
@@ -150,3 +160,25 @@ class GeometryLimits:
 
 
 DEFAULT_GEOMETRY_LIMITS: Final = GeometryLimits()
+
+
+# Projects and assets (MOANA.md section 16, ADR-029). The manifest
+# ``project.moana.json`` embeds one document (at most 8 MiB, 32 levels, 20 000 nodes)
+# plus its asset references and history entries, so its bounds are the document's
+# plus room for 128 assets and 1024 entries; the envelope adds two levels of nesting.
+MAX_PROJECT_MANIFEST_BYTES: Final = 9 * 1024 * 1024
+MAX_PROJECT_MANIFEST_DEPTH: Final = 34
+MAX_PROJECT_MANIFEST_NODES: Final = 32_768
+# Declared assets of one project, encoded bytes of one PNG asset and decoded pixels of
+# all assets together (16 777 216 = 64 MiB of RGBA, the frame budget of section 20).
+# Each asset is also bounded by the canvas contract (2048 per axis, 4 194 304 pixels).
+MAX_PROJECT_ASSETS: Final = 128
+MAX_ASSET_BYTES: Final = 32 * 1024 * 1024
+MAX_ASSET_PIXELS: Final = 16_777_216
+# Optional ``.moana`` ZIP container (MOANA.md section 16): entries, compressed bytes
+# of the archive, declared expanded bytes of all entries and the expansion ratio,
+# enforced per entry and in total, all from the central directory before extraction.
+MAX_ARCHIVE_ENTRIES: Final = 256
+MAX_ARCHIVE_BYTES: Final = 64 * 1024 * 1024
+MAX_ARCHIVE_EXPANDED_BYTES: Final = 256 * 1024 * 1024
+MAX_ARCHIVE_RATIO: Final = 100
