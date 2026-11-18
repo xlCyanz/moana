@@ -533,7 +533,19 @@ def test_capabilities_separate_available_from_planned() -> None:
     assert listing.operations == ("dither", "ellipse", "line", "path", "pixel", "polygon", "rect")
     assert set(listing.operations).isdisjoint(listing.planned_operations)
     assert set(listing.blend_modes).isdisjoint(listing.planned_blend_modes)
-    assert listing.planned_functions == PLANNED_FUNCTIONS == ("apply_edit",)
+    # MOANA-018: apply_edit moved from planned to available (ADR-024).
+    assert listing.planned_functions == PLANNED_FUNCTIONS == ()
+    assert "apply_edit" in AVAILABLE_FUNCTIONS
+    assert listing.edit_commands == (
+        "insert_operation",
+        "remove",
+        "reorder",
+        "replace_palette_color",
+        "set_color",
+        "set_geometry",
+        "set_visibility",
+        "translate",
+    )
     assert listing.functions == AVAILABLE_FUNCTIONS
     for name in AVAILABLE_FUNCTIONS:
         assert callable(getattr(moana.api, name))

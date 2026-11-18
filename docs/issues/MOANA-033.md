@@ -13,7 +13,7 @@
 - Dependencies: [MOANA-012](MOANA-012.md), [MOANA-018](MOANA-018.md), [MOANA-020](MOANA-020.md), [MOANA-026](MOANA-026.md)
 - Related modules: docs, api
 - Requirements: R014, R034, R038 ([trazabilidad](traceability.md))
-- Bloqueo: Dependencias pendientes: MOANA-018, MOANA-020, MOANA-026
+- Bloqueo: Dependencias pendientes: MOANA-020, MOANA-026
 
 ## Context
 

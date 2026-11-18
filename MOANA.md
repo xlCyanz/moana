@@ -1,6 +1,6 @@
 # MOANA — Especificación técnica
 
-Versión del contrato: **0.1.12-draft** · Fecha: **2026-11-18** · Estado: especificación inicial para implementación; motor todavía no implementado.
+Versión del contrato: **0.1.13-draft** · Fecha: **2026-11-18** · Estado: especificación inicial para implementación; motor todavía no implementado.
 
 Este archivo es la fuente de verdad del producto. «DEBE» expresa una condición verificable; «DEBERÍA», una recomendación artística o de diseño. Los contratos aquí descritos son objetivos futuros, no APIs disponibles en el paquete inicial. Los cambios de contrato requieren actualizar este documento, los ejemplos, los issues y una decisión de arquitectura cuando afecten compatibilidad. El catálogo de requisitos y su trazabilidad vive en `docs/requirements.json` y `docs/issues/traceability.md`.
 
@@ -168,25 +168,24 @@ El JSON Schema se genera desde Pydantic (`moana.schema`, MOANA-002) y se version
 
 ## 13. API pública de Python
 
-Fachada v0.1 implementada en `moana.api` (MOANA-012, ADR-020); `apply_edit` sigue prevista (MOANA-018, §15) y no se exporta:
+Fachada v0.1 implementada en `moana.api` (MOANA-012, ADR-020; edición en MOANA-018, ADR-024):
 
 ```python
-from moana.api import capabilities, export_png, inspect_document, load_document, render
-from moana.schema import snapshot_digest
+from moana.api import apply_edit, export_png, load_document, render, snapshot_digest
 
 document = load_document("hero.moana.json")
 result = render(document, frame_id=None, limits=None)
 export_png(result, "hero.png", scale=1)
-# Prevista (MOANA-018), aún no disponible:
-# edited = apply_edit(
-#     document,
-#     {
-#         "schema_version": "1.0",
-#         "base_revision": document.revision,
-#         "base_snapshot": snapshot_digest(document),
-#         "commands": [{"type": "set_color", "target_id": "body_fill", "color": "ink"}],
-#     },
-# )
+edited = apply_edit(
+    document,
+    {
+        "schema_version": "1.0",
+        "base_revision": document.revision,
+        "base_snapshot": snapshot_digest(document),
+        "commands": [{"type": "set_color", "target_id": "body_fill", "color": "ink"}],
+    },
+)
+assert edited.revision == document.revision + 1
 ```
 
 - `load_document(source: str | os.PathLike[str] | bytes | Mapping[str, object], *, limits: ParseLimits = DEFAULT_PARSE_LIMITS) -> Document` valida y normaliza. Un path es de confianza porque lo pasa la API, nunca porque lo nombre un documento. Un `str` que empieza por `{` o `[` se rechaza (`ValidationError`, `json_text`): el JSON entra como bytes o mapping. El archivo debe ser regular; se abre sin bloquear y se leen como mucho `max_bytes + 1` bytes. Un fallo de lectura es `ReadError` (`READ_ERROR`, salida 5) con `reason`, `file_name` (≤255 caracteres) y `errno`, sin ruta completa.
@@ -195,14 +194,14 @@ export_png(result, "hero.png", scale=1)
 - `inspect_document(Document, *, limits=None) -> DocumentReport` resume identidad, lienzo, paleta, capas (con `mask_id`), máscaras, regiones y presupuesto estimado; un exceso se informa (`within_limits`, `exceeded`), no se lanza. `capabilities() -> Capabilities` separa lo disponible de lo previsto (incluye `collections`, `mask_types`, `planned_mask_types` y `backends`: `BackendSummary` con nombre, disponibilidad, versión de AggDraw y de Pillow, motivo y versiones ensayadas). Sin backend de paths utilizable, `path` aparece como previsto, nunca desaparece; es una capacidad de ejecución: el schema acepta `path` igualmente y sólo `render` lo rechaza (ADR-023). `dither` figura siempre como disponible e `inspect_document` resume esa operación con su color A en `color`; su `BudgetReport` separa `operations` (del documento) de `fills` (rasterizados, el valor que compara `max_operations`) (ADR-025). `moana.schema` exporta la tabla de miembros por tipo `OPERATION_MEMBERS`/`MASK_MEMBERS` (`NodeMembers(colors, masks, geometry)`, de sólo lectura): qué miembros de cada `type` guardan colores de paleta, referencias a máscaras y geometría (`dither`: `color_a`/`color_b`, `mask_id`, sin geometría; `origin` no es geometría). Validación, referencias, inspección y edición la recorren en lugar de comprobar clases (ADR-025).
 - `resolve_region(Document, region_id) -> ResolvedRegion` resuelve una región por ID: su máscara, las máscaras de las que depende (operandos primero), sus operaciones y las capas que las contienen. Un ID desconocido es `ReferenceError` (MOANA-013, ADR-022; reexportada desde `moana.schema`).
 - La identidad de snapshot es `moana.schema.snapshot_digest(document)`, reexportada en `moana.api`. Todos los retornos son congelados y sin objetos NumPy ni Pillow.
-- `apply_edit(Document, EditBatch | mapping) -> Document` devolverá una revisión nueva (MOANA-018).
+- `apply_edit(Document, EditBatch | path | bytes | mapping, *, limits=DEFAULT_PARSE_LIMITS) -> Document` devuelve el documento de la revisión siguiente (§15, ADR-024); `edit_document(...)` devuelve además `EditResult` (snapshot nuevo e IDs afectados) y `load_edit_batch(source)` lee y valida un batch con la misma lectura acotada que `load_document`. `capabilities()` lista el catálogo en `edit_commands`; `PLANNED_FUNCTIONS` está vacío.
 
 Errores públicos (`moana.core.errors`): `MoanaError` y subclases `ValidationError` (con `OutOfBoundsError` para acceso a píxel fuera del lienzo), `ReferenceError`, `BudgetExceeded`, `UnsupportedVersion`, `UnsupportedOperation`, `EditConflict`, `ExportError` y `ReadError`. Cada clase declara `code` estable y el código de salida de la CLI (ADR-010, ampliado por ADR-020 con `READ_ERROR` = 5).
 
 CLI `moana` (también `python -m moana.cli`):
 
-- Comandos: `validate DOC`, `inspect DOC`, `render DOC` (en memoria, sin escribir), `export DOC OUT.png [--scale 1..64] [--overwrite]` y `capabilities`. Opciones `--version` y `--debug` (antes o después del comando), sin abreviaturas.
-- `edit` es una capacidad prevista: responde `UNSUPPORTED_OPERATION` con salida 2 y la ayuda lo marca como no disponible.
+- Comandos: `validate DOC`, `inspect DOC`, `render DOC` (en memoria, sin escribir), `export DOC OUT.png [--scale 1..64] [--overwrite]`, `edit DOC BATCH` y `capabilities`. Opciones `--version` y `--debug` (antes o después del comando), sin abreviaturas.
+- `edit DOC BATCH` aplica el batch JSON de §15 e imprime en una sola línea un objeto JSON con `edit` = `revision`, `base_revision`, `base_snapshot`, `snapshot_digest`, `affected_ids`, `document_id` y el documento normalizado completo (`document`); no escribe ningún archivo (persistir es de `project`, MOANA-020). Un conflicto sale con 4.
 - Cada invocación escribe un único objeto JSON en una línea de stdout (`ok`, `command` y el resultado, o `error {code, exit_code, message, json_pointer, context, details}`) y, si falla, una línea breve en stderr. Un error de uso es `VALIDATION_ERROR` (`reason: usage`) con mensaje fijo.
 - Códigos: 0 éxito, 2 entrada inválida o capacidad no disponible, 3 presupuesto, 4 conflicto, 5 I/O (lectura, exportación o stdout cerrado), 1 fallo interno y 130 interrupción (objeto `INTERRUPTED`). No se muestran tracebacks salvo con `--debug`.
 
@@ -218,11 +217,13 @@ Cachés son optimización: activadas/desactivadas deben dar igualdad exacta. No 
 
 ## 15. Edición no destructiva
 
-El documento es el artefacto editable primario; el PNG es derivado. Un batch contiene `schema_version`, `base_revision`, `base_snapshot` y comandos tipados. `base_snapshot` es `sha256:` seguido del digest hexadecimal del documento normalizado de origen (§14), expuesto por la futura propiedad `Document.snapshot_digest`; no se serializa esa propiedad dentro del propio documento. Se verifican ambas precondiciones para distinguir ramas con el mismo número de revisión. Catálogo inicial: `set_color(target_id,color)`, `set_geometry(target_id,geometry)`, `translate(target_id,dx,dy)`, `set_visibility(target_id,visible)`, `replace_palette_color(target_id,rgba)`, `insert_operation(layer_id,after_id|null,operation)`, `remove(target_id)`, `reorder(target_id,after_id|null)`. `after_id=null` inserta al principio del contenedor. Sólo se reordena dentro del mismo contenedor; traslado entre capas será comando explícito posterior.
+El documento es el artefacto editable primario; el PNG es derivado. Un batch contiene `schema_version`, `base_revision`, `base_snapshot` y comandos tipados. `base_snapshot` es `sha256:` seguido del digest hexadecimal del documento normalizado de origen (§14), calculado por `moana.schema.snapshot_digest(document)` (reexportado en `moana.api`); el digest no se serializa dentro del propio documento. Se verifican ambas precondiciones para distinguir ramas con el mismo número de revisión. Catálogo inicial: `set_color(target_id,color)`, `set_geometry(target_id,geometry)`, `translate(target_id,dx,dy)`, `set_visibility(target_id,visible)`, `replace_palette_color(target_id,rgba)`, `insert_operation(layer_id,after_id|null,operation)`, `remove(target_id)`, `reorder(target_id,after_id|null)`. `after_id=null` inserta al principio del contenedor. Sólo se reordena dentro del mismo contenedor; traslado entre capas será comando explícito posterior.
 
 Una revisión o un digest de snapshot que no coincide con el documento actual produce EditConflict. Validar todos los comandos y la escena resultante antes de aceptar; un fallo revierte todo. No se admiten cambios directos de id, schema_version ni revision. Rechazar borrado con referencias vivas, edición de capa bloqueada y comandos ambiguos. Batch exitoso incrementa revision exactamente en 1, incluso si el resultado visual no cambia. Se preservan IDs existentes, bytes fuente de assets y orden de nodos no afectados.
 
 Historial: snapshots inmutables identificados por digest, con batch canónico, digest del padre y revisión numérica local a la rama; undo/redo selecciona estados existentes, mientras un nuevo edit sobre estado anterior crea rama lógica y descarta sólo el cursor redo activo, no los archivos guardados. Un cambio local puede modificar sombra/contorno dependiente; el manifiesto indica IDs afectados y bbox de diferencia, evitando prometer que ninguna dependencia cambia. Se informa el diff antes/después y se conserva el archivo anterior al guardar con sobreescritura explícita.
+
+Semántica implementada (MOANA-018, ADR-024; `moana.editing`): el batch es estricto (`extra` prohibido, 1–1024 comandos, `after_id` obligatorio con `null` explícito) y se lee con los mismos límites que un documento. Lo que el editor sabe de cada tipo de operación o máscara sale de la tabla de miembros `OPERATION_MEMBERS`/`MASK_MEMBERS` de `moana.schema` (ADR-025); un `dither` (dos colores, una máscara, sin geometría) se puede borrar, reordenar e insertar, pero no recolorear con `set_color` ni desplazar. Objetivos: `set_color` sobre operaciones con exactamente un miembro de color (otro número: `multiple_colors`); `set_geometry`/`translate` sobre operaciones y hojas de máscara (una máscara combinada no tiene geometría: `not_geometric`); `geometry` contiene exactamente los miembros geométricos del tipo (`at`; `start`/`end`; `box`; `points`; `commands`) y `translate` mueve píxeles enteros (un path, `256·d` unidades; una coordenada fuera de rango da `out_of_range` en `/commands/i` con `member`); `set_visibility` sobre capas; `replace_palette_color` sobre colores, también si los usan capas bloqueadas (cambia la paleta, no la capa); `insert_operation` en una capa tras una operación de esa capa, con un ID nuevo en todo el documento y en el batch (`duplicate_id`) y distinto de los eliminados en el mismo batch (`reused_id`); `remove` sobre operaciones, capas (con sus operaciones), máscaras, regiones, colores y rampas; `reorder` sobre cualquier nodo de una lista, dentro de ella. Un ID inexistente es `ReferenceError` (`unknown_target`), uno de otra clase `ValidationError` (`invalid_target`), una capa bloqueada `locked_layer` y un borrado con referencias vivas `ReferenceError` (`live_reference`, un detalle por referencia). Revisión distinta de la actual (menor o mayor): `EditConflict` `stale_revision`; misma revisión con otro digest: `snapshot_mismatch`; revisión actual ya máxima: `revision_overflow` antes de aplicar ningún comando. Los comandos se aplican en orden sobre una copia normalizada; el resultado se revalida completo (`invalid_result` si falla) y el documento fuente nunca cambia. El resultado lista sólo los IDs afectados directamente (objetivos, insertados y eliminados); el bbox de diferencia y los consumidores indirectos se calcularán con el manifiesto del historial de `project` (MOANA-020). No hay comandos de bloqueo, de traslado entre contenedores ni JSON Patch.
 
 ## 16. Formato de proyectos
 

@@ -13,7 +13,7 @@
 - Dependencies: [MOANA-018](MOANA-018.md), [MOANA-031](MOANA-031.md)
 - Related modules: render
 - Requirements: R029, R028, R015 ([trazabilidad](traceability.md))
-- Bloqueo: Dependencias pendientes: MOANA-018, MOANA-031
+- Bloqueo: Dependencias pendientes: MOANA-031
 
 ## Context
 

@@ -1,6 +1,6 @@
 # Contratos entre módulos
 
-Estado: **contratos previstos**, salvo `core` (con el lienzo RGBA), `schema`, `palette`, `geometry`, `layers`, `techniques` (sólo dithering ordenado), `render`, `export` PNG y `api`/`cli` (implementados, ver abajo). Las firmas públicas objetivo están en [MOANA.md §13](../../MOANA.md); sus fórmulas, límites y formatos prevalecen sobre este resumen. No se añaden abstracciones base ni registros de plugins por anticipación.
+Estado: **contratos previstos**, salvo `core` (con el lienzo RGBA), `schema`, `palette`, `geometry`, `layers`, `techniques` (sólo dithering ordenado), `render`, `export` PNG, `editing` y `api`/`cli` (implementados, ver abajo). Las firmas públicas objetivo están en [MOANA.md §13](../../MOANA.md); sus fórmulas, límites y formatos prevalecen sobre este resumen. No se añaden abstracciones base ni registros de plugins por anticipación.
 
 ## Entradas, salidas y efectos
 
@@ -87,16 +87,17 @@ Integración con `schema` (MOANA-002): los errores de `core` no derivan de `Valu
 
 ## `api` / `cli` (implementados en MOANA-012)
 
-Fachada `moana.api` y comando `moana`: sólo componen `schema`, `render` y `export`, sin algoritmos propios. `cli` importa sólo `moana.api`, `moana.core.errors` y `moana.__version__`; ningún módulo de dominio importa `api` ni `cli`. Decisiones en [ADR-020](decisions/ADR-020-public-api-cli.md).
+Fachada `moana.api` y comando `moana`: sólo componen `schema`, `render`, `export` y `editing`, sin algoritmos propios. `cli` importa sólo `moana.api`, `moana.core.errors` y `moana.__version__`; ningún módulo de dominio importa `api` ni `cli`. Decisiones en [ADR-020](decisions/ADR-020-public-api-cli.md).
 
 | Elemento | Contrato |
 | --- | --- |
 | `load_document(source, *, limits)` | Path autorizado por el llamador (`str`/`PathLike`), bytes o mapping → `Document` congelado. Un `str` con aspecto de JSON es `ValidationError` (`json_text`); vacío, con NUL o no codificable, `invalid_name`. Archivo regular abierto sin bloquear y lectura acotada a `max_bytes + 1`. Un fallo es `ReadError` (`not_found`, `is_directory`, `not_a_file`, `permission_denied`, `io_error`; `file_name` ≤255 y `errno`, sin ruta). |
 | `render(document, *, frame_id, limits, deadline)` | Delega en `moana.render.render`; no escribe archivos. |
 | `export_png(result, path, *, scale, overwrite, limits)` | PNG RGBA atómico vía `moana.export.export_png`; exige un `RenderResult`. El modo indexado sigue en `moana.export`. |
-| `inspect_document(document, *, limits)` / `capabilities()` | Informes congelados con `to_mapping()`. El exceso de presupuesto se informa (`within_limits`, `exceeded`), no se lanza. El informe incluye `masks` (`MaskSummary`), `regions` (`RegionSummary`) y `mask_id` por capa. `backends` (`BackendSummary`: nombre, disponibilidad, versión, Pillow, motivo, versiones ensayadas y capacidades) refleja `aggdraw-v1`; sin backend utilizable, `path` pasa a las listas previstas. Es una capacidad de ejecución: el schema acepta `path` siempre y sólo `render`/el adaptador lo rechazan (ADR-023). Lo previsto (`PLANNED_FUNCTIONS = ("apply_edit",)`, operaciones sin rasterizador, modos, colecciones y tipos de máscara futuros) va separado de lo disponible (`collections`, `mask_types`). |
+| `inspect_document(document, *, limits)` / `capabilities()` | Informes congelados con `to_mapping()`. El exceso de presupuesto se informa (`within_limits`, `exceeded`), no se lanza. El informe incluye `masks` (`MaskSummary`), `regions` (`RegionSummary`) y `mask_id` por capa. `backends` (`BackendSummary`: nombre, disponibilidad, versión, Pillow, motivo, versiones ensayadas y capacidades) refleja `aggdraw-v1`; sin backend utilizable, `path` pasa a las listas previstas. Es una capacidad de ejecución: el schema acepta `path` siempre y sólo `render`/el adaptador lo rechazan (ADR-023). Lo previsto (operaciones sin rasterizador, modos, colecciones y tipos de máscara futuros; `PLANNED_FUNCTIONS` vacío desde MOANA-018) va separado de lo disponible (`collections`, `mask_types`, `edit_commands`). |
 | `resolve_region(document, region_id)` | Reexporta `moana.schema.resolve_region` → `ResolvedRegion` (máscara, dependencias, operaciones y capas); `ReferenceError` `unknown_region` (ADR-022). |
-| CLI `moana` | `validate`, `inspect`, `render`, `export [--scale] [--overwrite]` y `capabilities`; `edit` previsto → `UNSUPPORTED_OPERATION` (2). Un único objeto JSON por invocación; códigos = `exit_code` del error (0/2/3/4/5/1), stdout cerrado → 5, interrupción → 130 con `INTERRUPTED`; uso inválido → `VALIDATION_ERROR` (`usage`) con mensaje fijo; sin abreviaturas; sin traceback salvo `--debug`. Sólo abre los paths de sus argumentos. |
+| `apply_edit(document, batch, *, limits)` / `edit_document(...)` / `load_edit_batch(source, *, limits)` | Delegan en `moana.editing` (ADR-024): `Document` nuevo con `revision + 1` / `EditResult` congelado (snapshot e IDs afectados) / `EditBatch` desde `EditBatch`, path autorizado (lectura acotada; `ReadError` sin ruta), bytes o mapping. |
+| CLI `moana` | `validate`, `inspect`, `render`, `export [--scale] [--overwrite]`, `edit DOC BATCH` (imprime revisión, snapshot, IDs afectados y documento normalizado; no escribe archivos; conflicto → 4) y `capabilities`. Un único objeto JSON por invocación; códigos = `exit_code` del error (0/2/3/4/5/1), stdout cerrado → 5, interrupción → 130 con `INTERRUPTED`; uso inválido → `VALIDATION_ERROR` (`usage`) con mensaje fijo; sin abreviaturas; sin traceback salvo `--debug`. Sólo abre los paths de sus argumentos. |
 
 ## `ci` / `tests.integration` — determinismo entre plataformas (MOANA-029)
 
@@ -121,7 +122,7 @@ API pública en `moana.palette`; depende sólo de `core` y no carga NumPy, Pillo
 | `PaletteWarning` | Advertencias no bloqueantes de `luminance_warnings()`: `RAMP_LUMINANCE_NOT_INCREASING` (`decreasing`, `equal`, `duplicate_value`), `RAMP_TRANSPARENT_STEP` y `RAMP_PARTIAL_ALPHA_STEP`, con pointer, `ramp_id` e IDs de color. |
 | `ColorRemap` | Sustitución explícita de un paso entre IDs de la misma paleta; no encadena ni introduce colores; detalles sin pointer (`side`, `position`). |
 
-`editing` no importa `palette` (§3): `replace_palette_color` validará con los modelos de `schema`. La conversión `schema.Palette → palette.Palette` vivirá en `render`.
+`editing` no importa `palette` (§3): `replace_palette_color` valida con los modelos de `schema` (MOANA-018, ADR-024). La conversión `schema.Palette → palette.Palette` vivirá en `render`.
 
 ## `geometry` (implementado en MOANA-006, MOANA-008 y MOANA-007; selección periódica en MOANA-016)
 
@@ -160,6 +161,16 @@ API pública en `moana.techniques`; depende de `core` y `geometry` (§3 permite 
 | `BAYER_2X2`, `BAYER_4X4`, `bayer_matrix(size)`, `DITHER_SIZES` | Matrices literales de §10, `[fila][columna]`; `size` ∈ {2, 4} (`unsupported_size`; `bool`/float → `not_integer`). |
 | `OrderedDither(size, coverage, origin)` | Valor congelado; `coverage` entera en `0..size²` (`out_of_range`, `not_integer`), `origin` cualquier `Point`. `threshold(point) = M[(y−oy) mod N][(x−ox) mod N]` y `part(point)` (`"b"` si `threshold < coverage`). |
 | `dither_cells(dither, part)`, `dither_mask(mask, dither, part)`, `split_dither(mask, dither)` | Un período de la parte `"a"`/`"b"` (otra → `unknown_part`) y la división de una máscara en partes A y B disjuntas cuya unión es la máscara; nada exterior. La traslación de `origin` por múltiplos de `N` no cambia el resultado; tiles con el mismo `origin` no tienen costuras. |
+
+## `editing` (implementado en MOANA-018)
+
+Batches atómicos de MOANA.md §15; depende sólo de `core`, `schema` y Pydantic. Decisiones en [ADR-024](decisions/ADR-024-atomic-edits.md).
+
+| Elemento | Contrato |
+| --- | --- |
+| `EditBatch` / `parse_edit_batch(source, *, limits)` | Modelo `strict`, `extra='forbid'`, `frozen`: `schema_version` 1.0, `base_revision`, `base_snapshot` (`sha256:` + 64 hex) y 1..`MAX_EDIT_COMMANDS` (1024) comandos discriminados por `type` (`COMMAND_TYPES`: los ocho de §15). Lectura acotada idéntica a la de documentos (mensajes «edit batch»); errores con pointer del batch y sin eco de la entrada. Congelado superficial. Imports privados de `schema` limitados a los cuatro de ADR-024 §10. |
+| `apply_batch(document, batch, *, limits)` | Precondiciones: revisión distinta de la actual → `EditConflict` (`stale_revision`); snapshot distinto → `EditConflict` (`snapshot_mismatch`); revisión máxima → `revision_overflow`. Recorre la tabla de miembros de `moana.schema` (`OPERATION_MEMBERS`/`MASK_MEMBERS`, ADR-025): `multiple_colors`, `not_geometric`, `out_of_range` (con `member`), `duplicate_id`, `reused_id`; `replace_palette_color` alcanza capas bloqueadas. `apply_edit` sólo existe en la fachada. Comandos aplicados en orden a una copia del árbol normalizado, por ID; capa bloqueada → `locked_layer`; ID ausente → `unknown_target`; clase equivocada → `invalid_target`; borrado referenciado → `live_reference`; reorder sólo en el mismo contenedor. Resultado revalidado entero con `validate_document` (`invalid_result`). Todo o nada; el documento fuente nunca cambia. |
+| `EditResult` | `document`, `base_revision`, `base_snapshot`, `snapshot`, `affected_ids` (objetivos, insertados y eliminados, una vez y en orden) y `to_mapping()`. Sin caja de diferencia ni consumidores indirectos (irán con el manifiesto del historial, MOANA-020). |
 
 ## `schema` (implementado en MOANA-002; máscaras y regiones en MOANA-013)
 

@@ -109,6 +109,23 @@ def test_cli_failures_in_a_fresh_process(launcher: list[str], workspace: Path) -
     assert payload["error"]["context"]["file_name"] == "no existe.moana.json"
     assert stderr.startswith("moana: error: READ_ERROR")
     status, payload, _ = run(launcher, workspace, "edit", "a b.json")
-    assert (status, payload["error"]["code"]) == (2, "UNSUPPORTED_OPERATION")
+    assert (status, payload["error"]["context"]) == (2, {"reason": "usage"})
+    status, payload, _ = run(launcher, workspace, "edit", "a b.json", "c d.json")
+    assert (status, payload["error"]["code"]) == (5, "READ_ERROR")
+    assert payload["error"]["context"]["file_name"] == "a b.json"
     status, payload, _ = run(launcher, workspace, "frobnicate")
     assert (status, payload["error"]["context"]) == (2, {"reason": "usage"})
+
+
+@pytest.mark.parametrize("launcher", launchers(), ids=lambda launcher: Path(launcher[-1]).name)
+def test_cli_edit_in_a_fresh_process(launcher: list[str], workspace: Path) -> None:
+    batch = ROOT / "examples" / "specs" / "recolor.edit.json"
+    shutil.copyfile(batch, workspace / "mis documentos" / "lote de edición.edit.json")
+    document = os.path.join("mis documentos", "sprite mínimo.moana.json")
+    edit = os.path.join("mis documentos", "lote de edición.edit.json")
+    before = sorted(p.name for p in (workspace / "mis documentos").iterdir())
+    status, payload, stderr = run(launcher, workspace, "edit", document, edit)
+    assert (status, payload["ok"], stderr) == (0, True, "")
+    assert (payload["edit"]["revision"], payload["edit"]["affected_ids"]) == (1, ["body_fill"])
+    assert payload["edit"]["document"]["layers"][0]["operations"][0]["color"] == "ink"
+    assert sorted(p.name for p in (workspace / "mis documentos").iterdir()) == before
