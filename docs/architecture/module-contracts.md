@@ -1,6 +1,6 @@
 # Contratos entre módulos
 
-Estado: **contratos previstos**, salvo `core` (con el lienzo RGBA), `schema`, `palette`, `geometry`, `layers` y `render` (implementados, ver abajo). Las firmas públicas objetivo están en [MOANA.md §13](../../MOANA.md); sus fórmulas, límites y formatos prevalecen sobre este resumen. No se añaden abstracciones base ni registros de plugins por anticipación.
+Estado: **contratos previstos**, salvo `core` (con el lienzo RGBA), `schema`, `palette`, `geometry`, `layers`, `render` y `export` PNG (implementados, ver abajo). Las firmas públicas objetivo están en [MOANA.md §13](../../MOANA.md); sus fórmulas, límites y formatos prevalecen sobre este resumen. No se añaden abstracciones base ni registros de plugins por anticipación.
 
 ## Entradas, salidas y efectos
 
@@ -67,6 +67,16 @@ Integración con `schema` (MOANA-002): los errores de `core` no derivan de `Valu
 ## `render` — plan de coste (MOANA-003, `budget-v2` en MOANA-010)
 
 `moana.render.estimate_cost(document, *, frames)` calcula con aritmética entera, sin reservar ni recorrer píxeles, las visitas, bytes, píxeles de frames y conteos según las fórmulas de [ADR-012](decisions/ADR-012-request-budgets.md), con las visitas por operación de `budget-v2` ([ADR-018](decisions/ADR-018-render-pipeline.md): rasterizado más una pasada de pintado sobre la caja de la máscara). `plan_budget(document, limits, *, frames, deadline)` lanza `BudgetExceeded` antes de cualquier buffer, con un detalle por recurso (`resource`, `limit`, `estimated`); una solicitud en el límite se admite. `frames` (≤256) cuenta renders idénticos; una animación suma un plan por frame evaluado. `plan_budget` es la única puerta para los límites del anfitrión: el orquestador (MOANA-010) sólo crea lienzos tras `plan_budget` y les pasa los límites de la solicitud; el lienzo repite su parte (`4A`, geometría) con el mismo `BudgetExceeded` como defensa en profundidad (ADR-013). Rasterizadores y compositor trabajan por filas o tiles dentro de estas cotas, con prueba `tracemalloc`, o actualizan el estimador.
+
+## `export` — PNG (MOANA-011)
+
+`moana.export.export_png(frame, path, *, scale=1, overwrite=False, mode="rgba", palette=None, limits=DEFAULT_RENDER_LIMITS) -> ExportManifest` recibe cualquier `RasterFrame` (`width`, `height`, `rgba: bytes`; `RenderResult` lo cumple sin que `export` importe `render`), codifica en memoria, verifica la ida y vuelta y hace el commit atómico. Sólo depende de `core`, `palette`, NumPy, Pillow y la biblioteca estándar. Decisiones en [ADR-019](decisions/ADR-019-png-export.md).
+
+| Elemento | Contrato |
+| --- | --- |
+| `encode_png` | Sin disco. `mode="rgba"` (maestro) o `"indexed"` con una `Palette` de ≤256 entradas en orden declarado, `tRNS` explícito y sin cuantización (`color_not_in_palette`). `scale` entero 1..64 nearest; `export_dimension`, `export_area` y `buffer_bytes` (24 B/px de salida) se comprueban antes de reservar. `compress_level=9`, sin chunks volátiles. Si la decodificación no coincide, `ExportError` `roundtrip_mismatch`; en indexado, `PLTE`/`tRNS` deben coincidir byte a byte (`palette_mismatch`). |
+| `moana.export.atomic.commit_bytes` | Temporal hermano `O_EXCL` + `fsync`; `overwrite=False` con `os.link` (nunca reemplaza; sin enlaces duros, `no_replace_unavailable`), `overwrite=True` con `os.replace`. Ante fallo el destino conserva su contenido; `ExportError` con `reason`, nombre de archivo y `errno`, sin ruta completa. Un nombre con NUL o no codificable es `ValidationError` `invalid_name`. No crea directorios. |
+| `ExportManifest` | `path`, `media_type`, `mode`, `width`, `height`, `frames`, `scale`, `master` (`scale == 1`), dimensiones de origen, `source_digest`, `pixel_digest`, `file_sha256`, `byte_size`, `warnings` (`scaled_preview`); `to_mapping()` ordenado. |
 
 ## `palette` (implementado en MOANA-005)
 
