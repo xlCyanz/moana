@@ -2,6 +2,7 @@
 
 ## Sin publicar
 
+- MOANA-029: verificación de determinismo entre procesos y plataformas: corpus fijo con manifiesto RGBA de un oráculo independiente (`tests/fixtures/determinism/`), `scripts/determinism.py` (probe/report/compare) y job de CI que compara los informes de la matriz; divergencias de píxel fallan y diferencias de codec PNG sólo se informan (ADR-021).
 - MOANA-011: exportación PNG `moana.export.export_png` (RGBA maestro o indexado con la paleta declarada, sin cuantización, escala nearest 1..64 como preview, verificación de ida y vuelta en memoria) con commit atómico sin sobrescritura (`os.link`) o con reemplazo explícito (`os.replace`) y `ExportManifest` con hashes y avisos (ADR-019).
 - MOANA-010: orquestador de render determinista `moana.render.render` (validación → frame → rasterizadores registrados → paleta → presupuesto → plan → composición) con `RenderResult` inmutable y `Provenance` de reproducción; máscaras diferidas en `moana.layers` (`DeferredMask`), estimador `budget-v2` (pasada de pintado), RNG por celda en `moana.core.procedural` y digest visual único en `moana.core.digest` (ADR-018). Contrato MOANA.md 0.1.7-draft.
 - MOANA-009: capas, grupos y composición en `moana.layers` (`Fill`, `Layer`, `Group`, `LayerTree`, `compose`, `composition_cost`): source-over entera literal de §11 con `round_half_up` y alfa 0 normalizado, grupos aislados con opacidad aplicada una vez, nodos ocultos sin coste, profundidad ≤16, perfil strict y presupuesto comprobado antes de reservar buffers (ADR-017).

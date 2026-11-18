@@ -78,6 +78,18 @@ Integración con `schema` (MOANA-002): los errores de `core` no derivan de `Valu
 | `moana.export.atomic.commit_bytes` | Temporal hermano `O_EXCL` + `fsync`; `overwrite=False` con `os.link` (nunca reemplaza; sin enlaces duros, `no_replace_unavailable`), `overwrite=True` con `os.replace`. Ante fallo el destino conserva su contenido; `ExportError` con `reason`, nombre de archivo y `errno`, sin ruta completa. Un nombre con NUL o no codificable es `ValidationError` `invalid_name`. No crea directorios. |
 | `ExportManifest` | `path`, `media_type`, `mode`, `width`, `height`, `frames`, `scale`, `master` (`scale == 1`), dimensiones de origen, `source_digest`, `pixel_digest`, `file_sha256`, `byte_size`, `warnings` (`scaled_preview`); `to_mapping()` ordenado. |
 
+## `ci` / `tests.integration` — determinismo entre plataformas (MOANA-029)
+
+Corpus fijo de seis casos en `tests/fixtures/determinism/` (diagonales con empate de orden, alfa, grupos aislados, transparencias, clipping con línea no diagonal y un empate exacto de `round_half_up`) con un manifiesto RGBA revisado que sale de un oráculo independiente del renderer (máscaras a mano y fórmula escalar de §11), nunca de un render. `scripts/determinism.py`:
+
+| Subcomando | Contrato |
+| --- | --- |
+| `probe` | En un proceso nuevo: render, PNG RGBA en memoria, `export_png` a archivo y, en casos strict, PNG indexado; decodifica cada PNG exigiendo su modo (`RGBA`/`P`). |
+| `report` | 4 `PYTHONHASHSEED` × 3 serializaciones; compara todo contra el manifiesto, registra entorno, lock y codec, y escribe expected/actual/diff al divergir. Si una sonda falla, igualmente escribe un informe `error` con la ejecución y el final de stderr. |
+| `compare` | Sólo biblioteca estándar. Exige exactamente los informes esperados, sin duplicados de (sistema, Python) y con todos los sistemas pedidos; una divergencia de píxeles falla; bytes PNG distintos con el mismo codec son aviso y entre codecs distintos sólo se informan. Nunca reescribe el manifiesto. |
+
+CI: el job `verify` ejecuta `report` y sube `artifacts/determinism/` en `diagnostics-<os>-<py>`; el job `determinism` (`needs: verify`, sólo lectura) compara los 9 informes con `--expected-platforms Darwin,Linux,Windows`. Entre plataformas se garantizan los píxeles decodificados (digest §14); los bytes PNG, sólo con el mismo codec. La matriz sólo corre en `main` (ADR-021).
+
 ## `palette` (implementado en MOANA-005)
 
 API pública en `moana.palette`; depende sólo de `core` y no carga NumPy, Pillow ni Pydantic. Decisiones en [ADR-014](decisions/ADR-014-palette.md).

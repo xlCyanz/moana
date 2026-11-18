@@ -30,7 +30,7 @@ uv run python scripts/planning.py --check
 uv run python -m scripts.check_repository
 ```
 
-`mypy src/` comprueba la API del paquete; `mypy` incluye tooling/tests según la configuración. El gate reúne las comprobaciones comunes. Los exports y benchmarks se añadirán con sus issues; la disponibilidad de un marker no significa que esas pruebas ya existan. Las regresiones visuales exactas se ejecutan con `uv run pytest -m visual`; aceptar un cambio de golden sigue el procedimiento revisado de [tests/visual](../../tests/visual/README.md) y nunca se hace en CI.
+`mypy src/` comprueba la API del paquete; `mypy` incluye tooling/tests según la configuración. El gate reúne las comprobaciones comunes. Los exports y benchmarks se añadirán con sus issues; la disponibilidad de un marker no significa que esas pruebas ya existan. Las regresiones visuales exactas se ejecutan con `uv run pytest -m visual`; aceptar un cambio de golden sigue el procedimiento revisado de [tests/visual](../../tests/visual/README.md) y nunca se hace en CI. La evidencia de determinismo entre procesos se reproduce con `uv run python -m scripts.determinism report --output artifacts/determinism`; la comparación entre plataformas sólo ocurre en la matriz de CI de `main` (ADR-021).
 
 Instalar el hook por checkout con `uv run pre-commit install`. El hook usa el venv local y evita depender de que uv esté en el PATH de Git. Para comprobar todos los archivos versionados: `uv run pre-commit run --all-files`. Las herramientas del hook no se descargan durante cada commit.
 
