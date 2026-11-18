@@ -8,7 +8,7 @@
 - Aliases históricos: MOA-017
 - Phase: P3
 - Priority: P1
-- Status: review
+- Status: done
 - Complexity: L (relativa, no estimación de tiempo)
 - Dependencies: [MOANA-014](MOANA-014.md), [MOANA-015](MOANA-015.md), [MOANA-016](MOANA-016.md)
 - Related modules: techniques, schema
@@ -44,13 +44,13 @@ No afirmar calidad profesional sólo por aprobar fixtures ni usar assets sin lic
 
 ## Acceptance criteria
 
-- [ ] AC1: Cada material puede editarse sin perder IDs ni introducir colores fuera del perfil
-- [ ] AC2: Misma semilla genera igual textura y una operación nueva no altera material existente
+- [x] AC1: Cada material puede editarse sin perder IDs ni introducir colores fuera del perfil
+- [x] AC2: Misma semilla genera igual textura y una operación nueva no altera material existente
 
 ## Required tests
 
-- [ ] T1: Fixtures pequeñas por material con máscara y límites de densidad/escala
-- [ ] T2: Pruebas de estabilidad entre frames y revisión visual a 1×/4× documentada como humana o pendiente
+- [x] T1: Fixtures pequeñas por material con máscara y límites de densidad/escala
+- [x] T2: Pruebas de estabilidad entre frames y revisión visual a 1×/4× documentada como humana o pendiente
 
 ## Expected deliverables
 
@@ -67,7 +67,7 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Guía para agentes de IA
 
-**Estado para agentes:** En revisión: sólo correcciones de la revisión; no añadir alcance.
+**Estado para agentes:** Completado; usar sólo como referencia del contrato entregado.
 
 ### 1. Preparación
 
@@ -146,6 +146,7 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 - Cinco ejemplos editables examples/specs/material-{skin,cloth,metal,wood,stone}.moana.json con sombra plana tras la textura (0 contactos del paso más oscuro con la tinta) y contorno selectivo; singletons c4 tras la revisión: skin 2, cloth 2 (antes 334), metal 67 (diagonales continuas, 0 en c8), wood 0, stone 7.
 - Revisiones de agente: gráficos aprobado; arquitectura, QA y pixel-art con correcciones aplicadas. Revisión artística humana a 1×/4×: PENDIENTE (registrada en metadata.provenance de los ejemplos y en ADR-030).
 - Gate local macOS: scripts/validate.py 2614 passed con src/moana al 100 %, check_wheel OK, mypy --platform win32 OK, JSON Schema al día, pre-commit OK; matriz pendiente en main.
+- Aprobado por el propietario el 2026-11-17 tras revisión; PR #61 hacia develop.
 - AC1: tests/unit/editing/test_editing_material.py::test_ac1_tuning_a_material_keeps_ids_and_stays_in_the_palette, ::test_ac1_material_edits_are_undoable_in_the_history; tests/unit/render/test_render_material.py::test_ac1_every_pixel_is_the_ramp_step_of_its_last_band_plus_its_texel, ::test_ac1_the_light_and_facings_follow_the_shade_rule
 - AC2: tests/unit/editing/test_editing_material.py::test_ac2_inserted_operation_keeps_existing_texture; tests/unit/render/test_render_material.py::test_ac2_same_seed_same_texture_and_another_operation_changes_nothing; tests/unit/techniques/test_techniques_materials.py::test_ac2_same_seed_same_texture_and_the_key_is_the_operation
 - T1: tests/unit/techniques/test_techniques_materials.py::test_t1_cloth_full_density_is_a_basket_weave, ::test_t1_metal_full_density_is_a_diagonal_streak_every_fourth_cell, ::test_t1_wood_full_density_is_horizontal_grain_every_third_row, ::test_t1_zero_density_never_moves_a_pixel, ::test_t1_every_preset_matches_the_independent_hash_oracle, ::test_t1_limits_of_density_and_scale, ::test_t1_marked_fraction_follows_the_density, ::test_t1_a_cell_marked_at_one_density_stays_marked_above_it, ::test_t1_every_pixel_of_a_cell_shares_its_offset; tests/unit/render/test_render_material.py::test_t1_cloth_weave_moves_basket_pixels_one_step_down, ::test_t1_metal_streak_moves_diagonal_pixels_one_step_up, ::test_t1_wood_grain_with_scale_two_and_an_offset_origin, ::test_t1_clamp_keeps_texture_steps_inside_the_ramp, ::test_t1_one_pixel_canvas, ::test_t1_band_entirely_off_the_canvas_paints_nothing, ::test_t1_zero_density_is_plain_band_shading, ::test_t1_seeded_presets_match_the_independent_oracle; límites de densidad/escala en tests/unit/schema/test_schema_material.py

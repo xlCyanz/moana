@@ -1168,7 +1168,7 @@
       "id": "MOANA-017",
       "title": "Crear presets de materiales versionados",
       "phase": "P3",
-      "status": "review",
+      "status": "done",
       "priority": "P1",
       "dependencies": [
         "MOANA-014",
@@ -1203,7 +1203,8 @@
         "Presupuesto budget-v8: visitas y bytes por parte (banda + textura) medidos con tracemalloc en geometrías extremas (2048×1, 2048², orígenes ±2048, muchas bandas) sin superar la cota; documentos admitidos de mayor coste renderizan en <1 s.",
         "Cinco ejemplos editables examples/specs/material-{skin,cloth,metal,wood,stone}.moana.json con sombra plana tras la textura (0 contactos del paso más oscuro con la tinta) y contorno selectivo; singletons c4 tras la revisión: skin 2, cloth 2 (antes 334), metal 67 (diagonales continuas, 0 en c8), wood 0, stone 7.",
         "Revisiones de agente: gráficos aprobado; arquitectura, QA y pixel-art con correcciones aplicadas. Revisión artística humana a 1×/4×: PENDIENTE (registrada en metadata.provenance de los ejemplos y en ADR-030).",
-        "Gate local macOS: scripts/validate.py 2614 passed con src/moana al 100 %, check_wheel OK, mypy --platform win32 OK, JSON Schema al día, pre-commit OK; matriz pendiente en main."
+        "Gate local macOS: scripts/validate.py 2614 passed con src/moana al 100 %, check_wheel OK, mypy --platform win32 OK, JSON Schema al día, pre-commit OK; matriz pendiente en main.",
+        "Aprobado por el propietario el 2026-11-17 tras revisión; PR #61 hacia develop."
       ],
       "aliases": [
         "MOA-017"
@@ -1846,7 +1847,7 @@
       "risks": [
         "No marcar como aprobada la calidad artística mientras falte una persona revisora."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-017, MOANA-022, MOANA-026",
+      "blocking_reason": "Dependencias pendientes: MOANA-022, MOANA-026",
       "acceptance_evidence": {},
       "test_evidence": {}
     },
