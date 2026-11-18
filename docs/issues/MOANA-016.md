@@ -8,7 +8,7 @@
 - Aliases históricos: MOA-016
 - Phase: P3
 - Priority: P1
-- Status: review
+- Status: done
 - Complexity: M (relativa, no estimación de tiempo)
 - Dependencies: [MOANA-005](MOANA-005.md), [MOANA-013](MOANA-013.md)
 - Related modules: techniques
@@ -43,13 +43,13 @@ No error diffusion ni dithering automático global.
 
 ## Acceptance criteria
 
-- [ ] AC1: Coverage 0 produce sólo A y N² sólo B dentro de la máscara
-- [ ] AC2: Patrones con origen negativo y traducciones múltiplo del período coinciden exactamente
+- [x] AC1: Coverage 0 produce sólo A y N² sólo B dentro de la máscara
+- [x] AC2: Patrones con origen negativo y traducciones múltiplo del período coinciden exactamente
 
 ## Required tests
 
-- [ ] T1: Todos los thresholds, coberturas y posiciones del período
-- [ ] T2: Máscaras no rectangulares, costuras entre tiles y repetición temporal sin parpadeo
+- [x] T1: Todos los thresholds, coberturas y posiciones del período
+- [x] T2: Máscaras no rectangulares, costuras entre tiles y repetición temporal sin parpadeo
 
 ## Expected deliverables
 
@@ -66,7 +66,7 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Guía para agentes de IA
 
-**Estado para agentes:** En revisión: sólo correcciones de la revisión; no añadir alcance.
+**Estado para agentes:** Completado; usar sólo como referencia del contrato entregado.
 
 ### 1. Preparación
 
@@ -144,6 +144,7 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 - Trazabilidad: R009 cubierto (dithering ordenado). Seguimientos documentados en ADR-025: coste por nodo de máscara (budget-v6) e inspect sólo con color A.
 - Gate: scripts/validate.py (1548 passed, src/moana al 100 % de líneas y ramas) y scripts/check_wheel.py verdes; mypy también con --platform win32; generate_schema --check al día. Determinismo entre procesos en macOS; matriz pendiente en main.
 - Revisión: moana-graphics-engineer (aprobado; riesgo heredado de coste por nodo documentado), moana-architect (cambios requeridos, aplicados: fills separado de operations, nota en ADR-012, constantes en core, tabla de miembros para integrar MOANA-018) y moana-pixel-artist (cambios requeridos, aplicados: contraste duna/horizonte, anclaje negativo visible, bandas alineadas al período, rampa con ember, núcleo de sombra sólido).
+- Aprobado por el propietario el 2026-11-17 tras revisión; PR #54 hacia develop.
 - AC1: tests/unit/techniques/test_techniques_dither.py::test_ac1_extreme_coverages_inside_non_rectangular_masks; tests/unit/render/test_render_dither.py::test_ac1_extreme_coverages_paint_only_a_or_only_b_inside_the_mask, ::test_dither_without_background_leaves_outside_transparent y ::test_transparent_colour_b_keeps_the_background.
 - AC2: tests/unit/techniques/test_techniques_dither.py::test_ac2_negative_origin_and_period_translations_match y ::test_ac2_negative_origin_uses_the_floor_modulo; tests/unit/render/test_render_dither.py::test_ac2_origin_translations_by_the_period_give_identical_bytes; tests/integration/test_dither_determinism.py::test_example_dune_matches_hand_computed_pixels (origen [0,-1] distinto de [0,0]).
 - T1: tests/unit/techniques/test_techniques_dither.py::test_matrices_are_the_normative_ones, ::test_t1_every_threshold_position_and_coverage y ::test_t1_every_coverage_on_a_full_canvas_period_counts; tests/unit/render/test_render_dither.py::test_t1_every_coverage_matches_the_literal_matrix; tests/integration/test_dither_determinism.py::test_example_sky_matches_the_hand_computed_bayer_bands.

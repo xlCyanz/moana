@@ -47,13 +47,13 @@ Estado: 5/5 issues completados.
 
 Puerta de salida: Técnicas editables y batches atómicos con historial.
 
-Estado: 2/8 issues completados.
+Estado: 3/8 issues completados.
 
 - [MOANA-007](MOANA-007.md) — Añadir adaptador de paths AggDraw (done)
 - [MOANA-013](MOANA-013.md) — Añadir máscaras y regiones semánticas (done)
 - [MOANA-014](MOANA-014.md) — Crear contornos y análisis de clusters (ready)
 - [MOANA-015](MOANA-015.md) — Añadir bandas de sombreado e iluminación (ready)
-- [MOANA-016](MOANA-016.md) — Implementar dithering ordenado (review)
+- [MOANA-016](MOANA-016.md) — Implementar dithering ordenado (done)
 - [MOANA-017](MOANA-017.md) — Crear presets de materiales versionados (blocked)
 - [MOANA-018](MOANA-018.md) — Implementar batches de edición atómica (ready)
 - [MOANA-019](MOANA-019.md) — Añadir undo/redo e historial inmutable (blocked)

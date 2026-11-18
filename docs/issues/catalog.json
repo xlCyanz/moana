@@ -1063,7 +1063,7 @@
       "id": "MOANA-016",
       "title": "Implementar dithering ordenado",
       "phase": "P3",
-      "status": "review",
+      "status": "done",
       "priority": "P1",
       "dependencies": [
         "MOANA-005",
@@ -1095,7 +1095,8 @@
         "ADR-025 (docs/architecture/decisions/ADR-025-ordered-dithering.md) con notas de cabecera en ADR-011, ADR-012, ADR-015, ADR-017, ADR-018, ADR-020 y ADR-022; MOANA.md 0.1.12-draft (§10, §12, §13, §20); contratos de módulos, índice de ADR, overview, README, guía de desarrollo, AGENTS.md y CLAUDE.md actualizados.",
         "Trazabilidad: R009 cubierto (dithering ordenado). Seguimientos documentados en ADR-025: coste por nodo de máscara (budget-v6) e inspect sólo con color A.",
         "Gate: scripts/validate.py (1548 passed, src/moana al 100 % de líneas y ramas) y scripts/check_wheel.py verdes; mypy también con --platform win32; generate_schema --check al día. Determinismo entre procesos en macOS; matriz pendiente en main.",
-        "Revisión: moana-graphics-engineer (aprobado; riesgo heredado de coste por nodo documentado), moana-architect (cambios requeridos, aplicados: fills separado de operations, nota en ADR-012, constantes en core, tabla de miembros para integrar MOANA-018) y moana-pixel-artist (cambios requeridos, aplicados: contraste duna/horizonte, anclaje negativo visible, bandas alineadas al período, rampa con ember, núcleo de sombra sólido)."
+        "Revisión: moana-graphics-engineer (aprobado; riesgo heredado de coste por nodo documentado), moana-architect (cambios requeridos, aplicados: fills separado de operations, nota en ADR-012, constantes en core, tabla de miembros para integrar MOANA-018) y moana-pixel-artist (cambios requeridos, aplicados: contraste duna/horizonte, anclaje negativo visible, bandas alineadas al período, rampa con ember, núcleo de sombra sólido).",
+        "Aprobado por el propietario el 2026-11-17 tras revisión; PR #54 hacia develop."
       ],
       "aliases": [
         "MOA-016"
@@ -1178,7 +1179,7 @@
       "risks": [
         "Una receta reproducible puede seguir siendo visualmente mala; separar evaluación humana."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-014, MOANA-015, MOANA-016",
+      "blocking_reason": "Dependencias pendientes: MOANA-014, MOANA-015",
       "acceptance_evidence": {},
       "test_evidence": {}
     },
@@ -2130,7 +2131,7 @@
       "risks": [
         "Repetición horizontal/vertical necesita fixtures de costura y revisión a escala nativa."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-016, MOANA-020, MOANA-023",
+      "blocking_reason": "Dependencias pendientes: MOANA-020, MOANA-023",
       "acceptance_evidence": {},
       "test_evidence": {}
     },
