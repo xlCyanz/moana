@@ -1368,7 +1368,7 @@
       "id": "MOANA-020",
       "title": "Persistir proyectos y assets seguros",
       "phase": "P4",
-      "status": "review",
+      "status": "done",
       "priority": "P1",
       "dependencies": [
         "MOANA-018",
@@ -1405,7 +1405,8 @@
         "Historial: entradas {snapshot, parent, batch, redo} reconstruidas reaplicando cada batch y con el constructor validado de History; convergencia rechazada como en ADR-026 §4; HistoryLimits es configuración del anfitrión que carga; cubre documentos con shade (affected_ids con IDs de banda). IDs de assets distintos de schema.document_ids (incluidas bandas).",
         "Diez límites nuevos en moana.core.limits (MAX_PROJECT_*, MAX_ASSET_*, MAX_ARCHIVE_*). ADR-029 con notas de cabecera en ADR-010, ADR-024 y ADR-026; MOANA.md 0.1.17-draft (§16); contratos de módulos, índice de ADR, overview, README, AGENTS.md y CLAUDE.md actualizados. Seguimientos: causa raíz de documentos cuya forma canónica supera el límite (schema/History), módulo común de escritura atómica, recolección de huérfanos, previews, migraciones y fachada/CLI.",
         "Gate sobre develop 4265cdf (MOANA-015 incluido): scripts/validate.py (2318 passed, src/moana al 100 % de líneas y ramas) y scripts/check_wheel.py verdes; mypy también con --platform win32; generate_schema --check al día. Evidencia de plataforma: local macOS; la rama Windows sin dir_fd sólo se prueba forzando el fallback; matriz pendiente en main.",
-        "Revisión: moana-architect (cambios requeridos, aplicados: document_ids de schema, paridad con export.atomic, determinismo del ZIP acotado, clases de error, superficie pública documentada), moana-python-engineer con foco en seguridad (cambios requeridos, aplicados: ruta filtrada en PermissionError, directorio central acotado, ZIP64 y comentario rechazados, TOCTOU de escritura con dir_fd, Pillow, números no finitos, criterio único de symlinks) y moana-qa-engineer (cambios requeridos, aplicados: guardados que no recargaban, fallos de disco paso a paso con assets e historial, orden de fsync, propiedad Hypothesis de roundtrip, bordes exactos)."
+        "Revisión: moana-architect (cambios requeridos, aplicados: document_ids de schema, paridad con export.atomic, determinismo del ZIP acotado, clases de error, superficie pública documentada), moana-python-engineer con foco en seguridad (cambios requeridos, aplicados: ruta filtrada en PermissionError, directorio central acotado, ZIP64 y comentario rechazados, TOCTOU de escritura con dir_fd, Pillow, números no finitos, criterio único de symlinks) y moana-qa-engineer (cambios requeridos, aplicados: guardados que no recargaban, fallos de disco paso a paso con assets e historial, orden de fsync, propiedad Hypothesis de roundtrip, bordes exactos).",
+        "Aprobado por el propietario el 2026-11-17 tras revisión; PR #59 hacia develop."
       ],
       "aliases": [
         "MOA-020"
@@ -1443,7 +1444,7 @@
       "id": "MOANA-021",
       "title": "Versionar y migrar formatos de proyecto",
       "phase": "P4",
-      "status": "blocked",
+      "status": "ready",
       "priority": "P1",
       "dependencies": [
         "MOANA-020"
@@ -1487,7 +1488,7 @@
       "risks": [
         "No inventar un formato histórico publicado; una fixture de prueba debe identificarse como tal."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-020",
+      "blocking_reason": null,
       "acceptance_evidence": {},
       "test_evidence": {}
     },
@@ -2001,7 +2002,7 @@
       "risks": [
         "Las pruebas hostiles deben ser acotadas y nunca desactivar protecciones de Pillow."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-020, MOANA-021, MOANA-022",
+      "blocking_reason": "Dependencias pendientes: MOANA-021, MOANA-022",
       "acceptance_evidence": {},
       "test_evidence": {}
     },
@@ -2165,7 +2166,7 @@
       "risks": [
         "No documentar una API de diseño como importable antes de completar sus dependencias."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-020, MOANA-026",
+      "blocking_reason": "Dependencias pendientes: MOANA-026",
       "acceptance_evidence": {},
       "test_evidence": {}
     },
@@ -2221,7 +2222,7 @@
       "risks": [
         "Repetición horizontal/vertical necesita fixtures de costura y revisión a escala nativa."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-020, MOANA-023",
+      "blocking_reason": "Dependencias pendientes: MOANA-023",
       "acceptance_evidence": {},
       "test_evidence": {}
     },

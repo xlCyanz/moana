@@ -8,7 +8,7 @@ Prioridades: P0 fundamento/bloqueante; P1 funcionalidad central; P2 avanzada; P3
 
 [Roadmap](roadmap.md) · [Dependencias](dependency-map.md) · [Trazabilidad](traceability.md) · [Ciclo de vida](../guides/issue-lifecycle.md).
 
-Estados: {'blocked': 12, 'done': 21, 'ready': 2, 'review': 1}.
+Estados: {'blocked': 11, 'done': 22, 'ready': 3}.
 
 | Issue | Resultado | Fase | Prioridad | Estado | Dependencias directas |
 | --- | --- | --- | --- | --- | --- |
@@ -32,8 +32,8 @@ Estados: {'blocked': 12, 'done': 21, 'ready': 2, 'review': 1}.
 | [MOANA-017](MOANA-017.md) | Crear presets de materiales versionados | P3 | P1 | ready | MOANA-014, MOANA-015, MOANA-016 |
 | [MOANA-018](MOANA-018.md) | Implementar batches de edición atómica | P3 | P0 | done | MOANA-002, MOANA-010, MOANA-012, MOANA-013 |
 | [MOANA-019](MOANA-019.md) | Añadir undo/redo e historial inmutable | P3 | P1 | done | MOANA-018 |
-| [MOANA-020](MOANA-020.md) | Persistir proyectos y assets seguros | P4 | P1 | review | MOANA-018, MOANA-019, MOANA-011 |
-| [MOANA-021](MOANA-021.md) | Versionar y migrar formatos de proyecto | P4 | P1 | blocked | MOANA-020 |
+| [MOANA-020](MOANA-020.md) | Persistir proyectos y assets seguros | P4 | P1 | done | MOANA-018, MOANA-019, MOANA-011 |
+| [MOANA-021](MOANA-021.md) | Versionar y migrar formatos de proyecto | P4 | P1 | ready | MOANA-020 |
 | [MOANA-022](MOANA-022.md) | Implementar timeline y evaluación de frames | P4 | P1 | ready | MOANA-018, MOANA-019, MOANA-010 |
 | [MOANA-023](MOANA-023.md) | Exportar spritesheets y manifest reversible | P4 | P1 | blocked | MOANA-022, MOANA-011 |
 | [MOANA-024](MOANA-024.md) | Exportar GIF con política de pérdidas | P4 | P1 | blocked | MOANA-022, MOANA-005, MOANA-011 |

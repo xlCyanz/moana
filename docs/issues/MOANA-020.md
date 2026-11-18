@@ -8,7 +8,7 @@
 - Aliases históricos: MOA-020
 - Phase: P4
 - Priority: P1
-- Status: review
+- Status: done
 - Complexity: L (relativa, no estimación de tiempo)
 - Dependencies: [MOANA-018](MOANA-018.md), [MOANA-019](MOANA-019.md), [MOANA-011](MOANA-011.md)
 - Related modules: project
@@ -44,14 +44,14 @@ No soporte PSD/Aseprite ni assets remotos o ejecutables.
 
 ## Acceptance criteria
 
-- [ ] AC1: Guardar/cargar preserva IDs, revisiones, historial y RGBA
-- [ ] AC2: Un asset con checksum incorrecto o ruta maliciosa no escribe fuera de la raíz ni carga parcialmente
+- [x] AC1: Guardar/cargar preserva IDs, revisiones, historial y RGBA
+- [x] AC2: Un asset con checksum incorrecto o ruta maliciosa no escribe fuera de la raíz ni carga parcialmente
 
 ## Required tests
 
-- [ ] T1: Roundtrip proyecto geométrico y con PNG; fallo simulado de disco
-- [ ] T2: ZIP con ../, rutas absolutas, symlink, nombres en colisión, ratio excesivo y bomba de imagen
-- [ ] T3: Fallo después de escribir nuevos assets conserva manifiesto y assets previos; el envelope rechaza campos extra sin alterar el schema de Document.
+- [x] T1: Roundtrip proyecto geométrico y con PNG; fallo simulado de disco
+- [x] T2: ZIP con ../, rutas absolutas, symlink, nombres en colisión, ratio excesivo y bomba de imagen
+- [x] T3: Fallo después de escribir nuevos assets conserva manifiesto y assets previos; el envelope rechaza campos extra sin alterar el schema de Document.
 
 ## Expected deliverables
 
@@ -69,7 +69,7 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Guía para agentes de IA
 
-**Estado para agentes:** En revisión: sólo correcciones de la revisión; no añadir alcance.
+**Estado para agentes:** Completado; usar sólo como referencia del contrato entregado.
 
 ### 1. Preparación
 
@@ -150,6 +150,7 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 - Diez límites nuevos en moana.core.limits (MAX_PROJECT_*, MAX_ASSET_*, MAX_ARCHIVE_*). ADR-029 con notas de cabecera en ADR-010, ADR-024 y ADR-026; MOANA.md 0.1.17-draft (§16); contratos de módulos, índice de ADR, overview, README, AGENTS.md y CLAUDE.md actualizados. Seguimientos: causa raíz de documentos cuya forma canónica supera el límite (schema/History), módulo común de escritura atómica, recolección de huérfanos, previews, migraciones y fachada/CLI.
 - Gate sobre develop 4265cdf (MOANA-015 incluido): scripts/validate.py (2318 passed, src/moana al 100 % de líneas y ramas) y scripts/check_wheel.py verdes; mypy también con --platform win32; generate_schema --check al día. Evidencia de plataforma: local macOS; la rama Windows sin dir_fd sólo se prueba forzando el fallback; matriz pendiente en main.
 - Revisión: moana-architect (cambios requeridos, aplicados: document_ids de schema, paridad con export.atomic, determinismo del ZIP acotado, clases de error, superficie pública documentada), moana-python-engineer con foco en seguridad (cambios requeridos, aplicados: ruta filtrada en PermissionError, directorio central acotado, ZIP64 y comentario rechazados, TOCTOU de escritura con dir_fd, Pillow, números no finitos, criterio único de symlinks) y moana-qa-engineer (cambios requeridos, aplicados: guardados que no recargaban, fallos de disco paso a paso con assets e historial, orden de fsync, propiedad Hypothesis de roundtrip, bordes exactos).
+- Aprobado por el propietario el 2026-11-17 tras revisión; PR #59 hacia develop.
 - AC1: tests/unit/project/test_project_roundtrip.py::test_ac1_directory_roundtrip_preserves_ids_revisions_history_and_rgba, ::test_ac1_history_limits_are_the_loader_configuration, ::test_ac1_loaded_history_keeps_navigating_and_editing, ::test_ac1_archive_roundtrip_is_deterministic, ::test_ac1_shaded_document_history_roundtrip.
 - AC2: tests/unit/project/test_project_security.py::test_ac2_asset_path_outside_the_layout_is_rejected, ::test_ac2_wrong_checksum_never_loads_partially, ::test_ac2_longer_asset_file_is_a_checksum_mismatch, ::test_ac2_linked_assets_never_leave_the_root, ::test_ac2_special_files_are_not_read, ::test_ac2_asset_ids_are_unique_and_distinct_from_document_ids, ::test_ac2_asset_id_of_a_shade_band_is_an_id_collision.
 - T1: tests/unit/project/test_project_atomic.py::test_t1_failure_at_every_step_keeps_the_previous_project, ::test_t1_commit_order_content_then_directories_then_manifest, ::test_t1_directory_sync_failure_aborts_before_the_commit, ::test_t1_archive_failure_keeps_the_previous_archive, ::test_t1_single_file_saves_never_overwrite_implicitly, ::test_t1_atomic_write_errors_match_export_atomic, ::test_t1_eexist_for_the_same_file_is_success, ::test_t1_missing_hard_links_fail_before_writing_content, ::test_t1_directory_creation_failures, ::test_t1_subdirectory_creation_failures, ::test_t1_temporary_file_creation_failures, ::test_t1_unsafe_project_directories_are_refused, ::test_t1_linked_directories_are_refused, ::test_t1_caller_path_links_are_followed, ::test_t1_link_swapped_in_after_mkdir_is_refused, ::test_t1_link_swapped_in_after_opening_never_redirects_writes, ::test_t1_unreadable_ancestor_is_permission_denied_without_the_path, ::test_t1_inspection_failures_of_the_destination; tests/unit/project/test_project_budgets.py::test_t1_canonical_form_over_the_node_limit_is_refused_before_writing, ::test_t1_one_operation_less_saves_and_loads_in_every_format, ::test_t1_every_stored_part_is_checked_with_the_reader_bounds, ::test_t1_an_archive_holds_128_snapshots_but_not_129, ::test_t1_property_any_saved_project_loads_back_identically; tests/unit/project/test_project_roundtrip.py::test_t1_geometric_document_roundtrip, ::test_t1_project_without_assets_or_history, ::test_t1_png_asset_roundtrip_keeps_source_bytes, ::test_t1_layout_uses_immutable_hash_paths, ::test_t1_envelope_file_loads_with_assets_beside_it, ::test_t1_resave_reuses_content_and_needs_overwrite, ::test_t1_corrupt_content_file_is_rewritten_on_save, ::test_t1_missing_project_is_a_read_error, ::test_t1_cursor_document_is_the_manifest_document.
