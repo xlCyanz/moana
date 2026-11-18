@@ -8,7 +8,7 @@
 - Aliases históricos: MOA-011
 - Phase: P2
 - Priority: P1
-- Status: review
+- Status: done
 - Complexity: M (relativa, no estimación de tiempo)
 - Dependencies: [MOANA-010](MOANA-010.md)
 - Related modules: export
@@ -43,14 +43,14 @@ No GIF ni publicar archivos en servicios externos.
 
 ## Acceptance criteria
 
-- [ ] AC1: PNG decodificado es exactamente igual al RenderResult en escala 1
-- [ ] AC2: Fallo de escritura deja el destino anterior intacto y no devuelve éxito parcial
+- [x] AC1: PNG decodificado es exactamente igual al RenderResult en escala 1
+- [x] AC2: Fallo de escritura deja el destino anterior intacto y no devuelve éxito parcial
 
 ## Required tests
 
-- [ ] T1: Roundtrip RGBA e indexado, transparencia y escala nearest 1/2/4
-- [ ] T2: Paleta 256/257, destino existente, permiso denegado y fallo simulado durante escritura
-- [ ] T3: Carrera de dos escritores con overwrite=false: uno gana y el otro falla sin reemplazar; no usar exists+replace como exclusión.
+- [x] T1: Roundtrip RGBA e indexado, transparencia y escala nearest 1/2/4
+- [x] T2: Paleta 256/257, destino existente, permiso denegado y fallo simulado durante escritura
+- [x] T3: Carrera de dos escritores con overwrite=false: uno gana y el otro falla sin reemplazar; no usar exists+replace como exclusión.
 
 ## Expected deliverables
 
@@ -67,7 +67,7 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Guía para agentes de IA
 
-**Estado para agentes:** En revisión: sólo correcciones de la revisión; no añadir alcance.
+**Estado para agentes:** Completado; usar sólo como referencia del contrato entregado.
 
 ### 1. Preparación
 
@@ -143,6 +143,7 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 - ADR-019 (docs/architecture/decisions/ADR-019-png-export.md); MOANA.md §13 indica que export_png ya existe; contratos de módulos, índice de ADR, overview, README, guía de desarrollo, AGENTS.md y CLAUDE.md actualizados; probe de check_wheel ampliado con export/.
 - Gate: scripts/validate.py y scripts/check_wheel.py verdes; moana.export al 100 % de líneas y ramas; mypy también con --platform win32.
 - Revisión: moana-python-engineer (cambios requeridos, aplicados: geteuid en win32, OSError de inspección envueltos sin rutas, nombres con NUL o no codificables, temporal con prefijo truncado para nombres largos, carrera determinista que tumba exists+replace, winerror sin enlaces duros, EEXIST tras link propio, rgba leído una vez) y moana-graphics-engineer (aprobado con cambios menores, aplicados: planos de índice sin int64 duplicado y desglose de memoria documentado, verificación de PLTE/tRNS, tests de chunks exactos, escala 64 sobre 1×1 indexado, bytes iguales entre procesos y presupuesto antes de cualquier temporal).
+- Aprobado por el propietario el 2026-11-17 tras revisión; PR #49 hacia develop.
 - AC1: tests/unit/export/test_export_png.py::test_ac1_rgba_png_decodes_exactly_to_the_frame y ::test_ac1_rendered_document_round_trips (render de examples minimal.moana.json exportado y decodificado igual a RenderResult.rgba, source_digest == digest).
 - AC2: tests/unit/export/test_export_png.py::test_ac2_t2_failure_during_write_keeps_previous_content (fallos simulados en write, fsync, link y replace, con y sin overwrite: destino anterior intacto, sin temporales ni manifiesto), ::test_roundtrip_mismatch_writes_nothing y ::test_palette_chunks_are_verified.
 - T1: tests/unit/export/test_export_png.py::test_t1_nearest_scale_replicates_blocks[1,2,4], ::test_t1_indexed_round_trip_keeps_declared_order_and_transparency[1,2,4] (PLTE/tRNS exactos), ::test_t1_transparent_frame_round_trips_in_both_modes, ::test_maximum_scale_on_a_single_indexed_pixel, ::test_encoding_is_stable_and_has_no_volatile_chunks y ::test_encoded_bytes_agree_across_fresh_processes_and_hash_seeds.

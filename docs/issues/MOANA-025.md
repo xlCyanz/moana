@@ -13,7 +13,7 @@
 - Dependencies: [MOANA-022](MOANA-022.md), [MOANA-011](MOANA-011.md)
 - Related modules: export
 - Requirements: R024 ([trazabilidad](traceability.md))
-- Bloqueo: Dependencias pendientes: MOANA-022, MOANA-011
+- Bloqueo: Dependencias pendientes: MOANA-022
 
 ## Context
 

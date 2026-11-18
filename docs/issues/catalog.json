@@ -731,7 +731,7 @@
       "id": "MOANA-011",
       "title": "Exportar PNG y manifiesto de salida",
       "phase": "P2",
-      "status": "review",
+      "status": "done",
       "priority": "P1",
       "dependencies": [
         "MOANA-010"
@@ -760,7 +760,8 @@
         "ExportManifest con path, media_type, mode, dimensiones, frames, scale, master, dimensiones y digest de origen, pixel_digest, file_sha256, byte_size y warnings (scaled_preview); to_mapping ordenado.",
         "ADR-019 (docs/architecture/decisions/ADR-019-png-export.md); MOANA.md §13 indica que export_png ya existe; contratos de módulos, índice de ADR, overview, README, guía de desarrollo, AGENTS.md y CLAUDE.md actualizados; probe de check_wheel ampliado con export/.",
         "Gate: scripts/validate.py y scripts/check_wheel.py verdes; moana.export al 100 % de líneas y ramas; mypy también con --platform win32.",
-        "Revisión: moana-python-engineer (cambios requeridos, aplicados: geteuid en win32, OSError de inspección envueltos sin rutas, nombres con NUL o no codificables, temporal con prefijo truncado para nombres largos, carrera determinista que tumba exists+replace, winerror sin enlaces duros, EEXIST tras link propio, rgba leído una vez) y moana-graphics-engineer (aprobado con cambios menores, aplicados: planos de índice sin int64 duplicado y desglose de memoria documentado, verificación de PLTE/tRNS, tests de chunks exactos, escala 64 sobre 1×1 indexado, bytes iguales entre procesos y presupuesto antes de cualquier temporal)."
+        "Revisión: moana-python-engineer (cambios requeridos, aplicados: geteuid en win32, OSError de inspección envueltos sin rutas, nombres con NUL o no codificables, temporal con prefijo truncado para nombres largos, carrera determinista que tumba exists+replace, winerror sin enlaces duros, EEXIST tras link propio, rgba leído una vez) y moana-graphics-engineer (aprobado con cambios menores, aplicados: planos de índice sin int64 duplicado y desglose de memoria documentado, verificación de PLTE/tRNS, tests de chunks exactos, escala 64 sobre 1×1 indexado, bytes iguales entre procesos y presupuesto antes de cualquier temporal).",
+        "Aprobado por el propietario el 2026-11-17 tras revisión; PR #49 hacia develop."
       ],
       "aliases": [
         "MOA-011"
@@ -797,7 +798,7 @@
       "id": "MOANA-012",
       "title": "Exponer API pública y CLI estático",
       "phase": "P2",
-      "status": "blocked",
+      "status": "ready",
       "priority": "P1",
       "dependencies": [
         "MOANA-010",
@@ -843,7 +844,7 @@
       "risks": [
         "Help o ejemplos no deben exponer operaciones aún no implementadas como disponibles."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-011",
+      "blocking_reason": null,
       "acceptance_evidence": {},
       "test_evidence": {}
     },
@@ -1276,7 +1277,7 @@
       "risks": [
         "Guardar el mismo asset path in-place antes del manifiesto rompe atomicidad; versiones inmutables necesarias."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-018, MOANA-019, MOANA-011",
+      "blocking_reason": "Dependencias pendientes: MOANA-018, MOANA-019",
       "acceptance_evidence": {},
       "test_evidence": {}
     },
@@ -1435,7 +1436,7 @@
       "risks": [
         "Confundir rect xywh con bbox semiabierta causa offsets; especificar ambos claramente."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-022, MOANA-011",
+      "blocking_reason": "Dependencias pendientes: MOANA-022",
       "acceptance_evidence": {},
       "test_evidence": {}
     },
@@ -1489,7 +1490,7 @@
       "risks": [
         "Los encoders pueden fusionar frames idénticos; comparar tiempo/imagen, no sólo count."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-022, MOANA-011",
+      "blocking_reason": "Dependencias pendientes: MOANA-022",
       "acceptance_evidence": {},
       "test_evidence": {}
     },
@@ -1541,7 +1542,7 @@
       "risks": [
         "Un skip de codec no equivale a soporte probado; publicar capability matrix."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-022, MOANA-011",
+      "blocking_reason": "Dependencias pendientes: MOANA-022",
       "acceptance_evidence": {},
       "test_evidence": {}
     },
@@ -1724,7 +1725,7 @@
       "id": "MOANA-029",
       "title": "Verificar determinismo entre procesos y plataformas",
       "phase": "P2",
-      "status": "blocked",
+      "status": "ready",
       "priority": "P1",
       "dependencies": [
         "MOANA-010",
@@ -1772,7 +1773,7 @@
       "risks": [
         "Identidad del perfil entero y de AggDraw son garantías separadas."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-011",
+      "blocking_reason": null,
       "acceptance_evidence": {},
       "test_evidence": {}
     },
