@@ -8,7 +8,7 @@ Prioridades: P0 fundamento/bloqueante; P1 funcionalidad central; P2 avanzada; P3
 
 [Roadmap](roadmap.md) · [Dependencias](dependency-map.md) · [Trazabilidad](traceability.md) · [Ciclo de vida](../guides/issue-lifecycle.md).
 
-Estados: {'blocked': 20, 'done': 13, 'ready': 3}.
+Estados: {'blocked': 20, 'done': 13, 'ready': 2, 'review': 1}.
 
 | Issue | Resultado | Fase | Prioridad | Estado | Dependencias directas |
 | --- | --- | --- | --- | --- | --- |
@@ -24,7 +24,7 @@ Estados: {'blocked': 20, 'done': 13, 'ready': 3}.
 | [MOANA-009](MOANA-009.md) | Implementar capas, grupos y composición | P2 | P1 | done | MOANA-002, MOANA-004, MOANA-005, MOANA-006, MOANA-008 |
 | [MOANA-010](MOANA-010.md) | Construir pipeline de render determinista | P2 | P0 | done | MOANA-002, MOANA-003, MOANA-006, MOANA-009 |
 | [MOANA-011](MOANA-011.md) | Exportar PNG y manifiesto de salida | P2 | P1 | done | MOANA-010 |
-| [MOANA-012](MOANA-012.md) | Exponer API pública y CLI estático | P2 | P1 | ready | MOANA-010, MOANA-011 |
+| [MOANA-012](MOANA-012.md) | Exponer API pública y CLI estático | P2 | P1 | review | MOANA-010, MOANA-011 |
 | [MOANA-013](MOANA-013.md) | Añadir máscaras y regiones semánticas | P3 | P1 | ready | MOANA-009, MOANA-010 |
 | [MOANA-014](MOANA-014.md) | Crear contornos y análisis de clusters | P3 | P1 | blocked | MOANA-013, MOANA-005 |
 | [MOANA-015](MOANA-015.md) | Añadir bandas de sombreado e iluminación | P3 | P1 | blocked | MOANA-005, MOANA-013 |

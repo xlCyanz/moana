@@ -50,6 +50,7 @@ El paquete contiene `src/moana/__init__.py`, `py.typed` y `src/moana/core/` (MOA
 - [ADR-017: árbol de capas y composición source-over entera](decisions/ADR-017-layers-composition.md).
 - [ADR-018: orquestador de render determinista, máscaras diferidas y `budget-v2`](decisions/ADR-018-render-pipeline.md).
 - [ADR-019: exportación PNG verificada y escritura atómica sin sobrescritura](decisions/ADR-019-png-export.md).
+- [ADR-020: fachada pública `moana.api` y CLI estático `moana`](decisions/ADR-020-public-api-cli.md).
 - [ADR-021: contrato de determinismo entre procesos y plataformas](decisions/ADR-021-cross-platform-determinism.md).
 - [Modelo de amenazas](SECURITY_MODEL.md).
 

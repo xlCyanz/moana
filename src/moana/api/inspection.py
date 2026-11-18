@@ -1,0 +1,273 @@
+"""Read-only reports: what a document contains and what this build can do (ADR-020).
+
+:func:`inspect_document` summarises a validated document and its budget estimate
+without rendering: a request over budget is reported (``within_limits`` false and the
+exceeded resources), not raised, so a caller can see why ``render`` would refuse it.
+:func:`capabilities` lists the implemented vocabulary and, separately, what is only
+planned, so help and agents never present a future capability as available.
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass, fields, is_dataclass
+from operator import attrgetter
+from typing import TYPE_CHECKING, Final
+
+from moana.core.budget import DEFAULT_RENDER_LIMITS, RenderLimits
+from moana.core.errors import BudgetExceeded
+from moana.render import (
+    ESTIMATOR_VERSION,
+    RENDERABLE_OPERATION_TYPES,
+    RENDERER_VERSION,
+    estimate_cost,
+    plan_budget,
+)
+from moana.schema import (
+    PLANNED_BLEND_MODES,
+    PLANNED_COLLECTIONS,
+    PLANNED_LAYER_FIELDS,
+    PLANNED_OPERATION_TYPES,
+    SUPPORTED_BLEND_MODES,
+    SUPPORTED_OPERATION_TYPES,
+    SUPPORTED_PROFILES,
+    SUPPORTED_SCHEMA_VERSIONS,
+    Document,
+    snapshot_digest,
+)
+
+if TYPE_CHECKING:
+    from _typeshed import DataclassInstance
+
+__all__ = [
+    "AVAILABLE_FUNCTIONS",
+    "PLANNED_FUNCTIONS",
+    "BudgetReport",
+    "Capabilities",
+    "DocumentReport",
+    "ExceededResource",
+    "LayerSummary",
+    "OperationSummary",
+    "capabilities",
+    "inspect_document",
+]
+
+AVAILABLE_FUNCTIONS: Final = (
+    "capabilities",
+    "export_png",
+    "inspect_document",
+    "load_document",
+    "render",
+)
+"""Functions of ``moana.api`` that work in this build."""
+PLANNED_FUNCTIONS: Final = ("apply_edit",)
+"""Functions of MOANA.md section 13 that are specified but not implemented."""
+
+
+def _json(value: object) -> object:
+    """JSON-ready form: dataclasses become sorted mappings and tuples become lists."""
+    if isinstance(value, tuple):
+        return [_json(item) for item in value]
+    if is_dataclass(value) and not isinstance(value, type):
+        return _fields(value)
+    return value
+
+
+def _fields(value: DataclassInstance) -> dict[str, object]:
+    ordered = sorted(fields(value), key=attrgetter("name"))
+    return {field.name: _json(getattr(value, field.name)) for field in ordered}
+
+
+@dataclass(frozen=True, slots=True)
+class OperationSummary:
+    """One operation: its ID, type and colour reference."""
+
+    id: str
+    type: str
+    color: str
+
+
+@dataclass(frozen=True, slots=True)
+class LayerSummary:
+    """One layer and its operations, in document order."""
+
+    id: str
+    name: str
+    visible: bool
+    locked: bool
+    opacity: int
+    blend: str
+    operations: tuple[OperationSummary, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class ExceededResource:
+    """One budget the request would exceed, located by JSON Pointer when known."""
+
+    resource: str
+    limit: int
+    estimated: int
+    json_pointer: str | None
+
+
+@dataclass(frozen=True, slots=True)
+class BudgetReport:
+    """Estimate of one render against the request limits (``budget-v2``, ADR-018)."""
+
+    estimator_version: str
+    pixel_visits: int
+    buffer_bytes: int
+    frame_pixels: int
+    operations: int
+    layers: int
+    within_limits: bool
+    exceeded: tuple[ExceededResource, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class DocumentReport:
+    """Summary of a validated document: identity, canvas, palette, layers and budget."""
+
+    document_id: str
+    revision: int
+    schema_version: str
+    snapshot_digest: str
+    seed: int
+    width: int
+    height: int
+    profile: str
+    palette_id: str
+    colors: tuple[str, ...]
+    ramps: tuple[str, ...]
+    layers: tuple[LayerSummary, ...]
+    budget: BudgetReport
+
+    def to_mapping(self) -> dict[str, object]:
+        """JSON-ready report with sorted keys."""
+        return _fields(self)
+
+
+@dataclass(frozen=True, slots=True)
+class Capabilities:
+    """Implemented vocabulary of this build, each with its planned counterpart."""
+
+    schema_versions: tuple[str, ...]
+    profiles: tuple[str, ...]
+    operations: tuple[str, ...]
+    planned_operations: tuple[str, ...]
+    blend_modes: tuple[str, ...]
+    planned_blend_modes: tuple[str, ...]
+    planned_collections: tuple[str, ...]
+    planned_layer_fields: tuple[str, ...]
+    export_formats: tuple[str, ...]
+    functions: tuple[str, ...]
+    planned_functions: tuple[str, ...]
+    renderer_version: str
+    estimator_version: str
+
+    def to_mapping(self) -> dict[str, object]:
+        """JSON-ready listing with sorted keys."""
+        return _fields(self)
+
+
+def capabilities() -> Capabilities:
+    """What this build implements and what is only planned (never both).
+
+    An operation is available only when the schema accepts it *and* the renderer has a
+    rasteriser for it; a schema-only operation is reported as planned.
+    """
+    rasterisers = frozenset(RENDERABLE_OPERATION_TYPES)
+    renderable = SUPPORTED_OPERATION_TYPES & rasterisers
+    planned = PLANNED_OPERATION_TYPES | (SUPPORTED_OPERATION_TYPES - rasterisers)
+    return Capabilities(
+        schema_versions=tuple(sorted(SUPPORTED_SCHEMA_VERSIONS)),
+        profiles=tuple(sorted(SUPPORTED_PROFILES)),
+        operations=tuple(sorted(renderable)),
+        planned_operations=tuple(sorted(planned)),
+        blend_modes=tuple(sorted(SUPPORTED_BLEND_MODES)),
+        planned_blend_modes=tuple(sorted(PLANNED_BLEND_MODES)),
+        planned_collections=tuple(sorted(PLANNED_COLLECTIONS)),
+        planned_layer_fields=tuple(sorted(PLANNED_LAYER_FIELDS)),
+        export_formats=("png",),
+        functions=AVAILABLE_FUNCTIONS,
+        planned_functions=PLANNED_FUNCTIONS,
+        renderer_version=RENDERER_VERSION,
+        estimator_version=ESTIMATOR_VERSION,
+    )
+
+
+def _exceeded(error: BudgetExceeded) -> tuple[ExceededResource, ...]:
+    """Typed view of the ``resource``/``limit``/``estimated`` context of each detail."""
+    resources: list[ExceededResource] = []
+    for detail in error.details:
+        context = detail.context
+        resource, limit, estimated = (
+            context.get("resource"),
+            context.get("limit"),
+            context.get("estimated"),
+        )
+        if not (
+            isinstance(resource, str) and isinstance(limit, int) and isinstance(estimated, int)
+        ):
+            raise TypeError("budget detail lacks resource, limit or estimated")
+        resources.append(ExceededResource(resource, limit, estimated, detail.json_pointer))
+    return tuple(resources)
+
+
+def _budget(document: Document, limits: RenderLimits) -> BudgetReport:
+    estimate = estimate_cost(document)
+    exceeded: tuple[ExceededResource, ...] = ()
+    try:
+        plan_budget(document, limits)
+    except BudgetExceeded as error:
+        exceeded = _exceeded(error)
+    return BudgetReport(
+        estimator_version=estimate.estimator_version,
+        pixel_visits=estimate.pixel_visits,
+        buffer_bytes=estimate.buffer_bytes,
+        frame_pixels=estimate.frame_pixels,
+        operations=estimate.operations,
+        layers=estimate.layers,
+        within_limits=not exceeded,
+        exceeded=exceeded,
+    )
+
+
+def inspect_document(document: Document, *, limits: RenderLimits | None = None) -> DocumentReport:
+    """Summarise ``document`` and estimate one render against ``limits``; nothing is drawn."""
+    if not isinstance(document, Document):
+        raise TypeError("document must be a moana.schema.Document")
+    if limits is None:
+        limits = DEFAULT_RENDER_LIMITS
+    if not isinstance(limits, RenderLimits):
+        raise TypeError("limits must be a RenderLimits value")
+    layers = tuple(
+        LayerSummary(
+            id=layer.id,
+            name=layer.name,
+            visible=layer.visible,
+            locked=layer.locked,
+            opacity=layer.opacity,
+            blend=layer.blend,
+            operations=tuple(
+                OperationSummary(operation.id, operation.type, operation.color)
+                for operation in layer.operations
+            ),
+        )
+        for layer in document.layers
+    )
+    palette = document.palette
+    return DocumentReport(
+        document_id=document.id,
+        revision=document.revision,
+        schema_version=document.schema_version,
+        snapshot_digest=snapshot_digest(document),
+        seed=document.seed,
+        width=document.canvas.width,
+        height=document.canvas.height,
+        profile=document.canvas.profile,
+        palette_id=palette.id,
+        colors=tuple(color.id for color in palette.colors),
+        ramps=tuple(ramp.id for ramp in palette.ramps),
+        layers=layers,
+        budget=_budget(document, limits),
+    )

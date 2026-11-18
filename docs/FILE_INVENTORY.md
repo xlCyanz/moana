@@ -1,6 +1,6 @@
 # Inventario del repositorio
 
-288 archivos actuales de fuente, documentación, configuración y pruebas al 2026-11-17. Incluye cambios locales todavía sin commit. Excluye entorno virtual, herramientas, cachés, artefactos y metadata Git.
+300 archivos actuales de fuente, documentación, configuración y pruebas al 2026-11-17. Incluye cambios locales todavía sin commit. Excluye entorno virtual, herramientas, cachés, artefactos y metadata Git.
 
 | Archivo |
 | --- |
@@ -101,6 +101,7 @@
 | [docs/architecture/decisions/ADR-017-layers-composition.md](../docs/architecture/decisions/ADR-017-layers-composition.md) |
 | [docs/architecture/decisions/ADR-018-render-pipeline.md](../docs/architecture/decisions/ADR-018-render-pipeline.md) |
 | [docs/architecture/decisions/ADR-019-png-export.md](../docs/architecture/decisions/ADR-019-png-export.md) |
+| [docs/architecture/decisions/ADR-020-public-api-cli.md](../docs/architecture/decisions/ADR-020-public-api-cli.md) |
 | [docs/architecture/decisions/ADR-021-cross-platform-determinism.md](../docs/architecture/decisions/ADR-021-cross-platform-determinism.md) |
 | [docs/architecture/module-contracts.md](../docs/architecture/module-contracts.md) |
 | [docs/architecture/overview.md](../docs/architecture/overview.md) |
@@ -211,6 +212,13 @@
 | [scripts/uv.sh](../scripts/uv.sh) |
 | [scripts/validate.py](../scripts/validate.py) |
 | [src/moana/__init__.py](../src/moana/__init__.py) |
+| [src/moana/api/__init__.py](../src/moana/api/__init__.py) |
+| [src/moana/api/inspection.py](../src/moana/api/inspection.py) |
+| [src/moana/api/loading.py](../src/moana/api/loading.py) |
+| [src/moana/api/services.py](../src/moana/api/services.py) |
+| [src/moana/cli/__init__.py](../src/moana/cli/__init__.py) |
+| [src/moana/cli/__main__.py](../src/moana/cli/__main__.py) |
+| [src/moana/cli/commands.py](../src/moana/cli/commands.py) |
 | [src/moana/core/__init__.py](../src/moana/core/__init__.py) |
 | [src/moana/core/budget.py](../src/moana/core/budget.py) |
 | [src/moana/core/canvas.py](../src/moana/core/canvas.py) |
@@ -249,11 +257,15 @@
 | [src/moana/schema/models.py](../src/moana/schema/models.py) |
 | [tests/fixtures/determinism/corpus.json](../tests/fixtures/determinism/corpus.json) |
 | [tests/fixtures/determinism/expected.json](../tests/fixtures/determinism/expected.json) |
+| [tests/integration/test_cli_paths.py](../tests/integration/test_cli_paths.py) |
 | [tests/integration/test_cross_platform_determinism.py](../tests/integration/test_cross_platform_determinism.py) |
 | [tests/integration/test_render_determinism.py](../tests/integration/test_render_determinism.py) |
 | [tests/test_environment.py](../tests/test_environment.py) |
 | [tests/test_planning.py](../tests/test_planning.py) |
 | [tests/test_repository_tools.py](../tests/test_repository_tools.py) |
+| [tests/unit/api/test_api_architecture.py](../tests/unit/api/test_api_architecture.py) |
+| [tests/unit/api/test_api_facade.py](../tests/unit/api/test_api_facade.py) |
+| [tests/unit/cli/test_cli_main.py](../tests/unit/cli/test_cli_main.py) |
 | [tests/unit/core/test_core_architecture.py](../tests/unit/core/test_core_architecture.py) |
 | [tests/unit/core/test_core_budget.py](../tests/unit/core/test_core_budget.py) |
 | [tests/unit/core/test_core_canvas.py](../tests/unit/core/test_core_canvas.py) |

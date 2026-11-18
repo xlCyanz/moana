@@ -24,6 +24,7 @@ __all__ = [
     "ExportError",
     "MoanaError",
     "OutOfBoundsError",
+    "ReadError",
     "ReferenceError",
     "UnsupportedOperation",
     "UnsupportedVersion",
@@ -242,6 +243,17 @@ class ExportError(MoanaError):
     """Writing an export failed or the destination policy cannot be honoured."""
 
     code = "EXPORT_ERROR"
+    exit_code = 5
+
+
+class ReadError(MoanaError):
+    """An input file chosen by the caller could not be read (missing, not a file, denied).
+
+    Like :class:`ExportError`, its context names the file and the ``errno``, never the
+    full path. Added by MOANA-012 (ADR-020), extending the codes of ADR-010.
+    """
+
+    code = "READ_ERROR"
     exit_code = 5
 
 

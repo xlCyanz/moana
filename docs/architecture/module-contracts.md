@@ -1,6 +1,6 @@
 # Contratos entre módulos
 
-Estado: **contratos previstos**, salvo `core` (con el lienzo RGBA), `schema`, `palette`, `geometry`, `layers`, `render` y `export` PNG (implementados, ver abajo). Las firmas públicas objetivo están en [MOANA.md §13](../../MOANA.md); sus fórmulas, límites y formatos prevalecen sobre este resumen. No se añaden abstracciones base ni registros de plugins por anticipación.
+Estado: **contratos previstos**, salvo `core` (con el lienzo RGBA), `schema`, `palette`, `geometry`, `layers`, `render`, `export` PNG y `api`/`cli` (implementados, ver abajo). Las firmas públicas objetivo están en [MOANA.md §13](../../MOANA.md); sus fórmulas, límites y formatos prevalecen sobre este resumen. No se añaden abstracciones base ni registros de plugins por anticipación.
 
 ## Entradas, salidas y efectos
 
@@ -40,7 +40,7 @@ API pública en `moana.core`, sin dependencias de otros módulos Moana, NumPy ni
 | `MAX_GROUP_DEPTH` | Anidamiento máximo de grupos en el árbol de capas (16, §11); lo aplica `layers` y lo aplicará `schema` cuando admita grupos. |
 | `errors.detail_sort_key` | Orden canónico de `ErrorDetail` (pointer con índices numéricos, código, mensaje), compartido por `schema` y `palette`. |
 
-Errores (`moana.core.errors`): `MoanaError` (código `INTERNAL_ERROR`, salida 1) y subclases con `code` estable y `exit_code`: `ValidationError` (`VALIDATION_ERROR`, 2), `OutOfBoundsError` (`OUT_OF_BOUNDS`, 2, subclase de validación), `ReferenceError` (`REFERENCE_ERROR`, 2; distinto del builtin homónimo, importar como `errors.ReferenceError`), `UnsupportedVersion` (2), `UnsupportedOperation` (2), `BudgetExceeded` (3), `EditConflict` (4), `ExportError` (5). Atributos de sólo lectura `message`, `json_pointer` (opcional, RFC 6901) y `context`. `context` es inmutable y sólo admite escalares o tuplas: nombres de campo, motivos, tipos y límites numéricos; nunca strings de entrada no confiable ni rutas. Los errores son picklables.
+Errores (`moana.core.errors`): `MoanaError` (código `INTERNAL_ERROR`, salida 1) y subclases con `code` estable y `exit_code`: `ValidationError` (`VALIDATION_ERROR`, 2), `OutOfBoundsError` (`OUT_OF_BOUNDS`, 2, subclase de validación), `ReferenceError` (`REFERENCE_ERROR`, 2; distinto del builtin homónimo, importar como `errors.ReferenceError`), `UnsupportedVersion` (2), `UnsupportedOperation` (2), `BudgetExceeded` (3), `EditConflict` (4), `ExportError` (5) y `ReadError` (`READ_ERROR`, 5; ADR-020). Atributos de sólo lectura `message`, `json_pointer` (opcional, RFC 6901) y `context`. `context` es inmutable y sólo admite escalares o tuplas: nombres de campo, motivos, tipos y límites numéricos; nunca strings de entrada no confiable ni rutas. Los errores son picklables.
 
 Lienzo (MOANA-004, [ADR-013](decisions/ADR-013-canvas-buffer.md)): adaptadores explícitos que `moana.core` no importa, para que `schema` y el plan de coste no carguen bibliotecas gráficas.
 
@@ -77,6 +77,18 @@ Integración con `schema` (MOANA-002): los errores de `core` no derivan de `Valu
 | `encode_png` | Sin disco. `mode="rgba"` (maestro) o `"indexed"` con una `Palette` de ≤256 entradas en orden declarado, `tRNS` explícito y sin cuantización (`color_not_in_palette`). `scale` entero 1..64 nearest; `export_dimension`, `export_area` y `buffer_bytes` (24 B/px de salida) se comprueban antes de reservar. `compress_level=9`, sin chunks volátiles. Si la decodificación no coincide, `ExportError` `roundtrip_mismatch`; en indexado, `PLTE`/`tRNS` deben coincidir byte a byte (`palette_mismatch`). |
 | `moana.export.atomic.commit_bytes` | Temporal hermano `O_EXCL` + `fsync`; `overwrite=False` con `os.link` (nunca reemplaza; sin enlaces duros, `no_replace_unavailable`), `overwrite=True` con `os.replace`. Ante fallo el destino conserva su contenido; `ExportError` con `reason`, nombre de archivo y `errno`, sin ruta completa. Un nombre con NUL o no codificable es `ValidationError` `invalid_name`. No crea directorios. |
 | `ExportManifest` | `path`, `media_type`, `mode`, `width`, `height`, `frames`, `scale`, `master` (`scale == 1`), dimensiones de origen, `source_digest`, `pixel_digest`, `file_sha256`, `byte_size`, `warnings` (`scaled_preview`); `to_mapping()` ordenado. |
+
+## `api` / `cli` (implementados en MOANA-012)
+
+Fachada `moana.api` y comando `moana`: sólo componen `schema`, `render` y `export`, sin algoritmos propios. `cli` importa sólo `moana.api`, `moana.core.errors` y `moana.__version__`; ningún módulo de dominio importa `api` ni `cli`. Decisiones en [ADR-020](decisions/ADR-020-public-api-cli.md).
+
+| Elemento | Contrato |
+| --- | --- |
+| `load_document(source, *, limits)` | Path autorizado por el llamador (`str`/`PathLike`), bytes o mapping → `Document` congelado. Un `str` con aspecto de JSON es `ValidationError` (`json_text`); vacío, con NUL o no codificable, `invalid_name`. Archivo regular abierto sin bloquear y lectura acotada a `max_bytes + 1`. Un fallo es `ReadError` (`not_found`, `is_directory`, `not_a_file`, `permission_denied`, `io_error`; `file_name` ≤255 y `errno`, sin ruta). |
+| `render(document, *, frame_id, limits, deadline)` | Delega en `moana.render.render`; no escribe archivos. |
+| `export_png(result, path, *, scale, overwrite, limits)` | PNG RGBA atómico vía `moana.export.export_png`; exige un `RenderResult`. El modo indexado sigue en `moana.export`. |
+| `inspect_document(document, *, limits)` / `capabilities()` | Informes congelados con `to_mapping()`. El exceso de presupuesto se informa (`within_limits`, `exceeded`), no se lanza. Lo previsto (`PLANNED_FUNCTIONS = ("apply_edit",)`, operaciones sin rasterizador, modos futuros) va separado de lo disponible. |
+| CLI `moana` | `validate`, `inspect`, `render`, `export [--scale] [--overwrite]` y `capabilities`; `edit` previsto → `UNSUPPORTED_OPERATION` (2). Un único objeto JSON por invocación; códigos = `exit_code` del error (0/2/3/4/5/1), stdout cerrado → 5, interrupción → 130 con `INTERRUPTED`; uso inválido → `VALIDATION_ERROR` (`usage`) con mensaje fijo; sin abreviaturas; sin traceback salvo `--debug`. Sólo abre los paths de sus argumentos. |
 
 ## `ci` / `tests.integration` — determinismo entre plataformas (MOANA-029)
 
@@ -160,7 +172,7 @@ Los batches se validan completos antes de producir una revisión. Historial, rev
 
 ## API, formatos y extensiones
 
-La fachada futura devuelve tipos documentados y estables. Objetos de Pillow, arrays escribibles y handlers de archivos abiertos quedan internos. Aceptar `Path` en una API de aplicación no autoriza incluir rutas arbitrarias en instrucciones JSON. La configuración de límites viene del anfitrión, no de un documento no confiable.
+La fachada (`moana.api`, MOANA-012) devuelve tipos documentados y estables. Objetos de Pillow, arrays escribibles y handlers de archivos abiertos quedan internos. Aceptar `Path` en una API de aplicación no autoriza incluir rutas arbitrarias en instrucciones JSON. La configuración de límites viene del anfitrión, no de un documento no confiable.
 
 Cada operación nueva añade modelo, capability, resolución, estimación de coste, rasterizador, fixtures y documentación. El schema MVP implementa el vocabulario soportado por su issue; mencionar una futura técnica en la especificación no implica que sus parámetros o backend ya se acepten. Las ampliaciones se versionan junto con sus modelos, y se rechazan versiones no soportadas.
 
