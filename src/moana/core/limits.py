@@ -34,6 +34,10 @@ __all__ = [
     "MAX_MASK_DEPTH",
     "MAX_MASK_OPERANDS",
     "MAX_OPERATIONS",
+    "MAX_PATH_CELLS",
+    "MAX_PATH_COMMANDS",
+    "MAX_PATH_CURVE_SEGMENTS",
+    "MAX_PATH_SEGMENTS",
     "MAX_RAMP_ENTRIES",
     "MAX_REGIONS",
     "MAX_VERTICES",
@@ -59,6 +63,19 @@ MAX_MASKS: Final = 1024
 MAX_MASK_OPERANDS: Final = 64
 MAX_MASK_DEPTH: Final = 16
 MAX_REGIONS: Final = 1024
+# Fixed-point paths (MOANA.md section 6, ADR-023): commands of one path, line segments
+# after flattening its curves (closing edges included), segments of one flattened
+# curve, and the coverage cells AggDraw may accumulate for one path. The cell bound is
+# an engine limit, not a request budget: AGG keeps at most 4 194 304 cells and drops
+# the rest silently, so a path whose conservative cell bound exceeds half of that is
+# rejected before the adapter instead of being rendered wrong; the factor 2 also covers
+# the extra cells of the grown outline's joins. The JSON reader counts at most 20 000
+# nodes per document (each command is an array plus its items), so 4096 commands are
+# only reachable through the reader with paths made almost only of ``M``/``L``.
+MAX_PATH_COMMANDS: Final = 4096
+MAX_PATH_SEGMENTS: Final = 65_536
+MAX_PATH_CURVE_SEGMENTS: Final = 64
+MAX_PATH_CELLS: Final = 2_097_152
 
 
 @dataclass(frozen=True, slots=True)

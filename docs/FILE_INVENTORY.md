@@ -1,6 +1,6 @@
 # Inventario del repositorio
 
-309 archivos actuales de fuente, documentación, configuración y pruebas al 2026-11-17. Incluye cambios locales todavía sin commit. Excluye entorno virtual, herramientas, cachés, artefactos y metadata Git.
+319 archivos actuales de fuente, documentación, configuración y pruebas al 2026-11-17. Incluye cambios locales todavía sin commit. Excluye entorno virtual, herramientas, cachés, artefactos y metadata Git.
 
 | Archivo |
 | --- |
@@ -104,6 +104,7 @@
 | [docs/architecture/decisions/ADR-020-public-api-cli.md](../docs/architecture/decisions/ADR-020-public-api-cli.md) |
 | [docs/architecture/decisions/ADR-021-cross-platform-determinism.md](../docs/architecture/decisions/ADR-021-cross-platform-determinism.md) |
 | [docs/architecture/decisions/ADR-022-masks-regions.md](../docs/architecture/decisions/ADR-022-masks-regions.md) |
+| [docs/architecture/decisions/ADR-023-aggdraw-paths.md](../docs/architecture/decisions/ADR-023-aggdraw-paths.md) |
 | [docs/architecture/module-contracts.md](../docs/architecture/module-contracts.md) |
 | [docs/architecture/overview.md](../docs/architecture/overview.md) |
 | [docs/guides/agent-workflow.md](../docs/guides/agent-workflow.md) |
@@ -196,6 +197,7 @@
 | [examples/README.md](../examples/README.md) |
 | [examples/specs/masked-eyes.moana.json](../examples/specs/masked-eyes.moana.json) |
 | [examples/specs/minimal.moana.json](../examples/specs/minimal.moana.json) |
+| [examples/specs/path-sail.moana.json](../examples/specs/path-sail.moana.json) |
 | [examples/specs/recolor.edit.json](../examples/specs/recolor.edit.json) |
 | [pyproject.toml](../pyproject.toml) |
 | [schemas/moana-document-1.0.schema.json](../schemas/moana-document-1.0.schema.json) |
@@ -231,6 +233,7 @@
 | [src/moana/core/limits.py](../src/moana/core/limits.py) |
 | [src/moana/core/pillow_adapter.py](../src/moana/core/pillow_adapter.py) |
 | [src/moana/core/procedural.py](../src/moana/core/procedural.py) |
+| [src/moana/core/vector_path.py](../src/moana/core/vector_path.py) |
 | [src/moana/export/__init__.py](../src/moana/export/__init__.py) |
 | [src/moana/export/atomic.py](../src/moana/export/atomic.py) |
 | [src/moana/export/png.py](../src/moana/export/png.py) |
@@ -238,6 +241,7 @@
 | [src/moana/geometry/algebra.py](../src/moana/geometry/algebra.py) |
 | [src/moana/geometry/fill.py](../src/moana/geometry/fill.py) |
 | [src/moana/geometry/mask.py](../src/moana/geometry/mask.py) |
+| [src/moana/geometry/paths.py](../src/moana/geometry/paths.py) |
 | [src/moana/geometry/primitives.py](../src/moana/geometry/primitives.py) |
 | [src/moana/geometry/transform.py](../src/moana/geometry/transform.py) |
 | [src/moana/layers/__init__.py](../src/moana/layers/__init__.py) |
@@ -263,6 +267,7 @@
 | [tests/fixtures/determinism/expected.json](../tests/fixtures/determinism/expected.json) |
 | [tests/integration/test_cli_paths.py](../tests/integration/test_cli_paths.py) |
 | [tests/integration/test_cross_platform_determinism.py](../tests/integration/test_cross_platform_determinism.py) |
+| [tests/integration/test_path_determinism.py](../tests/integration/test_path_determinism.py) |
 | [tests/integration/test_render_determinism.py](../tests/integration/test_render_determinism.py) |
 | [tests/test_environment.py](../tests/test_environment.py) |
 | [tests/test_planning.py](../tests/test_planning.py) |
@@ -270,6 +275,7 @@
 | [tests/unit/api/test_api_architecture.py](../tests/unit/api/test_api_architecture.py) |
 | [tests/unit/api/test_api_facade.py](../tests/unit/api/test_api_facade.py) |
 | [tests/unit/api/test_api_masks.py](../tests/unit/api/test_api_masks.py) |
+| [tests/unit/api/test_api_paths.py](../tests/unit/api/test_api_paths.py) |
 | [tests/unit/cli/test_cli_main.py](../tests/unit/cli/test_cli_main.py) |
 | [tests/unit/core/test_core_architecture.py](../tests/unit/core/test_core_architecture.py) |
 | [tests/unit/core/test_core_budget.py](../tests/unit/core/test_core_budget.py) |
@@ -279,12 +285,14 @@
 | [tests/unit/core/test_core_ids.py](../tests/unit/core/test_core_ids.py) |
 | [tests/unit/core/test_core_limits.py](../tests/unit/core/test_core_limits.py) |
 | [tests/unit/core/test_core_procedural.py](../tests/unit/core/test_core_procedural.py) |
+| [tests/unit/core/test_core_vector_path.py](../tests/unit/core/test_core_vector_path.py) |
 | [tests/unit/export/test_export_png.py](../tests/unit/export/test_export_png.py) |
 | [tests/unit/geometry/test_geometry_algebra.py](../tests/unit/geometry/test_geometry_algebra.py) |
 | [tests/unit/geometry/test_geometry_architecture.py](../tests/unit/geometry/test_geometry_architecture.py) |
 | [tests/unit/geometry/test_geometry_fill.py](../tests/unit/geometry/test_geometry_fill.py) |
 | [tests/unit/geometry/test_geometry_mask.py](../tests/unit/geometry/test_geometry_mask.py) |
 | [tests/unit/geometry/test_geometry_memory.py](../tests/unit/geometry/test_geometry_memory.py) |
+| [tests/unit/geometry/test_geometry_paths.py](../tests/unit/geometry/test_geometry_paths.py) |
 | [tests/unit/geometry/test_geometry_primitives.py](../tests/unit/geometry/test_geometry_primitives.py) |
 | [tests/unit/geometry/test_geometry_transform.py](../tests/unit/geometry/test_geometry_transform.py) |
 | [tests/unit/layers/test_layers_compose.py](../tests/unit/layers/test_layers_compose.py) |
@@ -296,12 +304,14 @@
 | [tests/unit/render/test_render_architecture.py](../tests/unit/render/test_render_architecture.py) |
 | [tests/unit/render/test_render_budget.py](../tests/unit/render/test_render_budget.py) |
 | [tests/unit/render/test_render_masks.py](../tests/unit/render/test_render_masks.py) |
+| [tests/unit/render/test_render_paths.py](../tests/unit/render/test_render_paths.py) |
 | [tests/unit/render/test_render_pipeline.py](../tests/unit/render/test_render_pipeline.py) |
 | [tests/unit/schema/conftest.py](../tests/unit/schema/conftest.py) |
 | [tests/unit/schema/test_schema_architecture.py](../tests/unit/schema/test_schema_architecture.py) |
 | [tests/unit/schema/test_schema_document.py](../tests/unit/schema/test_schema_document.py) |
 | [tests/unit/schema/test_schema_issues.py](../tests/unit/schema/test_schema_issues.py) |
 | [tests/unit/schema/test_schema_masks.py](../tests/unit/schema/test_schema_masks.py) |
+| [tests/unit/schema/test_schema_paths.py](../tests/unit/schema/test_schema_paths.py) |
 | [tests/unit/schema/test_schema_reader.py](../tests/unit/schema/test_schema_reader.py) |
 | [tests/unit/schema/test_schema_roundtrip.py](../tests/unit/schema/test_schema_roundtrip.py) |
 | [tests/unit/test_claude_hooks.py](../tests/unit/test_claude_hooks.py) |

@@ -4,7 +4,10 @@
 without rendering: a request over budget is reported (``within_limits`` false and the
 exceeded resources), not raised, so a caller can see why ``render`` would refuse it.
 :func:`capabilities` lists the implemented vocabulary and, separately, what is only
-planned, so help and agents never present a future capability as available.
+planned, so help and agents never present a future capability as available. ``path``
+(operation and mask leaf) is available only when the ``aggdraw-v1`` backend imports
+with a tested version; otherwise it is listed as planned and ``backends`` says why
+(ADR-023).
 Semantic masks and regions (ADR-022) are listed with their references, so an agent can
 find "the left eye" by ID; :func:`moana.schema.resolve_region` resolves one.
 """
@@ -17,6 +20,7 @@ from typing import TYPE_CHECKING, Final
 
 from moana.core.budget import DEFAULT_RENDER_LIMITS, RenderLimits
 from moana.core.errors import BudgetExceeded
+from moana.geometry import TESTED_AGGDRAW_VERSIONS, path_backend
 from moana.render import (
     ESTIMATOR_VERSION,
     RENDERABLE_OPERATION_TYPES,
@@ -47,6 +51,7 @@ if TYPE_CHECKING:
 __all__ = [
     "AVAILABLE_FUNCTIONS",
     "PLANNED_FUNCTIONS",
+    "BackendSummary",
     "BudgetReport",
     "Capabilities",
     "DocumentReport",
@@ -70,6 +75,8 @@ AVAILABLE_FUNCTIONS: Final = (
 """Functions of ``moana.api`` that work in this build."""
 PLANNED_FUNCTIONS: Final = ("apply_edit",)
 """Functions of MOANA.md section 13 that are specified but not implemented."""
+_PATH_CAPABILITIES: Final = frozenset({"path"})
+"""Operation and mask types that need the ``aggdraw-v1`` backend (ADR-023)."""
 
 
 def _json(value: object) -> object:
@@ -139,7 +146,7 @@ class ExceededResource:
 
 @dataclass(frozen=True, slots=True)
 class BudgetReport:
-    """Estimate of one render against the request limits (``budget-v2``, ADR-018)."""
+    """Estimate of one render against the request limits (``budget-v4``, ADR-023)."""
 
     estimator_version: str
     pixel_visits: int
@@ -177,6 +184,22 @@ class DocumentReport:
 
 
 @dataclass(frozen=True, slots=True)
+class BackendSummary:
+    """A raster backend of this build: whether it works here and with which versions.
+
+    ``reason`` is ``None`` when available, else ``"missing"`` or ``"untested_version"``.
+    """
+
+    name: str
+    available: bool
+    version: str | None
+    pillow_version: str | None
+    reason: str | None
+    tested_versions: tuple[str, ...]
+    capabilities: tuple[str, ...]
+
+
+@dataclass(frozen=True, slots=True)
 class Capabilities:
     """Implemented vocabulary of this build, each with its planned counterpart."""
 
@@ -196,6 +219,7 @@ class Capabilities:
     planned_functions: tuple[str, ...]
     renderer_version: str
     estimator_version: str
+    backends: tuple[BackendSummary, ...]
 
     def to_mapping(self) -> dict[str, object]:
         """JSON-ready listing with sorted keys."""
@@ -205,19 +229,34 @@ class Capabilities:
 def capabilities() -> Capabilities:
     """What this build implements and what is only planned (never both).
 
-    An operation is available only when the schema accepts it *and* the renderer has a
-    rasteriser for it; a schema-only operation is reported as planned.
+    An operation is available only when the schema accepts it, the renderer has a
+    rasteriser for it *and* its backend works here; otherwise it is reported as
+    planned. ``path`` depends on the ``aggdraw-v1`` backend, probed on each call.
+    This is a *runtime* capability: the schema accepts ``path`` documents whatever
+    the backend, and only rendering (or the adapter) rejects them with
+    ``UNSUPPORTED_OPERATION`` when it is missing or untested.
     """
-    rasterisers = frozenset(RENDERABLE_OPERATION_TYPES)
+    backend = path_backend()
+    missing = frozenset() if backend.available else _PATH_CAPABILITIES
+    rasterisers = frozenset(RENDERABLE_OPERATION_TYPES) - missing
     renderable = SUPPORTED_OPERATION_TYPES & rasterisers
     planned = PLANNED_OPERATION_TYPES | (SUPPORTED_OPERATION_TYPES - rasterisers)
+    summary = BackendSummary(
+        name=backend.name,
+        available=backend.available,
+        version=backend.version,
+        pillow_version=backend.pillow_version,
+        reason=backend.reason,
+        tested_versions=TESTED_AGGDRAW_VERSIONS,
+        capabilities=tuple(sorted(_PATH_CAPABILITIES)),
+    )
     return Capabilities(
         schema_versions=tuple(sorted(SUPPORTED_SCHEMA_VERSIONS)),
         profiles=tuple(sorted(SUPPORTED_PROFILES)),
         operations=tuple(sorted(renderable)),
         planned_operations=tuple(sorted(planned)),
-        mask_types=tuple(sorted(SUPPORTED_MASK_TYPES)),
-        planned_mask_types=tuple(sorted(PLANNED_MASK_TYPES)),
+        mask_types=tuple(sorted(SUPPORTED_MASK_TYPES - missing)),
+        planned_mask_types=tuple(sorted(PLANNED_MASK_TYPES | (SUPPORTED_MASK_TYPES & missing))),
         collections=tuple(sorted(SUPPORTED_COLLECTIONS)),
         blend_modes=tuple(sorted(SUPPORTED_BLEND_MODES)),
         planned_blend_modes=tuple(sorted(PLANNED_BLEND_MODES)),
@@ -228,6 +267,7 @@ def capabilities() -> Capabilities:
         planned_functions=PLANNED_FUNCTIONS,
         renderer_version=RENDERER_VERSION,
         estimator_version=ESTIMATOR_VERSION,
+        backends=(summary,),
     )
 
 

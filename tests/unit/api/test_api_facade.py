@@ -530,7 +530,7 @@ def test_inspect_type_checks() -> None:
 
 def test_capabilities_separate_available_from_planned() -> None:
     listing = capabilities()
-    assert listing.operations == ("ellipse", "line", "pixel", "polygon", "rect")
+    assert listing.operations == ("ellipse", "line", "path", "pixel", "polygon", "rect")
     assert set(listing.operations).isdisjoint(listing.planned_operations)
     assert set(listing.blend_modes).isdisjoint(listing.planned_blend_modes)
     assert listing.planned_functions == PLANNED_FUNCTIONS == ("apply_edit",)

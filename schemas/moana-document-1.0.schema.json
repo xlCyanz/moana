@@ -239,6 +239,7 @@
               "mapping": {
                 "ellipse": "#/$defs/EllipseOperation",
                 "line": "#/$defs/LineOperation",
+                "path": "#/$defs/PathOperation",
                 "pixel": "#/$defs/PixelOperation",
                 "polygon": "#/$defs/PolygonOperation",
                 "rect": "#/$defs/RectOperation"
@@ -260,6 +261,9 @@
               },
               {
                 "$ref": "#/$defs/PolygonOperation"
+              },
+              {
+                "$ref": "#/$defs/PathOperation"
               }
             ]
           },
@@ -477,6 +481,340 @@
         "colors"
       ],
       "title": "Palette",
+      "type": "object"
+    },
+    "PathMask": {
+      "additionalProperties": false,
+      "description": "Mask of a fixed-point path filled by ``aggdraw-v1`` (same rule as ``path``).",
+      "properties": {
+        "backend": {
+          "const": "aggdraw-v1",
+          "title": "Backend",
+          "type": "string"
+        },
+        "commands": {
+          "items": {
+            "oneOf": [
+              {
+                "maxItems": 3,
+                "minItems": 3,
+                "prefixItems": [
+                  {
+                    "const": "M",
+                    "type": "string"
+                  },
+                  {
+                    "maximum": 268435456,
+                    "minimum": -268435456,
+                    "type": "integer"
+                  },
+                  {
+                    "maximum": 268435456,
+                    "minimum": -268435456,
+                    "type": "integer"
+                  }
+                ],
+                "type": "array"
+              },
+              {
+                "maxItems": 3,
+                "minItems": 3,
+                "prefixItems": [
+                  {
+                    "const": "L",
+                    "type": "string"
+                  },
+                  {
+                    "maximum": 268435456,
+                    "minimum": -268435456,
+                    "type": "integer"
+                  },
+                  {
+                    "maximum": 268435456,
+                    "minimum": -268435456,
+                    "type": "integer"
+                  }
+                ],
+                "type": "array"
+              },
+              {
+                "maxItems": 5,
+                "minItems": 5,
+                "prefixItems": [
+                  {
+                    "const": "Q",
+                    "type": "string"
+                  },
+                  {
+                    "maximum": 268435456,
+                    "minimum": -268435456,
+                    "type": "integer"
+                  },
+                  {
+                    "maximum": 268435456,
+                    "minimum": -268435456,
+                    "type": "integer"
+                  },
+                  {
+                    "maximum": 268435456,
+                    "minimum": -268435456,
+                    "type": "integer"
+                  },
+                  {
+                    "maximum": 268435456,
+                    "minimum": -268435456,
+                    "type": "integer"
+                  }
+                ],
+                "type": "array"
+              },
+              {
+                "maxItems": 7,
+                "minItems": 7,
+                "prefixItems": [
+                  {
+                    "const": "C",
+                    "type": "string"
+                  },
+                  {
+                    "maximum": 268435456,
+                    "minimum": -268435456,
+                    "type": "integer"
+                  },
+                  {
+                    "maximum": 268435456,
+                    "minimum": -268435456,
+                    "type": "integer"
+                  },
+                  {
+                    "maximum": 268435456,
+                    "minimum": -268435456,
+                    "type": "integer"
+                  },
+                  {
+                    "maximum": 268435456,
+                    "minimum": -268435456,
+                    "type": "integer"
+                  },
+                  {
+                    "maximum": 268435456,
+                    "minimum": -268435456,
+                    "type": "integer"
+                  },
+                  {
+                    "maximum": 268435456,
+                    "minimum": -268435456,
+                    "type": "integer"
+                  }
+                ],
+                "type": "array"
+              },
+              {
+                "maxItems": 1,
+                "minItems": 1,
+                "prefixItems": [
+                  {
+                    "const": "Z",
+                    "type": "string"
+                  }
+                ],
+                "type": "array"
+              }
+            ]
+          },
+          "maxItems": 4096,
+          "minItems": 2,
+          "title": "Commands",
+          "type": "array"
+        },
+        "id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "type": {
+          "const": "path",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "backend",
+        "commands"
+      ],
+      "title": "PathMask",
+      "type": "object"
+    },
+    "PathOperation": {
+      "additionalProperties": false,
+      "description": "Nonzero fill of a fixed-point path by the ``aggdraw-v1`` backend (ADR-023).\n\nCoverage at native scale is binarised (``>= 128``); subpaths close implicitly.",
+      "properties": {
+        "backend": {
+          "const": "aggdraw-v1",
+          "title": "Backend",
+          "type": "string"
+        },
+        "color": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Color",
+          "type": "string"
+        },
+        "commands": {
+          "items": {
+            "oneOf": [
+              {
+                "maxItems": 3,
+                "minItems": 3,
+                "prefixItems": [
+                  {
+                    "const": "M",
+                    "type": "string"
+                  },
+                  {
+                    "maximum": 268435456,
+                    "minimum": -268435456,
+                    "type": "integer"
+                  },
+                  {
+                    "maximum": 268435456,
+                    "minimum": -268435456,
+                    "type": "integer"
+                  }
+                ],
+                "type": "array"
+              },
+              {
+                "maxItems": 3,
+                "minItems": 3,
+                "prefixItems": [
+                  {
+                    "const": "L",
+                    "type": "string"
+                  },
+                  {
+                    "maximum": 268435456,
+                    "minimum": -268435456,
+                    "type": "integer"
+                  },
+                  {
+                    "maximum": 268435456,
+                    "minimum": -268435456,
+                    "type": "integer"
+                  }
+                ],
+                "type": "array"
+              },
+              {
+                "maxItems": 5,
+                "minItems": 5,
+                "prefixItems": [
+                  {
+                    "const": "Q",
+                    "type": "string"
+                  },
+                  {
+                    "maximum": 268435456,
+                    "minimum": -268435456,
+                    "type": "integer"
+                  },
+                  {
+                    "maximum": 268435456,
+                    "minimum": -268435456,
+                    "type": "integer"
+                  },
+                  {
+                    "maximum": 268435456,
+                    "minimum": -268435456,
+                    "type": "integer"
+                  },
+                  {
+                    "maximum": 268435456,
+                    "minimum": -268435456,
+                    "type": "integer"
+                  }
+                ],
+                "type": "array"
+              },
+              {
+                "maxItems": 7,
+                "minItems": 7,
+                "prefixItems": [
+                  {
+                    "const": "C",
+                    "type": "string"
+                  },
+                  {
+                    "maximum": 268435456,
+                    "minimum": -268435456,
+                    "type": "integer"
+                  },
+                  {
+                    "maximum": 268435456,
+                    "minimum": -268435456,
+                    "type": "integer"
+                  },
+                  {
+                    "maximum": 268435456,
+                    "minimum": -268435456,
+                    "type": "integer"
+                  },
+                  {
+                    "maximum": 268435456,
+                    "minimum": -268435456,
+                    "type": "integer"
+                  },
+                  {
+                    "maximum": 268435456,
+                    "minimum": -268435456,
+                    "type": "integer"
+                  },
+                  {
+                    "maximum": 268435456,
+                    "minimum": -268435456,
+                    "type": "integer"
+                  }
+                ],
+                "type": "array"
+              },
+              {
+                "maxItems": 1,
+                "minItems": 1,
+                "prefixItems": [
+                  {
+                    "const": "Z",
+                    "type": "string"
+                  }
+                ],
+                "type": "array"
+              }
+            ]
+          },
+          "maxItems": 4096,
+          "minItems": 2,
+          "title": "Commands",
+          "type": "array"
+        },
+        "id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "type": {
+          "const": "path",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "color",
+        "type",
+        "backend",
+        "commands"
+      ],
+      "title": "PathOperation",
       "type": "object"
     },
     "PixelMask": {
@@ -967,6 +1305,7 @@
             "ellipse": "#/$defs/EllipseMask",
             "intersect": "#/$defs/IntersectMask",
             "line": "#/$defs/LineMask",
+            "path": "#/$defs/PathMask",
             "pixel": "#/$defs/PixelMask",
             "polygon": "#/$defs/PolygonMask",
             "rect": "#/$defs/RectMask",
@@ -991,6 +1330,9 @@
           },
           {
             "$ref": "#/$defs/PolygonMask"
+          },
+          {
+            "$ref": "#/$defs/PathMask"
           },
           {
             "$ref": "#/$defs/UnionMask"

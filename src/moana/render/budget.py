@@ -1,6 +1,6 @@
 """Cost plan of a validated document, checked before any buffer exists (MOANA-003).
 
-The estimator (``budget-v3``, ADR-018 and ADR-022) is pure integer arithmetic over
+The estimator (``budget-v4``, ADR-018, ADR-022 and ADR-023) is pure integer arithmetic over
 the document: it never allocates pixels, imports NumPy or Pillow, or iterates over
 pixels. It is an upper bound that the rasterisers and compositor respect; a change in
 their memory or work pattern updates these formulas and :data:`ESTIMATOR_VERSION`.
@@ -13,18 +13,25 @@ to the canvas.
   clipping) are raster work plus one paint pass over the mask box. Raster work:
   ``pixel`` 1 if on the canvas else 0; ``rect`` and ``ellipse`` the mask box area;
   ``polygon`` the mask box area plus ``clipped rows x vertices`` for scanline
-  crossings; ``line`` ``max(|dx|, |dy|) + 1`` Bresenham steps, *not* clipped.
-  (``budget-v1`` omitted the paint pass, which for a long diagonal line is far more
-  than its steps.)
+  crossings; ``line`` ``max(|dx|, |dy|) + 1`` Bresenham steps, *not* clipped;
+  ``path`` (``budget-v4``, ADR-023) its ``S`` flattened segments, *not* clipped,
+  plus, when its box is not empty, the coverage cells bound
+  (:meth:`~moana.core.vector_path.FixedPath.cell_bound` over the coverage buffer:
+  the box with a 1-pixel margin) and ``3 x`` the buffer area (clear, coverage
+  sweep, threshold). (``budget-v1`` omitted the paint pass, which for a long
+  diagonal line is far more than its steps.)
 * **Frame visits**: ``A`` (clear) + per visible layer ``A`` (clear) + its operation
   visits + ``A`` (composite) + ``A`` (alpha normalisation) + ``A`` (result copy).
   Hidden layers cost nothing. Total visits = ``frames x`` frame visits.
 * **Buffer bytes**: working set ``4A`` canvas + ``4A`` layer + ``32A`` composite
   accumulator (four 64-bit channels) + the largest operation mask (1 byte per
-  clipped bbox pixel), plus ``frames x 4A`` retained results. The ``40A`` term is
-  never below the compositor's own bound ``14A + 80 x tile`` (tile =
-  ``min(4096, max(1, A // 4))`` pixels), which only exceeds it on canvases of one or
-  two pixels.
+  clipped bbox pixel; a path adds ``2 x`` its buffer area, :data:`PATH_CELL_BYTES`
+  per bounded cell, :data:`PATH_COMMAND_BYTES` per command and the backend's fixed
+  native heap :data:`PATH_BACKEND_FIXED_BYTES`, which ``tracemalloc`` cannot see;
+  :func:`moana.core.vector_path.path_raster_bytes`), plus
+  ``frames x 4A`` retained results. The ``40A`` term is never below the
+  compositor's own bound ``14A + 80 x tile`` (tile = ``min(4096, max(1, A // 4))``
+  pixels), which only exceeds it on canvases of one or two pixels.
 * **Semantic masks** (``budget-v3``, ADR-022; a document without masks costs exactly
   as in ``budget-v2``): for a visible layer with ``mask_id`` the mask expression is
   expanded without a memo, so a shared mask counts once per reference. Every
@@ -42,6 +49,11 @@ to the canvas.
   ``union``/``xor``, their intersection for ``intersect`` and the first operand's
   box for ``subtract``. These are the formulas of
   :func:`moana.layers.mask_cost` plus each evaluated leaf's raster work.
+* **Paths** (``budget-v4``, ADR-023; a document without paths costs exactly as in
+  ``budget-v3``): besides visits and bytes, a path whose cell bound exceeds
+  :data:`~moana.core.limits.MAX_PATH_CELLS` is rejected (``path_cells``): the
+  backend would drop cells silently. This is an engine limit that no
+  ``RenderLimits`` raises.
 * **Frame pixels**: ``frames x A``.
 """
 
@@ -53,6 +65,17 @@ from typing import Final, assert_never
 from moana.core.budget import DEFAULT_RENDER_LIMITS, Deadline, RenderLimits
 from moana.core.coordinates import Box, Dimensions, combined_box, require_int
 from moana.core.errors import BudgetExceeded, ErrorDetail, ReferenceError
+from moana.core.limits import MAX_PATH_CELLS
+from moana.core.vector_path import (
+    PATH_BACKEND_FIXED_BYTES,
+    PATH_BUFFER_MARGIN,
+    PATH_CELL_BYTES,
+    PATH_COMMAND_BYTES,
+    FixedPath,
+    path_buffer_box,
+    path_raster_bytes,
+    path_raster_visits,
+)
 from moana.schema import (
     CombinationMask,
     Document,
@@ -62,6 +85,8 @@ from moana.schema import (
     LineOperation,
     MaskNode,
     Operation,
+    PathMask,
+    PathOperation,
     PixelMask,
     PixelOperation,
     PolygonMask,
@@ -75,6 +100,10 @@ __all__ = [
     "ESTIMATOR_VERSION",
     "MASK_NODE_VISITS",
     "MAX_FRAMES",
+    "PATH_BACKEND_FIXED_BYTES",
+    "PATH_BUFFER_MARGIN",
+    "PATH_CELL_BYTES",
+    "PATH_COMMAND_BYTES",
     "CostEstimate",
     "MaskEstimate",
     "OperationCost",
@@ -84,7 +113,7 @@ __all__ = [
     "plan_budget",
 ]
 
-ESTIMATOR_VERSION: Final = "budget-v3"
+ESTIMATOR_VERSION: Final = "budget-v4"
 RGBA_BYTES: Final = 4
 COMPOSITE_BYTES_PER_PIXEL: Final = 32
 MASK_BYTES_PER_PIXEL: Final = 1
@@ -98,6 +127,8 @@ COMPOSITOR_MAX_TILE: Final = 4096
 # Cost floor of one evaluated mask node reference (ADR-022); equals
 # moana.layers.MASK_NODE_VISITS, which this module cannot import (no NumPy here).
 MASK_NODE_VISITS: Final = 1
+# Path backend (ADR-023): PATH_BUFFER_MARGIN, PATH_CELL_BYTES, PATH_COMMAND_BYTES and
+# PATH_BACKEND_FIXED_BYTES come from moana.core.vector_path, shared with the adapter.
 # Operations between two cooperative deadline checks.
 CHECKPOINT_EVERY: Final = 256
 
@@ -172,6 +203,8 @@ def mask_box(operation: Geometry, dimensions: Dimensions) -> Box | None:
             box = operation.bbox
         case PolygonOperation() | PolygonMask():
             box = _polygon_bounds(operation)
+        case PathOperation() | PathMask():
+            box = operation.path.bounds
         case _:  # pragma: no cover - a new operation type must add its box
             assert_never(operation)
     return None if box is None else box.clip_to(dimensions)
@@ -179,6 +212,17 @@ def mask_box(operation: Geometry, dimensions: Dimensions) -> Box | None:
 
 def _area(box: Box | None) -> int:
     return 0 if box is None else box.area
+
+
+def _path_cells(path: FixedPath, box: Box | None) -> int:
+    return 0 if box is None else path.cell_bound(path_buffer_box(box))
+
+
+def _mask_bytes(operation: Geometry, box: Box | None) -> int:
+    """Peak bytes of rasterising ``operation`` into its clipped mask ``box``."""
+    if isinstance(operation, PathOperation | PathMask):
+        return path_raster_bytes(operation.path, box)
+    return _area(box) * MASK_BYTES_PER_PIXEL
 
 
 def _raster_work(operation: Geometry, box: Box | None) -> int:
@@ -194,6 +238,8 @@ def _raster_work(operation: Geometry, box: Box | None) -> int:
         case PolygonOperation() | PolygonMask():
             rows = 0 if box is None else box.height
             return _area(box) + rows * len(operation.points)
+        case PathOperation() | PathMask():
+            return path_raster_visits(operation.path, box)
         case _:  # pragma: no cover - a new operation type must add its formula
             assert_never(operation)
 
@@ -201,13 +247,13 @@ def _raster_work(operation: Geometry, box: Box | None) -> int:
 def _operation_cost(operation: Operation, dimensions: Dimensions, pointer: str) -> OperationCost:
     box = mask_box(operation, dimensions)
     area = _area(box)
-    return OperationCost(pointer, _raster_work(operation, box) + area, area * MASK_BYTES_PER_PIXEL)
+    return OperationCost(pointer, _raster_work(operation, box) + area, _mask_bytes(operation, box))
 
 
 def _leaf_estimate(mask: ShapeMask, dimensions: Dimensions) -> MaskEstimate:
     box = mask_box(mask, dimensions)
     work = 0 if box is None else _raster_work(mask, box)  # an empty leaf is not built
-    return MaskEstimate(box, MASK_NODE_VISITS + work, _area(box))
+    return MaskEstimate(box, MASK_NODE_VISITS + work, _mask_bytes(mask, box))
 
 
 def _combination_estimate(
@@ -382,6 +428,11 @@ def _geometry_details(
         reach = _coordinate_reach(operation)
         if reach > geometry.max_coordinate:
             details.append(_exceeded("coordinate", geometry.max_coordinate, reach, pointer))
+        if isinstance(operation, PathOperation | PathMask):
+            path = operation.path
+            cells = _path_cells(path, mask_box(operation, canvas.dimensions))
+            if cells > MAX_PATH_CELLS:
+                details.append(_exceeded("path_cells", MAX_PATH_CELLS, cells, pointer))
     return details
 
 
@@ -397,6 +448,8 @@ def _coordinate_reach(operation: Geometry) -> int:
             values = (x0, y0, x1 - 1, y1 - 1)
         case PolygonOperation() | PolygonMask():
             values = tuple(c for point in operation.points for c in point)
+        case PathOperation() | PathMask():
+            return operation.path.reach
         case _:  # pragma: no cover - a new operation type must add its reach
             assert_never(operation)
     return max(abs(value) for value in values)

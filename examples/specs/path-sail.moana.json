@@ -1,0 +1,70 @@
+{
+  "schema_version": "1.0",
+  "id": "path_sail",
+  "revision": 0,
+  "seed": 7,
+  "canvas": {"width": 32, "height": 32, "profile": "strict"},
+  "palette": {
+    "id": "palette_sail",
+    "colors": [
+      {"id": "sea", "rgba": "#1E5A8CFF"},
+      {"id": "hull", "rgba": "#6B3A1FFF"},
+      {"id": "sail", "rgba": "#F2E6C8FF"},
+      {"id": "stripe", "rgba": "#C83C5AFF"}
+    ]
+  },
+  "masks": [
+    {
+      "id": "sail_shape",
+      "type": "path",
+      "backend": "aggdraw-v1",
+      "commands": [
+        ["M", 4352, 768],
+        ["Q", 7168, 3840, 6912, 5376],
+        ["L", 4352, 5376],
+        ["Z"]
+      ]
+    }
+  ],
+  "regions": [{"id": "sail_area", "mask_id": "sail_shape", "operation_ids": ["sail_cloth"]}],
+  "layers": [
+    {
+      "id": "water",
+      "name": "Agua",
+      "operations": [
+        {"id": "sea_fill", "type": "rect", "box": [0, 24, 32, 32], "color": "sea"}
+      ]
+    },
+    {
+      "id": "boat",
+      "name": "Barco",
+      "operations": [
+        {
+          "id": "hull_shape",
+          "type": "path",
+          "backend": "aggdraw-v1",
+          "color": "hull",
+          "commands": [
+            ["M", 1024, 5376],
+            ["L", 7168, 5376],
+            ["C", 6656, 6400, 5888, 6656, 5120, 6656],
+            ["L", 3072, 6656],
+            ["C", 2304, 6656, 1536, 6400, 1024, 5376],
+            ["Z"]
+          ]
+        },
+        {"id": "mast", "type": "line", "start": [16, 2], "end": [16, 20], "color": "hull"}
+      ]
+    },
+    {
+      "id": "sail_layer",
+      "name": "Vela",
+      "mask_id": "sail_shape",
+      "operations": [
+        {"id": "sail_cloth", "type": "rect", "box": [0, 0, 32, 32], "color": "sail"},
+        {"id": "sail_stripe", "type": "rect", "box": [0, 12, 32, 14], "color": "stripe"}
+      ]
+    }
+  ],
+  "metadata": {"title": "Velero con paths", "tags": ["path", "aggdraw-v1", "ejemplo"]}
+}

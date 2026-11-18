@@ -1,6 +1,6 @@
 # ADR-005 — Backends gráficos y fronteras declarativas
 
-Estado: aceptado para implementación · Fecha: 2026-11-16.
+Estado: aceptado para implementación · Fecha: 2026-11-16. Ampliado por [ADR-023](ADR-023-aggdraw-paths.md): el adaptador AggDraw de paths (`aggdraw-v1`) existe en `moana.geometry.paths`, con import perezoso, umbral 128, regla nonzero, versiones ensayadas y capacidad explícita.
 
 ## Contexto
 

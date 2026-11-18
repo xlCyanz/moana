@@ -90,6 +90,13 @@ VALID: dict[str, Mutation] = {
             {"id": "r", "type": "rect", "box": [0, 0, 1_048_577, 1], "color": "ink"},
             {"id": "e", "type": "ellipse", "box": [-3, -3, 3, 3], "color": "cloth"},
             {"id": "g", "type": "polygon", "points": [[0, 0], [4, 0], [0, 4]], "color": "ink"},
+            {
+                "id": "v",
+                "type": "path",
+                "backend": "aggdraw-v1",
+                "commands": [["M", 0, 0], ["L", 1024, 0], ["Q", 1024, 1024, 0, 1024], ["Z"]],
+                "color": "ink",
+            },
         ],
     ),
     "rgba_profile_partial_alpha": both(
@@ -344,12 +351,6 @@ INVALID: dict[str, tuple[Mutation, str, str, str]] = {
         "too_many",
     ),
     # Planned capabilities: recognised, never ignored (MOANA.md section 12).
-    "planned_operation_path": (
-        add_op(type="path", commands=[]),
-        "UNSUPPORTED_OPERATION",
-        "/layers/0/operations/1/type",
-        "planned_capability",
-    ),
     "planned_flood_fill": (
         add_op(type="flood_fill", at=[0, 0]),
         "UNSUPPORTED_OPERATION",

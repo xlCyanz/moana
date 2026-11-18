@@ -1,6 +1,6 @@
 # ADR-022 — Máscaras semánticas en DAG, regiones por ID y `budget-v3`
 
-Estado: aceptado · 2026-11-17 · Issue: [MOANA-013](../../issues/MOANA-013.md). Amplía [ADR-011](ADR-011-schema-v1.md) (las colecciones `masks` y `regions` y el campo `mask_id` de capa dejan de ser capacidades previstas), [ADR-017](ADR-017-layers-composition.md) (máscara de capa en el compositor), [ADR-018](ADR-018-render-pipeline.md) (estimador `budget-v3`) y [ADR-020](ADR-020-public-api-cli.md) (`resolve_region`, informe y capacidades). Aplica ADR-012 (presupuestos), ADR-015 (máscaras de primitivas) y ADR-016 (transformaciones).
+Estado: aceptado · 2026-11-17 · Issue: [MOANA-013](../../issues/MOANA-013.md). Amplía [ADR-011](ADR-011-schema-v1.md) (las colecciones `masks` y `regions` y el campo `mask_id` de capa dejan de ser capacidades previstas), [ADR-017](ADR-017-layers-composition.md) (máscara de capa en el compositor), [ADR-018](ADR-018-render-pipeline.md) (estimador `budget-v3`) y [ADR-020](ADR-020-public-api-cli.md) (`resolve_region`, informe y capacidades). Aplica ADR-012 (presupuestos), ADR-015 (máscaras de primitivas) y ADR-016 (transformaciones). Ampliado por [ADR-023](ADR-023-aggdraw-paths.md): la hoja de máscara `path` deja de estar prevista (`PLANNED_MASK_TYPES` queda vacío) y el estimador pasa a `budget-v4`.
 
 ## Contexto
 

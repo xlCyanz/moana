@@ -80,6 +80,12 @@ def test_every_mask_type_is_accepted(minimal: dict[str, Any]) -> None:
         rect("r"),
         {"id": "e", "type": "ellipse", "box": [0, 0, 6, 4]},
         {"id": "g", "type": "polygon", "points": [[0, 0], [6, 0], [3, 5]]},
+        {
+            "id": "v",
+            "type": "path",
+            "backend": "aggdraw-v1",
+            "commands": [["M", 0, 0], ["L", 1536, 0], ["L", 768, 1280], ["Z"]],
+        },
         combo("u", "union", "p", "l"),
         combo("i", "intersect", "r", "e"),
         combo("s", "subtract", "g", "p", "l"),
@@ -155,11 +161,15 @@ def test_unknown_mask_type_lists_mask_types(minimal: dict[str, Any]) -> None:
     assert raised.value.details[0].message == "Mask requires a 'type' member"
 
 
-def test_path_mask_is_a_planned_capability(minimal: dict[str, Any]) -> None:
-    with pytest.raises(errors.UnsupportedOperation) as raised:
+def test_path_mask_is_no_longer_planned(minimal: dict[str, Any]) -> None:
+    """MOANA-007 (ADR-023): a malformed path leaf is a validation error, not planned."""
+    with pytest.raises(errors.ValidationError) as raised:
         validate_document(with_masks(minimal, [{"id": "m", "type": "path", "commands": []}]))
-    detail = raised.value.details[0]
-    assert (detail.json_pointer, detail.context["capability"]) == ("/masks/0/type", "path")
+    assert {detail.code for detail in raised.value.details} == {"VALIDATION_ERROR"}
+    assert {detail.json_pointer for detail in raised.value.details} == {
+        "/masks/0/backend",
+        "/masks/0/commands",
+    }
 
 
 def test_null_mask_id_is_rejected(minimal: dict[str, Any]) -> None:
