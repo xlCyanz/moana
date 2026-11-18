@@ -23,6 +23,7 @@ implemented yet; it is listed in :data:`PLANNED_FUNCTIONS`, not exported.
 from moana.api.inspection import (
     AVAILABLE_FUNCTIONS,
     PLANNED_FUNCTIONS,
+    BackendSummary,
     BudgetReport,
     Capabilities,
     DocumentReport,
@@ -52,6 +53,7 @@ __all__ = [
     "AVAILABLE_FUNCTIONS",
     "MAX_SCALE",
     "PLANNED_FUNCTIONS",
+    "BackendSummary",
     "BudgetReport",
     "Capabilities",
     "Deadline",

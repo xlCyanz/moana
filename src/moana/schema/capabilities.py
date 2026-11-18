@@ -25,6 +25,7 @@ __all__ = [
     "SUPPORTED_MASK_SHAPES",
     "SUPPORTED_MASK_TYPES",
     "SUPPORTED_OPERATION_TYPES",
+    "SUPPORTED_PATH_BACKENDS",
     "SUPPORTED_PROFILES",
     "SUPPORTED_SCHEMA_VERSIONS",
 ]
@@ -32,8 +33,13 @@ __all__ = [
 SCHEMA_VERSION: Final = "1.0"
 SUPPORTED_SCHEMA_VERSIONS: Final = frozenset({SCHEMA_VERSION})
 
-SUPPORTED_OPERATION_TYPES: Final = frozenset({"ellipse", "line", "pixel", "polygon", "rect"})
-PLANNED_OPERATION_TYPES: Final = frozenset({"flood_fill", "path"})
+SUPPORTED_OPERATION_TYPES: Final = frozenset(
+    {"ellipse", "line", "path", "pixel", "polygon", "rect"}
+)
+PLANNED_OPERATION_TYPES: Final = frozenset({"flood_fill"})
+# Raster backends a ``path`` may name (ADR-023). The schema accepts the label; whether
+# this environment can render it is a runtime capability (``moana.geometry.paths``).
+SUPPORTED_PATH_BACKENDS: Final = frozenset({"aggdraw-v1"})
 
 SUPPORTED_BLEND_MODES: Final = frozenset({"normal"})
 PLANNED_BLEND_MODES: Final = frozenset({"multiply", "screen"})
@@ -41,11 +47,12 @@ PLANNED_BLEND_MODES: Final = frozenset({"multiply", "screen"})
 SUPPORTED_PROFILES: Final = frozenset({"rgba", "strict"})
 
 # Semantic masks and regions (ADR-022): leaves reuse the primitive geometry in canvas
-# coordinates; combinations fold mask IDs. Path masks arrive with paths (MOANA-007).
-SUPPORTED_MASK_SHAPES: Final = frozenset({"ellipse", "line", "pixel", "polygon", "rect"})
+# coordinates; combinations fold mask IDs. Path leaves arrived with paths (MOANA-007,
+# ADR-023): no mask type is planned any more.
+SUPPORTED_MASK_SHAPES: Final = frozenset({"ellipse", "line", "path", "pixel", "polygon", "rect"})
 SUPPORTED_MASK_OPERATORS: Final = frozenset({"intersect", "subtract", "union", "xor"})
 SUPPORTED_MASK_TYPES: Final = SUPPORTED_MASK_SHAPES | SUPPORTED_MASK_OPERATORS
-PLANNED_MASK_TYPES: Final = frozenset({"path"})
+PLANNED_MASK_TYPES: Final[frozenset[str]] = frozenset()
 
 # Optional root collections with a 1.0 grammar.
 SUPPORTED_COLLECTIONS: Final = frozenset({"masks", "regions"})

@@ -8,7 +8,9 @@
    ``None`` (schema 1.0 has no animations).
 2. **Resolution**: the schema palette becomes a :class:`moana.palette.Palette` and
    every operation colour is resolved to its ``Rgba``; an operation type without a
-   registered rasteriser is ``UNSUPPORTED_OPERATION``. Mask and region references
+   registered rasteriser is ``UNSUPPORTED_OPERATION``, and so is a document with a
+   ``path`` (operation or mask leaf) when the ``aggdraw-v1`` backend is missing or
+   untested (ADR-023), before any budget or raster. Mask and region references
    were already resolved as a DAG by validation: unknown references and cycles fail
    there, before anything is rasterised (ADR-022).
 3. **Budget**: :func:`moana.render.budget.plan_budget` rejects the request before any
@@ -21,7 +23,9 @@
 5. **Raster and composition**: :func:`moana.layers.compose` builds one mask at a time,
    in array order, between deadline checks.
 
-Order comes only from document arrays: no sets, ``hash()``, clock, locale, global
+A document with paths records the backend and the AggDraw and Pillow versions in
+its :class:`Provenance` (``vector_backend``, ``vector_backend_versions``); others leave
+them empty. Order comes only from document arrays: no sets, ``hash()``, clock, locale, global
 state or concurrency decide pixels. The document is never modified and nothing is
 read from or written to disk.
 """
@@ -37,8 +41,12 @@ from moana.core.errors import ReferenceError, UnsupportedOperation
 from moana.core.procedural import RNG_VERSION
 from moana.geometry import (
     Mask,
+    PathBackend,
+    backend_unavailable_error,
+    path_backend,
     rasterize_ellipse,
     rasterize_line,
+    rasterize_path,
     rasterize_pixel,
     rasterize_polygon,
     rasterize_rect,
@@ -70,6 +78,8 @@ from moana.schema import (
     LineMask,
     LineOperation,
     Operation,
+    PathMask,
+    PathOperation,
     PixelMask,
     PixelOperation,
     PolygonMask,
@@ -86,7 +96,7 @@ from moana.schema import MaskNode as DocumentMask
 
 __all__ = ["RENDERABLE_OPERATION_TYPES", "render"]
 
-RENDERABLE_OPERATION_TYPES: Final = ("pixel", "line", "rect", "ellipse", "polygon")
+RENDERABLE_OPERATION_TYPES: Final = ("pixel", "line", "rect", "ellipse", "polygon", "path")
 """Operation types with a registered rasteriser, in registration order."""
 
 EMPTY_BOUNDS: Final = "empty_bounds"
@@ -106,6 +116,8 @@ def _rasterize(operation: Operation | ShapeMask, dimensions: Dimensions) -> Mask
             return rasterize_ellipse(operation.bbox, dimensions)
         case PolygonOperation() | PolygonMask():
             return rasterize_polygon([Point(*point) for point in operation.points], dimensions)
+        case PathOperation() | PathMask():
+            return rasterize_path(operation.path, dimensions)
         case _:  # pragma: no cover - a new operation type must register its rasteriser
             assert_never(operation)
 
@@ -119,7 +131,20 @@ def _check_frame(frame_id: str | None) -> None:
     )
 
 
-def _check_renderable(document: Document) -> None:
+def _first_path(document: Document) -> str | None:
+    """Pointer of the first path operation or path mask leaf, in document order."""
+    for layer_index, layer in enumerate(document.layers):
+        for index, operation in enumerate(layer.operations):
+            if isinstance(operation, PathOperation):
+                return f"/layers/{layer_index}/operations/{index}"
+    for index, mask in enumerate(document.masks):
+        if isinstance(mask, PathMask):
+            return f"/masks/{index}"
+    return None
+
+
+def _check_renderable(document: Document) -> PathBackend | None:
+    """Reject operations without rasteriser and paths without backend; probe it once."""
     for layer_index, layer in enumerate(document.layers):
         for index, operation in enumerate(layer.operations):
             if operation.type not in RENDERABLE_OPERATION_TYPES:
@@ -128,6 +153,22 @@ def _check_renderable(document: Document) -> None:
                     json_pointer=f"/layers/{layer_index}/operations/{index}/type",
                     context={"reason": "no_rasterizer", "type": operation.type},
                 )
+    pointer = _first_path(document)
+    if pointer is None:
+        return None
+    backend = path_backend()
+    if not backend.available:
+        raise backend_unavailable_error(backend, json_pointer=f"{pointer}/backend")
+    return backend
+
+
+def _backend_versions(backend: PathBackend | None) -> tuple[str, ...]:
+    if backend is None:
+        return ()
+    versions = [f"aggdraw=={backend.version}"]
+    if backend.pillow_version is not None:
+        versions.append(f"pillow=={backend.pillow_version}")
+    return tuple(versions)
 
 
 def _plan_masks(document: Document, dimensions: Dimensions) -> dict[str, MaskNode]:
@@ -221,7 +262,7 @@ def render(
 
     document = validate_document(normalize_document(document))
     _check_frame(frame_id)
-    _check_renderable(document)
+    backend = _check_renderable(document)
     profile = document.canvas.profile
     palette = Palette.from_mapping(document.palette.model_dump(mode="json"), profile=profile)
     estimate = plan_budget(document, limits, deadline=deadline)
@@ -251,6 +292,8 @@ def render(
         renderer_backend=RENDERER_BACKEND,
         estimator_version=estimate.estimator_version,
         rng_version=RNG_VERSION,
+        vector_backend=None if backend is None else backend.name,
+        vector_backend_versions=_backend_versions(backend),
     )
     return RenderResult(
         width=dimensions.width,

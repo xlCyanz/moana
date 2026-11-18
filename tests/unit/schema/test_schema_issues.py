@@ -115,6 +115,7 @@ def test_unknown_type_lists_supported_operations(minimal: dict[str, Any]) -> Non
     assert raised.value.details[0].context["expected"] == (
         "ellipse",
         "line",
+        "path",
         "pixel",
         "polygon",
         "rect",

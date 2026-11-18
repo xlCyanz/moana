@@ -8,7 +8,7 @@ Prioridades: P0 fundamento/bloqueante; P1 funcionalidad central; P2 avanzada; P3
 
 [Roadmap](roadmap.md) · [Dependencias](dependency-map.md) · [Trazabilidad](traceability.md) · [Ciclo de vida](../guides/issue-lifecycle.md).
 
-Estados: {'blocked': 16, 'done': 15, 'ready': 5}.
+Estados: {'blocked': 16, 'done': 16, 'ready': 4}.
 
 | Issue | Resultado | Fase | Prioridad | Estado | Dependencias directas |
 | --- | --- | --- | --- | --- | --- |
@@ -19,7 +19,7 @@ Estados: {'blocked': 16, 'done': 15, 'ready': 5}.
 | [MOANA-004](MOANA-004.md) | Crear lienzo RGBA y propiedad de buffers | P1 | P1 | done | MOANA-001, MOANA-003 |
 | [MOANA-005](MOANA-005.md) | Implementar paletas y rampas | P1 | P1 | done | MOANA-001, MOANA-002 |
 | [MOANA-006](MOANA-006.md) | Rasterizar primitivas enteras y flood fill | P1 | P1 | done | MOANA-004, MOANA-005 |
-| [MOANA-007](MOANA-007.md) | Añadir adaptador de paths AggDraw | P3 | P2 | ready | MOANA-006, MOANA-010, MOANA-028 |
+| [MOANA-007](MOANA-007.md) | Añadir adaptador de paths AggDraw | P3 | P2 | done | MOANA-006, MOANA-010, MOANA-028 |
 | [MOANA-008](MOANA-008.md) | Añadir transformaciones pixel-perfect | P1 | P1 | done | MOANA-006 |
 | [MOANA-009](MOANA-009.md) | Implementar capas, grupos y composición | P2 | P1 | done | MOANA-002, MOANA-004, MOANA-005, MOANA-006, MOANA-008 |
 | [MOANA-010](MOANA-010.md) | Construir pipeline de render determinista | P2 | P0 | done | MOANA-002, MOANA-003, MOANA-006, MOANA-009 |

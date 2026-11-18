@@ -19,12 +19,16 @@ from pydantic import (
     BaseModel,
     BeforeValidator,
     ConfigDict,
+    Discriminator,
     Field,
+    PrivateAttr,
     StringConstraints,
+    Tag,
     WithJsonSchema,
 )
 from pydantic.json_schema import SkipJsonSchema
-from pydantic_core import PydanticCustomError
+from pydantic_core import InitErrorDetails, PydanticCustomError
+from pydantic_core import ValidationError as PydanticValidationError
 
 from moana.core import ids
 from moana.core.coordinates import (
@@ -35,6 +39,7 @@ from moana.core.coordinates import (
     Dimensions,
     Point,
 )
+from moana.core.errors import ValidationError as DomainValidationError
 from moana.core.limits import (
     MAX_COLORS_RGBA,
     MAX_COLORS_STRICT,
@@ -42,8 +47,15 @@ from moana.core.limits import (
     MAX_MASK_OPERANDS,
     MAX_MASKS,
     MAX_OPERATIONS,
+    MAX_PATH_COMMANDS,
     MAX_REGIONS,
     MAX_VERTICES,
+)
+from moana.core.vector_path import (
+    MAX_PATH_COORDINATE,
+    MIN_PATH_COMMANDS,
+    FixedPath,
+    parse_path,
 )
 
 __all__ = [
@@ -54,6 +66,7 @@ __all__ = [
     "MAX_MASK_OPERANDS",
     "MAX_METADATA_STRING_BYTES",
     "MAX_OPERATIONS",
+    "MAX_PATH_COMMANDS",
     "MAX_REGIONS",
     "MAX_REVISION",
     "MAX_SEED",
@@ -73,6 +86,9 @@ __all__ = [
     "Metadata",
     "Operation",
     "Palette",
+    "PathCommand",
+    "PathMask",
+    "PathOperation",
     "PixelMask",
     "PixelOperation",
     "PolygonMask",
@@ -270,8 +286,120 @@ class PolygonOperation(_Operation):
     ]
 
 
+def _command_tag(value: object) -> str | None:
+    """Discriminator of a path command: its first item, the command letter."""
+    if isinstance(value, list | tuple) and value and isinstance(value[0], str):
+        return value[0]
+    return None
+
+
+def _check_path(title: str, value: tuple[object, ...]) -> FixedPath:
+    """Parse validated commands once: order and segment rules of ``parse_path``.
+
+    A failure becomes a Pydantic error located at ``commands/{index}`` (or at
+    ``commands`` when it concerns the whole path), like arity and type errors.
+    """
+    try:
+        return parse_path(value)
+    except DomainValidationError as error:
+        context = {key: v for key, v in error.context.items() if isinstance(v, int)}
+        index = error.context.get("index")
+        location: tuple[str | int, ...] = ("commands",)
+        if isinstance(index, int):
+            location = ("commands", index)
+        reason = PydanticCustomError(str(error.context["reason"]), error.message, context)
+        detail = InitErrorDetails(type=reason, loc=location, input=value)
+        raise PydanticValidationError.from_exception_data(title, [detail]) from None
+
+
+class _CachedPath(_Model):
+    """The :class:`FixedPath` of ``commands``, parsed once when the model is built.
+
+    The cache remembers the very ``commands`` tuple it parsed: a copy whose
+    ``commands`` were replaced without validation parses (and checks) them again.
+    """
+
+    _fixed: tuple[tuple[object, ...], FixedPath] | None = PrivateAttr(default=None)
+
+    def _cache(self, commands: tuple[object, ...]) -> None:
+        self._fixed = (commands, _check_path(type(self).__name__, commands))
+
+    def _cached(self, commands: tuple[object, ...]) -> FixedPath:
+        cached = self._fixed
+        if cached is not None and cached[0] is commands:
+            return cached[1]
+        return parse_path(commands)
+
+
+PathCoordinate = Annotated[int, Field(ge=-MAX_PATH_COORDINATE, le=MAX_PATH_COORDINATE)]
+"""Path coordinate in 1/256 pixel units (fixed point, ADR-023)."""
+_C = PathCoordinate
+PathCommand = Annotated[
+    Annotated[tuple[Literal["M"], _C, _C], BeforeValidator(_as_tuple), Tag("M")]
+    | Annotated[tuple[Literal["L"], _C, _C], BeforeValidator(_as_tuple), Tag("L")]
+    | Annotated[tuple[Literal["Q"], _C, _C, _C, _C], BeforeValidator(_as_tuple), Tag("Q")]
+    | Annotated[tuple[Literal["C"], _C, _C, _C, _C, _C, _C], BeforeValidator(_as_tuple), Tag("C")]
+    | Annotated[tuple[Literal["Z"]], BeforeValidator(_as_tuple), Tag("Z")],
+    Discriminator(
+        _command_tag,
+        custom_error_type="path_command_invalid",
+        custom_error_message="Path command must be an array starting with M, L, Q, C or Z",
+    ),
+]
+"""``["M", x, y]``, ``["L", x, y]``, ``["Q", x1, y1, x, y]``, ``["C", x1, y1, x2, y2, x, y]``
+or ``["Z"]``; coordinates in 1/256 pixel."""
+
+
+def _command_array(value: object) -> object:
+    """Array to tuple, rejecting fewer than two commands before reading any of them.
+
+    ``min_length`` would count only the commands that validated, and report a short
+    path next to the real error of an invalid command.
+    """
+    value = _as_tuple(value)
+    if isinstance(value, tuple) and len(value) < MIN_PATH_COMMANDS:
+        raise PydanticCustomError(
+            "too_short",
+            "Path should have at least {min_length} commands",
+            {"min_length": MIN_PATH_COMMANDS},
+        )
+    return value
+
+
+PathCommands = Annotated[
+    tuple[PathCommand, ...],
+    Field(max_length=MAX_PATH_COMMANDS, json_schema_extra={"minItems": MIN_PATH_COMMANDS}),
+    BeforeValidator(_command_array),
+]
+
+
+class PathOperation(_Operation, _CachedPath):
+    """Nonzero fill of a fixed-point path by the ``aggdraw-v1`` backend (ADR-023).
+
+    Coverage at native scale is binarised (``>= 128``); subpaths close implicitly.
+    """
+
+    type: Literal["path"]
+    backend: Literal["aggdraw-v1"]
+    commands: PathCommands
+
+    def model_post_init(self, context: Any, /) -> None:
+        """Parse the commands once (order and segment rules)."""
+        self._cache(self.commands)
+
+    @property
+    def path(self) -> FixedPath:
+        """The validated, flattenable path as a ``core`` value (parsed once)."""
+        return self._cached(self.commands)
+
+
 Operation = Annotated[
-    PixelOperation | LineOperation | RectOperation | EllipseOperation | PolygonOperation,
+    PixelOperation
+    | LineOperation
+    | RectOperation
+    | EllipseOperation
+    | PolygonOperation
+    | PathOperation,
     Field(discriminator="type"),
 ]
 """Operations of schema 1.0, discriminated by ``type``."""
@@ -336,6 +464,23 @@ class PolygonMask(_Mask):
     ]
 
 
+class PathMask(_Mask, _CachedPath):
+    """Mask of a fixed-point path filled by ``aggdraw-v1`` (same rule as ``path``)."""
+
+    type: Literal["path"]
+    backend: Literal["aggdraw-v1"]
+    commands: PathCommands
+
+    def model_post_init(self, context: Any, /) -> None:
+        """Parse the commands once (order and segment rules)."""
+        self._cache(self.commands)
+
+    @property
+    def path(self) -> FixedPath:
+        """The validated, flattenable path as a ``core`` value (parsed once)."""
+        return self._cached(self.commands)
+
+
 class CombinationMask(_Mask):
     """Boolean node over 2 to 64 mask IDs, folded in array order.
 
@@ -374,7 +519,7 @@ class XorMask(CombinationMask):
     type: Literal["xor"]
 
 
-ShapeMask = PixelMask | LineMask | RectMask | EllipseMask | PolygonMask
+ShapeMask = PixelMask | LineMask | RectMask | EllipseMask | PolygonMask | PathMask
 """Mask leaves: primitive geometry in canvas coordinates, without colour."""
 
 MaskNode = Annotated[
@@ -383,6 +528,7 @@ MaskNode = Annotated[
     | RectMask
     | EllipseMask
     | PolygonMask
+    | PathMask
     | UnionMask
     | IntersectMask
     | SubtractMask
