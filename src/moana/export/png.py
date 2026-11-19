@@ -208,8 +208,14 @@ def _palette_planes(palette: Palette) -> tuple[_Pixels, bytes, bytes]:
     return values, values[:, :3].tobytes(), values[:, 3].tobytes()
 
 
-def _indices(pixels: _Pixels, values: _Pixels) -> _Pixels:
-    """Index of each pixel's first equal palette value; no quantisation."""
+def palette_indices(pixels: _Pixels, values: _Pixels) -> _Pixels:
+    """Index of each pixel's first equal palette value; no quantisation.
+
+    ``pixels`` is a C-contiguous ``(h, w, 4)`` array and ``values`` an ``(N, 4)`` array
+    of normalised palette values, ``1 <= N <= 256``. Shared by indexed PNG and GIF
+    (ADR-034); a missing colour is ``ValidationError`` ``color_not_in_palette`` with
+    the first ``x``, ``y`` and the number of unmatched ``pixels``.
+    """
     keys = pixels.view(np.uint32).reshape(pixels.shape[:2])
     palette_keys = values.view(np.uint32).reshape(-1)
     order = np.argsort(palette_keys, kind="stable")  # stable: first declared entry wins
@@ -316,7 +322,7 @@ def encode_png(
     else:
         assert palette is not None  # checked above
         values, rgb, alpha = _palette_planes(palette)
-        indices = _scaled(_indices(pixels, values), scale)
+        indices = _scaled(palette_indices(pixels, values), scale)
         image = Image.frombytes("P", (out_width, out_height), indices.tobytes())
         image.putpalette(rgb, "RGB")
         data = _encode_image(image, transparency=alpha)

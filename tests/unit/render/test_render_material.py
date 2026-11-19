@@ -417,6 +417,24 @@ def test_selective_outline_last_segment_wins_and_turning_the_light_swaps_tones()
     assert grid(turned)[1] == ".000044." and grid(turned)[6] == ".kkkk44."
 
 
+def test_selective_outline_segment_hidden_by_a_later_segment_paints_nothing() -> None:
+    """``top`` is fully covered by the later ``all`` segment, so its visible part is
+    empty (the shade rule: the last segment wins) and only ``all`` paints the ring:
+    facing ``s`` against an ``n`` light takes t0 everywhere; no ``ink`` remains."""
+    masks = [rect("upper", [0, 0, 8, 3]), rect("whole", [0, 0, 8, 8])]
+    segments = [band("top", "upper", "n"), band("all", "whole", "s")]
+    assert grid(_outlined(segments, masks)) == [
+        "........",
+        ".000000.",
+        ".0bbbb0.",
+        ".0bbbb0.",
+        ".0bbbb0.",
+        ".0bbbb0.",
+        ".000000.",
+        "........",
+    ]
+
+
 def test_selective_outline_inner_side_and_segments_off_the_ring() -> None:
     masks = [rect("upper", [0, 0, 8, 3]), rect("far", [20, 20, 24, 24])]
     segments = [band("top", "upper", "n"), band("lost", "far", "s")]

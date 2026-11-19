@@ -72,6 +72,7 @@ from moana.core.limits import (
     MAX_LOOP_COUNT,
     MIN_FRAME_DURATION_MS,
 )
+from moana.export._frames import checked_sprite_frames
 from moana.export.atomic import commit_bytes
 from moana.export.png import (
     EXPORT_BYTES_PER_PIXEL,
@@ -452,75 +453,6 @@ def _check_sheet_budget(
 # --- encoding ----------------------------------------------------------------------
 
 
-def _frame_error(message: str, reason: str, index: int, **extra: int) -> ValidationError:
-    return ValidationError(
-        message, context={"field": "frames", "reason": reason, "index": index, **extra}
-    )
-
-
-def _checked_frames(frames: object) -> tuple[tuple[SpriteFrame, RasterFrame], ...]:
-    """Metadata and sizes of every frame, before any pixel is read or allocated."""
-    if isinstance(frames, str | bytes) or not isinstance(frames, Sequence):
-        raise TypeError("frames must be a sequence of sprite frames")
-    if len(frames) > MAX_ANIMATION_FRAMES:  # before touching any frame
-        context = {"resource": "frames", "limit": MAX_ANIMATION_FRAMES, "estimated": len(frames)}
-        raise BudgetExceeded(
-            "spritesheet exceeds the request budget",
-            context=context,
-            details=[
-                ErrorDetail(
-                    BudgetExceeded.code,
-                    "spritesheet frames exceed the request budget",
-                    context=context,
-                )
-            ],
-        )
-    checked: list[tuple[SpriteFrame, RasterFrame]] = []
-    seen: set[str] = set()
-    size: Pair | None = None
-    for index, frame in enumerate(frames):
-        raster = frame.result
-        width, height = raster.width, raster.height
-        require_int(width, "width", minimum=1, maximum=MAX_DIMENSION)
-        require_int(height, "height", minimum=1, maximum=MAX_DIMENSION)
-        if size is None:
-            size = (width, height)
-        elif (width, height) != size:
-            raise _frame_error(
-                "every frame of a sheet must have the same size", "size_mismatch", index
-            )
-        if not is_id(frame.frame_id):
-            raise _frame_error("frame_id must be a Moana ID", "invalid_id", index)
-        if frame.frame_id in seen:
-            raise _frame_error("frame IDs must be unique", "duplicate_frame", index)
-        seen.add(frame.frame_id)
-        duration = frame.duration_ms
-        if type(duration) is not int or not (
-            MIN_FRAME_DURATION_MS <= duration <= MAX_FRAME_DURATION_MS
-        ):
-            raise _frame_error(
-                "duration_ms must be an integer in 1..60000", "invalid_duration", index
-            )
-        pivot = frame.pivot
-        if not isinstance(pivot, Point) or not (0 <= pivot.x <= width and 0 <= pivot.y <= height):
-            raise _frame_error(
-                "pivot must be a Point inside the frame (edges included)",
-                "pivot_out_of_frame",
-                index,
-            )
-        if type(raster.rgba) is not bytes:
-            raise TypeError("frame.result.rgba must be bytes")
-        if len(raster.rgba) != width * height * 4:
-            raise _frame_error("frame RGBA size does not match its dimensions", "wrong_size", index)
-        pixels = np.frombuffer(raster.rgba, dtype=np.uint8).reshape(height, width, 4)
-        if not is_normalized(pixels):  # before the atlas exists
-            raise _frame_error(
-                "frame pixels with zero alpha must be (0, 0, 0, 0)", "not_normalized", index
-            )
-        checked.append((frame, raster))
-    return tuple(checked)
-
-
 @dataclass(frozen=True, slots=True)
 class _Atlas:
     width: int
@@ -593,12 +525,9 @@ def encode_spritesheet(
     """
     name = _check_name(image_name)
     playback = _check_animation(animation)
-    checked = _checked_frames(frames)
-    if not checked:
-        raise ValidationError(
-            "a spritesheet needs at least one frame",
-            context={"field": "frames", "reason": "empty_frames"},
-        )
+    checked = checked_sprite_frames(
+        frames, subject="spritesheet", check_pivot=True, check_pixels=True
+    )
     width, height = checked[0][1].width, checked[0][1].height
     layout = spritesheet_layout(
         len(checked), width, height, columns=columns, margin=margin, padding=padding, limits=limits
