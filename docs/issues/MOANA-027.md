@@ -8,7 +8,7 @@
 - Aliases históricos: MOA-027
 - Phase: P5
 - Priority: P1
-- Status: review
+- Status: done
 - Complexity: L (relativa, no estimación de tiempo)
 - Dependencies: [MOANA-017](MOANA-017.md), [MOANA-022](MOANA-022.md), [MOANA-026](MOANA-026.md), [MOANA-028](MOANA-028.md)
 - Related modules: examples, quality
@@ -43,13 +43,13 @@ No inventar aprobaciones humanas ni generar ejemplos finales con un modelo visua
 
 ## Acceptance criteria
 
-- [ ] AC1: Corpus cubre cinco categorías y pasa hard checks sin ocultar warnings
-- [ ] AC2: Sólo se califica profesional un ejemplo revisado por una persona con >=4 en categorías aplicables
+- [x] AC1: Corpus cubre cinco categorías y pasa hard checks sin ocultar warnings
+- [x] AC2: Sólo se califica profesional un ejemplo revisado por una persona con >=4 en categorías aplicables
 
 ## Required tests
 
-- [ ] T1: Render de todo el corpus y cambio localizado por región con diff
-- [ ] T2: Inspección visual documentada, estabilidad de animación y auditoría de procedencia
+- [x] T1: Render de todo el corpus y cambio localizado por región con diff
+- [x] T2: Inspección visual documentada, estabilidad de animación y auditoría de procedencia
 
 ## Expected deliverables
 
@@ -66,7 +66,7 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Guía para agentes de IA
 
-**Estado para agentes:** En revisión: sólo correcciones de la revisión; no añadir alcance.
+**Estado para agentes:** Completado; usar sólo como referencia del contrato entregado.
 
 ### 1. Preparación
 
@@ -142,6 +142,7 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 - scripts/corpus.py check/facts sin escritura: audita procedencia, versiones de renderer/estimador/semilla, digests, hard checks, categorías y huella del render revisado (un cambio de arte tras una revisión humana falla la auditoría); rechaza claves JSON duplicadas.
 - Los cinco ejemplos superan los hard checks con 0 advertencias y sin supresiones. Revisiones de agente: pixel-art (piernas separadas, ciclo de 6 frames con contrapeso, ruido de la rana, biseles del cofre a favor de la luz NW, periodo del tile), QA (invariante de rúbrica, ramas de auditoría parametrizadas) y documentación (licencia explícitamente pendiente, autoría de agente) aplicadas. Revisión artística humana PENDIENTE: ningún ejemplo es profesional.
 - Documentación: MOANA.md 0.1.25-draft (§19), ADR-037, module-contracts, examples/corpus/README.md, tests/visual/README.md. Gate local macOS: scripts/validate.py 3273 passed con src/moana al 100 %, corpus check OK, check_wheel OK, mypy --platform win32 OK, pre-commit OK; matriz pendiente en main. Seguimiento propuesto: reglas de clusters por frame en quality (fuera de alcance).
+- Aprobado por el propietario el 2026-11-17 tras revisión; PR #67 hacia develop.
 - AC1: tests/integration/test_art_corpus.py::test_five_categories_pass_hard_checks_and_show_every_warning (cinco categorías, hard checks superados, advertencias registradas iguales a las reales, sin supresiones), ::test_check_requires_the_five_categories, ::test_provenance_audit_passes; scripts/corpus.py check → «Corpus OK: 5 examples, 5 pending human review».
 - AC2: tests/unit/quality/test_quality_rubric.py::test_professional_without_human_review_is_rejected, ::test_agent_assessment_never_makes_an_example_professional, ::test_one_low_score_blocks_professional, ::test_failed_hard_checks_block_professional, ::test_fixture_human_review_makes_a_professional_example, ::test_malformed_reviews_are_rejected; tests/integration/test_art_corpus.py::test_real_records_satisfy_the_rubric_invariant, ::test_real_corpus_is_pending_until_reviewed.
 - T1: tests/integration/test_art_corpus.py::test_corpus_renders_to_its_pinned_digests (doble render y digests por frame), ::test_localized_shirt_recolour_stays_inside_the_shirt_region (oráculo con cajas literales y expected/actual/diff del harness); tests/visual/test_corpus_previews.py::test_corpus_preview_matches_its_golden, ::test_scale_is_nearest_neighbour, ::test_cluster_view_singletons_agree_with_quality_metrics.

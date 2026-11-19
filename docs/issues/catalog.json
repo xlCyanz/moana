@@ -1876,7 +1876,7 @@
       "id": "MOANA-027",
       "title": "Construir corpus artístico y rúbrica humana",
       "phase": "P5",
-      "status": "review",
+      "status": "done",
       "priority": "P1",
       "dependencies": [
         "MOANA-017",
@@ -1908,7 +1908,8 @@
         "Rúbrica moana-rubric/1 validada por moana.quality.parse_rubric: categorías legibilidad, silueta, clusters, paleta, luz/material y continuidad temporal en animaciones; cada una pending_human_review o reviewed (1–5); professional sólo con hard checks superados, human_review (reviewer_kind human, render_fingerprint del render revisado) y todas las puntuaciones ≥ 4; agent_assessment etiquetado como no humano y nunca cuenta.",
         "scripts/corpus.py check/facts sin escritura: audita procedencia, versiones de renderer/estimador/semilla, digests, hard checks, categorías y huella del render revisado (un cambio de arte tras una revisión humana falla la auditoría); rechaza claves JSON duplicadas.",
         "Los cinco ejemplos superan los hard checks con 0 advertencias y sin supresiones. Revisiones de agente: pixel-art (piernas separadas, ciclo de 6 frames con contrapeso, ruido de la rana, biseles del cofre a favor de la luz NW, periodo del tile), QA (invariante de rúbrica, ramas de auditoría parametrizadas) y documentación (licencia explícitamente pendiente, autoría de agente) aplicadas. Revisión artística humana PENDIENTE: ningún ejemplo es profesional.",
-        "Documentación: MOANA.md 0.1.25-draft (§19), ADR-037, module-contracts, examples/corpus/README.md, tests/visual/README.md. Gate local macOS: scripts/validate.py 3273 passed con src/moana al 100 %, corpus check OK, check_wheel OK, mypy --platform win32 OK, pre-commit OK; matriz pendiente en main. Seguimiento propuesto: reglas de clusters por frame en quality (fuera de alcance)."
+        "Documentación: MOANA.md 0.1.25-draft (§19), ADR-037, module-contracts, examples/corpus/README.md, tests/visual/README.md. Gate local macOS: scripts/validate.py 3273 passed con src/moana al 100 %, corpus check OK, check_wheel OK, mypy --platform win32 OK, pre-commit OK; matriz pendiente en main. Seguimiento propuesto: reglas de clusters por frame en quality (fuera de alcance).",
+        "Aprobado por el propietario el 2026-11-17 tras revisión; PR #67 hacia develop."
       ],
       "aliases": [
         "MOA-027"
@@ -2135,7 +2136,7 @@
       "id": "MOANA-031",
       "title": "Medir rendimiento y memoria de referencia",
       "phase": "P5",
-      "status": "blocked",
+      "status": "ready",
       "priority": "P1",
       "dependencies": [
         "MOANA-010",
@@ -2180,7 +2181,7 @@
       "risks": [
         "No usar fluctuaciones de runners compartidos como gate rígido sin estabilizar entorno."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-027",
+      "blocking_reason": null,
       "acceptance_evidence": {},
       "test_evidence": {}
     },
@@ -2411,7 +2412,7 @@
       "risks": [
         "No declarar CI remoto de cambios locales ni licencia decidida sin evidencia del propietario."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-027, MOANA-030, MOANA-032, MOANA-033, MOANA-034",
+      "blocking_reason": "Dependencias pendientes: MOANA-030, MOANA-032, MOANA-033, MOANA-034",
       "acceptance_evidence": {},
       "test_evidence": {}
     }
