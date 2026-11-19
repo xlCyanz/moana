@@ -15,6 +15,7 @@ Importación: dentro de `tests/visual/` se usa el import relativo `from .harness
 - `compare_rgba(expected, actual)` devuelve tamaños, digests (§14: SHA-256 de ancho y alto uint32 big-endian + RGBA row-major), conteo de píxeles distintos y bbox semiabierta. Con dimensiones distintas ambas imágenes se anclan arriba a la izquierda y cuentan como diferentes los píxeles cubiertos por una sola.
 - `assert_matches_golden` acepta `Canvas` o un array `uint8 (alto, ancho, 4)`. El golden debe ser PNG RGBA de un frame; se decodifica con los presupuestos de `canvas_from_pillow`.
 - Todas las pruebas de esta carpeta llevan el marker `visual`: `uv run pytest -m visual`.
+- Goldens fuera de `goldens/`: las previews del corpus artístico (MOANA-027) viven en `examples/corpus/*/previews/` y las compara `test_corpus_previews.py` con `name="corpus__<slug>__<vista>"`, así que su diagnóstico va a `artifacts/visual/corpus__<slug>__<vista>/`. El flujo de actualización es el mismo; ver [el README del corpus](../../examples/corpus/README.md).
 
 ## Diagnóstico al fallar
 

@@ -1,0 +1,106 @@
+{
+  "schema_version": "1.0",
+  "id": "corpus_frog",
+  "revision": 0,
+  "seed": 4049,
+  "canvas": {"width": 32, "height": 27, "profile": "strict"},
+  "palette": {
+    "id": "palette_frog",
+    "colors": [
+      {"id": "ink", "rgba": "#1C2026FF"},
+      {"id": "frog_0", "rgba": "#2F5B3AFF"},
+      {"id": "frog_1", "rgba": "#4C8A3FFF"},
+      {"id": "frog_2", "rgba": "#7DBA4AFF"},
+      {"id": "frog_3", "rgba": "#B9E07AFF"},
+      {"id": "belly_0", "rgba": "#C9B260FF"},
+      {"id": "belly_1", "rgba": "#EBDDA0FF"},
+      {"id": "eye_white", "rgba": "#F4F1E4FF"},
+      {"id": "mouth", "rgba": "#7A2E3AFF"}
+    ],
+    "ramps": [
+      {"id": "frog_ramp", "colors": ["frog_0", "frog_1", "frog_2", "frog_3"]},
+      {"id": "belly_ramp", "colors": ["belly_0", "belly_1"]}
+    ]
+  },
+  "masks": [
+    {"id": "body_m", "type": "ellipse", "box": [5, 9, 27, 23]},
+    {"id": "body_dr", "type": "ellipse", "box": [7, 11, 29, 25]},
+    {"id": "body_ul", "type": "ellipse", "box": [3, 7, 25, 21]},
+    {"id": "bump_left_m", "type": "ellipse", "box": [6, 4, 15, 13]},
+    {"id": "bump_left_dr", "type": "ellipse", "box": [8, 6, 17, 15]},
+    {"id": "bump_left_ul", "type": "ellipse", "box": [4, 2, 13, 11]},
+    {"id": "bump_right_m", "type": "ellipse", "box": [17, 4, 26, 13]},
+    {"id": "bump_right_dr", "type": "ellipse", "box": [19, 6, 28, 15]},
+    {"id": "bump_right_ul", "type": "ellipse", "box": [15, 2, 24, 11]},
+    {"id": "foot_left_m", "type": "ellipse", "box": [3, 19, 11, 25]},
+    {"id": "foot_left_dr", "type": "ellipse", "box": [5, 21, 13, 27]},
+    {"id": "foot_left_ul", "type": "ellipse", "box": [1, 17, 9, 23]},
+    {"id": "foot_right_m", "type": "ellipse", "box": [21, 19, 29, 25]},
+    {"id": "foot_right_dr", "type": "ellipse", "box": [23, 21, 31, 27]},
+    {"id": "foot_right_ul", "type": "ellipse", "box": [19, 17, 27, 23]},
+    {"id": "frog_shape", "type": "union", "masks": ["body_m", "bump_left_m", "bump_right_m", "foot_left_m", "foot_right_m"]},
+    {"id": "frog_dr", "type": "union", "masks": ["body_dr", "bump_left_dr", "bump_right_dr", "foot_left_dr", "foot_right_dr"]},
+    {"id": "frog_ul", "type": "union", "masks": ["body_ul", "bump_left_ul", "bump_right_ul", "foot_left_ul", "foot_right_ul"]},
+    {"id": "frog_lit", "type": "subtract", "masks": ["frog_shape", "frog_dr"]},
+    {"id": "frog_shadow", "type": "subtract", "masks": ["frog_shape", "frog_ul"]},
+    {"id": "belly_m", "type": "ellipse", "box": [10, 16, 22, 23]},
+    {"id": "belly_ul", "type": "ellipse", "box": [8, 14, 20, 21]},
+    {"id": "belly_shadow", "type": "subtract", "masks": ["belly_m", "belly_ul"]},
+    {"id": "feet_m", "type": "union", "masks": ["foot_left_m", "foot_right_m"]},
+    {"id": "feet_front", "type": "subtract", "masks": ["feet_m", "body_m"]},
+    {"id": "lit_cut", "type": "ellipse", "box": [6, 10, 30, 26]},
+    {"id": "frog_lit_wide", "type": "subtract", "masks": ["frog_shape", "lit_cut"]},
+    {"id": "eye_left_m", "type": "rect", "box": [9, 7, 12, 10]},
+    {"id": "eye_right_m", "type": "rect", "box": [20, 7, 23, 10]},
+    {"id": "eyes_m", "type": "union", "masks": ["eye_left_m", "eye_right_m"]},
+    {"id": "upper_left", "type": "polygon", "points": [[0, 0], [32, 0], [0, 27]]}
+  ],
+  "regions": [
+    {"id": "skin", "mask_id": "frog_shape", "operation_ids": ["skin_shading", "back_spot_left", "back_spot_right", "back_spot_top", "bump_highlight_left", "bump_highlight_right", "crease_left", "crease_left_tip", "crease_right", "crease_right_tip"]},
+    {"id": "belly", "mask_id": "belly_m", "operation_ids": ["belly_shading", "belly_floor"]},
+    {"id": "eyes", "mask_id": "eyes_m", "operation_ids": ["eye_left_white", "eye_right_white", "pupil_left", "pupil_right", "catchlight_left", "catchlight_right"]}
+  ],
+  "layers": [
+    {
+      "id": "skin_layer",
+      "name": "Piel",
+      "operations": [
+        {"id": "skin_shading", "type": "shade", "ramp": "frog_ramp", "ramp_order": "monotonic", "light": {"direction": "nw", "height": 1, "intensity": 1, "ambient": 1}, "bands": [{"id": "band_skin", "mask_id": "frog_shape", "facing": "front", "offset": 0}, {"id": "band_skin_shadow", "mask_id": "frog_shadow", "facing": "se", "offset": 0}, {"id": "band_skin_lit", "mask_id": "frog_lit_wide", "facing": "nw", "offset": 0}, {"id": "band_feet", "mask_id": "feet_front", "facing": "se", "offset": 1}]},
+        {"id": "belly_shading", "type": "shade", "ramp": "belly_ramp", "ramp_order": "monotonic", "light": {"direction": "nw", "height": 1, "intensity": 1, "ambient": 0}, "bands": [{"id": "band_belly", "mask_id": "belly_m", "facing": "nw", "offset": 0}, {"id": "band_belly_shadow", "mask_id": "belly_shadow", "facing": "se", "offset": 1}]},
+        {"id": "frog_outline", "type": "selective_outline", "mask_id": "frog_shape", "width": 1, "side": "outer", "color": "ink", "ramp": "frog_ramp", "ramp_order": "monotonic", "light": {"direction": "nw", "height": 1, "intensity": 1, "ambient": 1}, "segments": [{"id": "outline_lit", "mask_id": "upper_left", "facing": "nw", "offset": -2}]}
+      ]
+    },
+    {
+      "id": "face_layer",
+      "name": "Cara",
+      "operations": [
+        {"id": "back_spot_left", "type": "rect", "box": [13, 11, 15, 12], "color": "frog_0"},
+        {"id": "back_spot_right", "type": "rect", "box": [18, 12, 20, 13], "color": "frog_0"},
+        {"id": "back_spot_top", "type": "rect", "box": [16, 9, 18, 10], "color": "frog_0"},
+        {"id": "bump_highlight_left", "type": "rect", "box": [8, 5, 12, 6], "color": "frog_3"},
+        {"id": "bump_highlight_right", "type": "rect", "box": [19, 5, 23, 6], "color": "frog_3"},
+        {"id": "crease_left", "type": "line", "start": [5, 21], "end": [9, 21], "color": "frog_0"},
+        {"id": "crease_left_tip", "type": "pixel", "at": [10, 20], "color": "frog_0"},
+        {"id": "crease_right", "type": "line", "start": [22, 21], "end": [26, 21], "color": "frog_0"},
+        {"id": "crease_right_tip", "type": "pixel", "at": [21, 20], "color": "frog_0"},
+        {"id": "belly_floor", "type": "rect", "box": [10, 22, 22, 23], "color": "frog_0"},
+        {"id": "eye_left_white", "type": "rect", "box": [9, 7, 12, 10], "color": "eye_white"},
+        {"id": "eye_right_white", "type": "rect", "box": [20, 7, 23, 10], "color": "eye_white"},
+        {"id": "pupil_left", "type": "rect", "box": [10, 7, 12, 10], "color": "ink"},
+        {"id": "pupil_right", "type": "rect", "box": [21, 7, 23, 10], "color": "ink"},
+        {"id": "catchlight_left", "type": "pixel", "at": [10, 7], "color": "eye_white"},
+        {"id": "catchlight_right", "type": "pixel", "at": [21, 7], "color": "eye_white"},
+        {"id": "mouth_line", "type": "line", "start": [9, 15], "end": [22, 15], "color": "mouth"},
+        {"id": "mouth_corner_left", "type": "pixel", "at": [8, 14], "color": "mouth"},
+        {"id": "mouth_corner_right", "type": "pixel", "at": [23, 14], "color": "mouth"}
+      ]
+    }
+  ],
+  "metadata": {
+    "title": "Rana (corpus MOANA-027, criatura)",
+    "description": "Criatura frontal de 32 x 27: rana con sombreado por bandas y contorno selectivo, luz noroeste.",
+    "author": "Agente de IA de programación bajo la dirección del usuario del repositorio",
+    "tags": ["corpus", "creature", "MOANA-027"],
+    "provenance": "Fuente propia creada por un agente de IA con operaciones de Moana en este repositorio (MOANA-027); sin assets externos. Ver frog.corpus.json. Revisión artística humana: PENDIENTE."
+  }
+}

@@ -1,6 +1,6 @@
 # Inventario del repositorio
 
-463 archivos actuales de fuente, documentación, configuración y pruebas al 2026-11-19. Incluye cambios locales todavía sin commit. Excluye entorno virtual, herramientas, cachés, artefactos y metadata Git.
+501 archivos actuales de fuente, documentación, configuración y pruebas al 2026-11-19. Incluye cambios locales todavía sin commit. Excluye entorno virtual, herramientas, cachés, artefactos y metadata Git.
 
 | Archivo |
 | --- |
@@ -118,6 +118,7 @@
 | [docs/architecture/decisions/ADR-034-gif-export.md](../docs/architecture/decisions/ADR-034-gif-export.md) |
 | [docs/architecture/decisions/ADR-035-apng-webp-lossless.md](../docs/architecture/decisions/ADR-035-apng-webp-lossless.md) |
 | [docs/architecture/decisions/ADR-036-quality-reports.md](../docs/architecture/decisions/ADR-036-quality-reports.md) |
+| [docs/architecture/decisions/ADR-037-art-corpus-rubric.md](../docs/architecture/decisions/ADR-037-art-corpus-rubric.md) |
 | [docs/architecture/module-contracts.md](../docs/architecture/module-contracts.md) |
 | [docs/architecture/overview.md](../docs/architecture/overview.md) |
 | [docs/guides/agent-workflow.md](../docs/guides/agent-workflow.md) |
@@ -208,6 +209,38 @@
 | [docs/standards/security.md](../docs/standards/security.md) |
 | [docs/standards/testing.md](../docs/standards/testing.md) |
 | [examples/README.md](../examples/README.md) |
+| [examples/corpus/README.md](../examples/corpus/README.md) |
+| [examples/corpus/adventurer-walk/adventurer-walk.corpus.json](../examples/corpus/adventurer-walk/adventurer-walk.corpus.json) |
+| [examples/corpus/adventurer-walk/adventurer-walk.moana.json](../examples/corpus/adventurer-walk/adventurer-walk.moana.json) |
+| [examples/corpus/adventurer-walk/previews/adventurer-walk-1x.png](../examples/corpus/adventurer-walk/previews/adventurer-walk-1x.png) |
+| [examples/corpus/adventurer-walk/previews/adventurer-walk-4x.png](../examples/corpus/adventurer-walk/previews/adventurer-walk-4x.png) |
+| [examples/corpus/adventurer-walk/previews/adventurer-walk-clusters-4x.png](../examples/corpus/adventurer-walk/previews/adventurer-walk-clusters-4x.png) |
+| [examples/corpus/adventurer-walk/previews/adventurer-walk-silhouette-4x.png](../examples/corpus/adventurer-walk/previews/adventurer-walk-silhouette-4x.png) |
+| [examples/corpus/adventurer/adventurer.corpus.json](../examples/corpus/adventurer/adventurer.corpus.json) |
+| [examples/corpus/adventurer/adventurer.moana.json](../examples/corpus/adventurer/adventurer.moana.json) |
+| [examples/corpus/adventurer/previews/adventurer-1x.png](../examples/corpus/adventurer/previews/adventurer-1x.png) |
+| [examples/corpus/adventurer/previews/adventurer-4x.png](../examples/corpus/adventurer/previews/adventurer-4x.png) |
+| [examples/corpus/adventurer/previews/adventurer-clusters-4x.png](../examples/corpus/adventurer/previews/adventurer-clusters-4x.png) |
+| [examples/corpus/adventurer/previews/adventurer-silhouette-4x.png](../examples/corpus/adventurer/previews/adventurer-silhouette-4x.png) |
+| [examples/corpus/chest/chest.corpus.json](../examples/corpus/chest/chest.corpus.json) |
+| [examples/corpus/chest/chest.moana.json](../examples/corpus/chest/chest.moana.json) |
+| [examples/corpus/chest/previews/chest-1x.png](../examples/corpus/chest/previews/chest-1x.png) |
+| [examples/corpus/chest/previews/chest-4x.png](../examples/corpus/chest/previews/chest-4x.png) |
+| [examples/corpus/chest/previews/chest-clusters-4x.png](../examples/corpus/chest/previews/chest-clusters-4x.png) |
+| [examples/corpus/chest/previews/chest-silhouette-4x.png](../examples/corpus/chest/previews/chest-silhouette-4x.png) |
+| [examples/corpus/frog/frog.corpus.json](../examples/corpus/frog/frog.corpus.json) |
+| [examples/corpus/frog/frog.moana.json](../examples/corpus/frog/frog.moana.json) |
+| [examples/corpus/frog/previews/frog-1x.png](../examples/corpus/frog/previews/frog-1x.png) |
+| [examples/corpus/frog/previews/frog-4x.png](../examples/corpus/frog/previews/frog-4x.png) |
+| [examples/corpus/frog/previews/frog-clusters-4x.png](../examples/corpus/frog/previews/frog-clusters-4x.png) |
+| [examples/corpus/frog/previews/frog-silhouette-4x.png](../examples/corpus/frog/previews/frog-silhouette-4x.png) |
+| [examples/corpus/stone-tile/previews/stone-tile-1x.png](../examples/corpus/stone-tile/previews/stone-tile-1x.png) |
+| [examples/corpus/stone-tile/previews/stone-tile-4x.png](../examples/corpus/stone-tile/previews/stone-tile-4x.png) |
+| [examples/corpus/stone-tile/previews/stone-tile-clusters-4x.png](../examples/corpus/stone-tile/previews/stone-tile-clusters-4x.png) |
+| [examples/corpus/stone-tile/previews/stone-tile-silhouette-4x.png](../examples/corpus/stone-tile/previews/stone-tile-silhouette-4x.png) |
+| [examples/corpus/stone-tile/previews/stone-tile-tiled-3x3-4x.png](../examples/corpus/stone-tile/previews/stone-tile-tiled-3x3-4x.png) |
+| [examples/corpus/stone-tile/stone-tile.corpus.json](../examples/corpus/stone-tile/stone-tile.corpus.json) |
+| [examples/corpus/stone-tile/stone-tile.moana.json](../examples/corpus/stone-tile/stone-tile.moana.json) |
 | [examples/specs/bouncing-slime.moana.json](../examples/specs/bouncing-slime.moana.json) |
 | [examples/specs/dither-dusk.moana.json](../examples/specs/dither-dusk.moana.json) |
 | [examples/specs/masked-eyes.moana.json](../examples/specs/masked-eyes.moana.json) |
@@ -229,6 +262,7 @@
 | [scripts/check_repository.py](../scripts/check_repository.py) |
 | [scripts/check_wheel.py](../scripts/check_wheel.py) |
 | [scripts/claude_hooks.py](../scripts/claude_hooks.py) |
+| [scripts/corpus.py](../scripts/corpus.py) |
 | [scripts/determinism.py](../scripts/determinism.py) |
 | [scripts/generate_schema.py](../scripts/generate_schema.py) |
 | [scripts/github_sync.py](../scripts/github_sync.py) |
@@ -312,6 +346,7 @@
 | [src/moana/quality/config.py](../src/moana/quality/config.py) |
 | [src/moana/quality/evaluate.py](../src/moana/quality/evaluate.py) |
 | [src/moana/quality/report.py](../src/moana/quality/report.py) |
+| [src/moana/quality/rubric.py](../src/moana/quality/rubric.py) |
 | [src/moana/render/__init__.py](../src/moana/render/__init__.py) |
 | [src/moana/render/budget.py](../src/moana/render/budget.py) |
 | [src/moana/render/pipeline.py](../src/moana/render/pipeline.py) |
@@ -346,6 +381,7 @@
 | [tests/fixtures/migration/test-only-0.9.moana.json](../tests/fixtures/migration/test-only-0.9.moana.json) |
 | [tests/fixtures/quality.py](../tests/fixtures/quality.py) |
 | [tests/integration/test_animated_export.py](../tests/integration/test_animated_export.py) |
+| [tests/integration/test_art_corpus.py](../tests/integration/test_art_corpus.py) |
 | [tests/integration/test_cli_paths.py](../tests/integration/test_cli_paths.py) |
 | [tests/integration/test_cross_platform_determinism.py](../tests/integration/test_cross_platform_determinism.py) |
 | [tests/integration/test_dither_determinism.py](../tests/integration/test_dither_determinism.py) |
@@ -426,6 +462,7 @@
 | [tests/unit/quality/test_quality_architecture.py](../tests/unit/quality/test_quality_architecture.py) |
 | [tests/unit/quality/test_quality_config.py](../tests/unit/quality/test_quality_config.py) |
 | [tests/unit/quality/test_quality_report.py](../tests/unit/quality/test_quality_report.py) |
+| [tests/unit/quality/test_quality_rubric.py](../tests/unit/quality/test_quality_rubric.py) |
 | [tests/unit/quality/test_quality_rules.py](../tests/unit/quality/test_quality_rules.py) |
 | [tests/unit/render/test_render_architecture.py](../tests/unit/render/test_render_architecture.py) |
 | [tests/unit/render/test_render_budget.py](../tests/unit/render/test_render_budget.py) |
@@ -465,5 +502,6 @@
 | [tests/visual/__init__.py](../tests/visual/__init__.py) |
 | [tests/visual/goldens/harness-reference-4x3.png](../tests/visual/goldens/harness-reference-4x3.png) |
 | [tests/visual/harness.py](../tests/visual/harness.py) |
+| [tests/visual/test_corpus_previews.py](../tests/visual/test_corpus_previews.py) |
 | [tests/visual/test_visual_harness.py](../tests/visual/test_visual_harness.py) |
 | [uv.lock](../uv.lock) |

@@ -1,0 +1,114 @@
+{
+  "format": "moana-corpus-entry/1",
+  "id": "adventurer",
+  "category": "character",
+  "document": "adventurer.moana.json",
+  "animation_id": null,
+  "brief": {
+    "subject": "Aventurera chibi de frente, en reposo, para un RPG de vista cenital.",
+    "size": [
+      24,
+      32
+    ],
+    "palette_intent": "17 colores: rampas cortas de piel (3), pelo (3), camisa (3), cuero (3) y pantalón (3), dorado y tinta violeta oscura en lugar de negro puro.",
+    "light": "Luz única desde el noroeste: lados derechos y bajos en sombra; borde izquierdo de camisa y pierna, punteras y mechón superior iluminados.",
+    "constraints": [
+      "Legible a 1×: cabeza grande, ojos de 1 × 2 px y brazos y piernas separados por la línea de contorno.",
+      "Contorno 4-conexo hecho con rectángulos de tinta, sin esquinas dobles.",
+      "Regiones semánticas para pelo, cara, ojos, camisa, manos, cinturón, piernas y botas."
+    ]
+  },
+  "provenance": {
+    "author": "Agente de IA de programación (Claude Code) bajo la dirección del usuario del repositorio",
+    "authored_by": "ai_agent",
+    "method": "Creado por un agente de IA mediante operaciones de Moana (formas, máscaras, regiones, paleta y técnicas del motor) en un documento JSON; sin modelo de imagen y sin calcar arte externo. El archivo .moana.json es la única fuente.",
+    "date": "2026-11-19",
+    "licence": "PENDIENTE: la decide el propietario del repositorio (README.md); hasta entonces no se asigna ninguna. Sin assets ni derechos de terceros.",
+    "third_party_assets": [],
+    "seed": 2711,
+    "renderer_version": "render-v1",
+    "estimator_version": "budget-v8",
+    "vector_backend": null
+  },
+  "render": {
+    "digest": "sha256:911f5d2668abb9e37197618f7b216320cc9b624dc22b543cc485ad6c1dddc153",
+    "frame_digests": null
+  },
+  "quality": {
+    "rule_set": "quality-v1",
+    "passed_hard_checks": true,
+    "warnings": {},
+    "report_digest": "sha256:8c0f68ab1f707b5f335207302dc30de31a1c251d2534d58a199f88ebd18d2c2b",
+    "config": "default",
+    "suppressions": []
+  },
+  "agent_inspection": {
+    "notice": "Notas de inspección visual de un agente de IA (a 1× y a 8× por vecino más cercano); no son una revisión humana.",
+    "notation": "Coordenadas (x, y) sobre la imagen a 1×; cajas [x0, y0, x1, y1) semiabiertas.",
+    "date": "2026-11-19",
+    "passes": [
+      "Pasada 1 (1× y 8×): dos píxeles dorados aislados en las botas y una sombra de barbilla que parecía barba; se eliminaron.",
+      "Pasada 2 (1× y 8×, tras la revisión de pixel art): las piernas eran un bloque porque el relleno cubría las columnas 11-12; se separaron en cadera, pierna izquierda, pierna derecha y una bota por pie, y la tinta del contorno queda en (11..12, 21..26). Mandíbula estrechada una fila antes ([8, 10, 16, 12)), manos redondeadas con punta de 1 px y tinta en (5, 18) y (18, 18), luz de pantalón en la columna 8, punteras en cuero claro de 2 px (un solo píxel habría sido singleton), raya del pelo en (12, 5)-(12, 6) y mechones en (9, 8) y (14, 8). Se quitó la sombra de ceja: al cortar el flequillo dejaba píxeles sueltos. La mano derecha pasa entera a piel en sombra (su sombra de 1 px era singleton). Sin advertencias."
+    ]
+  },
+  "rubric": {
+    "format": "moana-rubric/1",
+    "categories": {
+      "legibility": {
+        "status": "pending_human_review",
+        "score": null,
+        "justification": null
+      },
+      "silhouette": {
+        "status": "pending_human_review",
+        "score": null,
+        "justification": null
+      },
+      "clusters": {
+        "status": "pending_human_review",
+        "score": null,
+        "justification": null
+      },
+      "palette": {
+        "status": "pending_human_review",
+        "score": null,
+        "justification": null
+      },
+      "light_material": {
+        "status": "pending_human_review",
+        "score": null,
+        "justification": null
+      }
+    },
+    "human_review": null,
+    "agent_assessment": {
+      "notice": "AI agent assessment: not a human review and never an approval; it does not count towards the professional rule.",
+      "assessor_kind": "ai_agent",
+      "agent": "Claude Code (agente de IA de programación)",
+      "date": "2026-11-19",
+      "scores": {
+        "legibility": {
+          "score": 4,
+          "justification": "Figura humana reconocible a 1× con pelo, camisa, piernas y botas."
+        },
+        "silhouette": {
+          "score": 4,
+          "justification": "Piernas separadas, mandíbula y manos redondeadas; los brazos siguen siendo rectos."
+        },
+        "clusters": {
+          "score": 4,
+          "justification": "Sin singletons; clusters de color limpios por parte."
+        },
+        "palette": {
+          "score": 4,
+          "justification": "Rampas cortas de tres pasos con funciones distintas."
+        },
+        "light_material": {
+          "score": 3,
+          "justification": "Luz coherente pero con un solo paso de sombra en la mayoría de partes."
+        }
+      }
+    },
+    "professional": false
+  }
+}
