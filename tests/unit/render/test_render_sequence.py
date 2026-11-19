@@ -13,7 +13,7 @@ from typing import Any
 import pytest
 
 from moana.core import errors
-from moana.core.budget import RenderLimits
+from moana.core.budget import Deadline, RenderLimits
 from moana.render import (
     RESULT_OVERHEAD_BYTES,
     SequenceBudget,
@@ -195,3 +195,17 @@ def test_t1_render_admitted_renders_only_the_admitted_document() -> None:
     for call in calls:
         with pytest.raises(TypeError):
             call()
+
+
+def test_t1_deadline_is_checked_before_validating_each_frame() -> None:
+    red = document(4)
+    estimate = plan_frame(red)
+    live = Deadline(60_000)
+    assert render_admitted(red, frame_id="f", estimate=estimate, deadline=live).rgba == (
+        render(red).rgba
+    )
+    assert len(render_sequence([("a", red), ("b", red)], deadline=live)) == 2
+    expired = Deadline(1, clock=iter([0.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0]).__next__)
+    with pytest.raises(errors.BudgetExceeded) as caught:
+        render_admitted(red, frame_id="f", estimate=estimate, deadline=expired)
+    assert caught.value.context["stage"] == "validate_frame"

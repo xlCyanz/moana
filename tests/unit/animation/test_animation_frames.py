@@ -554,6 +554,7 @@ def test_t1_argument_types_are_checked(document: Document) -> None:
     calls: list[Callable[[], object]] = [
         lambda: render_animation(document, "walk", parse_limits=None),  # type: ignore[arg-type]
         lambda: render_animation(document, "walk", deadline=5),  # type: ignore[arg-type]
+        lambda: render_animation(document, "walk", limits=5),  # type: ignore[arg-type]
         lambda: render_animation({}, "walk"),  # type: ignore[arg-type]
         lambda: render_frame(document, "f0", parse_limits=None),  # type: ignore[arg-type]
         lambda: evaluate_frame(document, "f0", limits=None),  # type: ignore[arg-type]

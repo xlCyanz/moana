@@ -1,6 +1,6 @@
 # Inventario del repositorio
 
-434 archivos actuales de fuente, documentación, configuración y pruebas al 2026-11-18. Incluye cambios locales todavía sin commit. Excluye entorno virtual, herramientas, cachés, artefactos y metadata Git.
+438 archivos actuales de fuente, documentación, configuración y pruebas al 2026-11-19. Incluye cambios locales todavía sin commit. Excluye entorno virtual, herramientas, cachés, artefactos y metadata Git.
 
 | Archivo |
 | --- |
@@ -114,6 +114,7 @@
 | [docs/architecture/decisions/ADR-030-material-presets.md](../docs/architecture/decisions/ADR-030-material-presets.md) |
 | [docs/architecture/decisions/ADR-031-format-versions-migrations.md](../docs/architecture/decisions/ADR-031-format-versions-migrations.md) |
 | [docs/architecture/decisions/ADR-032-animation-timeline.md](../docs/architecture/decisions/ADR-032-animation-timeline.md) |
+| [docs/architecture/decisions/ADR-033-spritesheet-export.md](../docs/architecture/decisions/ADR-033-spritesheet-export.md) |
 | [docs/architecture/module-contracts.md](../docs/architecture/module-contracts.md) |
 | [docs/architecture/overview.md](../docs/architecture/overview.md) |
 | [docs/guides/agent-workflow.md](../docs/guides/agent-workflow.md) |
@@ -269,6 +270,7 @@
 | [src/moana/export/__init__.py](../src/moana/export/__init__.py) |
 | [src/moana/export/atomic.py](../src/moana/export/atomic.py) |
 | [src/moana/export/png.py](../src/moana/export/png.py) |
+| [src/moana/export/spritesheet.py](../src/moana/export/spritesheet.py) |
 | [src/moana/geometry/__init__.py](../src/moana/geometry/__init__.py) |
 | [src/moana/geometry/algebra.py](../src/moana/geometry/algebra.py) |
 | [src/moana/geometry/cover.py](../src/moana/geometry/cover.py) |
@@ -335,6 +337,7 @@
 | [tests/integration/test_material_determinism.py](../tests/integration/test_material_determinism.py) |
 | [tests/integration/test_path_determinism.py](../tests/integration/test_path_determinism.py) |
 | [tests/integration/test_render_determinism.py](../tests/integration/test_render_determinism.py) |
+| [tests/integration/test_spritesheet_animation.py](../tests/integration/test_spritesheet_animation.py) |
 | [tests/test_environment.py](../tests/test_environment.py) |
 | [tests/test_planning.py](../tests/test_planning.py) |
 | [tests/test_repository_tools.py](../tests/test_repository_tools.py) |
@@ -370,6 +373,7 @@
 | [tests/unit/editing/test_editing_members.py](../tests/unit/editing/test_editing_members.py) |
 | [tests/unit/editing/test_editing_shade.py](../tests/unit/editing/test_editing_shade.py) |
 | [tests/unit/export/test_export_png.py](../tests/unit/export/test_export_png.py) |
+| [tests/unit/export/test_export_spritesheet.py](../tests/unit/export/test_export_spritesheet.py) |
 | [tests/unit/geometry/test_geometry_algebra.py](../tests/unit/geometry/test_geometry_algebra.py) |
 | [tests/unit/geometry/test_geometry_architecture.py](../tests/unit/geometry/test_geometry_architecture.py) |
 | [tests/unit/geometry/test_geometry_cells.py](../tests/unit/geometry/test_geometry_cells.py) |
