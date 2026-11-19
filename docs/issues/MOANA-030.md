@@ -8,12 +8,12 @@
 - Aliases históricos: MOA-030
 - Phase: P5
 - Priority: P0
-- Status: blocked
+- Status: ready
 - Complexity: L (relativa, no estimación de tiempo)
 - Dependencies: [MOANA-003](MOANA-003.md), [MOANA-020](MOANA-020.md), [MOANA-021](MOANA-021.md), [MOANA-022](MOANA-022.md)
 - Related modules: tests.security
 - Requirements: R026, R027 ([trazabilidad](traceability.md))
-- Bloqueo: Dependencias pendientes: MOANA-022
+- Bloqueo: Ninguno
 
 ## Context
 
@@ -66,7 +66,7 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Guía para agentes de IA
 
-**Estado para agentes:** No empezar: estado `blocked`. Esperar a que [MOANA-003](MOANA-003.md), [MOANA-020](MOANA-020.md), [MOANA-021](MOANA-021.md), [MOANA-022](MOANA-022.md) estén `done` y el catálogo marque este issue `ready`.
+**Estado para agentes:** Listo: todas las dependencias están `done`; puede empezarse.
 
 ### 1. Preparación
 

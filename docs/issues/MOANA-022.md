@@ -8,7 +8,7 @@
 - Aliases históricos: MOA-022
 - Phase: P4
 - Priority: P1
-- Status: review
+- Status: done
 - Complexity: L (relativa, no estimación de tiempo)
 - Dependencies: [MOANA-018](MOANA-018.md), [MOANA-019](MOANA-019.md), [MOANA-010](MOANA-010.md)
 - Related modules: animation, schema
@@ -43,13 +43,13 @@ No tweening implícito, rigging ni interpolación aprendida.
 
 ## Acceptance criteria
 
-- [ ] AC1: Cambiar el orden de evaluación de frames no cambia ninguno de sus resultados
-- [ ] AC2: Duraciones y pivotes se preservan y un override inválido impide el render parcial de la solicitud
+- [x] AC1: Cambiar el orden de evaluación de frames no cambia ninguno de sus resultados
+- [x] AC2: Duraciones y pivotes se preservan y un override inválido impide el render parcial de la solicitud
 
 ## Required tests
 
-- [ ] T1: Frame único, 256 frames, límite de duración/área y loops
-- [ ] T2: Overrides de geometría/color/visibilidad y textura estable entre frames
+- [x] T1: Frame único, 256 frames, límite de duración/área y loops
+- [x] T2: Overrides de geometría/color/visibilidad y textura estable entre frames
 
 ## Expected deliverables
 
@@ -66,7 +66,7 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Guía para agentes de IA
 
-**Estado para agentes:** En revisión: sólo correcciones de la revisión; no añadir alcance.
+**Estado para agentes:** Completado; usar sólo como referencia del contrato entregado.
 
 ### 1. Preparación
 
@@ -144,6 +144,7 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 - Limitación documentada: mover un sprite texturizado (material/dither) en un frame desliza la textura respecto del sprite porque no hay override de origin en el MVP (ADR-032 §4, MOANA.md §17; seguimiento: override acotado de origin).
 - Ejemplo examples/specs/bouncing-slime.moana.json (16×16, rest/rise/apex/fall 150/100/120/100 ms, pivote [8,16]) con squash/stretch por capas alternadas con set_visibility, espaciado físico y sombra que se encoge con la altura, según la revisión de pixel-art; revisión artística humana PENDIENTE.
 - Revisiones de agente: arquitectura, gráficos, python/QA y pixel-art con correcciones aplicadas. Gate local macOS: scripts/validate.py 2732 passed con src/moana al 100 %, check_wheel OK, mypy --platform win32 OK, JSON Schema al día, pre-commit OK; matriz pendiente en main.
+- Aprobado por el propietario el 2026-11-17 tras revisión; PR #62 hacia develop.
 - AC1: tests/unit/animation/test_animation_frames.py::test_ac1_any_evaluation_order_gives_the_same_bytes_per_frame, ::test_ac1_frames_never_inherit_the_previous_frame, ::test_ac1_one_frame_alone_equals_the_same_frame_in_a_sequence, ::test_ac1_evaluating_does_not_touch_the_base
 - AC2: tests/unit/animation/test_animation_frames.py::test_ac2_durations_pivots_and_offsets_are_preserved, ::test_ac2_provenance_names_the_frame_and_keeps_the_revision, ::test_ac2_an_invalid_override_in_any_frame_renders_nothing, ::test_ac2_an_override_whose_result_is_invalid_renders_nothing, ::test_ac2_budget_of_the_whole_request_is_checked_before_any_frame; tests/unit/render/test_render_sequence.py::test_ac2_a_frame_over_budget_alone_names_its_index_and_renders_nothing
 - T1: tests/unit/animation/test_animation_frames.py::test_t1_single_frame_animation, ::test_t1_256_frames_render_each_frame_once, ::test_t1_256_frames_at_exactly_16777216_accumulated_pixels, ::test_t1_accumulated_frame_pixels_limit_is_inclusive, ::test_t1_default_budget_rejects_a_sequence_over_16777216_frame_pixels, ::test_t1_loop_count_never_multiplies_the_render, ::test_t1_deadline_is_checked_before_every_validation_and_frame, ::test_t1_a_short_deadline_fails_near_its_limit; tests/unit/animation/test_animation_memory.py::test_t1_render_frame_holds_one_frame_document, ::test_t1_selected_frames_do_not_keep_the_unrequested_ones, ::test_t1_rendering_every_frame_stays_within_the_admitted_bytes; tests/unit/schema/test_schema_animations.py::test_t1_frame_count_is_one_to_256, ::test_t1_duration_is_a_whole_millisecond_count_1_to_60000, ::test_t1_longest_timeline_is_bounded, ::test_t1_loop_count_zero_is_infinite_playback, ::test_t1_pivot_lies_on_the_canvas_edges_included, ::test_t1_animation_and_override_counts_are_bounded; tests/unit/render/test_render_sequence.py::test_t1_accumulated_totals_are_checked_against_one_budget, ::test_t1_plan_frame_estimates_without_rendering, ::test_t1_render_admitted_renders_only_the_admitted_document

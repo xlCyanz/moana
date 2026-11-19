@@ -1531,7 +1531,7 @@
       "id": "MOANA-022",
       "title": "Implementar timeline y evaluación de frames",
       "phase": "P4",
-      "status": "review",
+      "status": "done",
       "priority": "P1",
       "dependencies": [
         "MOANA-018",
@@ -1564,7 +1564,8 @@
         "moana.animation: evaluate_frame, evaluate_animation, render_animation, render_frame con duración, inicio y pivote por frame; loop_count es sólo dato (cada frame se renderiza una vez). moana.api.render(frame_id=…) renderiza un frame (§13); moana.render.render(frame_id) sigue dibujando sólo la base (frame_not_evaluated). Sin CLI, GIF ni spritesheet.",
         "Limitación documentada: mover un sprite texturizado (material/dither) en un frame desliza la textura respecto del sprite porque no hay override de origin en el MVP (ADR-032 §4, MOANA.md §17; seguimiento: override acotado de origin).",
         "Ejemplo examples/specs/bouncing-slime.moana.json (16×16, rest/rise/apex/fall 150/100/120/100 ms, pivote [8,16]) con squash/stretch por capas alternadas con set_visibility, espaciado físico y sombra que se encoge con la altura, según la revisión de pixel-art; revisión artística humana PENDIENTE.",
-        "Revisiones de agente: arquitectura, gráficos, python/QA y pixel-art con correcciones aplicadas. Gate local macOS: scripts/validate.py 2732 passed con src/moana al 100 %, check_wheel OK, mypy --platform win32 OK, JSON Schema al día, pre-commit OK; matriz pendiente en main."
+        "Revisiones de agente: arquitectura, gráficos, python/QA y pixel-art con correcciones aplicadas. Gate local macOS: scripts/validate.py 2732 passed con src/moana al 100 %, check_wheel OK, mypy --platform win32 OK, JSON Schema al día, pre-commit OK; matriz pendiente en main.",
+        "Aprobado por el propietario el 2026-11-17 tras revisión; PR #62 hacia develop."
       ],
       "aliases": [
         "MOA-022"
@@ -1601,7 +1602,7 @@
       "id": "MOANA-023",
       "title": "Exportar spritesheets y manifest reversible",
       "phase": "P4",
-      "status": "blocked",
+      "status": "ready",
       "priority": "P1",
       "dependencies": [
         "MOANA-022",
@@ -1646,7 +1647,7 @@
       "risks": [
         "Confundir rect xywh con bbox semiabierta causa offsets; especificar ambos claramente."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-022",
+      "blocking_reason": null,
       "acceptance_evidence": {},
       "test_evidence": {}
     },
@@ -1654,7 +1655,7 @@
       "id": "MOANA-024",
       "title": "Exportar GIF con política de pérdidas",
       "phase": "P4",
-      "status": "blocked",
+      "status": "ready",
       "priority": "P1",
       "dependencies": [
         "MOANA-022",
@@ -1700,7 +1701,7 @@
       "risks": [
         "Los encoders pueden fusionar frames idénticos; comparar tiempo/imagen, no sólo count."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-022",
+      "blocking_reason": null,
       "acceptance_evidence": {},
       "test_evidence": {}
     },
@@ -1708,7 +1709,7 @@
       "id": "MOANA-025",
       "title": "Añadir APNG y WebP lossless opcionales",
       "phase": "P4",
-      "status": "blocked",
+      "status": "ready",
       "priority": "P2",
       "dependencies": [
         "MOANA-022",
@@ -1752,7 +1753,7 @@
       "risks": [
         "Un skip de codec no equivale a soporte probado; publicar capability matrix."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-022",
+      "blocking_reason": null,
       "acceptance_evidence": {},
       "test_evidence": {}
     },
@@ -1760,7 +1761,7 @@
       "id": "MOANA-026",
       "title": "Crear informes de calidad gráfica",
       "phase": "P5",
-      "status": "blocked",
+      "status": "ready",
       "priority": "P1",
       "dependencies": [
         "MOANA-014",
@@ -1806,7 +1807,7 @@
       "risks": [
         "Un score no debe presentarse como garantía profesional ni como aprobación humana."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-022",
+      "blocking_reason": null,
       "acceptance_evidence": {},
       "test_evidence": {}
     },
@@ -1863,7 +1864,7 @@
       "risks": [
         "No marcar como aprobada la calidad artística mientras falte una persona revisora."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-022, MOANA-026",
+      "blocking_reason": "Dependencias pendientes: MOANA-026",
       "acceptance_evidence": {},
       "test_evidence": {}
     },
@@ -2006,7 +2007,7 @@
       "id": "MOANA-030",
       "title": "Ejercitar amenazas y entradas adversarias",
       "phase": "P5",
-      "status": "blocked",
+      "status": "ready",
       "priority": "P0",
       "dependencies": [
         "MOANA-003",
@@ -2053,7 +2054,7 @@
       "risks": [
         "Las pruebas hostiles deben ser acotadas y nunca desactivar protecciones de Pillow."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-022",
+      "blocking_reason": null,
       "acceptance_evidence": {},
       "test_evidence": {}
     },
@@ -2106,7 +2107,7 @@
       "risks": [
         "No usar fluctuaciones de runners compartidos como gate rígido sin estabilizar entorno."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-022, MOANA-027",
+      "blocking_reason": "Dependencias pendientes: MOANA-027",
       "acceptance_evidence": {},
       "test_evidence": {}
     },
