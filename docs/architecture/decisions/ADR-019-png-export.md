@@ -1,6 +1,6 @@
 # ADR-019 — Exportación PNG verificada y escritura atómica sin sobrescritura
 
-Estado: aceptado · 2026-11-17 · Issue: [MOANA-011](../../issues/MOANA-011.md). Aplica ADR-013 (frontera Pillow), ADR-014 (paleta) y ADR-018 (`RenderResult`). Ampliado por [ADR-033](ADR-033-spritesheet-export.md): spritesheets en grid con manifiesto reversible. Ampliado por [ADR-034](ADR-034-gif-export.md).
+Estado: aceptado · 2026-11-17 · Issue: [MOANA-011](../../issues/MOANA-011.md). Aplica ADR-013 (frontera Pillow), ADR-014 (paleta) y ADR-018 (`RenderResult`). Ampliado por [ADR-033](ADR-033-spritesheet-export.md): spritesheets en grid con manifiesto reversible. Ampliado por [ADR-034](ADR-034-gif-export.md). Ampliado por [ADR-035](ADR-035-apng-webp-lossless.md).
 
 ## Contexto
 

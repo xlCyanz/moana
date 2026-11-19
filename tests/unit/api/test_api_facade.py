@@ -38,6 +38,7 @@ from moana.api import (
 from moana.api import inspection as inspection_module
 from moana.api.loading import MAX_REPORTED_NAME
 from moana.core import errors
+from moana.export import export_capabilities
 from moana.render import RENDERABLE_OPERATION_TYPES
 from moana.schema import PLANNED_OPERATION_TYPES, SUPPORTED_OPERATION_TYPES, snapshot_digest
 
@@ -567,6 +568,11 @@ def test_capabilities_separate_available_from_planned() -> None:
         assert name not in moana.api.__all__
     mapping = listing.to_mapping()
     assert mapping["export_formats"] == ["png"]
+    # MOANA-025: the runtime codec matrix of moana.export, probed on each call (ADR-035).
+    codecs = mapping["export_codecs"]
+    assert isinstance(codecs, list)
+    assert [row["format"] for row in codecs] == ["png", "gif", "apng", "webp"]
+    assert listing.export_codecs == export_capabilities().formats
     assert list(mapping) == sorted(mapping)
 
 

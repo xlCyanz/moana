@@ -24,6 +24,7 @@ from typing import TYPE_CHECKING, Final
 from moana.core.budget import DEFAULT_RENDER_LIMITS, RenderLimits
 from moana.core.errors import BudgetExceeded
 from moana.editing import COMMAND_TYPES
+from moana.export import CodecStatus, export_capabilities
 from moana.geometry import TESTED_AGGDRAW_VERSIONS, path_backend
 from moana.render import (
     ESTIMATOR_VERSION,
@@ -222,7 +223,13 @@ class BackendSummary:
 
 @dataclass(frozen=True, slots=True)
 class Capabilities:
-    """Implemented vocabulary of this build, each with its planned counterpart."""
+    """Implemented vocabulary of this build, each with its planned counterpart.
+
+    ``export_formats`` are the formats of :func:`moana.api.export_png` and ``moana
+    export``; ``export_codecs`` is the runtime codec matrix of ``moana.export`` (PNG,
+    GIF, APNG, WebP: availability, codec and Pillow versions), probed on each call
+    (ADR-035).
+    """
 
     schema_versions: tuple[str, ...]
     profiles: tuple[str, ...]
@@ -236,6 +243,7 @@ class Capabilities:
     planned_collections: tuple[str, ...]
     planned_layer_fields: tuple[str, ...]
     export_formats: tuple[str, ...]
+    export_codecs: tuple[CodecStatus, ...]
     functions: tuple[str, ...]
     planned_functions: tuple[str, ...]
     edit_commands: tuple[str, ...]
@@ -285,6 +293,7 @@ def capabilities() -> Capabilities:
         planned_collections=tuple(sorted(PLANNED_COLLECTIONS)),
         planned_layer_fields=tuple(sorted(PLANNED_LAYER_FIELDS)),
         export_formats=("png",),
+        export_codecs=export_capabilities().formats,
         functions=AVAILABLE_FUNCTIONS,
         planned_functions=PLANNED_FUNCTIONS,
         edit_commands=COMMAND_TYPES,

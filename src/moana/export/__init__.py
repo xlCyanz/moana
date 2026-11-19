@@ -14,9 +14,36 @@ frame exactly (MOANA-023, ADR-033). Spritesheet frames are any ``SpriteFrame``
 quantised; a reserved transparent index), binary alpha with an explicit flatten
 ``background``, durations in multiples of 10 ms or an explicit rounding policy, full
 frames with a configured disposal, and a decoded-timeline verification; every accepted
-loss is reported. WebP, APNG and compact packing come with later issues.
+loss is reported. Lossless APNG and WebP (MOANA-025, ADR-035): every RGBA value and
+duration kept exactly, ``loop_count`` as total plays, full-frame APNG container written
+by Moana and ``libwebp`` lossless only, both verified by decoding; each is available
+only when :func:`export_capabilities` proves its codec in this build (a probe per call,
+no cache), otherwise ``UnsupportedOperation`` before any file and never another format.
+Reports carry codec and Pillow versions. Compact packing comes with a later issue.
 """
 
+from moana.export.animated import (
+    APNG_MEDIA_TYPE,
+    STILL_IMAGE_WARNING,
+    WEBP_MEDIA_TYPE,
+    AnimatedFormat,
+    AnimationExport,
+    AnimationWarning,
+    AnimationWarningKind,
+    EncodedAnimation,
+    encode_apng,
+    encode_webp,
+    export_apng,
+    export_webp,
+)
+from moana.export.codecs import (
+    EXPORT_FORMATS,
+    CodecStatus,
+    ExportCapabilities,
+    ExportFormat,
+    codec_status,
+    export_capabilities,
+)
 from moana.export.gif import (
     GIF_MEDIA_TYPE,
     EncodedGif,
@@ -66,7 +93,9 @@ from moana.export.spritesheet import (
 )
 
 __all__ = [
+    "APNG_MEDIA_TYPE",
     "EXPORT_BYTES_PER_PIXEL",
+    "EXPORT_FORMATS",
     "GIF_MEDIA_TYPE",
     "MANIFEST_MEDIA_TYPE",
     "MAX_INDEXED_COLORS",
@@ -76,9 +105,19 @@ __all__ = [
     "MEDIA_TYPE",
     "SPRITESHEET_FORMAT",
     "SPRITESHEET_VERSION",
+    "STILL_IMAGE_WARNING",
+    "WEBP_MEDIA_TYPE",
+    "AnimatedFormat",
+    "AnimationExport",
+    "AnimationWarning",
+    "AnimationWarningKind",
+    "CodecStatus",
+    "EncodedAnimation",
     "EncodedGif",
     "EncodedPng",
     "EncodedSpritesheet",
+    "ExportCapabilities",
+    "ExportFormat",
     "ExportManifest",
     "ExportMode",
     "FramePixels",
@@ -97,12 +136,18 @@ __all__ = [
     "SpriteFrame",
     "SpritesheetExport",
     "SpritesheetManifest",
+    "codec_status",
+    "encode_apng",
     "encode_gif",
     "encode_png",
     "encode_spritesheet",
+    "encode_webp",
+    "export_apng",
+    "export_capabilities",
     "export_gif",
     "export_png",
     "export_spritesheet",
+    "export_webp",
     "load_spritesheet",
     "parse_spritesheet_manifest",
     "slice_spritesheet",

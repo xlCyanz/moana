@@ -36,4 +36,15 @@ GIF es un formato de intercambio con pérdidas, no el maestro (que es el PNG RGB
 - Para un preview grande, ampliar los frames por un entero con nearest-neighbor antes de exportar; el exportador no escala.
 - Usar disposal `background` (el predeterminado) para sprites con huecos transparentes; `none` sólo sirve si la transparencia nunca aparece donde el frame anterior era opaco.
 
+## APNG y WebP
+
+APNG y WebP son exportaciones lossless opcionales (MOANA.md §18, ADR-035); el maestro sigue siendo el PNG RGBA:
+
+- Conservan cada color RGBA, también el alfa intermedio (bordes suavizados a mano, sombras translúcidas), sin `background` de aplanado ni límite de 256 colores.
+- Admiten cualquier duración entera de 1 a 60 000 ms, sin redondeo a centésimas.
+- El APNG se guarda con extensión `.png` (`image/apng`): los visores sin APNG muestran el primer frame, así que conviene que el frame 0 sea una pose legible.
+- WebP fusiona frames iguales consecutivos (el tiempo total se conserva) y, si todos los frames son iguales o hay uno solo, guarda una imagen fija sin tiempo ni bucle (advertencia `still_image`).
+- Antes de exportar, `moana.export.export_capabilities()` dice si este build tiene el codec; si falta, el exportador falla sin escribir nada y no cambia de formato.
+- Igual que en GIF, el exportador no escala: para un preview grande, ampliar antes por un entero con nearest-neighbor.
+
 La rúbrica humana de MOANA.md §19 evalúa legibilidad, silueta, clusters, paleta, luz/material y continuidad. Cumplir dimensiones, paleta y hashes sólo demuestra conformidad técnica. El corpus conserva fuente, semilla, procedencia y estado real de revisión.
