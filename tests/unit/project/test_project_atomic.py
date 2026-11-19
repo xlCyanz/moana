@@ -5,6 +5,7 @@ from __future__ import annotations
 import errno
 import os
 import stat
+import sys
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any
@@ -583,7 +584,8 @@ def test_t1_link_swapped_in_after_opening_never_redirects_writes(
 def test_t1_unreadable_ancestor_is_permission_denied_without_the_path(
     tmp_path: Path, document: Document
 ) -> None:
-    if os.geteuid() == 0:  # pragma: no cover - root ignores permissions
+    # Checked through sys.platform so mypy also accepts it when targeting win32.
+    if sys.platform != "win32" and os.geteuid() == 0:  # pragma: no cover - root ignores permissions
         pytest.skip("permissions are not enforced for root")
     locked = tmp_path / "locked"
     (locked / "sub").mkdir(parents=True)
