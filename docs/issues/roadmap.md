@@ -80,7 +80,7 @@ Estado: 3/8 issues completados.
 - [MOANA-026](MOANA-026.md) — Crear informes de calidad gráfica (done)
 - [MOANA-027](MOANA-027.md) — Construir corpus artístico y rúbrica humana (done)
 - [MOANA-030](MOANA-030.md) — Ejercitar amenazas y entradas adversarias (done)
-- [MOANA-031](MOANA-031.md) — Medir rendimiento y memoria de referencia (ready)
+- [MOANA-031](MOANA-031.md) — Medir rendimiento y memoria de referencia (review)
 - [MOANA-032](MOANA-032.md) — Optimizar caché y render incremental acotados (blocked)
 - [MOANA-033](MOANA-033.md) — Documentar flujos IA y previews editables (ready)
 - [MOANA-034](MOANA-034.md) — Añadir ejemplos de tiles y escenarios modulares (ready)
@@ -88,4 +88,4 @@ Estado: 3/8 issues completados.
 
 ## Siguiente paso
 
-Implementar [MOANA-031](MOANA-031.md): Medir rendimiento y memoria de referencia.
+Implementar [MOANA-033](MOANA-033.md): Documentar flujos IA y previews editables.
