@@ -2081,7 +2081,7 @@
       "id": "MOANA-030",
       "title": "Ejercitar amenazas y entradas adversarias",
       "phase": "P5",
-      "status": "review",
+      "status": "done",
       "priority": "P0",
       "dependencies": [
         "MOANA-003",
@@ -2111,7 +2111,8 @@
         "Suite adversaria tests/security/ sin cambios en src/: guards.py (trampas forbid_allocation/forbid_writes/forbid_effects sobre NumPy zeros/empty/full/ones/*_like/frombuffer/array/asarray/ascontiguousarray/arange/repeat/pad/concatenate/stack/tile/broadcast_to y Pillow new/open/frombytes/frombuffer/fromarray, y sobre os.open/open/replace/rename/mkdir/unlink…; TripwireHit deriva de pytest Failed para que ni un except Exception la oculte ni Hypothesis pierda el ejemplo mínimo; measure/assert_bounded, tree_state, peak_bytes relativo y compatible con tracemalloc activo, assert_clean_error), corpus.py (57 HostileCase generados en memoria, sin binarios ni payload ejecutable, con marcador SECRET que nunca debe aparecer en un error) y coverage.py (mapa frontera → mitigación → tests).",
         "Cobertura de las 10 fronteras de docs/architecture/SECURITY_MODEL.md (nueva frontera spritesheet → frames): JSON → modelo, modelo → plan, resolución → render, plan → raster, asset → Pillow, ZIP → filesystem, export/proyecto → disco, batch → documento, spritesheet → frames e instalación/CI (uv.lock con sha256 y workflows con token de sólo lectura y acciones fijadas por SHA, análisis estático sin red). test_threat_coverage.py falla si una frontera de la tabla no tiene tests o un test citado no existe.",
         "AC2: cada rechazo del corpus y de los tests paramétricos de presupuesto, archivo y persistencia se mide con un tope de 2 s y 32 MiB de memoria trazada (máximos medidos 99 ms y 8,01 MiB); propiedades Hypothesis con derandomize=True y deadline explícito; la memoria nativa de Pillow/AggDraw la garantizan las trampas, no los picos. Límites conocidos documentados en tests/security/README.md (bytearray, .copy()/.astype(), os.chmod/utime/ftruncate sin trampa; el saver decide «existe» en el commit para evitar carreras).",
-        "Revisiones de agente QA y Python aplicadas (cotas AC2, peak_bytes con traza previa, TripwireHit visible para Hypothesis, oráculos con reason y pointer, trampas ampliadas, casos de spritesheet, APNG e ICC, helpers deduplicados). Gate local macOS: scripts/validate.py 3499 passed con src/moana al 100 %, pytest tests/security 202 passed (también con PYTHONTRACEMALLOC=1), check_wheel OK, mypy --platform win32 OK, pre-commit OK; matriz pendiente en main (las ramas de rutas Windows sólo corren allí)."
+        "Revisiones de agente QA y Python aplicadas (cotas AC2, peak_bytes con traza previa, TripwireHit visible para Hypothesis, oráculos con reason y pointer, trampas ampliadas, casos de spritesheet, APNG e ICC, helpers deduplicados). Gate local macOS: scripts/validate.py 3499 passed con src/moana al 100 %, pytest tests/security 202 passed (también con PYTHONTRACEMALLOC=1), check_wheel OK, mypy --platform win32 OK, pre-commit OK; matriz pendiente en main (las ramas de rutas Windows sólo corren allí).",
+        "Aprobado por el propietario el 2026-11-17 tras revisión; PR #69 hacia develop."
       ],
       "aliases": [
         "MOA-030"
@@ -2423,7 +2424,7 @@
       "risks": [
         "No declarar CI remoto de cambios locales ni licencia decidida sin evidencia del propietario."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-030, MOANA-032, MOANA-033, MOANA-034",
+      "blocking_reason": "Dependencias pendientes: MOANA-032, MOANA-033, MOANA-034",
       "acceptance_evidence": {},
       "test_evidence": {}
     }
