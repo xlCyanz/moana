@@ -62,14 +62,14 @@ Estado: 8/8 issues completados.
 
 Puerta de salida: Proyecto reversible, atlas y timeline decodificado.
 
-Estado: 5/6 issues completados.
+Estado: 6/6 issues completados.
 
 - [MOANA-020](MOANA-020.md) — Persistir proyectos y assets seguros (done)
 - [MOANA-021](MOANA-021.md) — Versionar y migrar formatos de proyecto (done)
 - [MOANA-022](MOANA-022.md) — Implementar timeline y evaluación de frames (done)
 - [MOANA-023](MOANA-023.md) — Exportar spritesheets y manifest reversible (done)
 - [MOANA-024](MOANA-024.md) — Exportar GIF con política de pérdidas (done)
-- [MOANA-025](MOANA-025.md) — Añadir APNG y WebP lossless opcionales (review)
+- [MOANA-025](MOANA-025.md) — Añadir APNG y WebP lossless opcionales (done)
 
 ## P5 — Evaluación y release
 

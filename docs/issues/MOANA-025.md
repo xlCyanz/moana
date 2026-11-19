@@ -8,7 +8,7 @@
 - Aliases históricos: MOA-025
 - Phase: P4
 - Priority: P2
-- Status: review
+- Status: done
 - Complexity: M (relativa, no estimación de tiempo)
 - Dependencies: [MOANA-022](MOANA-022.md), [MOANA-011](MOANA-011.md)
 - Related modules: export
@@ -43,13 +43,13 @@ No WebP lossy por defecto ni dependencia obligatoria de encoders ausentes.
 
 ## Acceptance criteria
 
-- [ ] AC1: Cada codec disponible pasa roundtrip RGBA y timeline
-- [ ] AC2: Codec ausente produce UnsupportedOperation claro sin archivo con extensión engañosa
+- [x] AC1: Cada codec disponible pasa roundtrip RGBA y timeline
+- [x] AC2: Codec ausente produce UnsupportedOperation claro sin archivo con extensión engañosa
 
 ## Required tests
 
-- [ ] T1: Pruebas condicionadas a capacidades con skip explicado y reporte del build
-- [ ] T2: Mock de codec ausente y casos multi-frame, alfa parcial y duración
+- [x] T1: Pruebas condicionadas a capacidades con skip explicado y reporte del build
+- [x] T2: Mock de codec ausente y casos multi-frame, alfa parcial y duración
 
 ## Expected deliverables
 
@@ -66,7 +66,7 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Guía para agentes de IA
 
-**Estado para agentes:** En revisión: sólo correcciones de la revisión; no añadir alcance.
+**Estado para agentes:** Completado; usar sólo como referencia del contrato entregado.
 
 ### 1. Preparación
 
@@ -142,6 +142,7 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 - Presupuesto antes de leer píxeles con buffer_bytes = C + F·A + O·n·A calibrado con RSS real en subprocesos (APNG 0/48/12; WebP 24 MiB/64/32, porque tracemalloc no ve la memoria nativa de libwebp); test de RSS en subproceso. Helpers compartidos con GIF en moana.export._frames (bytes de GIF idénticos tras el refactor, comprobado por la revisión de gráficos).
 - Documentación: ADR-035, MOANA.md 0.1.23-draft (§13 export_codecs, §18), module-contracts, sección «APNG y WebP» en docs/standards/pixel-art.md.
 - Revisiones de agente: gráficos (APNG contrastado con ffprobe/ffmpeg y WebP con webpinfo/dwebp; presupuesto WebP corregido) y python (sondas robustas, avisos estructurados, detección RIFF y errores sin eco) con cambios aplicados. Gate local macOS: scripts/validate.py verde con src/moana al 100 %, check_wheel OK, mypy --platform win32 OK, pre-commit OK; matriz pendiente en main (RSS no medido en Linux ni Windows).
+- Aprobado por el propietario el 2026-11-17 tras revisión; PR #65 hacia develop.
 - AC1: tests/unit/export/test_export_animated.py::test_multi_frame_partial_alpha_and_durations_roundtrip_exactly[apng|webp], ::test_decoded_timeline_equals_the_target (hypothesis), ::test_apng_container_is_full_frame_with_exact_delays, ::test_webp_stores_exact_milliseconds_and_the_loop, ::test_loop_count_is_total_plays; tests/integration/test_animated_export.py::test_bouncing_slime_decodes_to_the_rendered_timeline[apng|webp].
 - AC2: tests/unit/export/test_export_animated.py::test_an_absent_codec_is_unsupported_and_writes_nothing[apng|webp] (directorio sin cambios y frames sin leer), ::test_a_failing_probe_is_unsupported_too; tests/unit/export/test_export_codecs.py::test_a_missing_webp_module_is_reported_and_refused.
 - T1: tests/unit/export/test_export_codecs.py::test_capability_matrix_reports_every_format_of_this_build (matriz contra PIL.features, impresa); marcas needs_apng/needs_webp con el informe del build como motivo de skip (ningún skip en este equipo); ::test_a_probe_that_raises_anything_is_a_failed_roundtrip.

@@ -1740,7 +1740,7 @@
       "id": "MOANA-025",
       "title": "Añadir APNG y WebP lossless opcionales",
       "phase": "P4",
-      "status": "review",
+      "status": "done",
       "priority": "P2",
       "dependencies": [
         "MOANA-022",
@@ -1770,7 +1770,8 @@
         "loop_count = reproducciones totales (0 infinito), escrito tal cual en num_plays de APNG y ANIM de WebP; verificación decodificando con Pillow (frames normalizados, milisegundos exactos, bucle) antes del commit atómico; bytes idénticos con las mismas versiones de codec, que el informe registra.",
         "Presupuesto antes de leer píxeles con buffer_bytes = C + F·A + O·n·A calibrado con RSS real en subprocesos (APNG 0/48/12; WebP 24 MiB/64/32, porque tracemalloc no ve la memoria nativa de libwebp); test de RSS en subproceso. Helpers compartidos con GIF en moana.export._frames (bytes de GIF idénticos tras el refactor, comprobado por la revisión de gráficos).",
         "Documentación: ADR-035, MOANA.md 0.1.23-draft (§13 export_codecs, §18), module-contracts, sección «APNG y WebP» en docs/standards/pixel-art.md.",
-        "Revisiones de agente: gráficos (APNG contrastado con ffprobe/ffmpeg y WebP con webpinfo/dwebp; presupuesto WebP corregido) y python (sondas robustas, avisos estructurados, detección RIFF y errores sin eco) con cambios aplicados. Gate local macOS: scripts/validate.py verde con src/moana al 100 %, check_wheel OK, mypy --platform win32 OK, pre-commit OK; matriz pendiente en main (RSS no medido en Linux ni Windows)."
+        "Revisiones de agente: gráficos (APNG contrastado con ffprobe/ffmpeg y WebP con webpinfo/dwebp; presupuesto WebP corregido) y python (sondas robustas, avisos estructurados, detección RIFF y errores sin eco) con cambios aplicados. Gate local macOS: scripts/validate.py verde con src/moana al 100 %, check_wheel OK, mypy --platform win32 OK, pre-commit OK; matriz pendiente en main (RSS no medido en Linux ni Windows).",
+        "Aprobado por el propietario el 2026-11-17 tras revisión; PR #65 hacia develop."
       ],
       "aliases": [
         "MOA-025"
@@ -2383,7 +2384,7 @@
       "risks": [
         "No declarar CI remoto de cambios locales ni licencia decidida sin evidencia del propietario."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-025, MOANA-027, MOANA-030, MOANA-032, MOANA-033, MOANA-034",
+      "blocking_reason": "Dependencias pendientes: MOANA-027, MOANA-030, MOANA-032, MOANA-033, MOANA-034",
       "acceptance_evidence": {},
       "test_evidence": {}
     }
