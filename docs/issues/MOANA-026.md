@@ -8,7 +8,7 @@
 - Aliases históricos: MOA-026
 - Phase: P5
 - Priority: P1
-- Status: review
+- Status: done
 - Complexity: L (relativa, no estimación de tiempo)
 - Dependencies: [MOANA-014](MOANA-014.md), [MOANA-015](MOANA-015.md), [MOANA-022](MOANA-022.md)
 - Related modules: quality
@@ -43,13 +43,13 @@ No puntaje automático que garantice calidad profesional ni revisión humana fic
 
 ## Acceptance criteria
 
-- [ ] AC1: Un color fuera de paleta strict se detecta como fallo y un singleton como advertencia
-- [ ] AC2: Informe se reproduce idéntico y supresión de un ojo no oculta errores de otra región
+- [x] AC1: Un color fuera de paleta strict se detecta como fallo y un singleton como advertencia
+- [x] AC2: Informe se reproduce idéntico y supresión de un ojo no oculta errores de otra región
 
 ## Required tests
 
-- [ ] T1: Corpus sintético con defectos conocidos y versiones corregidas
-- [ ] T2: Tests de no mutación, orden estable, regiones superpuestas y estabilidad temporal
+- [x] T1: Corpus sintético con defectos conocidos y versiones corregidas
+- [x] T2: Tests de no mutación, orden estable, regiones superpuestas y estabilidad temporal
 
 ## Expected deliverables
 
@@ -66,7 +66,7 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Guía para agentes de IA
 
-**Estado para agentes:** En revisión: sólo correcciones de la revisión; no añadir alcance.
+**Estado para agentes:** Completado; usar sólo como referencia del contrato entregado.
 
 ### 1. Preparación
 
@@ -143,6 +143,7 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 - Fachada moana.api.evaluate_quality(document, *, config, animation_id, limits, deadline): animación desconocida rechazada antes de renderizar; render base, máscaras de región, frames de animación y quality_cost admitidos contra un único presupuesto; sin CLI (MOANA-033).
 - Los 12 ejemplos pasan todos los hard checks (también cada frame de bouncing-slime); advertencias registradas en ADR-036 con procedimiento de revisión y digest SHA-256 del informe canónico de cada ejemplo fijado en el test de integración. Documentación: MOANA.md 0.1.24-draft (§3, §13, §19), module-contracts, ADR-036.
 - Revisiones de agente: arquitectura, QA y pixel-art con cambios aplicados (conectividad de clusters, agrupación, ruido relativo al área, temporal_change opcional, presupuesto único, memoria acotada); revisión artística humana PENDIENTE. Gate local macOS: scripts/validate.py verde con src/moana al 100 %, check_wheel OK, mypy --platform win32 OK, pre-commit OK; matriz pendiente en main.
+- Aprobado por el propietario el 2026-11-17 tras revisión; PR #66 hacia develop.
 - AC1: tests/unit/quality/test_quality_rules.py::test_ac1_off_palette_is_an_error_and_a_singleton_a_warning y los casos off_palette/singleton de ::test_t1_defect_reports_the_expected_finding.
 - AC2: tests/unit/quality/test_quality_report.py::test_ac2_suppressing_one_eye_hides_only_that_eye, ::test_ac2_errors_in_a_suppressed_region_stay_active, ::test_suppression_never_hides_a_finding_with_pixels_outside_its_region, ::test_ac2_report_is_identical_across_runs; tests/unit/api/test_api_quality.py::test_ac2_report_is_identical_across_processes_and_hash_seeds (PYTHONHASHSEED 0 y 1234).
 - T1: tests/unit/quality/test_quality_rules.py::test_t1_defect_reports_the_expected_finding y ::test_t1_corrected_version_has_no_finding_of_that_rule sobre el corpus sintético tests/fixtures/quality.py (defectos contados a mano y versiones corregidas), ::test_metrics_match_independent_counts (búsqueda independiente), ::test_singletons_are_grouped_per_colour_above_the_listing_limit.

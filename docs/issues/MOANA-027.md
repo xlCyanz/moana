@@ -8,12 +8,12 @@
 - Aliases históricos: MOA-027
 - Phase: P5
 - Priority: P1
-- Status: blocked
+- Status: ready
 - Complexity: L (relativa, no estimación de tiempo)
 - Dependencies: [MOANA-017](MOANA-017.md), [MOANA-022](MOANA-022.md), [MOANA-026](MOANA-026.md), [MOANA-028](MOANA-028.md)
 - Related modules: examples, quality
 - Requirements: R005, R027, R038 ([trazabilidad](traceability.md))
-- Bloqueo: Dependencias pendientes: MOANA-026
+- Bloqueo: Ninguno
 
 ## Context
 
@@ -66,7 +66,7 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Guía para agentes de IA
 
-**Estado para agentes:** No empezar: estado `blocked`. Esperar a que [MOANA-017](MOANA-017.md), [MOANA-022](MOANA-022.md), [MOANA-026](MOANA-026.md), [MOANA-028](MOANA-028.md) estén `done` y el catálogo marque este issue `ready`.
+**Estado para agentes:** Listo: todas las dependencias están `done`; puede empezarse.
 
 ### 1. Preparación
 

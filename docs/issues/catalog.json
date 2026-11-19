@@ -1807,7 +1807,7 @@
       "id": "MOANA-026",
       "title": "Crear informes de calidad gráfica",
       "phase": "P5",
-      "status": "review",
+      "status": "done",
       "priority": "P1",
       "dependencies": [
         "MOANA-014",
@@ -1839,7 +1839,8 @@
         "Presupuesto: quality_cost admitido antes de crear arrays (frames ≤ 256, ≤ 64 regiones, hallazgos acotados por regla con tope listado de 4096, mínimo garantizado de 64 por regla y recuentos omitidos por regla; frames de tamaño distinto al lienzo no se leen); deadline por fila, región y frame; picos tracemalloc medidos bajo la estimación en imágenes de alta entropía.",
         "Fachada moana.api.evaluate_quality(document, *, config, animation_id, limits, deadline): animación desconocida rechazada antes de renderizar; render base, máscaras de región, frames de animación y quality_cost admitidos contra un único presupuesto; sin CLI (MOANA-033).",
         "Los 12 ejemplos pasan todos los hard checks (también cada frame de bouncing-slime); advertencias registradas en ADR-036 con procedimiento de revisión y digest SHA-256 del informe canónico de cada ejemplo fijado en el test de integración. Documentación: MOANA.md 0.1.24-draft (§3, §13, §19), module-contracts, ADR-036.",
-        "Revisiones de agente: arquitectura, QA y pixel-art con cambios aplicados (conectividad de clusters, agrupación, ruido relativo al área, temporal_change opcional, presupuesto único, memoria acotada); revisión artística humana PENDIENTE. Gate local macOS: scripts/validate.py verde con src/moana al 100 %, check_wheel OK, mypy --platform win32 OK, pre-commit OK; matriz pendiente en main."
+        "Revisiones de agente: arquitectura, QA y pixel-art con cambios aplicados (conectividad de clusters, agrupación, ruido relativo al área, temporal_change opcional, presupuesto único, memoria acotada); revisión artística humana PENDIENTE. Gate local macOS: scripts/validate.py verde con src/moana al 100 %, check_wheel OK, mypy --platform win32 OK, pre-commit OK; matriz pendiente en main.",
+        "Aprobado por el propietario el 2026-11-17 tras revisión; PR #66 hacia develop."
       ],
       "aliases": [
         "MOA-026"
@@ -1875,7 +1876,7 @@
       "id": "MOANA-027",
       "title": "Construir corpus artístico y rúbrica humana",
       "phase": "P5",
-      "status": "blocked",
+      "status": "ready",
       "priority": "P1",
       "dependencies": [
         "MOANA-017",
@@ -1924,7 +1925,7 @@
       "risks": [
         "No marcar como aprobada la calidad artística mientras falte una persona revisora."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-026",
+      "blocking_reason": null,
       "acceptance_evidence": {},
       "test_evidence": {}
     },
@@ -2229,7 +2230,7 @@
       "id": "MOANA-033",
       "title": "Documentar flujos IA y previews editables",
       "phase": "P5",
-      "status": "blocked",
+      "status": "ready",
       "priority": "P1",
       "dependencies": [
         "MOANA-012",
@@ -2278,7 +2279,7 @@
       "risks": [
         "No documentar una API de diseño como importable antes de completar sus dependencias."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-026",
+      "blocking_reason": null,
       "acceptance_evidence": {},
       "test_evidence": {}
     },
