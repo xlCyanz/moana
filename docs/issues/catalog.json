@@ -1602,7 +1602,7 @@
       "id": "MOANA-023",
       "title": "Exportar spritesheets y manifest reversible",
       "phase": "P4",
-      "status": "review",
+      "status": "done",
       "priority": "P1",
       "dependencies": [
         "MOANA-022",
@@ -1633,7 +1633,8 @@
         "Escritura en dos archivos con commit_bytes: todo codificado y verificado en memoria, overwrite=False comprueba ambos destinos antes de escribir, atlas primero y manifiesto al final (un fallo del manifiesto informa committed sin borrar el atlas). Recorte: IHDR/IEND y presupuesto len(png) + 12·A antes de decodificar, digest del atlas, not_normalized y dirty_gap independientes de los digests, digest por frame; load_spritesheet abre con O_NONBLOCK y exige archivo regular (un FIFO nunca bloquea).",
         "Guía para motores en ADR-033 y MOANA.md §17: filtrado nearest sin mipmaps, padding ≥ 1 (≥ 2 con mipmaps) si hay filtrado, padding no es extrusión; pivote en píxeles enteros del frame fuente con conversión (px/w, 1 − py/h) para motores Y-up; semántica de trim_offset fijada. MOANA.md 0.1.21-draft.",
         "Cubiertas con tests las líneas que MOANA-022 dejó sin cubrir (animation/frames.py:185, render/sequence.py:189 y 237).",
-        "Revisiones de agente: gráficos (aprobado), python (cambios aplicados: nombres no UTF-8/C1, FIFO, versión antes de miembros, reutilización de destination_path/is_normalized, consistencia de errores) y pixel-art (guía de motores, bloque animation); revisión artística humana PENDIENTE. Gate local macOS: scripts/validate.py verde con src/moana al 100 %, check_wheel OK, mypy --platform win32 OK, pre-commit OK; matriz pendiente en main."
+        "Revisiones de agente: gráficos (aprobado), python (cambios aplicados: nombres no UTF-8/C1, FIFO, versión antes de miembros, reutilización de destination_path/is_normalized, consistencia de errores) y pixel-art (guía de motores, bloque animation); revisión artística humana PENDIENTE. Gate local macOS: scripts/validate.py verde con src/moana al 100 %, check_wheel OK, mypy --platform win32 OK, pre-commit OK; matriz pendiente en main.",
+        "Aprobado por el propietario el 2026-11-17 tras revisión; PR #63 hacia develop."
       ],
       "aliases": [
         "MOA-023"
@@ -2241,7 +2242,7 @@
       "id": "MOANA-034",
       "title": "Añadir ejemplos de tiles y escenarios modulares",
       "phase": "P5",
-      "status": "blocked",
+      "status": "ready",
       "priority": "P2",
       "dependencies": [
         "MOANA-008",
@@ -2289,7 +2290,7 @@
       "risks": [
         "Repetición horizontal/vertical necesita fixtures de costura y revisión a escala nativa."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-023",
+      "blocking_reason": null,
       "acceptance_evidence": {},
       "test_evidence": {}
     },
@@ -2353,7 +2354,7 @@
       "risks": [
         "No declarar CI remoto de cambios locales ni licencia decidida sin evidencia del propietario."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-023, MOANA-024, MOANA-025, MOANA-027, MOANA-030, MOANA-032, MOANA-033, MOANA-034",
+      "blocking_reason": "Dependencias pendientes: MOANA-024, MOANA-025, MOANA-027, MOANA-030, MOANA-032, MOANA-033, MOANA-034",
       "acceptance_evidence": {},
       "test_evidence": {}
     }

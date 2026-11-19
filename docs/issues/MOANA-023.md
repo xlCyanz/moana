@@ -8,7 +8,7 @@
 - Aliases históricos: MOA-023
 - Phase: P4
 - Priority: P1
-- Status: review
+- Status: done
 - Complexity: M (relativa, no estimación de tiempo)
 - Dependencies: [MOANA-022](MOANA-022.md), [MOANA-011](MOANA-011.md)
 - Related modules: export, animation
@@ -43,13 +43,13 @@ No packing heurístico compacto hasta tener contrato de desempate independiente.
 
 ## Acceptance criteria
 
-- [ ] AC1: Recortar atlas por manifest reconstruye RGBA exacto de cada frame
-- [ ] AC2: Export idéntico con misma configuración y ningún frame solapa padding o sale del sheet
+- [x] AC1: Recortar atlas por manifest reconstruye RGBA exacto de cada frame
+- [x] AC2: Export idéntico con misma configuración y ningún frame solapa padding o sale del sheet
 
 ## Required tests
 
-- [ ] T1: Columnas 1/N, último renglón incompleto, margen/padding y canvas no cuadrado
-- [ ] T2: Atlas excesivo, manifest corrupto y roundtrip recortes/tiempos
+- [x] T1: Columnas 1/N, último renglón incompleto, margen/padding y canvas no cuadrado
+- [x] T2: Atlas excesivo, manifest corrupto y roundtrip recortes/tiempos
 
 ## Expected deliverables
 
@@ -66,7 +66,7 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Guía para agentes de IA
 
-**Estado para agentes:** En revisión: sólo correcciones de la revisión; no añadir alcance.
+**Estado para agentes:** Completado; usar sólo como referencia del contrato entregado.
 
 ### 1. Preparación
 
@@ -143,6 +143,7 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 - Guía para motores en ADR-033 y MOANA.md §17: filtrado nearest sin mipmaps, padding ≥ 1 (≥ 2 con mipmaps) si hay filtrado, padding no es extrusión; pivote en píxeles enteros del frame fuente con conversión (px/w, 1 − py/h) para motores Y-up; semántica de trim_offset fijada. MOANA.md 0.1.21-draft.
 - Cubiertas con tests las líneas que MOANA-022 dejó sin cubrir (animation/frames.py:185, render/sequence.py:189 y 237).
 - Revisiones de agente: gráficos (aprobado), python (cambios aplicados: nombres no UTF-8/C1, FIFO, versión antes de miembros, reutilización de destination_path/is_normalized, consistencia de errores) y pixel-art (guía de motores, bloque animation); revisión artística humana PENDIENTE. Gate local macOS: scripts/validate.py verde con src/moana al 100 %, check_wheel OK, mypy --platform win32 OK, pre-commit OK; matriz pendiente en main.
+- Aprobado por el propietario el 2026-11-17 tras revisión; PR #63 hacia develop.
 - AC1: tests/unit/export/test_export_spritesheet.py::test_slice_rebuilds_frames_and_reexports_identically, ::test_translucent_pixels_survive_the_roundtrip, ::test_rects_are_disjoint_inside_and_roundtrip (hypothesis); tests/integration/test_spritesheet_animation.py::test_bouncing_slime_sheet_rebuilds_every_frame (RGBA, digests, duraciones, pivotes y animation con columnas/margen/padding (1,0,0), (2,1,1), (4,2,3)).
 - AC2: tests/unit/export/test_export_spritesheet.py::test_export_is_byte_identical_across_directories, ::test_rects_are_disjoint_inside_and_roundtrip (rects disjuntos, dentro del margen, separados ≥ padding, huecos transparentes), ::test_atlas_pixels_are_checked_independently_of_digests (dirty_gap, not_normalized), ::test_corrupt_manifest_is_located (rect_mismatch, rect_out_of_sheet).
 - T1: tests/unit/export/test_export_spritesheet.py::test_layout_matches_hand_computed_grid y ::test_atlas_pixels_are_placed_by_hand_and_gaps_are_transparent (oráculos a mano: una columna, una fila, último renglón incompleto, sólo margen, sólo padding, frame único; frames 3×2 y 2×3 no cuadrados), ::test_manifest_records_every_frame_value, ::test_invalid_layout_options.
