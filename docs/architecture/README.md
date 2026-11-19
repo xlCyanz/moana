@@ -66,6 +66,7 @@ El paquete contiene `src/moana/__init__.py`, `py.typed` y `src/moana/core/` (MOA
 - [ADR-033: spritesheets en grid con manifiesto reversible](decisions/ADR-033-spritesheet-export.md).
 - [ADR-034: GIF animado con política explícita de pérdidas](decisions/ADR-034-gif-export.md).
 - [ADR-035: APNG y WebP lossless opcionales con capacidades comprobadas](decisions/ADR-035-apng-webp-lossless.md).
+- [ADR-036: informes de calidad gráfica: reglas duras, heurísticas configurables y métricas sin puntaje](decisions/ADR-036-quality-reports.md).
 - [Modelo de amenazas](SECURITY_MODEL.md).
 
 Un ADR nuevo registra contexto, decisión, alternativas, consecuencias y evidencia. Cambiar un ADR aceptado se hace mediante otro que lo sustituya y actualizando el contrato principal.

@@ -76,6 +76,7 @@ AVAILABLE_FUNCTIONS: Final = (
     "apply_edit",
     "capabilities",
     "edit_document",
+    "evaluate_quality",
     "export_png",
     "inspect_document",
     "load_document",

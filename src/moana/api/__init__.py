@@ -18,7 +18,11 @@ The facade composes the implemented services and adds no algorithm of its own:
   ``EditConflict``;
 * :func:`analyze_clusters` reports the pixel clusters of the render and their
   artistic warnings, with region exceptions as evaluation configuration (sections 8
-  and 19, ADR-027); it never modifies the document.
+  and 19, ADR-027); it never modifies the document;
+* :func:`evaluate_quality` reports hard checks, artistic warnings and metrics of the
+  render (and of an animation's frames) with a :class:`QualityConfig` that is
+  evaluation configuration, never document data (section 19, ADR-036); it has no
+  score and never modifies the document.
 
 Every return value is frozen and holds no NumPy array or Pillow image. Errors are
 ``moana.core.errors`` classes (``ReadError`` for unreadable input files is
@@ -46,11 +50,20 @@ from moana.api.inspection import (
     inspect_document,
 )
 from moana.api.loading import DocumentSource, load_document
+from moana.api.quality import evaluate_quality
 from moana.api.services import export_png, render
 from moana.core.budget import Deadline, RenderLimits
 from moana.core.errors import EditConflict, ReadError
 from moana.editing import COMMAND_TYPES, EditBatch, EditResult
 from moana.export import MAX_SCALE, ExportManifest
+from moana.quality import (
+    QUALITY_RULES,
+    QualityConfig,
+    QualityFinding,
+    QualityReport,
+    RegionSettings,
+    Suppression,
+)
 from moana.render import RenderResult, RenderWarning
 from moana.schema import (
     Document,
@@ -73,6 +86,7 @@ __all__ = [
     "COMMAND_TYPES",
     "MAX_SCALE",
     "PLANNED_FUNCTIONS",
+    "QUALITY_RULES",
     "BackendSummary",
     "BatchSource",
     "BudgetReport",
@@ -94,16 +108,22 @@ __all__ = [
     "MaskSummary",
     "OperationSummary",
     "ParseLimits",
+    "QualityConfig",
+    "QualityFinding",
+    "QualityReport",
     "ReadError",
+    "RegionSettings",
     "RegionSummary",
     "RenderLimits",
     "RenderResult",
     "RenderWarning",
     "ResolvedRegion",
+    "Suppression",
     "analyze_clusters",
     "apply_edit",
     "capabilities",
     "edit_document",
+    "evaluate_quality",
     "export_png",
     "inspect_document",
     "load_document",

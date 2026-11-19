@@ -8,7 +8,7 @@ from collections.abc import Iterator
 from pathlib import Path
 
 SRC = Path(__file__).resolve().parents[3] / "src/moana"
-DOMAIN = ("core", "schema", "palette", "geometry", "layers", "render", "export")
+DOMAIN = ("core", "schema", "palette", "geometry", "layers", "render", "export", "quality")
 
 
 def imported_modules(path: Path) -> Iterator[str]:

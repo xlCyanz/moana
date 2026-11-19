@@ -1,6 +1,6 @@
 # Inventario del repositorio
 
-449 archivos actuales de fuente, documentación, configuración y pruebas al 2026-11-19. Incluye cambios locales todavía sin commit. Excluye entorno virtual, herramientas, cachés, artefactos y metadata Git.
+463 archivos actuales de fuente, documentación, configuración y pruebas al 2026-11-19. Incluye cambios locales todavía sin commit. Excluye entorno virtual, herramientas, cachés, artefactos y metadata Git.
 
 | Archivo |
 | --- |
@@ -117,6 +117,7 @@
 | [docs/architecture/decisions/ADR-033-spritesheet-export.md](../docs/architecture/decisions/ADR-033-spritesheet-export.md) |
 | [docs/architecture/decisions/ADR-034-gif-export.md](../docs/architecture/decisions/ADR-034-gif-export.md) |
 | [docs/architecture/decisions/ADR-035-apng-webp-lossless.md](../docs/architecture/decisions/ADR-035-apng-webp-lossless.md) |
+| [docs/architecture/decisions/ADR-036-quality-reports.md](../docs/architecture/decisions/ADR-036-quality-reports.md) |
 | [docs/architecture/module-contracts.md](../docs/architecture/module-contracts.md) |
 | [docs/architecture/overview.md](../docs/architecture/overview.md) |
 | [docs/guides/agent-workflow.md](../docs/guides/agent-workflow.md) |
@@ -245,6 +246,7 @@
 | [src/moana/api/editing.py](../src/moana/api/editing.py) |
 | [src/moana/api/inspection.py](../src/moana/api/inspection.py) |
 | [src/moana/api/loading.py](../src/moana/api/loading.py) |
+| [src/moana/api/quality.py](../src/moana/api/quality.py) |
 | [src/moana/api/services.py](../src/moana/api/services.py) |
 | [src/moana/cli/__init__.py](../src/moana/cli/__init__.py) |
 | [src/moana/cli/__main__.py](../src/moana/cli/__main__.py) |
@@ -305,6 +307,11 @@
 | [src/moana/project/model.py](../src/moana/project/model.py) |
 | [src/moana/project/store.py](../src/moana/project/store.py) |
 | [src/moana/py.typed](../src/moana/py.typed) |
+| [src/moana/quality/__init__.py](../src/moana/quality/__init__.py) |
+| [src/moana/quality/_collect.py](../src/moana/quality/_collect.py) |
+| [src/moana/quality/config.py](../src/moana/quality/config.py) |
+| [src/moana/quality/evaluate.py](../src/moana/quality/evaluate.py) |
+| [src/moana/quality/report.py](../src/moana/quality/report.py) |
 | [src/moana/render/__init__.py](../src/moana/render/__init__.py) |
 | [src/moana/render/budget.py](../src/moana/render/budget.py) |
 | [src/moana/render/pipeline.py](../src/moana/render/pipeline.py) |
@@ -337,6 +344,7 @@
 | [tests/fixtures/migration/formats.py](../tests/fixtures/migration/formats.py) |
 | [tests/fixtures/migration/test-only-0.8.moana.json](../tests/fixtures/migration/test-only-0.8.moana.json) |
 | [tests/fixtures/migration/test-only-0.9.moana.json](../tests/fixtures/migration/test-only-0.9.moana.json) |
+| [tests/fixtures/quality.py](../tests/fixtures/quality.py) |
 | [tests/integration/test_animated_export.py](../tests/integration/test_animated_export.py) |
 | [tests/integration/test_cli_paths.py](../tests/integration/test_cli_paths.py) |
 | [tests/integration/test_cross_platform_determinism.py](../tests/integration/test_cross_platform_determinism.py) |
@@ -344,6 +352,7 @@
 | [tests/integration/test_gif_animation.py](../tests/integration/test_gif_animation.py) |
 | [tests/integration/test_material_determinism.py](../tests/integration/test_material_determinism.py) |
 | [tests/integration/test_path_determinism.py](../tests/integration/test_path_determinism.py) |
+| [tests/integration/test_quality_examples.py](../tests/integration/test_quality_examples.py) |
 | [tests/integration/test_render_determinism.py](../tests/integration/test_render_determinism.py) |
 | [tests/integration/test_spritesheet_animation.py](../tests/integration/test_spritesheet_animation.py) |
 | [tests/test_environment.py](../tests/test_environment.py) |
@@ -358,6 +367,7 @@
 | [tests/unit/api/test_api_facade.py](../tests/unit/api/test_api_facade.py) |
 | [tests/unit/api/test_api_masks.py](../tests/unit/api/test_api_masks.py) |
 | [tests/unit/api/test_api_paths.py](../tests/unit/api/test_api_paths.py) |
+| [tests/unit/api/test_api_quality.py](../tests/unit/api/test_api_quality.py) |
 | [tests/unit/cli/test_cli_edit.py](../tests/unit/cli/test_cli_edit.py) |
 | [tests/unit/cli/test_cli_main.py](../tests/unit/cli/test_cli_main.py) |
 | [tests/unit/core/test_core_architecture.py](../tests/unit/core/test_core_architecture.py) |
@@ -413,6 +423,10 @@
 | [tests/unit/project/test_project_model.py](../tests/unit/project/test_project_model.py) |
 | [tests/unit/project/test_project_roundtrip.py](../tests/unit/project/test_project_roundtrip.py) |
 | [tests/unit/project/test_project_security.py](../tests/unit/project/test_project_security.py) |
+| [tests/unit/quality/test_quality_architecture.py](../tests/unit/quality/test_quality_architecture.py) |
+| [tests/unit/quality/test_quality_config.py](../tests/unit/quality/test_quality_config.py) |
+| [tests/unit/quality/test_quality_report.py](../tests/unit/quality/test_quality_report.py) |
+| [tests/unit/quality/test_quality_rules.py](../tests/unit/quality/test_quality_rules.py) |
 | [tests/unit/render/test_render_architecture.py](../tests/unit/render/test_render_architecture.py) |
 | [tests/unit/render/test_render_budget.py](../tests/unit/render/test_render_budget.py) |
 | [tests/unit/render/test_render_dither.py](../tests/unit/render/test_render_dither.py) |
