@@ -1,6 +1,6 @@
 # Inventario del repositorio
 
-420 archivos actuales de fuente, documentación, configuración y pruebas al 2026-11-18. Incluye cambios locales todavía sin commit. Excluye entorno virtual, herramientas, cachés, artefactos y metadata Git.
+434 archivos actuales de fuente, documentación, configuración y pruebas al 2026-11-18. Incluye cambios locales todavía sin commit. Excluye entorno virtual, herramientas, cachés, artefactos y metadata Git.
 
 | Archivo |
 | --- |
@@ -113,6 +113,7 @@
 | [docs/architecture/decisions/ADR-029-project-persistence.md](../docs/architecture/decisions/ADR-029-project-persistence.md) |
 | [docs/architecture/decisions/ADR-030-material-presets.md](../docs/architecture/decisions/ADR-030-material-presets.md) |
 | [docs/architecture/decisions/ADR-031-format-versions-migrations.md](../docs/architecture/decisions/ADR-031-format-versions-migrations.md) |
+| [docs/architecture/decisions/ADR-032-animation-timeline.md](../docs/architecture/decisions/ADR-032-animation-timeline.md) |
 | [docs/architecture/module-contracts.md](../docs/architecture/module-contracts.md) |
 | [docs/architecture/overview.md](../docs/architecture/overview.md) |
 | [docs/guides/agent-workflow.md](../docs/guides/agent-workflow.md) |
@@ -203,6 +204,7 @@
 | [docs/standards/security.md](../docs/standards/security.md) |
 | [docs/standards/testing.md](../docs/standards/testing.md) |
 | [examples/README.md](../examples/README.md) |
+| [examples/specs/bouncing-slime.moana.json](../examples/specs/bouncing-slime.moana.json) |
 | [examples/specs/dither-dusk.moana.json](../examples/specs/dither-dusk.moana.json) |
 | [examples/specs/masked-eyes.moana.json](../examples/specs/masked-eyes.moana.json) |
 | [examples/specs/material-cloth.moana.json](../examples/specs/material-cloth.moana.json) |
@@ -232,6 +234,9 @@
 | [scripts/uv.sh](../scripts/uv.sh) |
 | [scripts/validate.py](../scripts/validate.py) |
 | [src/moana/__init__.py](../src/moana/__init__.py) |
+| [src/moana/animation/__init__.py](../src/moana/animation/__init__.py) |
+| [src/moana/animation/frames.py](../src/moana/animation/frames.py) |
+| [src/moana/animation/timeline.py](../src/moana/animation/timeline.py) |
 | [src/moana/api/__init__.py](../src/moana/api/__init__.py) |
 | [src/moana/api/analysis.py](../src/moana/api/analysis.py) |
 | [src/moana/api/editing.py](../src/moana/api/editing.py) |
@@ -297,6 +302,7 @@
 | [src/moana/render/pipeline.py](../src/moana/render/pipeline.py) |
 | [src/moana/render/regions.py](../src/moana/render/regions.py) |
 | [src/moana/render/result.py](../src/moana/render/result.py) |
+| [src/moana/render/sequence.py](../src/moana/render/sequence.py) |
 | [src/moana/schema/__init__.py](../src/moana/schema/__init__.py) |
 | [src/moana/schema/_issues.py](../src/moana/schema/_issues.py) |
 | [src/moana/schema/_pointers.py](../src/moana/schema/_pointers.py) |
@@ -332,6 +338,9 @@
 | [tests/test_environment.py](../tests/test_environment.py) |
 | [tests/test_planning.py](../tests/test_planning.py) |
 | [tests/test_repository_tools.py](../tests/test_repository_tools.py) |
+| [tests/unit/animation/test_animation_architecture.py](../tests/unit/animation/test_animation_architecture.py) |
+| [tests/unit/animation/test_animation_frames.py](../tests/unit/animation/test_animation_frames.py) |
+| [tests/unit/animation/test_animation_memory.py](../tests/unit/animation/test_animation_memory.py) |
 | [tests/unit/api/test_api_architecture.py](../tests/unit/api/test_api_architecture.py) |
 | [tests/unit/api/test_api_clusters.py](../tests/unit/api/test_api_clusters.py) |
 | [tests/unit/api/test_api_editing.py](../tests/unit/api/test_api_editing.py) |
@@ -350,9 +359,11 @@
 | [tests/unit/core/test_core_materials.py](../tests/unit/core/test_core_materials.py) |
 | [tests/unit/core/test_core_procedural.py](../tests/unit/core/test_core_procedural.py) |
 | [tests/unit/core/test_core_vector_path.py](../tests/unit/core/test_core_vector_path.py) |
+| [tests/unit/editing/test_editing_animations.py](../tests/unit/editing/test_editing_animations.py) |
 | [tests/unit/editing/test_editing_apply.py](../tests/unit/editing/test_editing_apply.py) |
 | [tests/unit/editing/test_editing_architecture.py](../tests/unit/editing/test_editing_architecture.py) |
 | [tests/unit/editing/test_editing_batch.py](../tests/unit/editing/test_editing_batch.py) |
+| [tests/unit/editing/test_editing_commands.py](../tests/unit/editing/test_editing_commands.py) |
 | [tests/unit/editing/test_editing_dither.py](../tests/unit/editing/test_editing_dither.py) |
 | [tests/unit/editing/test_editing_history.py](../tests/unit/editing/test_editing_history.py) |
 | [tests/unit/editing/test_editing_material.py](../tests/unit/editing/test_editing_material.py) |
@@ -379,6 +390,7 @@
 | [tests/unit/palette/test_palette_table.py](../tests/unit/palette/test_palette_table.py) |
 | [tests/unit/project/__init__.py](../tests/unit/project/__init__.py) |
 | [tests/unit/project/conftest.py](../tests/unit/project/conftest.py) |
+| [tests/unit/project/test_project_animations.py](../tests/unit/project/test_project_animations.py) |
 | [tests/unit/project/test_project_atomic.py](../tests/unit/project/test_project_atomic.py) |
 | [tests/unit/project/test_project_budgets.py](../tests/unit/project/test_project_budgets.py) |
 | [tests/unit/project/test_project_manifest.py](../tests/unit/project/test_project_manifest.py) |
@@ -395,8 +407,10 @@
 | [tests/unit/render/test_render_paths.py](../tests/unit/render/test_render_paths.py) |
 | [tests/unit/render/test_render_pipeline.py](../tests/unit/render/test_render_pipeline.py) |
 | [tests/unit/render/test_render_regions.py](../tests/unit/render/test_render_regions.py) |
+| [tests/unit/render/test_render_sequence.py](../tests/unit/render/test_render_sequence.py) |
 | [tests/unit/render/test_render_shade.py](../tests/unit/render/test_render_shade.py) |
 | [tests/unit/schema/conftest.py](../tests/unit/schema/conftest.py) |
+| [tests/unit/schema/test_schema_animations.py](../tests/unit/schema/test_schema_animations.py) |
 | [tests/unit/schema/test_schema_architecture.py](../tests/unit/schema/test_schema_architecture.py) |
 | [tests/unit/schema/test_schema_dither.py](../tests/unit/schema/test_schema_dither.py) |
 | [tests/unit/schema/test_schema_document.py](../tests/unit/schema/test_schema_document.py) |

@@ -125,7 +125,7 @@ from moana.core.budget import DEFAULT_RENDER_LIMITS, Deadline, RenderLimits
 from moana.core.coordinates import Box, Dimensions, combined_box, grown_box, require_int
 from moana.core.dither import PATTERN_INDEX_BYTES
 from moana.core.errors import BudgetExceeded, ErrorDetail, ReferenceError
-from moana.core.limits import MAX_PATH_CELLS
+from moana.core.limits import MAX_ANIMATION_FRAMES, MAX_PATH_CELLS
 from moana.core.materials import MaterialPreset, cell_span, preset
 from moana.core.morphology import morphology_bytes
 from moana.core.vector_path import (
@@ -205,7 +205,7 @@ RGBA_BYTES: Final = 4
 COMPOSITE_BYTES_PER_PIXEL: Final = 32
 MASK_BYTES_PER_PIXEL: Final = 1
 # MOANA.md section 17: at most 256 frames per export.
-MAX_FRAMES: Final = 256
+MAX_FRAMES: Final = MAX_ANIMATION_FRAMES
 # Compositor working set without groups (ADR-017, ADR-018): root, layer and result
 # copies, a deferred mask and its copy (14A) and 80 bytes per kernel tile pixel.
 COMPOSITOR_BYTES_PER_PIXEL: Final = 14

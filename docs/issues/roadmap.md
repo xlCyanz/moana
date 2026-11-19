@@ -66,7 +66,7 @@ Estado: 2/6 issues completados.
 
 - [MOANA-020](MOANA-020.md) — Persistir proyectos y assets seguros (done)
 - [MOANA-021](MOANA-021.md) — Versionar y migrar formatos de proyecto (done)
-- [MOANA-022](MOANA-022.md) — Implementar timeline y evaluación de frames (ready)
+- [MOANA-022](MOANA-022.md) — Implementar timeline y evaluación de frames (review)
 - [MOANA-023](MOANA-023.md) — Exportar spritesheets y manifest reversible (blocked)
 - [MOANA-024](MOANA-024.md) — Exportar GIF con política de pérdidas (blocked)
 - [MOANA-025](MOANA-025.md) — Añadir APNG y WebP lossless opcionales (blocked)
@@ -88,4 +88,4 @@ Estado: 0/8 issues completados.
 
 ## Siguiente paso
 
-Implementar [MOANA-022](MOANA-022.md): Implementar timeline y evaluación de frames.
+No hay issues ready. Revisar bloqueos y dependencias antes de iniciar.

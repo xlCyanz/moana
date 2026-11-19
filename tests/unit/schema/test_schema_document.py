@@ -593,12 +593,12 @@ def test_validation_outranks_references_in_one_phase(minimal: dict[str, Any]) ->
 def test_unsupported_capability_alone_raises_unsupported_operation(
     minimal: dict[str, Any],
 ) -> None:
+    # ``animations`` has a 1.0 grammar since ADR-032; ``materials`` is still planned.
     minimal["materials"] = [{"id": "skin"}]
-    minimal["animations"] = [{}]
     with pytest.raises(errors.UnsupportedOperation) as raised:
         validate_document(minimal)
     capabilities = [d.context["capability"] for d in raised.value.details]
-    assert capabilities == ["animations", "materials"]
+    assert capabilities == ["materials"]
 
 
 def test_error_messages_do_not_echo_untrusted_strings(minimal: dict[str, Any]) -> None:

@@ -38,6 +38,7 @@ def test_references_from_removed_nodes_are_not_live() -> None:
             {"id": "both", "type": "union", "masks": ["a", "b"]},
         ],
         "regions": [{"id": "r", "mask_id": "a"}],
+        "animations": [],
     }
     assert live_references(tree, frozenset({"a"})) == ["/masks/2/masks/0", "/regions/0/mask_id"]
     assert live_references(tree, frozenset({"a", "both"})) == ["/regions/0/mask_id"]

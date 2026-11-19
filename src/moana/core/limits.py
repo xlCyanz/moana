@@ -26,6 +26,9 @@ from moana.core.errors import ValidationError
 
 __all__ = [
     "DEFAULT_GEOMETRY_LIMITS",
+    "MAX_ANIMATIONS",
+    "MAX_ANIMATION_DURATION_MS",
+    "MAX_ANIMATION_FRAMES",
     "MAX_ARCHIVE_BYTES",
     "MAX_ARCHIVE_ENTRIES",
     "MAX_ARCHIVE_EXPANDED_BYTES",
@@ -37,10 +40,13 @@ __all__ = [
     "MAX_COLORS_RGBA",
     "MAX_COLORS_STRICT",
     "MAX_EDIT_COMMANDS",
+    "MAX_FRAME_DURATION_MS",
+    "MAX_FRAME_OVERRIDES",
     "MAX_GROUP_DEPTH",
     "MAX_HISTORY_BYTES",
     "MAX_HISTORY_SNAPSHOTS",
     "MAX_LAYERS",
+    "MAX_LOOP_COUNT",
     "MAX_MASKS",
     "MAX_MASK_DEPTH",
     "MAX_MASK_OPERANDS",
@@ -59,6 +65,7 @@ __all__ = [
     "MAX_RAMP_ENTRIES",
     "MAX_REGIONS",
     "MAX_VERTICES",
+    "MIN_FRAME_DURATION_MS",
     "GeometryLimits",
 ]
 
@@ -193,3 +200,22 @@ MAX_ARCHIVE_RATIO: Final = 100
 # ``MAX_PROJECT_MANIFEST_BYTES``).
 MAX_MIGRATION_STEPS: Final = 16
 MAX_PROJECT_MIGRATIONS: Final = 8
+
+
+# Animations (MOANA.md section 17, ADR-032). A document declares at most
+# ``MAX_ANIMATIONS`` timelines of 1..``MAX_ANIMATION_FRAMES`` frames; one render request
+# evaluates and renders at most that many frames, whatever ``loop_count`` says (0 means
+# infinite playback, never an infinite render). Each frame lasts a whole number of
+# milliseconds in ``MIN_FRAME_DURATION_MS``..``MAX_FRAME_DURATION_MS``, so a timeline
+# lasts at most ``MAX_ANIMATION_DURATION_MS``, and lists at most
+# ``MAX_FRAME_OVERRIDES`` overrides (the edit-batch bound: each frame is evaluated like
+# one batch). ``MAX_LOOP_COUNT`` is the largest finite repetition count (16-bit, as the
+# loop field of animated formats). Accumulated frame pixels are a request budget of
+# ``RenderLimits`` (``max_frame_pixels``), not a format limit.
+MAX_ANIMATIONS: Final = 64
+MAX_ANIMATION_FRAMES: Final = 256
+MIN_FRAME_DURATION_MS: Final = 1
+MAX_FRAME_DURATION_MS: Final = 60_000
+MAX_ANIMATION_DURATION_MS: Final = MAX_ANIMATION_FRAMES * MAX_FRAME_DURATION_MS
+MAX_FRAME_OVERRIDES: Final = MAX_EDIT_COMMANDS
+MAX_LOOP_COUNT: Final = 65_535

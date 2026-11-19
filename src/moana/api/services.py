@@ -1,7 +1,8 @@
 """Render and export entry points of the public facade (MOANA.md section 13, ADR-020).
 
-They compose :func:`moana.render.render` and :func:`moana.export.export_png` without
-reimplementing them: ``render`` writes nothing and leaves the document untouched;
+They compose :func:`moana.render.render`, :func:`moana.animation.render_frame` (a
+``frame_id``, ADR-032) and :func:`moana.export.export_png` without reimplementing
+them: ``render`` writes nothing and leaves the document untouched;
 ``export_png`` writes the master or scaled RGBA PNG of a :class:`RenderResult`
 atomically to a caller-authorised path. Indexed PNG stays available through
 ``moana.export`` directly, since it needs a resolved palette.
@@ -11,6 +12,7 @@ from __future__ import annotations
 
 import os
 
+from moana.animation import render_frame
 from moana.core.budget import DEFAULT_RENDER_LIMITS, Deadline, RenderLimits
 from moana.export import ExportManifest
 from moana.export import export_png as _export_png
@@ -30,9 +32,23 @@ def render(
 ) -> RenderResult:
     """Render one frame into an immutable :class:`RenderResult` (no files written).
 
-    Raises ``ValidationError``, ``ReferenceError`` (a ``frame_id``: schema 1.0 has no
-    frames), ``UnsupportedOperation`` or ``BudgetExceeded``; see ADR-018.
+    ``frame_id=None`` renders the base document (ADR-018). A ``frame_id`` names an
+    animation frame by its global ID: every frame of its animation is evaluated
+    against the base, then that frame alone is admitted and rendered, with
+    ``frame_id`` in the provenance (:func:`moana.animation.render_frame`, ADR-032).
+    Raises ``ValidationError``, ``ReferenceError`` (``unknown_frame``),
+    ``UnsupportedOperation`` or ``BudgetExceeded``.
     """
+    if frame_id is not None:
+        if not isinstance(document, Document):
+            raise TypeError("document must be a moana.schema.Document")
+        if type(frame_id) is not str:
+            raise TypeError("frame_id must be a str or None")
+        if limits is not None and not isinstance(limits, RenderLimits):
+            raise TypeError("limits must be a RenderLimits value")
+        if deadline is not None and not isinstance(deadline, Deadline):
+            raise TypeError("deadline must be a Deadline or None")
+        return render_frame(document, frame_id, limits=limits, deadline=deadline).result
     return _render(document, frame_id=frame_id, limits=limits, deadline=deadline)
 
 

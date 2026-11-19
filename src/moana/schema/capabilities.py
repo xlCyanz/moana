@@ -25,6 +25,7 @@ __all__ = [
     "SUPPORTED_MASK_SHAPES",
     "SUPPORTED_MASK_TYPES",
     "SUPPORTED_OPERATION_TYPES",
+    "SUPPORTED_OVERRIDE_TYPES",
     "SUPPORTED_PATH_BACKENDS",
     "SUPPORTED_PROFILES",
     "SUPPORTED_SCHEMA_VERSIONS",
@@ -71,9 +72,13 @@ SUPPORTED_MASK_OPERATORS: Final = frozenset({"intersect", "subtract", "union", "
 SUPPORTED_MASK_TYPES: Final = SUPPORTED_MASK_SHAPES | SUPPORTED_MASK_OPERATORS
 PLANNED_MASK_TYPES: Final[frozenset[str]] = frozenset()
 
-# Optional root collections with a 1.0 grammar.
-SUPPORTED_COLLECTIONS: Final = frozenset({"masks", "regions"})
+# Optional root collections with a 1.0 grammar; ``animations`` arrived with timelines
+# (MOANA-022, ADR-032).
+SUPPORTED_COLLECTIONS: Final = frozenset({"animations", "masks", "regions"})
 # Root collections reserved for future capabilities: accepted only when empty.
-PLANNED_COLLECTIONS: Final = frozenset({"animations", "materials"})
+PLANNED_COLLECTIONS: Final = frozenset({"materials"})
+# Frame overrides of an animation (ADR-032): visibility, geometry and colour, with the
+# shape of the edit commands of the same name.
+SUPPORTED_OVERRIDE_TYPES: Final = frozenset({"set_color", "set_visibility", "translate"})
 # Layer members of planned features: groups (children, transform).
 PLANNED_LAYER_FIELDS: Final = frozenset({"children", "transform"})

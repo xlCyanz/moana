@@ -5,7 +5,9 @@
 1. **Validation**: the canonical tree of the document is validated again with
    :func:`moana.schema.validate_document`, so a model built without that entry point
    still gets ID uniqueness, colour references and profile rules. The frame must be
-   ``None`` (schema 1.0 has no animations).
+   ``None``: ``render`` draws the base document, and animation frames are evaluated
+   by :mod:`moana.animation` and drawn with :func:`moana.render.render_sequence`
+   (ADR-032).
 2. **Resolution**: the schema palette becomes a :class:`moana.palette.Palette` and
    every operation colour is resolved to its ``Rgba``; an operation type without a
    registered rasteriser is ``UNSUPPORTED_OPERATION``, and so is a document with a
@@ -277,12 +279,17 @@ def _outline_segment(
     return combine_masks("intersect", [part, ring], dimensions)
 
 
-def _check_frame(frame_id: str | None) -> None:
+def _check_frame(document: Document, frame_id: str | None) -> None:
     if frame_id is None:
         return
+    frames = {frame.id for animation in document.animations for frame in animation.frames}
+    if frame_id in frames:
+        raise ReferenceError(
+            "render draws the base document: frames are evaluated by moana.animation",
+            context={"field": "frame_id", "reason": "frame_not_evaluated"},
+        )
     raise ReferenceError(
-        "frame does not exist: schema 1.0 documents have no animations",
-        context={"field": "frame_id", "reason": "unknown_frame"},
+        "frame does not exist", context={"field": "frame_id", "reason": "unknown_frame"}
     )
 
 
@@ -551,8 +558,9 @@ def render(
     """Render one frame of ``document`` into an immutable :class:`RenderResult`.
 
     ``limits`` defaults to the section 20 budgets; only the hosting application may
-    raise them. Raises ``ValidationError``, ``ReferenceError`` (also for a
-    ``frame_id``, since schema 1.0 has no frames), ``UnsupportedOperation`` or
+    raise them. Raises ``ValidationError``, ``ReferenceError`` (also for any
+    ``frame_id``: ``unknown_frame``, or ``frame_not_evaluated`` for a frame of the
+    document, which :mod:`moana.animation` evaluates; ADR-032), ``UnsupportedOperation`` or
     ``BudgetExceeded`` (budgets and the cooperative ``deadline``, checked before
     each layer is planned and before each node and operation is drawn).
     """
@@ -560,7 +568,7 @@ def render(
     if frame_id is not None and type(frame_id) is not str:
         raise TypeError("frame_id must be a str or None")
     document = validate_document(normalize_document(document))
-    _check_frame(frame_id)
+    _check_frame(document, frame_id)
     backend = _check_renderable(document)
     estimate = plan_budget(document, limits, deadline=deadline)
     return _render_validated(document, frame_id, limits, deadline, backend, estimate)

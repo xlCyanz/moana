@@ -14,7 +14,9 @@ bands the texture of a versioned preset, and a ``selective_outline`` operation a
 outline whose authored segments take ramp steps from the same light (ADR-030).
 Format versions are an explicit registry (:data:`DOCUMENT_MIGRATIONS`, only 1.0
 and no migration); :func:`migrate_document` migrates a tree with registered pure
-steps, and reading never migrates (ADR-031).
+steps, and reading never migrates (ADR-031). ``animations`` declares finite
+timelines whose frames carry a duration and typed overrides (visibility, geometry,
+colour) of base IDs, evaluated by :mod:`moana.animation` (ADR-032).
 """
 
 from moana.schema._reader import DEFAULT_PARSE_LIMITS, ParseLimits
@@ -31,6 +33,7 @@ from moana.schema.capabilities import (
     SUPPORTED_MASK_SHAPES,
     SUPPORTED_MASK_TYPES,
     SUPPORTED_OPERATION_TYPES,
+    SUPPORTED_OVERRIDE_TYPES,
     SUPPORTED_PATH_BACKENDS,
     SUPPORTED_PROFILES,
     SUPPORTED_SCHEMA_VERSIONS,
@@ -47,6 +50,8 @@ from moana.schema.document import (
 from moana.schema.members import MASK_MEMBERS, OPERATION_MEMBERS, NodeMembers
 from moana.schema.migrations import DocumentMigration, migrate_document
 from moana.schema.models import (
+    MAX_OVERRIDE_SHIFT,
+    Animation,
     Canvas,
     Color,
     CombinationMask,
@@ -54,6 +59,8 @@ from moana.schema.models import (
     Document,
     EllipseMask,
     EllipseOperation,
+    Frame,
+    FrameOverride,
     IntersectMask,
     Layer,
     Light,
@@ -77,11 +84,14 @@ from moana.schema.models import (
     RectOperation,
     Region,
     SelectiveOutlineOperation,
+    SetColorOverride,
+    SetVisibilityOverride,
     ShadeBand,
     ShadeOperation,
     ShapeMask,
     ShapeOperation,
     SubtractMask,
+    TranslateOverride,
     UnionMask,
     XorMask,
 )
@@ -99,6 +109,7 @@ __all__ = [
     "DOCUMENT_MIGRATIONS",
     "JSON_SCHEMA_DIALECT",
     "MASK_MEMBERS",
+    "MAX_OVERRIDE_SHIFT",
     "OPERATION_MEMBERS",
     "PLANNED_BLEND_MODES",
     "PLANNED_COLLECTIONS",
@@ -112,9 +123,11 @@ __all__ = [
     "SUPPORTED_MASK_SHAPES",
     "SUPPORTED_MASK_TYPES",
     "SUPPORTED_OPERATION_TYPES",
+    "SUPPORTED_OVERRIDE_TYPES",
     "SUPPORTED_PATH_BACKENDS",
     "SUPPORTED_PROFILES",
     "SUPPORTED_SCHEMA_VERSIONS",
+    "Animation",
     "Canvas",
     "Color",
     "CombinationMask",
@@ -123,6 +136,8 @@ __all__ = [
     "DocumentMigration",
     "EllipseMask",
     "EllipseOperation",
+    "Frame",
+    "FrameOverride",
     "IntersectMask",
     "Layer",
     "Light",
@@ -152,11 +167,14 @@ __all__ = [
     "Region",
     "ResolvedRegion",
     "SelectiveOutlineOperation",
+    "SetColorOverride",
+    "SetVisibilityOverride",
     "ShadeBand",
     "ShadeOperation",
     "ShapeMask",
     "ShapeOperation",
     "SubtractMask",
+    "TranslateOverride",
     "UnionMask",
     "XorMask",
     "canonical_json",

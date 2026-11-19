@@ -6,7 +6,11 @@ composition into an immutable :class:`RenderResult`. Per-cell randomness lives i
 :mod:`moana.core.procedural` so that techniques can use it. There is no cache and no
 concurrency. :func:`render_with_regions` validates once, admits the render plus the
 masks of named regions against one budget and returns those masks lazily, for the
-region exceptions of a cluster analysis (ADR-027).
+region exceptions of a cluster analysis (ADR-027). :func:`plan_frame`,
+:func:`admit_sequence` and :func:`render_admitted` admit a finite sequence of frame
+documents against one budget before drawing any of them, in two streaming passes
+that hold one frame document at a time; :func:`render_sequence` runs them over
+pairs the caller holds (for :mod:`moana.animation`, ADR-032).
 """
 
 from moana.render.budget import (
@@ -26,6 +30,14 @@ from moana.render.result import (
     RenderResult,
     RenderWarning,
 )
+from moana.render.sequence import (
+    RESULT_OVERHEAD_BYTES,
+    SequenceBudget,
+    admit_sequence,
+    plan_frame,
+    render_admitted,
+    render_sequence,
+)
 
 __all__ = [
     "ESTIMATOR_VERSION",
@@ -33,13 +45,19 @@ __all__ = [
     "RENDERABLE_OPERATION_TYPES",
     "RENDERER_BACKEND",
     "RENDERER_VERSION",
+    "RESULT_OVERHEAD_BYTES",
     "CostEstimate",
     "OperationCost",
     "Provenance",
     "RenderResult",
     "RenderWarning",
+    "SequenceBudget",
+    "admit_sequence",
     "estimate_cost",
     "plan_budget",
+    "plan_frame",
     "render",
+    "render_admitted",
+    "render_sequence",
     "render_with_regions",
 ]
