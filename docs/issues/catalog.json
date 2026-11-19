@@ -1807,7 +1807,7 @@
       "id": "MOANA-026",
       "title": "Crear informes de calidad gráfica",
       "phase": "P5",
-      "status": "ready",
+      "status": "review",
       "priority": "P1",
       "dependencies": [
         "MOANA-014",
@@ -1832,7 +1832,15 @@
         "Corpus sintético con defectos conocidos y versiones corregidas",
         "Tests de no mutación, orden estable, regiones superpuestas y estabilidad temporal"
       ],
-      "evidence": [],
+      "evidence": [
+        "Nuevo paquete moana.quality (ADR-036; §3 ampliado: depende de core, palette, geometry y techniques; ningún módulo de dominio lo importa): evaluate_quality(image, *, canvas, palette, config, regions, frames, loop, limits, deadline) lee píxeles ya renderizados por protocolo (RasterImage, TimelineFrame), nunca renderiza ni modifica entradas, y devuelve QualityReport canónico con rule set quality-v1, digests, métricas, hallazgos y aviso fijo de que no es puntuación, garantía profesional ni revisión humana.",
+        "Hard checks (error, nunca suprimibles: not_suppressible): canvas_dimensions, alpha_normalized, palette_strict (un hallazgo por valor fuera de paleta strict) y outside_mask (regiones de contención). Advertencias configurables por regla y por región: singleton (agrupados por color por encima de 16), irregular_steps (vía moana.techniques.analyze_clusters con cluster_connectivity 8 por defecto; la silueta usa 4), color_excess (> 32), noise (≥ 8 singletons y > 50 ‰ del área opaca), temporal_flicker (incluida la costura del bucle) y temporal_change opcional (> 900 ‰ de la unión opaca). Umbrales enteros por mil con floor.",
+        "Métricas sin juicio: colores distintos, área opaca, componentes, clusters, singletons, ‰ de singletons, bbox y por frame digest, píxeles cambiados y ‰. Orden estable regla → región → frame → y, x; configuración canónica (el orden de entrada no cambia los bytes); supresión Suppression(rule_id, region_id) sólo si todos los píxeles del hallazgo están en la región; regiones superpuestas evaluadas por separado.",
+        "Presupuesto: quality_cost admitido antes de crear arrays (frames ≤ 256, ≤ 64 regiones, hallazgos acotados por regla con tope listado de 4096, mínimo garantizado de 64 por regla y recuentos omitidos por regla; frames de tamaño distinto al lienzo no se leen); deadline por fila, región y frame; picos tracemalloc medidos bajo la estimación en imágenes de alta entropía.",
+        "Fachada moana.api.evaluate_quality(document, *, config, animation_id, limits, deadline): animación desconocida rechazada antes de renderizar; render base, máscaras de región, frames de animación y quality_cost admitidos contra un único presupuesto; sin CLI (MOANA-033).",
+        "Los 12 ejemplos pasan todos los hard checks (también cada frame de bouncing-slime); advertencias registradas en ADR-036 con procedimiento de revisión y digest SHA-256 del informe canónico de cada ejemplo fijado en el test de integración. Documentación: MOANA.md 0.1.24-draft (§3, §13, §19), module-contracts, ADR-036.",
+        "Revisiones de agente: arquitectura, QA y pixel-art con cambios aplicados (conectividad de clusters, agrupación, ruido relativo al área, temporal_change opcional, presupuesto único, memoria acotada); revisión artística humana PENDIENTE. Gate local macOS: scripts/validate.py verde con src/moana al 100 %, check_wheel OK, mypy --platform win32 OK, pre-commit OK; matriz pendiente en main."
+      ],
       "aliases": [
         "MOA-026"
       ],
@@ -1854,8 +1862,14 @@
         "Un score no debe presentarse como garantía profesional ni como aprobación humana."
       ],
       "blocking_reason": null,
-      "acceptance_evidence": {},
-      "test_evidence": {}
+      "acceptance_evidence": {
+        "AC1": "tests/unit/quality/test_quality_rules.py::test_ac1_off_palette_is_an_error_and_a_singleton_a_warning y los casos off_palette/singleton de ::test_t1_defect_reports_the_expected_finding.",
+        "AC2": "tests/unit/quality/test_quality_report.py::test_ac2_suppressing_one_eye_hides_only_that_eye, ::test_ac2_errors_in_a_suppressed_region_stay_active, ::test_suppression_never_hides_a_finding_with_pixels_outside_its_region, ::test_ac2_report_is_identical_across_runs; tests/unit/api/test_api_quality.py::test_ac2_report_is_identical_across_processes_and_hash_seeds (PYTHONHASHSEED 0 y 1234)."
+      },
+      "test_evidence": {
+        "T1": "tests/unit/quality/test_quality_rules.py::test_t1_defect_reports_the_expected_finding y ::test_t1_corrected_version_has_no_finding_of_that_rule sobre el corpus sintético tests/fixtures/quality.py (defectos contados a mano y versiones corregidas), ::test_metrics_match_independent_counts (búsqueda independiente), ::test_singletons_are_grouped_per_colour_above_the_listing_limit.",
+        "T2": "tests/unit/quality/test_quality_report.py::test_t2_inputs_are_not_modified, ::test_t2_report_bytes_do_not_depend_on_configuration_order, ::test_findings_follow_rule_region_frame_y_x, ::test_t2_overlapping_regions_each_count_the_shared_pixel, ::test_t2_shared_pixel_is_suppressed_by_the_first_region_in_canonical_order, ::test_cap_keeps_every_rule_before_filling_in_report_order, ::test_measured_memory_of_a_high_entropy_image_stays_within_the_estimate; tests/unit/quality/test_quality_rules.py::test_loop_compares_the_seam_from_the_last_frame_to_the_first; tests/unit/api/test_api_quality.py::test_t2_temporal_stability_of_the_bouncing_slime, ::test_quality_never_modifies_the_document, ::test_whole_request_is_admitted_against_one_budget; tests/integration/test_quality_examples.py::test_example_report_matches_its_pinned_digest."
+      }
     },
     {
       "id": "MOANA-027",

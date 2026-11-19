@@ -77,7 +77,7 @@ Puerta de salida: Corpus revisado, seguridad, benchmarks y wheel limpio.
 
 Estado: 0/8 issues completados.
 
-- [MOANA-026](MOANA-026.md) — Crear informes de calidad gráfica (ready)
+- [MOANA-026](MOANA-026.md) — Crear informes de calidad gráfica (review)
 - [MOANA-027](MOANA-027.md) — Construir corpus artístico y rúbrica humana (blocked)
 - [MOANA-030](MOANA-030.md) — Ejercitar amenazas y entradas adversarias (ready)
 - [MOANA-031](MOANA-031.md) — Medir rendimiento y memoria de referencia (blocked)
