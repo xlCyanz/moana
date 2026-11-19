@@ -8,7 +8,7 @@
 - Aliases históricos: MOA-031
 - Phase: P5
 - Priority: P1
-- Status: review
+- Status: done
 - Complexity: M (relativa, no estimación de tiempo)
 - Dependencies: [MOANA-010](MOANA-010.md), [MOANA-022](MOANA-022.md), [MOANA-027](MOANA-027.md)
 - Related modules: benchmarks
@@ -43,13 +43,13 @@ No optimización GPU/JIT/paralela antes de disponer de mediciones.
 
 ## Acceptance criteria
 
-- [ ] AC1: Reporte reproducible indica si 100 ms/2 s/256 MiB se cumplen y en qué máquina
-- [ ] AC2: Casos adversos respetan presupuestos aunque incumplan objetivo de latencia
+- [x] AC1: Reporte reproducible indica si 100 ms/2 s/256 MiB se cumplen y en qué máquina
+- [x] AC2: Casos adversos respetan presupuestos aunque incumplan objetivo de latencia
 
 ## Required tests
 
-- [ ] T1: Benchmark estático 32 capas/500 rects y animación 16 frames
-- [ ] T2: Comprobar contadores, ausencia de trabajo eliminado por caché y comparabilidad de versiones
+- [x] T1: Benchmark estático 32 capas/500 rects y animación 16 frames
+- [x] T2: Comprobar contadores, ausencia de trabajo eliminado por caché y comparabilidad de versiones
 
 ## Expected deliverables
 
@@ -66,7 +66,7 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Guía para agentes de IA
 
-**Estado para agentes:** En revisión: sólo correcciones de la revisión; no añadir alcance.
+**Estado para agentes:** Completado; usar sólo como referencia del contrato entregado.
 
 ### 1. Preparación
 
@@ -139,6 +139,7 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 - Informe canónico `moana-benchmark/1` (JSON con claves ordenadas y resumen Markdown regenerable desde el JSON): CPU, núcleos, arquitectura, SO, Python, numpy/Pillow/aggdraw/pydantic, sha256 de uv.lock, commit y dirty, renderer/backend/estimator y digest del corpus; objetivos 100 ms / 2 s / 256 MiB con met true/false/null y nota de que son informativos; sin hostname, usuario, rutas absolutas ni marca de tiempo (write_report rechaza un informe con fugas). `compare` rechaza informes no comparables (formato, corpus, renderer, backend, estimator, warmups, muestras, casos, fases o informe mal formado) y marca `investigate` si la mediana o el pico RSS suben más de un 20 % (comparación exacta sin división); no es un gate.
 - Línea base tests/benchmarks/results/macos-arm64-py312.{json,md} (Apple M4, macOS, CPython 3.12.16; commit 33ee89e con dirty=true porque se midió antes del commit): static 30,11 ms mediana / 30,95 ms p95; secuencia de 16 frames 853,44 ms / 869,82 ms (29,81 ms por frame); pico de proceso 66,8 MiB. Los tres objetivos se cumplen. Hallazgo para MOANA-032 sin optimizar: ~45 % del tiempo de la secuencia es evaluación de frames, no raster.
 - Revisiones de agente QA y Python aplicadas (falso positivo de privacidad con el usuario `runner` de GitHub, timeouts, detector de rutas en cualquier posición, comparación exacta y estricta, VmHWM en Linux, Markdown regenerable, tracemalloc relativo). Gate local macOS: scripts/validate.py 3600 passed con src/moana al 100 %, tests/benchmarks 101 passed (también con USER=runner y PYTHONTRACEMALLOC=1), check_wheel OK, mypy --platform win32 OK, pre-commit OK; matriz pendiente en main. Los tests del gate nunca comprueban latencia.
+- Aprobado por el propietario el 2026-11-17 tras revisión; PR #70 hacia develop.
 - AC1: tests/benchmarks/results/macos-arm64-py312.json y .md (objetivos cumplidos y máquina registrada); tests/benchmarks/test_benchmark_runner.py::test_t1_smoke_report_is_well_formed, ::test_t1_targets_are_stated_with_true_false_or_null, ::test_committed_baseline_summary_regenerates_from_its_json, ::test_privacy_vocabulary_is_not_a_leak, ::test_privacy_findings_detect_leaks_in_the_environment, ::test_write_report_refuses_a_leaking_report.
 - AC2: tests/benchmarks/test_benchmark_budgets.py::test_ac2_oversized_static_is_rejected_on_pixel_visits, ::test_ac2_operation_budget_rejects_the_benchmark_corpus, ::test_ac2_cumulative_animation_budget_is_checked_before_any_frame, ::test_ac2_a_request_within_budget_is_not_reported_as_rejected (rechazo con BUDGET_EXCEEDED, 0 llamadas al rasterizador y pico tracemalloc muy por debajo de un buffer RGBA).
 - T1: tests/benchmarks/test_benchmark_corpus.py::test_t1_static_case_has_32_layers_and_500_rects, ::test_t1_animation_has_16_frames_of_equal_complexity (oráculos contados sobre el JSON); tests/benchmarks/test_benchmark_runner.py::test_t1_smoke_report_is_well_formed y ::test_t1_animation_reports_the_sequence_and_every_frame.

@@ -8,12 +8,12 @@
 - Aliases históricos: MOA-032
 - Phase: P5
 - Priority: P2
-- Status: blocked
+- Status: ready
 - Complexity: L (relativa, no estimación de tiempo)
 - Dependencies: [MOANA-018](MOANA-018.md), [MOANA-031](MOANA-031.md)
 - Related modules: render
 - Requirements: R029, R028, R015 ([trazabilidad](traceability.md))
-- Bloqueo: Dependencias pendientes: MOANA-031
+- Bloqueo: Ninguno
 
 ## Context
 
@@ -66,7 +66,7 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Guía para agentes de IA
 
-**Estado para agentes:** No empezar: estado `blocked`. Esperar a que [MOANA-018](MOANA-018.md), [MOANA-031](MOANA-031.md) estén `done` y el catálogo marque este issue `ready`.
+**Estado para agentes:** Listo: todas las dependencias están `done`; puede empezarse.
 
 ### 1. Preparación
 
