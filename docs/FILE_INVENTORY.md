@@ -1,6 +1,6 @@
 # Inventario del repositorio
 
-517 archivos actuales de fuente, documentación, configuración y pruebas al 2026-11-19. Incluye cambios locales todavía sin commit. Excluye entorno virtual, herramientas, cachés, artefactos y metadata Git.
+532 archivos actuales de fuente, documentación, configuración y pruebas al 2026-11-19. Incluye cambios locales todavía sin commit. Excluye entorno virtual, herramientas, cachés, artefactos y metadata Git.
 
 | Archivo |
 | --- |
@@ -371,6 +371,21 @@
 | [src/moana/techniques/outline.py](../src/moana/techniques/outline.py) |
 | [src/moana/techniques/shading.py](../src/moana/techniques/shading.py) |
 | [tests/__init__.py](../tests/__init__.py) |
+| [tests/benchmarks/README.md](../tests/benchmarks/README.md) |
+| [tests/benchmarks/__init__.py](../tests/benchmarks/__init__.py) |
+| [tests/benchmarks/__main__.py](../tests/benchmarks/__main__.py) |
+| [tests/benchmarks/adversarial.py](../tests/benchmarks/adversarial.py) |
+| [tests/benchmarks/compare.py](../tests/benchmarks/compare.py) |
+| [tests/benchmarks/conftest.py](../tests/benchmarks/conftest.py) |
+| [tests/benchmarks/corpus.py](../tests/benchmarks/corpus.py) |
+| [tests/benchmarks/measure.py](../tests/benchmarks/measure.py) |
+| [tests/benchmarks/report.py](../tests/benchmarks/report.py) |
+| [tests/benchmarks/results/macos-arm64-py312.json](../tests/benchmarks/results/macos-arm64-py312.json) |
+| [tests/benchmarks/results/macos-arm64-py312.md](../tests/benchmarks/results/macos-arm64-py312.md) |
+| [tests/benchmarks/test_benchmark_budgets.py](../tests/benchmarks/test_benchmark_budgets.py) |
+| [tests/benchmarks/test_benchmark_compare.py](../tests/benchmarks/test_benchmark_compare.py) |
+| [tests/benchmarks/test_benchmark_corpus.py](../tests/benchmarks/test_benchmark_corpus.py) |
+| [tests/benchmarks/test_benchmark_runner.py](../tests/benchmarks/test_benchmark_runner.py) |
 | [tests/fixtures/__init__.py](../tests/fixtures/__init__.py) |
 | [tests/fixtures/determinism/corpus.json](../tests/fixtures/determinism/corpus.json) |
 | [tests/fixtures/determinism/expected.json](../tests/fixtures/determinism/expected.json) |
