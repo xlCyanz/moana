@@ -1,0 +1,119 @@
+{
+  "schema_version": "1.0",
+  "id": "corpus_chest",
+  "revision": 0,
+  "seed": 1907,
+  "canvas": {"width": 32, "height": 28, "profile": "strict"},
+  "palette": {
+    "id": "palette_chest",
+    "colors": [
+      {"id": "ink", "rgba": "#1A1014FF"},
+      {"id": "wood_0", "rgba": "#3B1F17FF"},
+      {"id": "wood_1", "rgba": "#61331FFF"},
+      {"id": "wood_2", "rgba": "#8C522AFF"},
+      {"id": "wood_3", "rgba": "#B97A3CFF"},
+      {"id": "wood_4", "rgba": "#DDA65CFF"},
+      {"id": "metal_0", "rgba": "#2A2C3BFF"},
+      {"id": "metal_1", "rgba": "#4E5469FF"},
+      {"id": "metal_2", "rgba": "#7D8698FF"},
+      {"id": "metal_3", "rgba": "#B8C1CCFF"},
+      {"id": "gold_0", "rgba": "#9A5A1EFF"},
+      {"id": "gold_1", "rgba": "#E0A533FF"},
+      {"id": "gold_2", "rgba": "#FAE07AFF"}
+    ],
+    "ramps": [
+      {"id": "wood_ramp", "colors": ["wood_0", "wood_1", "wood_2", "wood_3", "wood_4"]},
+      {"id": "metal_ramp", "colors": ["metal_0", "metal_1", "metal_2", "metal_3"]},
+      {"id": "gold_ramp", "colors": ["gold_0", "gold_1", "gold_2"]}
+    ]
+  },
+  "masks": [
+    {"id": "lid_top_0", "type": "rect", "box": [6, 4, 26, 5]},
+    {"id": "lid_top_1", "type": "rect", "box": [5, 5, 27, 6]},
+    {"id": "lid_top_2", "type": "rect", "box": [4, 6, 28, 7]},
+    {"id": "lid_top", "type": "union", "masks": ["lid_top_0", "lid_top_1", "lid_top_2"]},
+    {"id": "lid_front", "type": "rect", "box": [4, 7, 28, 11]},
+    {"id": "trim_m", "type": "rect", "box": [4, 11, 28, 13]},
+    {"id": "trim_top", "type": "rect", "box": [4, 11, 28, 12]},
+    {"id": "box_front", "type": "rect", "box": [4, 13, 28, 26]},
+    {"id": "lid_m", "type": "union", "masks": ["lid_top", "lid_front"]},
+    {"id": "chest_shape", "type": "union", "masks": ["lid_m", "trim_m", "box_front"]},
+    {"id": "strap_left", "type": "rect", "box": [7, 4, 10, 26]},
+    {"id": "strap_right", "type": "rect", "box": [22, 4, 25, 26]},
+    {"id": "straps_m", "type": "union", "masks": ["strap_left", "strap_right"]},
+    {"id": "strap_lit_l", "type": "rect", "box": [7, 4, 8, 26]},
+    {"id": "strap_lit_r", "type": "rect", "box": [22, 4, 23, 26]},
+    {"id": "straps_lit", "type": "union", "masks": ["strap_lit_l", "strap_lit_r"]},
+    {"id": "strap_dark_l", "type": "rect", "box": [9, 4, 10, 26]},
+    {"id": "strap_dark_r", "type": "rect", "box": [24, 4, 25, 26]},
+    {"id": "straps_dark", "type": "union", "masks": ["strap_dark_l", "strap_dark_r"]},
+    {"id": "metal_m", "type": "union", "masks": ["straps_m", "trim_m"]},
+    {"id": "wood_all", "type": "union", "masks": ["lid_m", "box_front"]},
+    {"id": "wood_m", "type": "subtract", "masks": ["wood_all", "straps_m"]},
+    {"id": "rim_shadow", "type": "rect", "box": [4, 13, 28, 14]},
+    {"id": "right_shadow", "type": "rect", "box": [27, 7, 28, 26]},
+    {"id": "wood_shadow_all", "type": "union", "masks": ["rim_shadow", "right_shadow"]},
+    {"id": "wood_shadow", "type": "subtract", "masks": ["wood_shadow_all", "straps_m"]},
+    {"id": "wood_top", "type": "subtract", "masks": ["lid_top", "straps_m"]},
+    {"id": "lock_m", "type": "rect", "box": [13, 10, 19, 17]},
+    {"id": "upper_left", "type": "polygon", "points": [[0, 0], [32, 0], [0, 28]]}
+  ],
+  "regions": [
+    {"id": "wood", "mask_id": "wood_m", "operation_ids": ["wood_material", "wood_shadow_flat", "plank_seam_upper", "plank_seam_lower", "lid_front_hi", "lid_front_lo", "plank_hi_top", "plank_hi_mid", "plank_hi_low", "plank_lo_top", "plank_lo_mid", "lid_corner_shade"]},
+    {"id": "metal", "mask_id": "metal_m", "operation_ids": ["metal_shading"]},
+    {"id": "lock", "mask_id": "lock_m", "operation_ids": ["lock_plate", "lock_lit", "lock_lit_side", "lock_shade", "lock_shade_side", "keyhole"]}
+  ],
+  "layers": [
+    {
+      "id": "wood_layer",
+      "name": "Madera",
+      "operations": [
+        {"id": "wood_material", "type": "material", "preset": "wood", "version": 1, "ramp": "wood_ramp", "ramp_order": "monotonic", "light": {"direction": "nw", "height": 1, "intensity": 1, "ambient": 2}, "density": 15, "scale": 2, "origin": [0, 1], "bands": [{"id": "band_wood", "mask_id": "wood_m", "facing": "front", "offset": 0}, {"id": "band_wood_top", "mask_id": "wood_top", "facing": "n", "offset": 1}, {"id": "band_wood_shadow", "mask_id": "wood_shadow", "facing": "se", "offset": 0}]},
+        {"id": "wood_shadow_flat", "type": "shade", "ramp": "wood_ramp", "ramp_order": "monotonic", "light": {"direction": "nw", "height": 1, "intensity": 1, "ambient": 2}, "bands": [{"id": "band_wood_shadow_flat", "mask_id": "wood_shadow", "facing": "se", "offset": 0}]},
+        {"id": "plank_seam_upper", "type": "rect", "box": [4, 18, 28, 19], "color": "wood_0"},
+        {"id": "plank_seam_lower", "type": "rect", "box": [4, 22, 28, 23], "color": "wood_0"},
+        {"id": "lid_front_hi", "type": "rect", "box": [4, 7, 27, 8], "color": "wood_3"},
+        {"id": "lid_front_lo", "type": "rect", "box": [4, 10, 27, 11], "color": "wood_1"},
+        {"id": "plank_hi_top", "type": "rect", "box": [4, 14, 27, 15], "color": "wood_3"},
+        {"id": "plank_hi_mid", "type": "rect", "box": [4, 19, 27, 20], "color": "wood_3"},
+        {"id": "plank_hi_low", "type": "rect", "box": [4, 23, 27, 24], "color": "wood_3"},
+        {"id": "plank_lo_top", "type": "rect", "box": [4, 17, 27, 18], "color": "wood_1"},
+        {"id": "plank_lo_mid", "type": "rect", "box": [4, 21, 27, 22], "color": "wood_1"},
+        {"id": "lid_corner_shade", "type": "rect", "box": [26, 7, 27, 9], "color": "wood_1"}
+      ]
+    },
+    {
+      "id": "metal_layer",
+      "name": "Herrajes",
+      "operations": [
+        {"id": "metal_shading", "type": "shade", "ramp": "metal_ramp", "ramp_order": "monotonic", "light": {"direction": "nw", "height": 1, "intensity": 1, "ambient": 2}, "bands": [{"id": "band_metal", "mask_id": "metal_m", "facing": "front", "offset": 0}, {"id": "band_metal_dark", "mask_id": "straps_dark", "facing": "se", "offset": 0}, {"id": "band_metal_lit", "mask_id": "straps_lit", "facing": "nw", "offset": 0}, {"id": "band_trim_top", "mask_id": "trim_top", "facing": "n", "offset": 1}]}
+      ]
+    },
+    {
+      "id": "lock_layer",
+      "name": "Cerradura",
+      "operations": [
+        {"id": "lock_plate", "type": "rect", "box": [13, 10, 19, 17], "color": "gold_1"},
+        {"id": "lock_lit", "type": "rect", "box": [13, 10, 19, 11], "color": "gold_2"},
+        {"id": "lock_lit_side", "type": "rect", "box": [13, 11, 14, 16], "color": "gold_2"},
+        {"id": "lock_shade", "type": "rect", "box": [14, 16, 19, 17], "color": "gold_0"},
+        {"id": "lock_shade_side", "type": "rect", "box": [18, 11, 19, 16], "color": "gold_0"},
+        {"id": "keyhole", "type": "rect", "box": [15, 12, 17, 15], "color": "ink"}
+      ]
+    },
+    {
+      "id": "outline_layer",
+      "name": "Contorno",
+      "operations": [
+        {"id": "chest_outline", "type": "selective_outline", "mask_id": "chest_shape", "width": 1, "side": "outer", "color": "ink", "ramp": "wood_ramp", "ramp_order": "monotonic", "light": {"direction": "nw", "height": 1, "intensity": 1, "ambient": 2}, "segments": [{"id": "outline_lit", "mask_id": "upper_left", "facing": "nw", "offset": -3}]}
+      ]
+    }
+  ],
+  "metadata": {
+    "title": "Cofre (corpus MOANA-027, objeto)",
+    "description": "Objeto de 32 x 28: cofre de madera (material wood v1) con herrajes sombreados por bandas y cerradura dorada, luz noroeste.",
+    "author": "Agente de IA de programación bajo la dirección del usuario del repositorio",
+    "tags": ["corpus", "object", "MOANA-027"],
+    "provenance": "Fuente propia creada por un agente de IA con operaciones de Moana en este repositorio (MOANA-027); sin assets externos. Ver chest.corpus.json. Revisión artística humana: PENDIENTE."
+  }
+}

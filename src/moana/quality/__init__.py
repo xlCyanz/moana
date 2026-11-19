@@ -10,6 +10,11 @@ ADR-027 is reused, not reimplemented); no domain module imports it, and
 Hard rules are mathematical conformance (``error``); soft rules are heuristics with
 configurable thresholds (``warning``) that never reject anything. A report has no
 aggregate score and is never a professional guarantee or a human review.
+
+:func:`parse_rubric` validates the human rubric record of an example of the art
+corpus (ADR-037): pending or person-reviewed categories, an optional labelled agent
+assessment that never counts, and ``professional`` only with a human review scoring
+every applicable category at least 4 and passed hard checks.
 """
 
 from moana.quality.config import (
@@ -51,8 +56,26 @@ from moana.quality.report import (
     RegionMetrics,
     finding_sort_key,
 )
+from moana.quality.rubric import (
+    AGENT_NOTICE,
+    ANIMATION_CATEGORIES,
+    MAX_RUBRIC_TEXT,
+    MIN_PROFESSIONAL_SCORE,
+    RUBRIC_CATEGORIES,
+    RUBRIC_FORMAT,
+    STATIC_CATEGORIES,
+    AgentAssessment,
+    CategoryResult,
+    HumanReview,
+    Rubric,
+    RubricCategory,
+    applicable_categories,
+    parse_rubric,
+)
 
 __all__ = [
+    "AGENT_NOTICE",
+    "ANIMATION_CATEGORIES",
     "DEFAULT_MAX_CHANGED_PERMILLE",
     "DEFAULT_MAX_COLORS",
     "DEFAULT_MAX_LISTED_SINGLETONS",
@@ -63,14 +86,22 @@ __all__ = [
     "HARD_RULES",
     "MAX_QUALITY_FINDINGS",
     "MAX_QUALITY_REGIONS",
+    "MAX_RUBRIC_TEXT",
     "MIN_LISTED_PER_RULE",
+    "MIN_PROFESSIONAL_SCORE",
     "QUALITY_RULES",
     "REPORT_NOTICE",
+    "RUBRIC_CATEGORIES",
+    "RUBRIC_FORMAT",
     "RULE_SET_VERSION",
     "RULE_SEVERITY",
     "SOFT_RULES",
+    "STATIC_CATEGORIES",
+    "AgentAssessment",
+    "CategoryResult",
     "Evidence",
     "FrameMetrics",
+    "HumanReview",
     "Metrics",
     "OmittedByRule",
     "QualityConfig",
@@ -80,10 +111,14 @@ __all__ = [
     "RasterImage",
     "RegionMetrics",
     "RegionSettings",
+    "Rubric",
+    "RubricCategory",
     "Severity",
     "Suppression",
     "TimelineFrame",
+    "applicable_categories",
     "evaluate_quality",
     "finding_sort_key",
+    "parse_rubric",
     "quality_cost",
 ]

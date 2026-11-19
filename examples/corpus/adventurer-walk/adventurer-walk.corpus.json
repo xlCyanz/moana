@@ -1,0 +1,130 @@
+{
+  "format": "moana-corpus-entry/1",
+  "id": "adventurer-walk",
+  "category": "animation",
+  "document": "adventurer-walk.moana.json",
+  "animation_id": "walk",
+  "brief": {
+    "subject": "Ciclo de caminata frontal de 6 frames de la aventurera del corpus.",
+    "size": [
+      24,
+      32
+    ],
+    "palette_intent": "La misma paleta de 17 colores que el personaje; ningún color nuevo entre frames.",
+    "light": "Noroeste, igual en todos los frames.",
+    "constraints": [
+      "Bucle infinito de 6 × 120 ms: contact_a, down_a, pass_a, contact_b, down_b y pass_b; la segunda mitad es la simétrica de la primera.",
+      "Contacto: pierna y bota traseras suben 1 px (talón), el brazo del lado trasero baja 1 px y la mano contraria sube 1 px. Bajada: torso y cabeza 1 px abajo. Paso: torso 1 px arriba, pierna que avanza 1 px y su bota 2 px arriba.",
+      "Pivote en los pies (12, 27); siempre hay un pie apoyado en la fila 27. Sólo overrides `translate`; sin parpadeo ni píxeles aislados en ningún frame."
+    ]
+  },
+  "provenance": {
+    "author": "Agente de IA de programación (Claude Code) bajo la dirección del usuario del repositorio",
+    "authored_by": "ai_agent",
+    "method": "Creado por un agente de IA mediante operaciones de Moana (formas, máscaras, regiones, paleta y técnicas del motor) en un documento JSON; sin modelo de imagen y sin calcar arte externo. El archivo .moana.json es la única fuente.",
+    "date": "2026-11-19",
+    "licence": "PENDIENTE: la decide el propietario del repositorio (README.md); hasta entonces no se asigna ninguna. Sin assets ni derechos de terceros.",
+    "third_party_assets": [],
+    "seed": 2712,
+    "renderer_version": "render-v1",
+    "estimator_version": "budget-v8",
+    "vector_backend": null
+  },
+  "render": {
+    "digest": "sha256:911f5d2668abb9e37197618f7b216320cc9b624dc22b543cc485ad6c1dddc153",
+    "frame_digests": {
+      "contact_a": "sha256:d96d63cbd48defe9f8eb7c6abe27a0e86a05c0228b9a95633c0049756585b232",
+      "down_a": "sha256:6368361fbd5701d025be84fd7e9aa33e04191b5c9d8ee8eaa767462c39e29007",
+      "pass_a": "sha256:1dad935802cb6b00c7306f85ada87e3946d040c3c12f553e8427516e9e3c0970",
+      "contact_b": "sha256:771ec019d5fad768c1af1a3ab4079374e2be460feba6f121bbbdb5771bb95910",
+      "down_b": "sha256:2319bca1f916642a7bc3c06e1b68c373b7a4189f9568b8b79bf932828cfab926",
+      "pass_b": "sha256:43c2883f9e12f544b56b2ebe79e8cf1c5f85c8b450b4d766aa036b2094d497ff"
+    }
+  },
+  "quality": {
+    "rule_set": "quality-v1",
+    "passed_hard_checks": true,
+    "warnings": {},
+    "report_digest": "sha256:f02499b522e80386841bd935c1de3b0a368da1feab516a6a6c3524ec3e5d87b2",
+    "config": "default",
+    "suppressions": []
+  },
+  "agent_inspection": {
+    "notice": "Notas de inspección visual de un agente de IA (a 1× y a 8× por vecino más cercano); no son una revisión humana.",
+    "notation": "Coordenadas (x, y) sobre la imagen a 1×; cajas [x0, y0, x1, y1) semiabiertas.",
+    "date": "2026-11-19",
+    "passes": [
+      "Pasada 1 (1× y 8×): con 4 frames, al subir el torso aparecía un hueco transparente entre cinturón y pantalón (se cerró empezando la cadera una fila antes) y un píxel aislado de pants_dark sobre la bota levantada (la sombra de la pierna subía sola).",
+      "Pasada 2 (1× y 8×, tras la revisión de pixel art): el andar era mecánico y los dos contactos casi iguales. Ahora son 6 frames de 120 ms con talón levantado y contrabalanceo de brazos en cada contacto, una bajada del torso y la pierna moviéndose con su bota. No se añadió el retraso de la cabeza (opcional). Las reglas artísticas de `quality-v1` sólo analizan la imagen fija, así que una prueba comprueba que ningún frame tiene singletons. Sin advertencias ni `temporal_flicker`."
+    ]
+  },
+  "rubric": {
+    "format": "moana-rubric/1",
+    "categories": {
+      "legibility": {
+        "status": "pending_human_review",
+        "score": null,
+        "justification": null
+      },
+      "silhouette": {
+        "status": "pending_human_review",
+        "score": null,
+        "justification": null
+      },
+      "clusters": {
+        "status": "pending_human_review",
+        "score": null,
+        "justification": null
+      },
+      "palette": {
+        "status": "pending_human_review",
+        "score": null,
+        "justification": null
+      },
+      "light_material": {
+        "status": "pending_human_review",
+        "score": null,
+        "justification": null
+      },
+      "temporal_continuity": {
+        "status": "pending_human_review",
+        "score": null,
+        "justification": null
+      }
+    },
+    "human_review": null,
+    "agent_assessment": {
+      "notice": "AI agent assessment: not a human review and never an approval; it does not count towards the professional rule.",
+      "assessor_kind": "ai_agent",
+      "agent": "Claude Code (agente de IA de programación)",
+      "date": "2026-11-19",
+      "scores": {
+        "legibility": {
+          "score": 4,
+          "justification": "Cada frame se lee igual que el personaje fijo."
+        },
+        "silhouette": {
+          "score": 4,
+          "justification": "Piernas separadas en todos los frames; el balanceo de brazos es vertical."
+        },
+        "clusters": {
+          "score": 4,
+          "justification": "Ningún frame añade singletons."
+        },
+        "palette": {
+          "score": 4,
+          "justification": "Paleta estable entre frames."
+        },
+        "light_material": {
+          "score": 3,
+          "justification": "La luz no cambia, pero es plana como en el personaje."
+        },
+        "temporal_continuity": {
+          "score": 3,
+          "justification": "Seis frames con bajada y talón dan peso, pero las rodillas no se flexionan y el movimiento sigue siendo rígido."
+        }
+      }
+    },
+    "professional": false
+  }
+}

@@ -1,0 +1,114 @@
+{
+  "format": "moana-corpus-entry/1",
+  "id": "chest",
+  "category": "object",
+  "document": "chest.moana.json",
+  "animation_id": null,
+  "brief": {
+    "subject": "Cofre del tesoro cerrado, vista frontal ligeramente elevada.",
+    "size": [
+      32,
+      28
+    ],
+    "palette_intent": "13 colores declarados (11 usados): rampa de madera de 5, metal de 4, oro de 3 y tinta; los extremos de rampa no usados conservan los índices del sombreado.",
+    "light": "Noroeste: tapa superior iluminada (`n`, +1), canto superior de cada tabla claro y canto inferior oscuro, sombra bajo el reborde y en el canto derecho.",
+    "constraints": [
+      "Madera con el preset `wood` v1 a densidad 15 (vetas escasas) y sombra plana encima para no texturizar el lado oscuro.",
+      "Herrajes con `shade` por bandas; cerradura dorada como foco.",
+      "Contorno selectivo con el tramo superior izquierdo en madera oscura."
+    ]
+  },
+  "provenance": {
+    "author": "Agente de IA de programación (Claude Code) bajo la dirección del usuario del repositorio",
+    "authored_by": "ai_agent",
+    "method": "Creado por un agente de IA mediante operaciones de Moana (formas, máscaras, regiones, paleta y técnicas del motor) en un documento JSON; sin modelo de imagen y sin calcar arte externo. El archivo .moana.json es la única fuente.",
+    "date": "2026-11-19",
+    "licence": "PENDIENTE: la decide el propietario del repositorio (README.md); hasta entonces no se asigna ninguna. Sin assets ni derechos de terceros.",
+    "third_party_assets": [],
+    "seed": 1907,
+    "renderer_version": "render-v1",
+    "estimator_version": "budget-v8",
+    "vector_backend": null
+  },
+  "render": {
+    "digest": "sha256:4b69ac8522db4a39f0683a736abb3856cdb6f1827ea22b922eedbc7bd6a905c2",
+    "frame_digests": null
+  },
+  "quality": {
+    "rule_set": "quality-v1",
+    "passed_hard_checks": true,
+    "warnings": {},
+    "report_digest": "sha256:7e26cf4b6407d9e82cec81884f859fa612611580fbeb09f4be94215bd45a6fa5",
+    "config": "default",
+    "suppressions": []
+  },
+  "agent_inspection": {
+    "notice": "Notas de inspección visual de un agente de IA (a 1× y a 8× por vecino más cercano); no son una revisión humana.",
+    "notation": "Coordenadas (x, y) sobre la imagen a 1×; cajas [x0, y0, x1, y1) semiabiertas.",
+    "date": "2026-11-19",
+    "passes": [
+      "Pasada 1 (1× y 8×): las vetas en las zonas de sombra dejaban dos píxeles aislados del tono más oscuro; un `shade` plano repinta la sombra sin textura.",
+      "Pasada 2 (1× y 8×, tras la revisión de pixel art): las vetas (densidad 40) competían con las juntas y los degradados no seguían la luz noroeste. Densidad 15 y biseles por tabla: claros (wood_3) en las filas 14, 19 y 23, oscuros (wood_1) en las filas 17 y 21, y en la tapa [4, 7, 27, 8) clara y [4, 10, 27, 11) oscura. Los biseles terminan en x = 27 para conservar la columna de sombra derecha; (26, 7) y (26, 8) pasan a wood_1. Sin advertencias."
+    ]
+  },
+  "rubric": {
+    "format": "moana-rubric/1",
+    "categories": {
+      "legibility": {
+        "status": "pending_human_review",
+        "score": null,
+        "justification": null
+      },
+      "silhouette": {
+        "status": "pending_human_review",
+        "score": null,
+        "justification": null
+      },
+      "clusters": {
+        "status": "pending_human_review",
+        "score": null,
+        "justification": null
+      },
+      "palette": {
+        "status": "pending_human_review",
+        "score": null,
+        "justification": null
+      },
+      "light_material": {
+        "status": "pending_human_review",
+        "score": null,
+        "justification": null
+      }
+    },
+    "human_review": null,
+    "agent_assessment": {
+      "notice": "AI agent assessment: not a human review and never an approval; it does not count towards the professional rule.",
+      "assessor_kind": "ai_agent",
+      "agent": "Claude Code (agente de IA de programación)",
+      "date": "2026-11-19",
+      "scores": {
+        "legibility": {
+          "score": 4,
+          "justification": "Se lee como cofre: tapa, tablas, herrajes y cerradura destacada."
+        },
+        "silhouette": {
+          "score": 4,
+          "justification": "Rectángulo con tapa redondeada; simple pero inequívoco."
+        },
+        "clusters": {
+          "score": 4,
+          "justification": "Tablas con bisel limpio; las pocas vetas ya no compiten con las juntas."
+        },
+        "palette": {
+          "score": 4,
+          "justification": "Tres materiales distinguibles con rampas propias."
+        },
+        "light_material": {
+          "score": 4,
+          "justification": "Madera, metal y oro diferenciados con la misma luz."
+        }
+      }
+    },
+    "professional": false
+  }
+}
