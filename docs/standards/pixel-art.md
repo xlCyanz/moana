@@ -26,4 +26,14 @@ Mostrar el maestro a 1× y una ampliación entera por nearest-neighbor. Revisar 
 
 En animación mantener pivote, volumen, contacto con suelo, paleta y fase de patrones salvo cambio intencional. Distinguir desplazamiento diseñado de jitter accidental. Un onion skin sirve para diagnóstico y no debe aparecer en frames exportados.
 
+## GIF animado
+
+GIF es un formato de intercambio con pérdidas, no el maestro (que es el PNG RGBA; MOANA.md §18, ADR-034):
+
+- Duraciones múltiplo de 10 ms y de al menos 20 ms; mejor 30–40 ms o más, porque los navegadores alargan los retardos más cortos.
+- Sin alfa intermedio en los frames; si existe, pasar como `background` el color real del fondo de destino (otro deja halo) o resolverlo en la fuente con contorno sólido o dithering.
+- Como mucho 255 colores opacos más el transparente, compartidos por todos los frames de la animación.
+- Para un preview grande, ampliar los frames por un entero con nearest-neighbor antes de exportar; el exportador no escala.
+- Usar disposal `background` (el predeterminado) para sprites con huecos transparentes; `none` sólo sirve si la transparencia nunca aparece donde el frame anterior era opaco.
+
 La rúbrica humana de MOANA.md §19 evalúa legibilidad, silueta, clusters, paleta, luz/material y continuidad. Cumplir dimensiones, paleta y hashes sólo demuestra conformidad técnica. El corpus conserva fuente, semilla, procedencia y estado real de revisión.

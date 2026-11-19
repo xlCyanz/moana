@@ -68,7 +68,7 @@ Estado: 4/6 issues completados.
 - [MOANA-021](MOANA-021.md) — Versionar y migrar formatos de proyecto (done)
 - [MOANA-022](MOANA-022.md) — Implementar timeline y evaluación de frames (done)
 - [MOANA-023](MOANA-023.md) — Exportar spritesheets y manifest reversible (done)
-- [MOANA-024](MOANA-024.md) — Exportar GIF con política de pérdidas (ready)
+- [MOANA-024](MOANA-024.md) — Exportar GIF con política de pérdidas (review)
 - [MOANA-025](MOANA-025.md) — Añadir APNG y WebP lossless opcionales (ready)
 
 ## P5 — Evaluación y release
