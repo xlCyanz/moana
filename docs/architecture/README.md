@@ -62,6 +62,7 @@ El paquete contiene `src/moana/__init__.py`, `py.typed` y `src/moana/core/` (MOA
 - [ADR-029: persistencia de proyectos: sobre separado, almacén inmutable por hash y ZIP inspeccionado](decisions/ADR-029-project-persistence.md).
 - [ADR-030: presets de materiales versionados, contorno selectivo, `set_parameters` y `budget-v8`](decisions/ADR-030-material-presets.md).
 - [ADR-031: versiones de formato y migraciones: registro explícito, pasos puros y copia original preservada](decisions/ADR-031-format-versions-migrations.md).
+- [ADR-032: timeline de animación: frames evaluados contra la base, overrides con el editor y presupuesto acumulado](decisions/ADR-032-animation-timeline.md).
 - [Modelo de amenazas](SECURITY_MODEL.md).
 
 Un ADR nuevo registra contexto, decisión, alternativas, consecuencias y evidencia. Cambiar un ADR aceptado se hace mediante otro que lo sustituya y actualizando el contrato principal.

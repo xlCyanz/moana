@@ -13,9 +13,12 @@ source document is never modified. ``editing`` depends only on ``core`` and
 indexed by ``snapshot_digest``, a separate cursor for undo, redo and checkout, and
 branches after an undo, bounded by :class:`HistoryLimits` without silent eviction.
 Persisting it belongs to ``project`` (MOANA-020).
+
+:func:`apply_commands` runs typed commands with the same rules but no precondition
+and no new revision: the transient evaluation of an animation frame (ADR-032).
 """
 
-from moana.editing.apply import EditResult, apply_batch
+from moana.editing.apply import EditResult, apply_batch, apply_commands
 from moana.editing.batch import (
     COMMAND_TYPES,
     MAX_TRANSLATION,
@@ -62,6 +65,7 @@ __all__ = [
     "Snapshot",
     "Translate",
     "apply_batch",
+    "apply_commands",
     "canonical_batch",
     "parse_edit_batch",
 ]

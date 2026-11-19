@@ -26,7 +26,7 @@ EXAMPLE = Path(__file__).resolve().parents[3] / "examples" / "specs" / "masked-e
 
 def test_capabilities_list_masks_and_regions_as_available() -> None:
     listing = capabilities()
-    assert listing.collections == ("masks", "regions")
+    assert listing.collections == ("animations", "masks", "regions")  # ADR-032
     assert listing.mask_types == (
         "ellipse",
         "intersect",
@@ -46,7 +46,7 @@ def test_capabilities_list_masks_and_regions_as_available() -> None:
     assert "resolve_region" in listing.functions
     assert listing.estimator_version == "budget-v8"
     mapping = listing.to_mapping()
-    assert mapping["collections"] == ["masks", "regions"]
+    assert mapping["collections"] == ["animations", "masks", "regions"]
     assert list(mapping) == sorted(mapping)
 
 

@@ -5,7 +5,8 @@ The facade composes the implemented services and adds no algorithm of its own:
 * :func:`load_document` reads a caller-authorised path, bytes or a mapping and
   returns a frozen, validated :class:`~moana.schema.Document`;
 * :func:`render` returns an immutable :class:`~moana.render.RenderResult` (RGBA
-  ``bytes``, digest, warnings, provenance) and writes nothing;
+  ``bytes``, digest, warnings, provenance) and writes nothing; with ``frame_id`` it
+  renders that animation frame through :mod:`moana.animation` (ADR-032);
 * :func:`export_png` writes the RGBA PNG atomically and returns an
   :class:`~moana.export.ExportManifest`;
 * :func:`inspect_document` and :func:`capabilities` are read-only reports;

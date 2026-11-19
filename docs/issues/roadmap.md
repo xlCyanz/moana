@@ -62,14 +62,14 @@ Estado: 8/8 issues completados.
 
 Puerta de salida: Proyecto reversible, atlas y timeline decodificado.
 
-Estado: 2/6 issues completados.
+Estado: 3/6 issues completados.
 
 - [MOANA-020](MOANA-020.md) — Persistir proyectos y assets seguros (done)
 - [MOANA-021](MOANA-021.md) — Versionar y migrar formatos de proyecto (done)
-- [MOANA-022](MOANA-022.md) — Implementar timeline y evaluación de frames (ready)
-- [MOANA-023](MOANA-023.md) — Exportar spritesheets y manifest reversible (blocked)
-- [MOANA-024](MOANA-024.md) — Exportar GIF con política de pérdidas (blocked)
-- [MOANA-025](MOANA-025.md) — Añadir APNG y WebP lossless opcionales (blocked)
+- [MOANA-022](MOANA-022.md) — Implementar timeline y evaluación de frames (done)
+- [MOANA-023](MOANA-023.md) — Exportar spritesheets y manifest reversible (ready)
+- [MOANA-024](MOANA-024.md) — Exportar GIF con política de pérdidas (ready)
+- [MOANA-025](MOANA-025.md) — Añadir APNG y WebP lossless opcionales (ready)
 
 ## P5 — Evaluación y release
 
@@ -77,9 +77,9 @@ Puerta de salida: Corpus revisado, seguridad, benchmarks y wheel limpio.
 
 Estado: 0/8 issues completados.
 
-- [MOANA-026](MOANA-026.md) — Crear informes de calidad gráfica (blocked)
+- [MOANA-026](MOANA-026.md) — Crear informes de calidad gráfica (ready)
 - [MOANA-027](MOANA-027.md) — Construir corpus artístico y rúbrica humana (blocked)
-- [MOANA-030](MOANA-030.md) — Ejercitar amenazas y entradas adversarias (blocked)
+- [MOANA-030](MOANA-030.md) — Ejercitar amenazas y entradas adversarias (ready)
 - [MOANA-031](MOANA-031.md) — Medir rendimiento y memoria de referencia (blocked)
 - [MOANA-032](MOANA-032.md) — Optimizar caché y render incremental acotados (blocked)
 - [MOANA-033](MOANA-033.md) — Documentar flujos IA y previews editables (blocked)
@@ -88,4 +88,4 @@ Estado: 0/8 issues completados.
 
 ## Siguiente paso
 
-Implementar [MOANA-022](MOANA-022.md): Implementar timeline y evaluación de frames.
+Implementar [MOANA-030](MOANA-030.md): Ejercitar amenazas y entradas adversarias.

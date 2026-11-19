@@ -12,7 +12,12 @@ Phases (MOANA.md sections 3, 12 and 20), each reported with its own error class:
 4. **Semantics** — global ID uniqueness, profile and count limits (``VALIDATION_ERROR``),
    colour references (``REFERENCE_ERROR``) and the mask/region reference DAG
    (:mod:`moana.schema.references`: unknown references and cycles are
-   ``REFERENCE_ERROR``; repeated references and excessive depth ``VALIDATION_ERROR``).
+   ``REFERENCE_ERROR``; repeated references and excessive depth ``VALIDATION_ERROR``)
+   and the animations (ADR-032): every override target names a layer, operation or
+   mask (``unknown_target``), a ``set_color`` names a palette colour
+   (``unknown_color``) and the pivot lies on the canvas (``pivot_out_of_canvas``).
+   Whether a target has the right kind for its override is decided when the frame
+   is evaluated, by the editor (:mod:`moana.animation`).
 
 Every raised error lists all problems of its phase in ``details``, sorted by pointer
 (array indexes compared numerically) and code; the error's own ``json_pointer`` is
@@ -41,7 +46,7 @@ from moana.schema._pointers import detail_sort_key
 from moana.schema._reader import DEFAULT_PARSE_LIMITS, ParseLimits, read_json_bytes, read_mapping
 from moana.schema.capabilities import SCHEMA_VERSION
 from moana.schema.members import OPERATION_MEMBERS
-from moana.schema.models import Document, Operation
+from moana.schema.models import Document, Operation, SetColorOverride
 from moana.schema.references import reference_details
 from moana.schema.versions import DOCUMENT_MIGRATIONS
 
@@ -100,11 +105,16 @@ def _identities(document: Document) -> Iterator[tuple[str, str]]:
         yield mask.id, f"/masks/{index}/id"
     for index, region in enumerate(document.regions):
         yield region.id, f"/regions/{index}/id"
+    for animation_index, animation in enumerate(document.animations):
+        yield animation.id, f"/animations/{animation_index}/id"
+        for index, frame in enumerate(animation.frames):
+            yield frame.id, f"/animations/{animation_index}/frames/{index}/id"
 
 
 def document_ids(document: Document) -> frozenset[str]:
     """Every ID declared by ``document``: palette, colours, ramps, layers, operations,
-    operation items such as ``shade`` bands (ADR-028), masks and regions.
+    operation items such as ``shade`` bands (ADR-028), masks, regions, animations and
+    frames (ADR-032).
 
     IDs are global (MOANA.md section 12), so this is the namespace a new ID must avoid.
     """
@@ -115,6 +125,41 @@ def _color_references(operation: Operation) -> tuple[tuple[str, str], ...]:
     """``(member, colour ID)`` of every palette reference of ``operation``."""
     members = OPERATION_MEMBERS[operation.type].colors
     return tuple((member, str(getattr(operation, member))) for member in members)
+
+
+def _animation_details(document: Document, color_ids: set[str]) -> Iterator[ErrorDetail]:
+    """Override references and pivots of every animation (ADR-032)."""
+    targets = {layer.id for layer in document.layers}
+    targets.update(operation.id for layer in document.layers for operation in layer.operations)
+    targets.update(mask.id for mask in document.masks)
+    width, height = document.canvas.width, document.canvas.height
+    for animation_index, animation in enumerate(document.animations):
+        prefix = f"/animations/{animation_index}"
+        x, y = animation.pivot
+        if not (0 <= x <= width and 0 <= y <= height):
+            yield ErrorDetail(
+                ValidationError.code,
+                "Pivot must lie on the canvas",
+                json_pointer=f"{prefix}/pivot",
+                context={"reason": "pivot_out_of_canvas", "width": width, "height": height},
+            )
+        for frame_index, frame in enumerate(animation.frames):
+            for index, override in enumerate(frame.overrides):
+                pointer = f"{prefix}/frames/{frame_index}/overrides/{index}"
+                if override.target_id not in targets:
+                    yield ErrorDetail(
+                        ReferenceError.code,
+                        "Override target does not exist",
+                        json_pointer=f"{pointer}/target_id",
+                        context={"reason": "unknown_target"},
+                    )
+                if isinstance(override, SetColorOverride) and override.color not in color_ids:
+                    yield ErrorDetail(
+                        ReferenceError.code,
+                        "Referenced color does not exist in the palette",
+                        json_pointer=f"{pointer}/color",
+                        context={"reason": "unknown_color"},
+                    )
 
 
 def _semantic_details(document: Document) -> list[ErrorDetail]:
@@ -182,6 +227,7 @@ def _semantic_details(document: Document) -> list[ErrorDetail]:
         invalid("/layers", "Document has too many operations", "too_many", maximum=MAX_OPERATIONS)
 
     details.extend(reference_details(document))
+    details.extend(_animation_details(document, color_ids))
     if document.canvas.profile == "strict":
         details.extend(_strict_profile_details(document))
     return details

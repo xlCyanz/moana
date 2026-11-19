@@ -17,6 +17,7 @@ assumptions about one type.
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from typing import Final
 
@@ -32,6 +33,7 @@ from moana.core.errors import (
     UnsupportedOperation,
     ValidationError,
 )
+from moana.core.limits import MAX_EDIT_COMMANDS
 from moana.core.vector_path import MAX_PATH_COORDINATE, PATH_UNITS
 from moana.editing._tree import (
     GEOMETRY_SHAPES,
@@ -72,7 +74,10 @@ from moana.schema import (
 from moana.schema._issues import pydantic_details
 from moana.schema.models import MAX_REVISION
 
-__all__ = ["EditResult", "apply_batch"]
+__all__ = ["EditResult", "apply_batch", "apply_commands"]
+
+_OVERRIDE_COMMANDS: Final = (SetVisibility, Translate, SetColor)
+"""The commands :func:`apply_commands` accepts: the frame overrides of ADR-032."""
 
 _REMOVABLE: Final = (
     "color",
@@ -544,13 +549,13 @@ def _revalidated(tree: JsonObject, limits: ParseLimits) -> Document:
         ) from None
 
 
-def _applied(work: _Work, batch: EditBatch) -> tuple[str, ...]:
+def _applied(work: _Work, commands: Sequence[object], prefix: str = "/commands") -> tuple[str, ...]:
     """Apply every command in order; the IDs it touched, once each."""
     affected: list[str] = []
-    pointer = "/commands"
+    pointer = prefix
     try:
-        for position, command in enumerate(batch.commands):
-            pointer = f"/commands/{position}"
+        for position, command in enumerate(commands):
+            pointer = f"{prefix}/{position}"
             affected.extend(_apply(work, command, pointer))
     except (AttributeError, IndexError, KeyError, TypeError):
         # Only reachable with unvalidated models (``model_construct``) or documents.
@@ -582,7 +587,46 @@ def apply_batch(
     base = snapshot_digest(document)
     _check_base(document, parsed, base)
     work = _Work(normalize_document(document))
-    affected = _applied(work, parsed)
+    affected = _applied(work, parsed.commands)
     work.tree["revision"] = document.revision + 1
     edited = _revalidated(work.tree, limits)
     return EditResult(edited, document.revision, base, snapshot_digest(edited), affected)
+
+
+def apply_commands(
+    document: Document,
+    commands: Sequence[SetVisibility | Translate | SetColor],
+    *,
+    pointer: str,
+    limits: ParseLimits = DEFAULT_PARSE_LIMITS,
+) -> Document:
+    """Apply override ``commands`` to ``document`` without creating a revision (ADR-032).
+
+    Only ``set_visibility``, ``translate`` and ``set_color`` are accepted (the frame
+    overrides of an animation); any other command is a ``TypeError``, since a
+    structural change (insert, remove, reorder...) must never produce a different
+    document under the same revision. The commands run with the same rules as
+    :func:`apply_batch` (type table, kinds, locked layers, ranges) and the whole
+    result is validated again, but there is no precondition and ``revision`` is left
+    unchanged: the result is a transient evaluation of ``document`` (an animation
+    frame), never its next revision.
+    ``pointer`` is where the commands live in the caller's source (for example
+    ``/animations/0/frames/2/overrides``); a failing command is located at
+    ``{pointer}/{index}/...``. Raises like :func:`apply_batch`, without
+    ``EditConflict``. At most ``MAX_EDIT_COMMANDS`` commands; none returns a copy.
+    """
+    if not isinstance(document, Document):
+        raise TypeError("document must be a moana.schema.Document")
+    if not isinstance(limits, ParseLimits):
+        raise TypeError("limits must be a ParseLimits value")
+    if not isinstance(pointer, str) or not pointer.startswith("/"):
+        raise TypeError("pointer must be a JSON Pointer str starting with '/'")
+    if isinstance(commands, str | bytes) or not isinstance(commands, Sequence):
+        raise TypeError("commands must be a sequence of edit commands")
+    if len(commands) > MAX_EDIT_COMMANDS:
+        raise _invalid(pointer, "too many commands", "too_many", maximum=MAX_EDIT_COMMANDS)
+    if not all(isinstance(command, _OVERRIDE_COMMANDS) for command in commands):
+        raise TypeError("commands must be SetVisibility, Translate or SetColor values")
+    work = _Work(normalize_document(document))
+    _applied(work, commands, pointer)
+    return _revalidated(work.tree, limits)

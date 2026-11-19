@@ -71,7 +71,9 @@ class Node:
 
     ``kind`` is ``document``, ``palette``, ``color``, ``ramp``, ``layer``,
     ``operation``, ``item`` (an object with its own ID inside an operation, such as a
-    ``shade`` band, ADR-028), ``shape_mask``, ``combination_mask`` or ``region``. ``container``
+    ``shade`` band, ADR-028), ``shape_mask``, ``combination_mask``, ``region``,
+    ``animation`` or ``frame`` (ADR-032; indexed so that a new ID cannot reuse them,
+    never targeted by a command). ``container``
     is ``None`` for the document and the palette, which are not in a list.
     """
 
@@ -118,6 +120,9 @@ def _members(tree: JsonObject) -> Iterator[Node]:
                 yield from (Node("item", item, items, layer) for item in items)
     yield from (Node(_mask_kind(item), item, tree["masks"]) for item in tree["masks"])
     yield from (Node("region", item, tree["regions"]) for item in tree["regions"])
+    for animation in tree["animations"]:  # IDs only: no command targets them (ADR-032)
+        yield Node("animation", animation, tree["animations"])
+        yield from (Node("frame", item, animation["frames"]) for item in animation["frames"])
 
 
 def item_ids(operation: JsonObject) -> tuple[str, ...]:
@@ -152,7 +157,8 @@ def _references(node: JsonObject, members: tuple[str, ...], pointer: str) -> Ite
 
 
 def _all_references(tree: JsonObject) -> Iterator[_Reference]:
-    """Every reference of ramps, layers, operations, masks and regions, by the table."""
+    """Every reference of ramps, layers, operations, masks, regions and frame overrides
+    (their ``target_id`` and ``set_color`` colour, ADR-032), by the table."""
     for index, ramp in enumerate(tree["palette"]["ramps"]):
         yield from _references(ramp, ("colors",), f"/palette/ramps/{index}")
     for layer_index, layer in enumerate(tree["layers"]):
@@ -169,6 +175,11 @@ def _all_references(tree: JsonObject) -> Iterator[_Reference]:
         yield from _references(mask, MASK_MEMBERS[mask["type"]].masks, f"/masks/{index}")
     for index, region in enumerate(tree["regions"]):
         yield from _references(region, ("mask_id", "operation_ids"), f"/regions/{index}")
+    for animation_index, animation in enumerate(tree["animations"]):
+        for frame_index, frame in enumerate(animation["frames"]):
+            for index, override in enumerate(frame["overrides"]):
+                pointer = f"/animations/{animation_index}/frames/{frame_index}/overrides/{index}"
+                yield from _references(override, ("target_id", "color"), pointer)
 
 
 def live_references(tree: JsonObject, removed: frozenset[str]) -> list[str]:

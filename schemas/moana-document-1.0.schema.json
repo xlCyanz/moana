@@ -1,5 +1,57 @@
 {
   "$defs": {
+    "Animation": {
+      "additionalProperties": false,
+      "description": "An ordered, finite timeline over the shared canvas and palette (ADR-032).\n\n``loop_count`` is the playback repetition count (``0``: infinite playback); it\nnever multiplies what is rendered. ``pivot`` is the common integer anchor of\nevery frame, in canvas pixels (``0..width`` by ``0..height``).",
+      "properties": {
+        "frames": {
+          "items": {
+            "$ref": "#/$defs/Frame"
+          },
+          "maxItems": 256,
+          "minItems": 1,
+          "title": "Frames",
+          "type": "array"
+        },
+        "id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "loop_count": {
+          "maximum": 65535,
+          "minimum": 0,
+          "title": "Loop Count",
+          "type": "integer"
+        },
+        "pivot": {
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "maximum": 1048576,
+              "minimum": -1048576,
+              "type": "integer"
+            },
+            {
+              "maximum": 1048576,
+              "minimum": -1048576,
+              "type": "integer"
+            }
+          ],
+          "title": "Pivot",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "loop_count",
+        "pivot",
+        "frames"
+      ],
+      "title": "Animation",
+      "type": "object"
+    },
     "Canvas": {
       "additionalProperties": false,
       "description": "Canvas size and colour profile (``strict`` or ``rgba``, MOANA.md section 9).",
@@ -236,6 +288,56 @@
         "box"
       ],
       "title": "EllipseOperation",
+      "type": "object"
+    },
+    "Frame": {
+      "additionalProperties": false,
+      "description": "One frame: a stable ID, a whole duration in milliseconds and its overrides.",
+      "properties": {
+        "duration_ms": {
+          "maximum": 60000,
+          "minimum": 1,
+          "title": "Duration Ms",
+          "type": "integer"
+        },
+        "id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "overrides": {
+          "default": [],
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "set_color": "#/$defs/SetColorOverride",
+                "set_visibility": "#/$defs/SetVisibilityOverride",
+                "translate": "#/$defs/TranslateOverride"
+              },
+              "propertyName": "type"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/SetVisibilityOverride"
+              },
+              {
+                "$ref": "#/$defs/TranslateOverride"
+              },
+              {
+                "$ref": "#/$defs/SetColorOverride"
+              }
+            ]
+          },
+          "maxItems": 1024,
+          "title": "Overrides",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "duration_ms"
+      ],
+      "title": "Frame",
       "type": "object"
     },
     "IntersectMask": {
@@ -1543,6 +1645,61 @@
       "title": "SelectiveOutlineOperation",
       "type": "object"
     },
+    "SetColorOverride": {
+      "additionalProperties": false,
+      "description": "Point an operation at another palette colour in one frame (ADR-032).",
+      "properties": {
+        "color": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Color",
+          "type": "string"
+        },
+        "target_id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Target Id",
+          "type": "string"
+        },
+        "type": {
+          "const": "set_color",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "target_id",
+        "color"
+      ],
+      "title": "SetColorOverride",
+      "type": "object"
+    },
+    "SetVisibilityOverride": {
+      "additionalProperties": false,
+      "description": "Show or hide a layer in one frame (ADR-032).",
+      "properties": {
+        "target_id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Target Id",
+          "type": "string"
+        },
+        "type": {
+          "const": "set_visibility",
+          "title": "Type",
+          "type": "string"
+        },
+        "visible": {
+          "title": "Visible",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "type",
+        "target_id",
+        "visible"
+      ],
+      "title": "SetVisibilityOverride",
+      "type": "object"
+    },
     "ShadeBand": {
       "additionalProperties": false,
       "description": "One authored band: mask ``mask_id``, its ``facing`` and an ``offset`` in steps.\n\nThe ID is global like any other; ``facing`` is a light direction or ``none``.",
@@ -1673,6 +1830,42 @@
       "title": "SubtractMask",
       "type": "object"
     },
+    "TranslateOverride": {
+      "additionalProperties": false,
+      "description": "Move an operation or mask leaf by whole pixels in one frame (ADR-032).",
+      "properties": {
+        "dx": {
+          "maximum": 2097153,
+          "minimum": -2097153,
+          "title": "Dx",
+          "type": "integer"
+        },
+        "dy": {
+          "maximum": 2097153,
+          "minimum": -2097153,
+          "title": "Dy",
+          "type": "integer"
+        },
+        "target_id": {
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$",
+          "title": "Target Id",
+          "type": "string"
+        },
+        "type": {
+          "const": "translate",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "target_id",
+        "dx",
+        "dy"
+      ],
+      "title": "TranslateOverride",
+      "type": "object"
+    },
     "UnionMask": {
       "additionalProperties": false,
       "description": "Pixels of at least one operand.",
@@ -1747,7 +1940,10 @@
   "properties": {
     "animations": {
       "default": [],
-      "maxItems": 0,
+      "items": {
+        "$ref": "#/$defs/Animation"
+      },
+      "maxItems": 64,
       "title": "Animations",
       "type": "array"
     },

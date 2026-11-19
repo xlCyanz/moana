@@ -8,7 +8,7 @@ Prioridades: P0 fundamento/bloqueante; P1 funcionalidad central; P2 avanzada; P3
 
 [Roadmap](roadmap.md) · [Dependencias](dependency-map.md) · [Trazabilidad](traceability.md) · [Ciclo de vida](../guides/issue-lifecycle.md).
 
-Estados: {'blocked': 11, 'done': 24, 'ready': 1}.
+Estados: {'blocked': 6, 'done': 25, 'ready': 5}.
 
 | Issue | Resultado | Fase | Prioridad | Estado | Dependencias directas |
 | --- | --- | --- | --- | --- | --- |
@@ -34,15 +34,15 @@ Estados: {'blocked': 11, 'done': 24, 'ready': 1}.
 | [MOANA-019](MOANA-019.md) | Añadir undo/redo e historial inmutable | P3 | P1 | done | MOANA-018 |
 | [MOANA-020](MOANA-020.md) | Persistir proyectos y assets seguros | P4 | P1 | done | MOANA-018, MOANA-019, MOANA-011 |
 | [MOANA-021](MOANA-021.md) | Versionar y migrar formatos de proyecto | P4 | P1 | done | MOANA-020 |
-| [MOANA-022](MOANA-022.md) | Implementar timeline y evaluación de frames | P4 | P1 | ready | MOANA-018, MOANA-019, MOANA-010 |
-| [MOANA-023](MOANA-023.md) | Exportar spritesheets y manifest reversible | P4 | P1 | blocked | MOANA-022, MOANA-011 |
-| [MOANA-024](MOANA-024.md) | Exportar GIF con política de pérdidas | P4 | P1 | blocked | MOANA-022, MOANA-005, MOANA-011 |
-| [MOANA-025](MOANA-025.md) | Añadir APNG y WebP lossless opcionales | P4 | P2 | blocked | MOANA-022, MOANA-011 |
-| [MOANA-026](MOANA-026.md) | Crear informes de calidad gráfica | P5 | P1 | blocked | MOANA-014, MOANA-015, MOANA-022 |
+| [MOANA-022](MOANA-022.md) | Implementar timeline y evaluación de frames | P4 | P1 | done | MOANA-018, MOANA-019, MOANA-010 |
+| [MOANA-023](MOANA-023.md) | Exportar spritesheets y manifest reversible | P4 | P1 | ready | MOANA-022, MOANA-011 |
+| [MOANA-024](MOANA-024.md) | Exportar GIF con política de pérdidas | P4 | P1 | ready | MOANA-022, MOANA-005, MOANA-011 |
+| [MOANA-025](MOANA-025.md) | Añadir APNG y WebP lossless opcionales | P4 | P2 | ready | MOANA-022, MOANA-011 |
+| [MOANA-026](MOANA-026.md) | Crear informes de calidad gráfica | P5 | P1 | ready | MOANA-014, MOANA-015, MOANA-022 |
 | [MOANA-027](MOANA-027.md) | Construir corpus artístico y rúbrica humana | P5 | P1 | blocked | MOANA-017, MOANA-022, MOANA-026, MOANA-028 |
 | [MOANA-028](MOANA-028.md) | Crear harness de regresión visual | P1 | P1 | done | MOANA-004 |
 | [MOANA-029](MOANA-029.md) | Verificar determinismo entre procesos y plataformas | P2 | P1 | done | MOANA-010, MOANA-011, MOANA-028 |
-| [MOANA-030](MOANA-030.md) | Ejercitar amenazas y entradas adversarias | P5 | P0 | blocked | MOANA-003, MOANA-020, MOANA-021, MOANA-022 |
+| [MOANA-030](MOANA-030.md) | Ejercitar amenazas y entradas adversarias | P5 | P0 | ready | MOANA-003, MOANA-020, MOANA-021, MOANA-022 |
 | [MOANA-031](MOANA-031.md) | Medir rendimiento y memoria de referencia | P5 | P1 | blocked | MOANA-010, MOANA-022, MOANA-027 |
 | [MOANA-032](MOANA-032.md) | Optimizar caché y render incremental acotados | P5 | P2 | blocked | MOANA-018, MOANA-031 |
 | [MOANA-033](MOANA-033.md) | Documentar flujos IA y previews editables | P5 | P1 | blocked | MOANA-012, MOANA-018, MOANA-020, MOANA-026 |

@@ -26,6 +26,7 @@ from moana.schema.capabilities import (
     PLANNED_OPERATION_TYPES,
     SUPPORTED_MASK_TYPES,
     SUPPORTED_OPERATION_TYPES,
+    SUPPORTED_OVERRIDE_TYPES,
 )
 
 __all__ = ["pointer_for", "pydantic_details"]
@@ -39,12 +40,34 @@ _MASK_MESSAGES: Final = {
     "union_tag_invalid": "Mask type is not part of schema 1.0",
     "union_tag_not_found": "Mask requires a 'type' member",
 }
-_TAGGED_TYPES: Final = SUPPORTED_OPERATION_TYPES | SUPPORTED_MASK_TYPES
+_OVERRIDE_MESSAGES: Final = {
+    "union_tag_invalid": "Override type is not part of schema 1.0",
+    "union_tag_not_found": "Override requires a 'type' member",
+}
+_TAGGED_TYPES: Final = SUPPORTED_OPERATION_TYPES | SUPPORTED_MASK_TYPES | SUPPORTED_OVERRIDE_TYPES
 
 
 def _in_masks(error: ErrorDetails) -> bool:
     """Whether an error lies in the root ``masks`` collection (mask discriminator)."""
     return error["loc"][:1] == ("masks",)
+
+
+def _in_overrides(error: ErrorDetails) -> bool:
+    """Whether an error lies in the overrides of a frame (override discriminator)."""
+    location = error["loc"]
+    return location[:1] == ("animations",) and location[4:5] == ("overrides",)
+
+
+def _messages(error: ErrorDetails) -> dict[str, str]:
+    if _in_overrides(error):
+        return _OVERRIDE_MESSAGES
+    return _MASK_MESSAGES if _in_masks(error) else _OWN_MESSAGES
+
+
+def _expected_types(error: ErrorDetails) -> frozenset[str]:
+    if _in_overrides(error):
+        return SUPPORTED_OVERRIDE_TYPES
+    return SUPPORTED_MASK_TYPES if _in_masks(error) else SUPPORTED_OPERATION_TYPES
 
 
 def pointer_for(tree: object, location: Sequence[str | int]) -> str:
@@ -79,8 +102,7 @@ def _is_label(current: object, segment: str, is_last: bool) -> bool:
 def _context(error: ErrorDetails) -> dict[str, object]:
     context: dict[str, object] = {"reason": error["type"]}
     if error["type"] in {"union_tag_invalid", "union_tag_not_found"}:
-        expected = SUPPORTED_MASK_TYPES if _in_masks(error) else SUPPORTED_OPERATION_TYPES
-        context["expected"] = tuple(sorted(expected))
+        context["expected"] = tuple(sorted(_expected_types(error)))
     for key, value in (error.get("ctx") or {}).items():
         if _is_safe_context(key, value):
             context[key] = value
@@ -97,6 +119,8 @@ def _planned_capability(error: ErrorDetails) -> str | None:
     """Return the planned capability an error refers to, if any."""
     kind, location, value = error["type"], error["loc"], error.get("input")
     if kind == "union_tag_invalid":
+        if _in_overrides(error):
+            return None  # no override type is planned
         tag = (error.get("ctx") or {}).get("tag")
         planned = PLANNED_MASK_TYPES if _in_masks(error) else PLANNED_OPERATION_TYPES
         return tag if isinstance(tag, str) and tag in planned else None
@@ -133,9 +157,7 @@ def pydantic_details(tree: object, errors: Iterable[ErrorDetails]) -> list[Error
         details.append(
             ErrorDetail(
                 ValidationError.code,
-                (_MASK_MESSAGES if _in_masks(error) else _OWN_MESSAGES).get(
-                    error["type"], error["msg"]
-                ),
+                _messages(error).get(error["type"], error["msg"]),
                 json_pointer=pointer,
                 context=_context(error),
             )

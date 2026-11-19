@@ -42,9 +42,14 @@ from moana.core.coordinates import (
 from moana.core.dither import DITHER_SIZES
 from moana.core.errors import ValidationError as DomainValidationError
 from moana.core.limits import (
+    MAX_ANIMATION_FRAMES,
+    MAX_ANIMATIONS,
     MAX_COLORS_RGBA,
     MAX_COLORS_STRICT,
+    MAX_FRAME_DURATION_MS,
+    MAX_FRAME_OVERRIDES,
     MAX_LAYERS,
+    MAX_LOOP_COUNT,
     MAX_MASK_OPERANDS,
     MAX_MASKS,
     MAX_MORPHOLOGY_RADIUS,
@@ -52,6 +57,7 @@ from moana.core.limits import (
     MAX_PATH_COMMANDS,
     MAX_REGIONS,
     MAX_VERTICES,
+    MIN_FRAME_DURATION_MS,
 )
 from moana.core.materials import (
     DENSITY_STEPS,
@@ -84,12 +90,14 @@ __all__ = [
     "MAX_MASK_OPERANDS",
     "MAX_METADATA_STRING_BYTES",
     "MAX_OPERATIONS",
+    "MAX_OVERRIDE_SHIFT",
     "MAX_PATH_COMMANDS",
     "MAX_REGIONS",
     "MAX_REVISION",
     "MAX_SEED",
     "MAX_TAGS",
     "MAX_VERTICES",
+    "Animation",
     "Canvas",
     "Color",
     "CombinationMask",
@@ -97,6 +105,8 @@ __all__ = [
     "Document",
     "EllipseMask",
     "EllipseOperation",
+    "Frame",
+    "FrameOverride",
     "IntersectMask",
     "Layer",
     "Light",
@@ -120,11 +130,14 @@ __all__ = [
     "RectOperation",
     "Region",
     "SelectiveOutlineOperation",
+    "SetColorOverride",
+    "SetVisibilityOverride",
     "ShadeBand",
     "ShadeOperation",
     "ShapeMask",
     "ShapeOperation",
     "SubtractMask",
+    "TranslateOverride",
     "UnionMask",
     "XorMask",
 ]
@@ -142,6 +155,18 @@ RGBA_PATTERN: Final = ids.RGBA_HEX_PATTERN
 def _as_tuple(value: object) -> object:
     """Accept a JSON array (``list``) where the model stores an immutable tuple."""
     return tuple(value) if isinstance(value, list) else value
+
+
+def _frame_array(value: object) -> object:
+    """Array to tuple, rejecting an empty timeline before reading any frame.
+
+    ``min_length`` would count only the frames that validated, and report an empty
+    timeline next to the real error of an invalid frame.
+    """
+    value = _as_tuple(value)
+    if value == ():
+        raise PydanticCustomError("too_short", "An animation should have at least 1 frame")
+    return value
 
 
 def _check_utf8_bytes(value: str) -> str:
@@ -855,6 +880,84 @@ class Metadata(_Model):
     ] = ()
 
 
+MAX_OVERRIDE_SHIFT: Final = 2 * MAX_COORDINATE + 1
+"""Largest ``|dx|``/``|dy|`` of a ``translate`` override (the edit-batch bound)."""
+
+OverrideShift = Annotated[int, Field(ge=-MAX_OVERRIDE_SHIFT, le=MAX_OVERRIDE_SHIFT)]
+
+
+class SetVisibilityOverride(_Model):
+    """Show or hide a layer in one frame (ADR-032)."""
+
+    type: Literal["set_visibility"]
+    target_id: Id
+    visible: bool
+
+
+class TranslateOverride(_Model):
+    """Move an operation or mask leaf by whole pixels in one frame (ADR-032)."""
+
+    type: Literal["translate"]
+    target_id: Id
+    dx: OverrideShift
+    dy: OverrideShift
+
+
+class SetColorOverride(_Model):
+    """Point an operation at another palette colour in one frame (ADR-032)."""
+
+    type: Literal["set_color"]
+    target_id: Id
+    color: Id
+
+
+FrameOverride = Annotated[
+    SetVisibilityOverride | TranslateOverride | SetColorOverride,
+    Field(discriminator="type"),
+]
+"""Typed frame overrides (visibility, geometry, colour), discriminated by ``type``.
+
+They have the shape of the edit commands of the same name (MOANA.md section 15) and
+are evaluated with the editor against the base document, never against the previous
+frame; they carry no ``base_revision`` and never change the persistent revision.
+"""
+
+
+class Frame(_Model):
+    """One frame: a stable ID, a whole duration in milliseconds and its overrides."""
+
+    id: Id
+    duration_ms: Annotated[int, Field(ge=MIN_FRAME_DURATION_MS, le=MAX_FRAME_DURATION_MS)]
+    overrides: Annotated[
+        tuple[FrameOverride, ...],
+        Field(max_length=MAX_FRAME_OVERRIDES),
+        BeforeValidator(_as_tuple),
+    ] = ()
+
+
+class Animation(_Model):
+    """An ordered, finite timeline over the shared canvas and palette (ADR-032).
+
+    ``loop_count`` is the playback repetition count (``0``: infinite playback); it
+    never multiplies what is rendered. ``pivot`` is the common integer anchor of
+    every frame, in canvas pixels (``0..width`` by ``0..height``).
+    """
+
+    id: Id
+    loop_count: Annotated[int, Field(ge=0, le=MAX_LOOP_COUNT)]
+    pivot: PointValue
+    frames: Annotated[
+        tuple[Frame, ...],
+        Field(max_length=MAX_ANIMATION_FRAMES, json_schema_extra={"minItems": 1}),
+        BeforeValidator(_frame_array),
+    ]
+
+    @property
+    def pivot_point(self) -> Point:
+        """The pivot as a ``core`` value."""
+        return Point(*self.pivot)
+
+
 class Document(_Model):
     """A schema 1.0 sprite document; layers are ordered bottom-to-top.
 
@@ -876,7 +979,9 @@ class Document(_Model):
         tuple[Region, ...], Field(max_length=MAX_REGIONS), BeforeValidator(_as_tuple)
     ] = ()
     materials: FutureCollection = ()
-    animations: FutureCollection = ()
+    animations: Annotated[
+        tuple[Animation, ...], Field(max_length=MAX_ANIMATIONS), BeforeValidator(_as_tuple)
+    ] = ()
     metadata: Annotated[Metadata | SkipJsonSchema[None], BeforeValidator(_metadata_or_absent)] = (
         None
     )

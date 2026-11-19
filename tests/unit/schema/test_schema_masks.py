@@ -93,7 +93,7 @@ def test_every_mask_type_is_accepted(minimal: dict[str, Any]) -> None:
     ]
     document = validate_document(with_masks(minimal, masks))
     assert {mask.type for mask in document.masks} == SUPPORTED_MASK_TYPES
-    assert {"masks", "regions"} == SUPPORTED_COLLECTIONS
+    assert {"masks", "regions"} <= SUPPORTED_COLLECTIONS  # plus animations (ADR-032)
 
 
 def test_defaults_and_canonical_form(minimal: dict[str, Any]) -> None:
