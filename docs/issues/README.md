@@ -8,7 +8,7 @@ Prioridades: P0 fundamento/bloqueante; P1 funcionalidad central; P2 avanzada; P3
 
 [Roadmap](roadmap.md) · [Dependencias](dependency-map.md) · [Trazabilidad](traceability.md) · [Ciclo de vida](../guides/issue-lifecycle.md).
 
-Estados: {'blocked': 5, 'done': 27, 'ready': 4}.
+Estados: {'blocked': 5, 'done': 27, 'ready': 3, 'review': 1}.
 
 | Issue | Resultado | Fase | Prioridad | Estado | Dependencias directas |
 | --- | --- | --- | --- | --- | --- |
@@ -37,7 +37,7 @@ Estados: {'blocked': 5, 'done': 27, 'ready': 4}.
 | [MOANA-022](MOANA-022.md) | Implementar timeline y evaluación de frames | P4 | P1 | done | MOANA-018, MOANA-019, MOANA-010 |
 | [MOANA-023](MOANA-023.md) | Exportar spritesheets y manifest reversible | P4 | P1 | done | MOANA-022, MOANA-011 |
 | [MOANA-024](MOANA-024.md) | Exportar GIF con política de pérdidas | P4 | P1 | done | MOANA-022, MOANA-005, MOANA-011 |
-| [MOANA-025](MOANA-025.md) | Añadir APNG y WebP lossless opcionales | P4 | P2 | ready | MOANA-022, MOANA-011 |
+| [MOANA-025](MOANA-025.md) | Añadir APNG y WebP lossless opcionales | P4 | P2 | review | MOANA-022, MOANA-011 |
 | [MOANA-026](MOANA-026.md) | Crear informes de calidad gráfica | P5 | P1 | ready | MOANA-014, MOANA-015, MOANA-022 |
 | [MOANA-027](MOANA-027.md) | Construir corpus artístico y rúbrica humana | P5 | P1 | blocked | MOANA-017, MOANA-022, MOANA-026, MOANA-028 |
 | [MOANA-028](MOANA-028.md) | Crear harness de regresión visual | P1 | P1 | done | MOANA-004 |

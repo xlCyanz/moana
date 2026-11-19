@@ -34,6 +34,7 @@ from moana.export import (
     export_gif,
 )
 from moana.export import gif as gif_module
+from moana.export._frames import equivalent_timeline
 from moana.palette import Palette, PaletteColor, Rgba
 
 RGBA = tuple[int, int, int, int]
@@ -341,8 +342,8 @@ def test_duplicated_frames_keep_an_equivalent_timeline() -> None:
 
 def test_equivalent_timeline_merges_equal_neighbours() -> None:
     timeline = [("x", 100), ("x", 200), ("y", 300), ("x", 10)]
-    assert gif_module._equivalent(timeline) == [("x", 300), ("y", 300), ("x", 10)]
-    assert gif_module._equivalent([]) == []
+    assert equivalent_timeline(timeline) == [("x", 300), ("y", 300), ("x", 10)]
+    assert equivalent_timeline([]) == []
 
 
 def test_verification_accepts_a_decoder_that_merges_duplicates(
@@ -352,7 +353,7 @@ def test_verification_accepts_a_decoder_that_merges_duplicates(
 
     def merging(data: bytes, width: int, height: int) -> tuple[Any, object]:
         timeline, loop = original(data, width, height)
-        return gif_module._equivalent(timeline), loop
+        return equivalent_timeline(timeline), loop
 
     monkeypatch.setattr(gif_module, "_decoded", merging)
     frames = [solid("a", RED, duration=100), solid("b", RED, duration=200)]
@@ -747,6 +748,15 @@ def test_encoder_output_with_a_colour_table_is_parsed() -> None:
     extensions = b"!\xfe\x02hi\x00" + b"!\xf9\x04\x00\x00\x00\x00\x00"
     single = b"GIF89a" + bytes(7) + extensions + DESCRIPTOR + b"\x08\x02\x01\x02\x00;"
     assert gif_module._image_data(single, 1, 1) == b"\x08\x02\x01\x02\x00"
+
+
+def test_a_gif_frame_without_a_duration_is_unreadable() -> None:
+    # No graphic control extension: Pillow reports no duration (ADR-035 kept this reason).
+    buffer = io.BytesIO()
+    Image.new("P", (2, 2), 0).save(buffer, format="GIF")
+    with pytest.raises(ExportError) as caught:
+        gif_module._decoded(buffer.getvalue(), 2, 2)
+    assert caught.value.context == {"reason": "unreadable_gif"}
 
 
 def test_decoding_failures_never_return_a_gif(monkeypatch: pytest.MonkeyPatch) -> None:

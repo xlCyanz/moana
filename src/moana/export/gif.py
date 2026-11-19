@@ -52,7 +52,6 @@ import hashlib
 import io
 import os
 import struct
-import zlib
 from collections.abc import Sequence
 from dataclasses import dataclass, fields
 from typing import Final, Literal
@@ -64,11 +63,19 @@ from PIL import Image
 from moana.core.budget import DEFAULT_RENDER_LIMITS, RenderLimits
 from moana.core.coordinates import require_int
 from moana.core.digest import visual_digest
-from moana.core.errors import BudgetExceeded, ErrorDetail, ExportError, ValidationError
+from moana.core.errors import ExportError, ValidationError
 from moana.core.limits import MAX_LOOP_COUNT
-from moana.export._frames import checked_sprite_frames, frame_error
+from moana.export._frames import (
+    Timeline,
+    check_animation_budget,
+    checked_sprite_frames,
+    decoded_timeline,
+    equivalent_timeline,
+    frame_error,
+    normalized_pixels,
+)
 from moana.export.atomic import commit_bytes
-from moana.export.png import RasterFrame, destination_path, is_normalized, palette_indices
+from moana.export.png import RasterFrame, destination_path, palette_indices
 from moana.export.spritesheet import SpriteFrame
 from moana.palette import Palette, Rgba
 
@@ -243,37 +250,6 @@ def _check_options(
         raise TypeError("limits must be a RenderLimits value")
 
 
-def _check_budget(count: int, width: int, height: int, limits: RenderLimits) -> None:
-    """One detail per exceeded resource, with integer arithmetic only."""
-    area = width * height
-    geometry = limits.geometry
-    checks = (
-        ("frame_pixels", limits.max_frame_pixels, count * area),
-        ("export_dimension", geometry.max_dimension, max(width, height)),
-        ("export_area", geometry.max_area, area),
-        (
-            "buffer_bytes",
-            limits.max_buffer_bytes,
-            GIF_FRAME_BYTES_PER_PIXEL * area + GIF_OUTPUT_BYTES_PER_PIXEL * count * area,
-        ),
-    )
-    details = [
-        ErrorDetail(
-            BudgetExceeded.code,
-            f"GIF {resource} exceed the request budget",
-            context={"resource": resource, "limit": limit, "estimated": estimated},
-        )
-        for resource, limit, estimated in checks
-        if estimated > limit
-    ]
-    if details:
-        raise BudgetExceeded(
-            "GIF export exceeds the request budget",
-            context=dict(details[0].context),
-            details=details,
-        )
-
-
 def _effective_durations(
     checked: Sequence[tuple[SpriteFrame, RasterFrame]], policy: GifDurationPolicy
 ) -> tuple[tuple[int, ...], tuple[GifLoss, ...]]:
@@ -298,15 +274,6 @@ def _effective_durations(
 
 
 # --- pixels ----------------------------------------------------------------------------
-
-
-def _pixels(raster: RasterFrame, index: int) -> _Pixels:
-    pixels = np.frombuffer(raster.rgba, dtype=np.uint8).reshape(raster.height, raster.width, 4)
-    if not is_normalized(pixels):
-        raise frame_error(
-            "frame pixels with zero alpha must be (0, 0, 0, 0)", "not_normalized", index
-        )
-    return pixels
 
 
 def _flatten_values(values: _Pixels, background: Rgba) -> _Pixels:
@@ -377,7 +344,7 @@ def _scan(
     previous_opaque: npt.NDArray[np.bool_] | None = None
     first_clear: npt.NDArray[np.bool_] | None = None
     for index, (_, raster) in enumerate(checked):
-        flat, count = _flattened(_pixels(raster, index), background, index)
+        flat, count = _flattened(normalized_pixels(raster, index), background, index)
         flattened.append(count)
         clear = flat[:, :, 3] == 0
         transparent = transparent or bool(clear.any())
@@ -537,52 +504,15 @@ def _frame_block(
 
 # --- verification ----------------------------------------------------------------------
 
-_Timeline = list[tuple[str, int]]
 
-
-def _equivalent(timeline: _Timeline) -> _Timeline:
-    """Equal consecutive frames merged, their durations summed."""
-    merged: _Timeline = []
-    for digest, duration in timeline:
-        if merged and merged[-1][0] == digest:
-            merged[-1] = (digest, merged[-1][1] + duration)
-        else:
-            merged.append((digest, duration))
-    return merged
-
-
-def _decoded(data: bytes, width: int, height: int) -> tuple[_Timeline, object]:
+def _decoded(data: bytes, width: int, height: int) -> tuple[Timeline, object]:
     """Composited, normalised frames and durations as Pillow decodes them, and the loop."""
-    timeline: _Timeline = []
-    try:
-        with Image.open(io.BytesIO(data), formats=("GIF",)) as image:
-            if image.size != (width, height):
-                raise ExportError(
-                    "encoded GIF has the wrong size", context={"reason": "timeline_mismatch"}
-                )
-            loop = image.info.get("loop")
-            for index in range(getattr(image, "n_frames", 1)):
-                image.seek(index)
-                rgba = np.frombuffer(image.convert("RGBA").tobytes(), dtype=np.uint8)
-                pixels = rgba.reshape(height, width, 4).copy()
-                del rgba
-                pixels[pixels[:, :, 3] == 0] = 0
-                timeline.append(
-                    (visual_digest(width, height, memoryview(pixels)), image.info["duration"])
-                )
-                del pixels
-    except ExportError:
-        raise
-    except (OSError, ValueError, KeyError, SyntaxError, EOFError, zlib.error):
-        raise ExportError(
-            "encoded GIF cannot be decoded", context={"reason": "unreadable_gif"}
-        ) from None
-    return timeline, loop
+    return decoded_timeline(data, "GIF", width, height, unreadable="unreadable_gif")
 
 
-def _verify(data: bytes, width: int, height: int, target: _Timeline, loop_count: int) -> int:
+def _verify(data: bytes, width: int, height: int, target: Timeline, loop_count: int) -> int:
     decoded, loop = _decoded(data, width, height)
-    if _equivalent(decoded) != _equivalent(target):
+    if equivalent_timeline(decoded) != equivalent_timeline(target):
         raise ExportError(
             "decoded GIF frames or times differ from the target timeline",
             context={"reason": "timeline_mismatch"},
@@ -624,7 +554,15 @@ def encode_gif(
     _check_options(loop_count, duration_policy, disposal, background, palette, limits)
     checked = checked_sprite_frames(frames, subject="GIF", check_pivot=False, check_pixels=False)
     width, height = checked[0][1].width, checked[0][1].height
-    _check_budget(len(checked), width, height, limits)
+    check_animation_budget(
+        "GIF",
+        len(checked),
+        width,
+        height,
+        limits,
+        frame_bytes_per_pixel=GIF_FRAME_BYTES_PER_PIXEL,
+        output_bytes_per_pixel=GIF_OUTPUT_BYTES_PER_PIXEL,
+    )
     durations, duration_losses = _effective_durations(checked, duration_policy)
     scan = _scan(checked, background, disposal, collect=palette is None, wraps=loop_count != 1)
     if palette is None:
@@ -633,9 +571,9 @@ def encode_gif(
         values, transparent_index = _declared_values(palette, background, scan.transparent)
     disposal_code = _DISPOSAL_CODES[disposal]
     parts = [_header(width, height, values, loop_count, transparent_index)]
-    target: _Timeline = []
+    target: Timeline = []
     for index, (_, raster) in enumerate(checked):
-        flat, _ = _flattened(_pixels(raster, index), background, index)
+        flat, _ = _flattened(normalized_pixels(raster, index), background, index)
         target.append((visual_digest(width, height, memoryview(np.ascontiguousarray(flat))), 0))
         lzw = _lzw(_frame_indices(flat, values, index))
         del flat

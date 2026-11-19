@@ -1,6 +1,6 @@
 # Inventario del repositorio
 
-443 archivos actuales de fuente, documentación, configuración y pruebas al 2026-11-19. Incluye cambios locales todavía sin commit. Excluye entorno virtual, herramientas, cachés, artefactos y metadata Git.
+449 archivos actuales de fuente, documentación, configuración y pruebas al 2026-11-19. Incluye cambios locales todavía sin commit. Excluye entorno virtual, herramientas, cachés, artefactos y metadata Git.
 
 | Archivo |
 | --- |
@@ -116,6 +116,7 @@
 | [docs/architecture/decisions/ADR-032-animation-timeline.md](../docs/architecture/decisions/ADR-032-animation-timeline.md) |
 | [docs/architecture/decisions/ADR-033-spritesheet-export.md](../docs/architecture/decisions/ADR-033-spritesheet-export.md) |
 | [docs/architecture/decisions/ADR-034-gif-export.md](../docs/architecture/decisions/ADR-034-gif-export.md) |
+| [docs/architecture/decisions/ADR-035-apng-webp-lossless.md](../docs/architecture/decisions/ADR-035-apng-webp-lossless.md) |
 | [docs/architecture/module-contracts.md](../docs/architecture/module-contracts.md) |
 | [docs/architecture/overview.md](../docs/architecture/overview.md) |
 | [docs/guides/agent-workflow.md](../docs/guides/agent-workflow.md) |
@@ -270,7 +271,9 @@
 | [src/moana/editing/history.py](../src/moana/editing/history.py) |
 | [src/moana/export/__init__.py](../src/moana/export/__init__.py) |
 | [src/moana/export/_frames.py](../src/moana/export/_frames.py) |
+| [src/moana/export/animated.py](../src/moana/export/animated.py) |
 | [src/moana/export/atomic.py](../src/moana/export/atomic.py) |
+| [src/moana/export/codecs.py](../src/moana/export/codecs.py) |
 | [src/moana/export/gif.py](../src/moana/export/gif.py) |
 | [src/moana/export/png.py](../src/moana/export/png.py) |
 | [src/moana/export/spritesheet.py](../src/moana/export/spritesheet.py) |
@@ -334,6 +337,7 @@
 | [tests/fixtures/migration/formats.py](../tests/fixtures/migration/formats.py) |
 | [tests/fixtures/migration/test-only-0.8.moana.json](../tests/fixtures/migration/test-only-0.8.moana.json) |
 | [tests/fixtures/migration/test-only-0.9.moana.json](../tests/fixtures/migration/test-only-0.9.moana.json) |
+| [tests/integration/test_animated_export.py](../tests/integration/test_animated_export.py) |
 | [tests/integration/test_cli_paths.py](../tests/integration/test_cli_paths.py) |
 | [tests/integration/test_cross_platform_determinism.py](../tests/integration/test_cross_platform_determinism.py) |
 | [tests/integration/test_dither_determinism.py](../tests/integration/test_dither_determinism.py) |
@@ -376,6 +380,8 @@
 | [tests/unit/editing/test_editing_material.py](../tests/unit/editing/test_editing_material.py) |
 | [tests/unit/editing/test_editing_members.py](../tests/unit/editing/test_editing_members.py) |
 | [tests/unit/editing/test_editing_shade.py](../tests/unit/editing/test_editing_shade.py) |
+| [tests/unit/export/test_export_animated.py](../tests/unit/export/test_export_animated.py) |
+| [tests/unit/export/test_export_codecs.py](../tests/unit/export/test_export_codecs.py) |
 | [tests/unit/export/test_export_gif.py](../tests/unit/export/test_export_gif.py) |
 | [tests/unit/export/test_export_png.py](../tests/unit/export/test_export_png.py) |
 | [tests/unit/export/test_export_spritesheet.py](../tests/unit/export/test_export_spritesheet.py) |
