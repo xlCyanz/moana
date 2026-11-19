@@ -8,7 +8,7 @@ Prioridades: P0 fundamento/bloqueante; P1 funcionalidad central; P2 avanzada; P3
 
 [Roadmap](roadmap.md) · [Dependencias](dependency-map.md) · [Trazabilidad](traceability.md) · [Ciclo de vida](../guides/issue-lifecycle.md).
 
-Estados: {'blocked': 6, 'done': 25, 'ready': 5}.
+Estados: {'blocked': 5, 'done': 26, 'ready': 5}.
 
 | Issue | Resultado | Fase | Prioridad | Estado | Dependencias directas |
 | --- | --- | --- | --- | --- | --- |
@@ -35,7 +35,7 @@ Estados: {'blocked': 6, 'done': 25, 'ready': 5}.
 | [MOANA-020](MOANA-020.md) | Persistir proyectos y assets seguros | P4 | P1 | done | MOANA-018, MOANA-019, MOANA-011 |
 | [MOANA-021](MOANA-021.md) | Versionar y migrar formatos de proyecto | P4 | P1 | done | MOANA-020 |
 | [MOANA-022](MOANA-022.md) | Implementar timeline y evaluación de frames | P4 | P1 | done | MOANA-018, MOANA-019, MOANA-010 |
-| [MOANA-023](MOANA-023.md) | Exportar spritesheets y manifest reversible | P4 | P1 | ready | MOANA-022, MOANA-011 |
+| [MOANA-023](MOANA-023.md) | Exportar spritesheets y manifest reversible | P4 | P1 | done | MOANA-022, MOANA-011 |
 | [MOANA-024](MOANA-024.md) | Exportar GIF con política de pérdidas | P4 | P1 | ready | MOANA-022, MOANA-005, MOANA-011 |
 | [MOANA-025](MOANA-025.md) | Añadir APNG y WebP lossless opcionales | P4 | P2 | ready | MOANA-022, MOANA-011 |
 | [MOANA-026](MOANA-026.md) | Crear informes de calidad gráfica | P5 | P1 | ready | MOANA-014, MOANA-015, MOANA-022 |
@@ -46,5 +46,5 @@ Estados: {'blocked': 6, 'done': 25, 'ready': 5}.
 | [MOANA-031](MOANA-031.md) | Medir rendimiento y memoria de referencia | P5 | P1 | blocked | MOANA-010, MOANA-022, MOANA-027 |
 | [MOANA-032](MOANA-032.md) | Optimizar caché y render incremental acotados | P5 | P2 | blocked | MOANA-018, MOANA-031 |
 | [MOANA-033](MOANA-033.md) | Documentar flujos IA y previews editables | P5 | P1 | blocked | MOANA-012, MOANA-018, MOANA-020, MOANA-026 |
-| [MOANA-034](MOANA-034.md) | Añadir ejemplos de tiles y escenarios modulares | P5 | P2 | blocked | MOANA-008, MOANA-016, MOANA-020, MOANA-023 |
+| [MOANA-034](MOANA-034.md) | Añadir ejemplos de tiles y escenarios modulares | P5 | P2 | ready | MOANA-008, MOANA-016, MOANA-020, MOANA-023 |
 | [MOANA-035](MOANA-035.md) | Preparar release y comprobar Definition of Done | P5 | P1 | blocked | MOANA-007, MOANA-021, MOANA-023, MOANA-024, MOANA-025, MOANA-027, MOANA-029, MOANA-030, MOANA-032, MOANA-033, MOANA-034 |

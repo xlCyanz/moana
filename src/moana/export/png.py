@@ -144,12 +144,20 @@ def _frame_pixels(frame: RasterFrame, scale: int, limits: RenderLimits) -> _Pixe
         )
     _check_budget(width, height, scale, limits)  # before any temporary is allocated
     pixels = np.frombuffer(rgba, dtype=np.uint8).reshape(height, width, 4)
-    if bool(np.any((pixels[:, :, 3] == 0) & pixels[:, :, :3].any(axis=2))):
+    if not is_normalized(pixels):
         raise ValidationError(
             "frame pixels with zero alpha must be (0, 0, 0, 0)",
             context={"field": "rgba", "reason": "not_normalized"},
         )
     return pixels
+
+
+def is_normalized(pixels: _Pixels) -> bool:
+    """Whether every pixel of an ``(h, w, 4)`` RGBA array with zero alpha is ``(0, 0, 0, 0)``.
+
+    Temporaries: three boolean planes of ``h * w`` bytes.
+    """
+    return not bool(np.any((pixels[:, :, 3] == 0) & pixels[:, :, :3].any(axis=2)))
 
 
 def _check_budget(width: int, height: int, scale: int, limits: RenderLimits) -> None:
@@ -344,22 +352,27 @@ def _representable(raw: str) -> bool:
     return True
 
 
-def _destination(path: object) -> Path:
+def destination_path(path: object, *, field: str = "path", suffix: str = ".png") -> Path:
+    """A caller-chosen export path: text, representable and ending in ``suffix``.
+
+    ``TypeError`` for a non-path or a bytes path; ``ValidationError`` ``invalid_name``
+    or ``wrong_extension`` (a bare ``.png`` has no suffix) with ``field``.
+    """
     if not isinstance(path, str | os.PathLike):
-        raise TypeError("path must be a str or os.PathLike")
+        raise TypeError(f"{field} must be a str or os.PathLike")
     raw = os.fspath(path)
     if not isinstance(raw, str):
-        raise TypeError("path must be text, not bytes")
+        raise TypeError(f"{field} must be text, not bytes")
     if not _representable(raw):
         raise ValidationError(
             "the export path is not representable on this system",
-            context={"field": "path", "reason": "invalid_name"},
+            context={"field": field, "reason": "invalid_name"},
         )
     destination = Path(raw)
-    if destination.suffix.lower() != ".png":
+    if destination.suffix.lower() != suffix:
         raise ValidationError(
-            "PNG exports must use the .png extension",
-            context={"field": "path", "reason": "wrong_extension"},
+            f"this export must use the {suffix} extension",
+            context={"field": field, "reason": "wrong_extension"},
         )
     return destination
 
@@ -380,7 +393,7 @@ def export_png(
     concurrent writer; see :mod:`moana.export.atomic`. Returns the manifest only
     after the file is committed.
     """
-    destination = _destination(path)
+    destination = destination_path(path)
     if type(overwrite) is not bool:
         raise TypeError("overwrite must be a bool")
     encoded = encode_png(frame, scale=scale, mode=mode, palette=palette, limits=limits)

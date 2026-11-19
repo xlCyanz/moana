@@ -62,12 +62,12 @@ Estado: 8/8 issues completados.
 
 Puerta de salida: Proyecto reversible, atlas y timeline decodificado.
 
-Estado: 3/6 issues completados.
+Estado: 4/6 issues completados.
 
 - [MOANA-020](MOANA-020.md) — Persistir proyectos y assets seguros (done)
 - [MOANA-021](MOANA-021.md) — Versionar y migrar formatos de proyecto (done)
 - [MOANA-022](MOANA-022.md) — Implementar timeline y evaluación de frames (done)
-- [MOANA-023](MOANA-023.md) — Exportar spritesheets y manifest reversible (ready)
+- [MOANA-023](MOANA-023.md) — Exportar spritesheets y manifest reversible (done)
 - [MOANA-024](MOANA-024.md) — Exportar GIF con política de pérdidas (ready)
 - [MOANA-025](MOANA-025.md) — Añadir APNG y WebP lossless opcionales (ready)
 
@@ -83,7 +83,7 @@ Estado: 0/8 issues completados.
 - [MOANA-031](MOANA-031.md) — Medir rendimiento y memoria de referencia (blocked)
 - [MOANA-032](MOANA-032.md) — Optimizar caché y render incremental acotados (blocked)
 - [MOANA-033](MOANA-033.md) — Documentar flujos IA y previews editables (blocked)
-- [MOANA-034](MOANA-034.md) — Añadir ejemplos de tiles y escenarios modulares (blocked)
+- [MOANA-034](MOANA-034.md) — Añadir ejemplos de tiles y escenarios modulares (ready)
 - [MOANA-035](MOANA-035.md) — Preparar release y comprobar Definition of Done (blocked)
 
 ## Siguiente paso

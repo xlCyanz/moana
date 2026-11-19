@@ -8,7 +8,7 @@
 - Aliases históricos: MOA-023
 - Phase: P4
 - Priority: P1
-- Status: ready
+- Status: done
 - Complexity: M (relativa, no estimación de tiempo)
 - Dependencies: [MOANA-022](MOANA-022.md), [MOANA-011](MOANA-011.md)
 - Related modules: export, animation
@@ -43,13 +43,13 @@ No packing heurístico compacto hasta tener contrato de desempate independiente.
 
 ## Acceptance criteria
 
-- [ ] AC1: Recortar atlas por manifest reconstruye RGBA exacto de cada frame
-- [ ] AC2: Export idéntico con misma configuración y ningún frame solapa padding o sale del sheet
+- [x] AC1: Recortar atlas por manifest reconstruye RGBA exacto de cada frame
+- [x] AC2: Export idéntico con misma configuración y ningún frame solapa padding o sale del sheet
 
 ## Required tests
 
-- [ ] T1: Columnas 1/N, último renglón incompleto, margen/padding y canvas no cuadrado
-- [ ] T2: Atlas excesivo, manifest corrupto y roundtrip recortes/tiempos
+- [x] T1: Columnas 1/N, último renglón incompleto, margen/padding y canvas no cuadrado
+- [x] T2: Atlas excesivo, manifest corrupto y roundtrip recortes/tiempos
 
 ## Expected deliverables
 
@@ -66,7 +66,7 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Guía para agentes de IA
 
-**Estado para agentes:** Listo: todas las dependencias están `done`; puede empezarse.
+**Estado para agentes:** Completado; usar sólo como referencia del contrato entregado.
 
 ### 1. Preparación
 
@@ -135,4 +135,16 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Evidence
 
-Pendiente de implementación.
+- moana.export.spritesheet (ADR-033): grid uniforme en orden de frames con columns 1–256 (columns > n es too_many_columns, sin clamp), margin y padding 0–2048; frame i en x = margin + (i % columns)·(w + padding), y = margin + (i // columns)·(h + padding); rect [x,y,w,h] ≡ caja semiabierta [x,y,x+w,y+h); huecos (0,0,0,0); sin trim ni rotación; todos los frames del mismo tamaño (size_mismatch).
+- Frames por el protocolo SpriteFrame (frame_id, duration_ms, pivot, result: RasterFrame), que moana.animation.FrameRender cumple sin que export importe animation (test de arquitectura); SheetFrame/FramePixels para recortes reexportables; bloque opcional animation {id, loop_count} vía SheetAnimation.
+- Presupuesto antes de reservar el atlas: frames ≤ 256 (comprobado con len antes de leer frames), Σ píxeles de frame ≤ max_frame_pixels, lado y área de la hoja, buffer_bytes = 32·área; frames no normalizados rechazados antes del atlas.
+- Manifiesto JSON canónico versionado (format moana-spritesheet, version 1) con image {name, media_type, width, height, digest visual, sha256 de procedencia}, layout, frames {frame_id, rect, duration_ms, pivot, source_size, trim_offset [0,0], digest}; parser estricto (tamaño ≤ 1 MiB antes de decodificar, versión antes que miembros → UnsupportedVersion, bool/float nunca enteros, claves duplicadas, NaN, anidamiento, rects iguales a su celda) con ValidationError reason + json_pointer sin rutas ni eco de claves.
+- Escritura en dos archivos con commit_bytes: todo codificado y verificado en memoria, overwrite=False comprueba ambos destinos antes de escribir, atlas primero y manifiesto al final (un fallo del manifiesto informa committed sin borrar el atlas). Recorte: IHDR/IEND y presupuesto len(png) + 12·A antes de decodificar, digest del atlas, not_normalized y dirty_gap independientes de los digests, digest por frame; load_spritesheet abre con O_NONBLOCK y exige archivo regular (un FIFO nunca bloquea).
+- Guía para motores en ADR-033 y MOANA.md §17: filtrado nearest sin mipmaps, padding ≥ 1 (≥ 2 con mipmaps) si hay filtrado, padding no es extrusión; pivote en píxeles enteros del frame fuente con conversión (px/w, 1 − py/h) para motores Y-up; semántica de trim_offset fijada. MOANA.md 0.1.21-draft.
+- Cubiertas con tests las líneas que MOANA-022 dejó sin cubrir (animation/frames.py:185, render/sequence.py:189 y 237).
+- Revisiones de agente: gráficos (aprobado), python (cambios aplicados: nombres no UTF-8/C1, FIFO, versión antes de miembros, reutilización de destination_path/is_normalized, consistencia de errores) y pixel-art (guía de motores, bloque animation); revisión artística humana PENDIENTE. Gate local macOS: scripts/validate.py verde con src/moana al 100 %, check_wheel OK, mypy --platform win32 OK, pre-commit OK; matriz pendiente en main.
+- Aprobado por el propietario el 2026-11-17 tras revisión; PR #63 hacia develop.
+- AC1: tests/unit/export/test_export_spritesheet.py::test_slice_rebuilds_frames_and_reexports_identically, ::test_translucent_pixels_survive_the_roundtrip, ::test_rects_are_disjoint_inside_and_roundtrip (hypothesis); tests/integration/test_spritesheet_animation.py::test_bouncing_slime_sheet_rebuilds_every_frame (RGBA, digests, duraciones, pivotes y animation con columnas/margen/padding (1,0,0), (2,1,1), (4,2,3)).
+- AC2: tests/unit/export/test_export_spritesheet.py::test_export_is_byte_identical_across_directories, ::test_rects_are_disjoint_inside_and_roundtrip (rects disjuntos, dentro del margen, separados ≥ padding, huecos transparentes), ::test_atlas_pixels_are_checked_independently_of_digests (dirty_gap, not_normalized), ::test_corrupt_manifest_is_located (rect_mismatch, rect_out_of_sheet).
+- T1: tests/unit/export/test_export_spritesheet.py::test_layout_matches_hand_computed_grid y ::test_atlas_pixels_are_placed_by_hand_and_gaps_are_transparent (oráculos a mano: una columna, una fila, último renglón incompleto, sólo margen, sólo padding, frame único; frames 3×2 y 2×3 no cuadrados), ::test_manifest_records_every_frame_value, ::test_invalid_layout_options.
+- T2: tests/unit/export/test_export_spritesheet.py::test_excessive_sheet_is_rejected_before_the_atlas_exists, ::test_rejected_large_sheet_allocates_almost_nothing (tracemalloc), ::test_too_many_frames_is_rejected_before_reading_any_frame, ::test_slicing_checks_its_budget_before_decoding, ::test_corrupt_manifest_is_located, ::test_unreadable_manifest_bytes, ::test_manifest_size_version_and_type, ::test_digest_mismatches_are_located, ::test_bad_atlas_images, ::test_load_never_blocks_on_a_fifo, ::test_animation_block_roundtrips_and_is_optional, ::test_slice_rebuilds_frames_and_reexports_identically (recortes y tiempos).
