@@ -1671,7 +1671,7 @@
       "id": "MOANA-024",
       "title": "Exportar GIF con política de pérdidas",
       "phase": "P4",
-      "status": "review",
+      "status": "done",
       "priority": "P1",
       "dependencies": [
         "MOANA-022",
@@ -1702,7 +1702,8 @@
         "Contenedor GIF89a escrito por Moana (tabla global única, índice de fondo = transparente, sin fusionar frames, sin recortes); Pillow sólo comprime LZW cada plano de índices y su salida se analiza estrictamente (encoder_layout). Verificación decodificando con Pillow: timelines equivalentes tras fusionar frames iguales consecutivos (timeline_mismatch) y bucle (loop_mismatch); bytes idénticos para la misma entrada.",
         "Presupuesto antes de leer píxeles: frames ≤ 256 (len), Σ píxeles de frame, lado, área y buffer_bytes = 48·A + 4·n·A (pico RSS medido por la revisión de gráficos por debajo del presupuesto); escritura atómica sin sobrescribir por defecto. Comprobación de frames compartida con spritesheet en moana.export._frames.",
         "Documentación: ADR-034, MOANA.md 0.1.22-draft (§17 bucle, §18 GIF), module-contracts, sección «GIF animado» en docs/standards/pixel-art.md (duraciones, alfa, paleta, escala previa, disposal). Test determinista para el tramo de selective_outline tapado por un tramo posterior (render/pipeline.py:277).",
-        "Revisiones de agente: gráficos (aprobado; contenedor contrastado con ffmpeg y giftext), python (aprobado con observaciones aplicadas) y pixel-art (aprobado con menores aplicados); revisión artística humana PENDIENTE. Gate local macOS: scripts/validate.py verde con src/moana al 100 %, check_wheel OK, mypy --platform win32 OK, pre-commit OK; matriz pendiente en main."
+        "Revisiones de agente: gráficos (aprobado; contenedor contrastado con ffmpeg y giftext), python (aprobado con observaciones aplicadas) y pixel-art (aprobado con menores aplicados); revisión artística humana PENDIENTE. Gate local macOS: scripts/validate.py verde con src/moana al 100 %, check_wheel OK, mypy --platform win32 OK, pre-commit OK; matriz pendiente en main.",
+        "Aprobado por el propietario el 2026-11-17 tras revisión; PR #64 hacia develop."
       ],
       "aliases": [
         "MOA-024"
@@ -2368,7 +2369,7 @@
       "risks": [
         "No declarar CI remoto de cambios locales ni licencia decidida sin evidencia del propietario."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-024, MOANA-025, MOANA-027, MOANA-030, MOANA-032, MOANA-033, MOANA-034",
+      "blocking_reason": "Dependencias pendientes: MOANA-025, MOANA-027, MOANA-030, MOANA-032, MOANA-033, MOANA-034",
       "acceptance_evidence": {},
       "test_evidence": {}
     }
