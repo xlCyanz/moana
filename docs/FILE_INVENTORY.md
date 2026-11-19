@@ -1,6 +1,6 @@
 # Inventario del repositorio
 
-501 archivos actuales de fuente, documentación, configuración y pruebas al 2026-11-19. Incluye cambios locales todavía sin commit. Excluye entorno virtual, herramientas, cachés, artefactos y metadata Git.
+517 archivos actuales de fuente, documentación, configuración y pruebas al 2026-11-19. Incluye cambios locales todavía sin commit. Excluye entorno virtual, herramientas, cachés, artefactos y metadata Git.
 
 | Archivo |
 | --- |
@@ -391,6 +391,22 @@
 | [tests/integration/test_quality_examples.py](../tests/integration/test_quality_examples.py) |
 | [tests/integration/test_render_determinism.py](../tests/integration/test_render_determinism.py) |
 | [tests/integration/test_spritesheet_animation.py](../tests/integration/test_spritesheet_animation.py) |
+| [tests/security/README.md](../tests/security/README.md) |
+| [tests/security/__init__.py](../tests/security/__init__.py) |
+| [tests/security/corpus.py](../tests/security/corpus.py) |
+| [tests/security/coverage.py](../tests/security/coverage.py) |
+| [tests/security/guards.py](../tests/security/guards.py) |
+| [tests/security/test_archives.py](../tests/security/test_archives.py) |
+| [tests/security/test_assets_integrity.py](../tests/security/test_assets_integrity.py) |
+| [tests/security/test_budgets.py](../tests/security/test_budgets.py) |
+| [tests/security/test_corpus.py](../tests/security/test_corpus.py) |
+| [tests/security/test_documents.py](../tests/security/test_documents.py) |
+| [tests/security/test_editing.py](../tests/security/test_editing.py) |
+| [tests/security/test_errors.py](../tests/security/test_errors.py) |
+| [tests/security/test_guards.py](../tests/security/test_guards.py) |
+| [tests/security/test_persistence.py](../tests/security/test_persistence.py) |
+| [tests/security/test_supply_chain.py](../tests/security/test_supply_chain.py) |
+| [tests/security/test_threat_coverage.py](../tests/security/test_threat_coverage.py) |
 | [tests/test_environment.py](../tests/test_environment.py) |
 | [tests/test_planning.py](../tests/test_planning.py) |
 | [tests/test_repository_tools.py](../tests/test_repository_tools.py) |
