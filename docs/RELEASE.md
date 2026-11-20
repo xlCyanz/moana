@@ -141,12 +141,12 @@ CI remoto (matriz `ubuntu/macos/windows × Python 3.12–3.14` más comparación
 - [x] Trazabilidad y auditoría de requisitos generadas desde los catálogos.
 - [ ] Matriz de CI remota verde observada para el commit candidato (ver «CI remoto» arriba).
 - [ ] Corpus y rúbrica revisados por una persona (pendiente; ningún ejemplo es profesional).
-- [ ] Autorización explícita de publicación (acción separada, no ejecutada).
+- [x] Autorización explícita de publicación: el propietario autorizó el 2026-11-20 publicar `0.1.0rc1` como prerelease de GitHub (no PyPI), con la revisión artística humana pendiente declarada.
 
 ## Limitaciones y pendientes explícitos
 
 - **Revisión artística humana pendiente** para todo el arte generado por agentes: corpus de `examples/corpus/` (MOANA-027), tiles y escena de `examples/tiles/` (MOANA-034) y los ejemplos de técnicas de `examples/specs/` (MOANA-014 a MOANA-022: contornos, sombreado, materiales, animación). Las notas de agente no cuentan como revisión ni aprobación.
-- **Sin publicación**: no hay paquete en PyPI, GitHub Release ni tag. Nada en este repositorio publica automáticamente.
+- **Publicación**: prerelease de GitHub `v0.1.0rc1` (tag sobre `main`, wheel y sdist adjuntos). No hay paquete en PyPI: subirlo exige las credenciales del propietario. Nada en este repositorio publica automáticamente.
 - **Persistencia e historial sin CLI ni fachada**: `moana.project` (proyectos, migraciones) y `moana.editing.History` sólo desde Python; `moana edit` no escribe archivos.
 - **Animación, spritesheets, GIF, APNG y WebP sin CLI**: sólo desde Python (`moana.animation`, `moana.export`). APNG/WebP dependen del codec de cada build de Pillow.
 - **Capacidades previstas no ejecutables**: `flood_fill` como operación, `multiply`/`screen`, colección `materials` con contenido, `children`/`transform` en capas (ver la tabla de capacidades).
@@ -154,7 +154,7 @@ CI remoto (matriz `ubuntu/macos/windows × Python 3.12–3.14` más comparación
 - **Schema 1.0** quedará cerrado con la primera publicación; después, toda ampliación de gramática sube el minor (MOANA.md §12 y §16).
 - **Benchmark** informativo, medido en una sola máquina (macOS arm64); sin runner estable de referencia.
 
-## Pasos de publicación (acción separada, no ejecutada)
+## Pasos de publicación (ejecutados el 2026-11-20 para la prerelease de GitHub; PyPI no)
 
 Requieren autorización explícita del propietario para esa acción concreta; preparar este candidato no la concede.
 
