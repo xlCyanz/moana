@@ -1,0 +1,66 @@
+# ADR-038 — Caché opcional de buffers de capa acotada por bytes, claves por dependencias transitivas y decisión medida
+
+Estado: aceptado · 2026-11-19 · Issue: [MOANA-032](../../issues/MOANA-032.md). Amplía [ADR-017](ADR-017-layers-composition.md) (`compose(…, buffers=None)` y el protocolo `LayerBuffers`), [ADR-018](ADR-018-render-pipeline.md) (`render(…, cache=None)` y el módulo `moana.render.cache`) y [ADR-032](ADR-032-animation-timeline.md) (`render_admitted`, `render_sequence`, `render_animation` y `render_frame` aceptan la misma caché). No cambia `RENDERER_VERSION` (`render-v1`), `ESTIMATOR_VERSION` (`budget-v8`), el esquema, `RenderResult`, `Provenance`, la fachada `moana.api`, el CLI ni el streaming de frames de ADR-032. Aplica [ADR-012](ADR-012-request-budgets.md) (presupuestos), [ADR-021](ADR-021-cross-platform-determinism.md) (determinismo) y [ADR-024](ADR-024-atomic-edits.md) (la edición devuelve un documento nuevo que vuelve a entrar por `render`).
+
+## Contexto
+
+MOANA.md §14 exige que una caché sea sólo optimización (igualdad exacta activada o desactivada) y que su clave agregue versión de renderer, backend, lock y frame. §22 pide medir antes de optimizar, caché LRU limitada por bytes, invalidación por digest de dependencias, reutilizar buffers internos sin alias público y frames en streaming. El issue limita el alcance a lo que el benchmark de MOANA-031 demuestre y pide justificar lo descartado. §3 permite a `render` depender de `layers`, y a `animation` de `render`.
+
+## Mediciones previas (macOS arm64, CPython 3.12, mediana; `cProfile` y `time.perf_counter`)
+
+- **Render estático** (sprite de referencia 128×128, 32 capas, 500 `rect`): ≈ 29–30 ms = revalidación 3,6 ms + `plan_budget` 2,3 ms + pintado de fills ≈ 17 ms + composición de 32 buffers de capa sobre el lienzo ≈ 7 ms. Un render frío no tiene nada que reutilizar.
+- **Animación de 16 frames**: ≈ 857 ms. `evaluate_animation` (16 × `apply_commands` con revalidación) cuesta ≈ 180 ms y renderizar los 16 documentos ya evaluados ≈ 495 ms: la evaluación ocurre **dos veces** (pasada de admisión y pasada de render, ADR-032), ≈ 360 ms (≈ 42 %). Dentro de `apply_commands`, ≈ 50 % es reconstruir el índice de nodos por comando (`index_nodes`, O(comandos × nodos)) y ≈ 46 % la revalidación.
+- **Edición → re-render** (`apply_edit` de un `set_color` y `render`): `apply_edit` ≈ 5 ms + render ≈ 29 ms; la edición cambia una de 32 capas.
+- **Documento de frame evaluado** retenido: ≈ 336 KB de heap Python por frame para 69 KB de JSON (≈ 4,9×); con el máximo de 8 MiB por documento y 256 frames serían decenas de GiB.
+
+## Decisión
+
+1. **Caché de buffers de capa (implementada, opcional).** `moana.render.RenderCache(max_bytes)` guarda el buffer terminado de cada capa visible: fills pintados y máscara de capa aplicada, **antes** de la opacidad. Un buffer de capa empieza transparente y no lee a su padre, así que los mismos bytes compuestos con la misma opacidad dan los mismos píxeles. No hay caché salvo que el llamador cree una y la pase a `render`, `render_admitted`, `render_sequence`, `render_animation` o `render_frame` (`cache=None` por defecto: la ruta por defecto no cambia).
+2. **Clave** (función privada `moana.render.cache._layer_key`; no es API pública: la receta la versiona `CACHE_KEY_FORMAT` y sólo la usa el orquestador): `sha256:` del JSON canónico (claves ordenadas, sin espacios, UTF-8) de `CACHE_KEY_FORMAT` (`moana-layer-cache/1`), `[RENDERER_VERSION, RENDERER_BACKEND, ESTIMATOR_VERSION, RNG_VERSION]`, `numpy==…` y las versiones del backend vectorial del documento (`aggdraw==…`, `pillow==…` si tiene paths), `[ancho, alto, perfil]`, la semilla, la capa sin `name`, `locked`, `visible` ni `opacity`, el cierre transitivo de las máscaras que usan la capa y sus operaciones (`moana.schema.mask_dependencies`, ordenado por ID) y el RGBA resuelto de cada color y rampa referenciados (miembros de `moana.schema.OPERATION_MEMBERS`, incluidos los de bandas y tramos). El documento entero (ID, revisión, snapshot) no entra: dos revisiones con la misma capa comparten entrada, que es lo que hace incremental el re-render tras una edición. El frame tampoco entra porque no cambia los píxeles (§17: no forma parte de la semilla); si un efecto futuro declara variación temporal, su parámetro entrará por la operación y cambiará la clave. El `uv.lock` no está disponible en ejecución: lo representan las versiones de NumPy y del backend vectorial, que son las bibliotecas que deciden píxeles. Dentro de un render, `_document_prefix` construye una sola vez el prefijo y el índice de máscaras y memoriza el cierre de `mask_dependencies` por ID de máscara, así que una máscara usada por varias capas u operaciones se expande una vez; los bytes de la clave son los mismos que sin memo (prueba con la receta escrita aparte).
+   **Coste de la clave**: no entra en el estimador (`plan_budget` no lo cuenta), pero está acotado por los límites del lector (≤ 8 MiB y ≤ 20 000 nodos por documento: la clave serializa cada capa y sus máscaras una vez) y el `Deadline` se comprueba antes de cada clave (`cache_key`). Medido: +5 % en el render frío del sprite de referencia (copia e inserción incluidas) y, en una sonda de 128 capas, 1536 `rect` y una unión de 16 máscaras en cada capa (lienzo 256×256), 6 ms de claves frente a 201 ms de render.
+3. **Invalidación**: no hay invalidación explícita. Una edición cambia la clave de cada consumidor de lo editado, transitivamente (una hoja de máscara usada por una unión cambia la clave de las capas que usan la unión; un color de rampa, la de las capas con esa rampa) y de nada más; las entradas antiguas salen por LRU. La opacidad, la visibilidad y el orden de capas no forman parte del buffer y no invalidan nada.
+4. **Límites**: `max_bytes` es un `int` (no `bool`) en `1..MAX_CACHE_BYTES` (256 MiB, el `max_buffer_bytes` por defecto); si no, `ValidationError`. Cada entrada cuenta exactamente `len(píxeles) + ENTRY_OVERHEAD_BYTES` (256: clave, cabecera de `bytes` y hueco del diccionario, ≈ 220 B medidos en CPython 3.12). Insertar desaloja primero la entrada usada menos recientemente hasta caber; `used_bytes ≤ max_bytes` tras cada operación; una entrada mayor que `max_bytes` no se guarda (`rejected`): con una caché más pequeña que un buffer de capa, cada consulta de esa capa cuenta un fallo y después un rechazo, comportamiento esperado y no un fallo de clave. Reemplazar una clave descuenta la anterior. `CacheStats` expone entradas, bytes, aciertos, fallos, inserciones, evicciones y rechazos.
+5. **Inmutabilidad**: las entradas son `bytes` copiados al insertar (`put` acepta `bytes`, `bytearray` o `memoryview`), así que mutar el origen no las altera. `compose` ofrece a `LayerBuffers.store` una `memoryview` de sólo lectura válida durante la llamada y compone un acierto desde `np.frombuffer` sobre los `bytes` (vista de sólo lectura). `RenderResult.rgba` sigue siendo `bytes` propios: ningún resultado comparte memoria mutable con la caché.
+6. **Presupuestos y plazo**: con caché, `render` valida, resuelve, comprueba backend y operaciones, aplica `plan_budget` y planifica todas las capas igual que sin ella (las advertencias son las mismas); `compose` comprueba el presupuesto de composición del árbol entero antes de consultar la caché. Un acierto sólo evita pintar los fills y evaluar la máscara de esa capa. El `Deadline` se comprueba antes de calcular cada clave (`cache_key`) y antes de cada nodo (`compose_node`). La memoria de la caché es del llamador, acotada por `max_bytes` y separada del presupuesto de la solicitud; la copia al insertar sólo se hace si la entrada cabe.
+7. **`moana.layers.LayerBuffers`**: protocolo de dos métodos (`lookup(layer_id) -> bytes | None`, `store(layer_id, memoryview)`) que `compose(…, buffers=None)` usa para capas (no para grupos). `layers` no conoce claves ni digests; `render` adapta la caché con un mapa ID de capa → clave por render. Unos `bytes` de tamaño distinto de `4·ancho·alto` son un error de programación (`RuntimeError`). Una capa cuya máscara queda vacía no se compone ni se guarda.
+8. **Sin hilos**: la caché no es thread-safe; un llamador concurrente usa una por hilo o serializa.
+
+## Cambios fuera de `render` y su justificación
+
+El issue fija `src/moana/render/` como alcance y admite tocar otros módulos sólo con justificación:
+
+- **`moana.layers` (`LayerBuffers` y `compose(…, buffers=None)`)**: el buffer de capa sólo existe dentro de `compose`; sin este gancho `render` tendría que recomponer cada capa por separado (copias extra) o duplicar la fórmula source-over. El gancho no conoce claves ni digests, no cambia la ruta sin store y es lo que produce el −41 % del re-render tras editar una capa (29,0 → 17,1 ms) y el −35 % de `apply_edit` + `render`.
+- **`moana.animation` (`cache=` en `render_animation` y `render_frame`)**: sólo reenvía la caché a `render_admitted`; sin él los frames no podrían compartir buffers de capa (−12 % en la animación de 16 frames con caché nueva por llamada, −15 % en `corpus/adventurer-walk` con caché caliente). El streaming de dos pasadas no cambia.
+
+## Grupos
+
+El documento 1.0 no tiene grupos, así que `render` nunca construye un `Group`; aun así `compose` reenvía el store a la recursión de grupos y sólo guarda capas. Ese caso (opacidad de grupo ≠ 255 y grupos anidados) se prueba en el nivel de `moana.layers.compose` con un store que se llena en una primera pasada y se reutiliza en la segunda, con bytes idénticos al render sin store.
+
+## Opciones descartadas (con medición)
+
+- **Retener los documentos de frame entre las dos pasadas de una animación** (ahorraría ≈ 180 ms de 857, ≈ 21 %): rompe el streaming de ADR-032, que se eligió con el peor caso medido (retener todo: ≈ 693 MiB de RSS frente a ≈ 129 MiB). Un documento evaluado ocupa ≈ 4,9× su JSON y no hay una medida exacta de sus bytes para acotar la retención. Variantes acotadas medidas: retener el JSON canónico y reparsearlo ahorra ≈ 3,5 ms por frame (6–7 %), y omitir la revalidación de `render_admitted` ≈ 3,4 ms por frame (6 %), a cambio de abrir una vía sin validar en la frontera de `render`. Ninguna compensa el cambio de contrato.
+- **Optimizar `apply_commands`** (índice de nodos por comando y revalidación, ≈ 96 % de la evaluación): está en `moana.editing`, fuera del módulo `render` de este issue; se propone como seguimiento.
+- **Dirty rectangles** (recomponer sólo la caja cambiada): la composición de 32 buffers de 128×128 cuesta ≈ 7 ms y es la mayor parte de un render con todas las capas en caché (≈ 17 ms); recortarla a una caja exige demostrar que ninguna capa superior lee la región (opacidad, máscaras, `outline` exterior) y mantener una segunda ruta de composición. Sin un caso de benchmark que lo pida, no compensa.
+- **Caché por operación o por máscara**: en el corpus todas las máscaras son baratas (un `rect` se rasteriza en microsegundos); el coste está en pintar y componer, que la caché por capa ya evita, y la clave por operación multiplicaría el hashing.
+- **Prefijo compuesto** (lienzo tras las capas 0..k): reutilizaría también la composición, pero cualquier cambio en una capa baja invalida todo lo de encima y retiene un lienzo por prefijo; se deja para un benchmark que lo justifique.
+- **Caché activada por defecto**: un render frío con caché vacía cuesta ≈ +5 % (copiar e insertar cada buffer) y el render de una animación cuyos frames cambian todas las capas no gana; además retendría memoria sin que el llamador lo pida.
+
+## Evidencia de beneficio (mediana de 30 muestras tras 5 warmups, misma máquina)
+
+| Flujo | Sin caché | Con caché | Cambio |
+| --- | ---: | ---: | ---: |
+| Render estático frío (caché vacía) | 29,1 ms | 30,6 ms | +5 % |
+| Re-render tras editar el color de un `rect` (31 de 32 capas en caché) | 29,0 ms | 17,1 ms | −41 % |
+| `apply_edit` + `render` encadenados | 34,3 ms | 22,4 ms | −35 % |
+| Animación de 16 frames, caché nueva por llamada (frames que repiten capas) | 857 ms | 757 ms | −12 % |
+| `corpus/adventurer-walk`, caché nueva por llamada | 71,1 ms | 70,5 ms | ≈ 0 |
+| `corpus/adventurer-walk`, caché caliente | 71,1 ms | 60,8 ms | −15 % |
+
+El benchmark de MOANA-031 (`python -m tests.benchmarks run`, caché desactivada) se mantiene comparable (mismo corpus, versiones, warmups y muestras) y no cambia: antes/después de este ADR, `static` render 29,78 → 29,93 ms (+0,5 %), `animation` render 852,2 → 850,8 ms (−0,2 %), `render_frame` 29,76 → 29,65 ms, `corpus/adventurer-walk` 70,97 → 70,57 ms, pico RSS 66,0 → 66,0 MiB; todos `ok` en `compare`. Su línea base comprometida no se regenera porque la ruta por defecto del motor no cambia.
+
+## Consecuencias
+
+- La igualdad caché on/off cubre RGBA, digest, advertencias y procedencia (AC1); la invalidación transitiva, la cota de bytes, el orden LRU, la separación de versiones, la mutación externa, los presupuestos y el plazo en aciertos tienen pruebas en `tests/unit/render/test_render_cache.py` (AC2, T1, T2).
+- Cambiar la receta de la clave o el contenido de un buffer de capa exige cambiar `CACHE_KEY_FORMAT` o `RENDERER_VERSION`.
+- La fachada `moana.api.render` no expone la caché todavía: un anfitrión la usa desde `moana.render` o `moana.animation`. Exponerla en la fachada es un cambio de API pública que necesita su propio issue.
+- No hay paralelismo, JIT ni GPU (§22).

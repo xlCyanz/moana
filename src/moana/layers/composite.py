@@ -27,13 +27,21 @@ There is no memo: a shared node is evaluated again wherever it is referenced, an
 the cost counts it so, at least :data:`MASK_NODE_VISITS` per evaluated node. A node
 whose result box is empty is the empty mask without evaluating its operands, so its
 cost is that floor alone.
+
+``compose`` may reuse finished layer buffers through a :class:`LayerBuffers` store
+(MOANA-032, ADR-038): a layer whose ID the store knows is composited from those
+immutable bytes instead of painting its fills and clearing outside its mask; any
+other visible layer is painted as usual and offered to the store before it is
+composited. A layer buffer starts transparent and never reads its parent, so reusing
+the same bytes gives the same pixels. The budget is checked for the whole tree
+before anything, with or without a store.
 """
 
 from __future__ import annotations
 
 from collections.abc import Iterator
 from dataclasses import dataclass
-from typing import Final
+from typing import Final, Protocol
 
 import numpy as np
 import numpy.typing as npt
@@ -61,6 +69,7 @@ __all__ = [
     "MAX_TILE_PIXELS",
     "TILE_ROWS",
     "CompositionCost",
+    "LayerBuffers",
     "MaskCost",
     "compose",
     "composition_cost",
@@ -397,8 +406,45 @@ def _layer_mask(layer: Layer, dimensions: Dimensions, deadline: Deadline | None)
     return _evaluate(layer.mask, _mask_costs(layer.mask, dimensions), deadline)
 
 
+class LayerBuffers(Protocol):
+    """Finished layer buffers reused between compositions (MOANA-032, ADR-038).
+
+    ``lookup`` returns the row-major RGBA bytes (``4·width·height``) of a layer
+    painted and clipped exactly as :func:`compose` would, or ``None``. ``store``
+    receives a read-only view of a freshly painted layer buffer, valid only during
+    the call: a store that keeps it must copy it. Neither sees the layer opacity,
+    which is applied when the buffer is composited.
+    """
+
+    def lookup(self, layer_id: str) -> bytes | None:
+        """Bytes of the finished buffer of ``layer_id``, or ``None``."""
+        ...  # pragma: no cover - protocol
+
+    def store(self, layer_id: str, pixels: memoryview) -> None:
+        """Offer the finished buffer of ``layer_id`` (copy it to keep it)."""
+        ...  # pragma: no cover - protocol
+
+
+def _reused(buffers: LayerBuffers | None, node: Layer, shape: tuple[int, ...]) -> Pixels | None:
+    """A read-only view of the stored buffer of ``node``, or ``None``."""
+    if buffers is None:
+        return None
+    stored = buffers.lookup(node.id)
+    if stored is None:
+        return None
+    if type(stored) is not bytes:
+        raise RuntimeError("a layer buffer store returned a value that is not bytes")
+    if len(stored) != shape[0] * shape[1] * shape[2]:
+        raise RuntimeError("a layer buffer store returned bytes of another size")
+    return np.frombuffer(stored, dtype=np.uint8).reshape(shape)  # read-only: bytes
+
+
 def _compose_into(
-    target: Pixels, nodes: tuple[Node, ...], dimensions: Dimensions, deadline: Deadline | None
+    target: Pixels,
+    nodes: tuple[Node, ...],
+    dimensions: Dimensions,
+    deadline: Deadline | None,
+    buffers: LayerBuffers | None = None,
 ) -> None:
     """Composite ``nodes`` bottom to top onto ``target`` (group depth <= 16)."""
     pixels = tile_pixels(dimensions)
@@ -407,9 +453,14 @@ def _compose_into(
             continue
         if deadline is not None:
             deadline.checkpoint("compose_node")
+        if isinstance(node, Layer):
+            reused = _reused(buffers, node, target.shape)
+            if reused is not None:
+                _composite(target, reused, node.opacity, pixels)
+                continue
         buffer = np.zeros(target.shape, dtype=np.uint8)
         if isinstance(node, Group):
-            _compose_into(buffer, node.children, dimensions, deadline)
+            _compose_into(buffer, node.children, dimensions, deadline, buffers)
         else:
             for fill in node.fills:
                 if deadline is not None:
@@ -421,18 +472,28 @@ def _compose_into(
                     continue  # an empty mask hides the whole layer: nothing to composite
                 _clear_outside(buffer, mask)
                 del mask
+            if buffers is not None:
+                buffers.store(node.id, memoryview(buffer).toreadonly())
         _composite(target, buffer, node.opacity, pixels)
         del buffer
 
 
-def compose(tree: LayerTree, *, limits: RenderLimits, deadline: Deadline | None = None) -> Canvas:
+def compose(
+    tree: LayerTree,
+    *,
+    limits: RenderLimits,
+    deadline: Deadline | None = None,
+    buffers: LayerBuffers | None = None,
+) -> Canvas:
     """Composite ``tree`` onto a transparent canvas; budget checked before allocating.
 
     Raises :class:`BudgetExceeded` (resources ``canvas_dimension``, ``canvas_area``,
     ``frame_pixels``, ``layers``, ``operations``, ``pixel_visits``, ``buffer_bytes``)
     from :func:`composition_cost` before any buffer exists. ``deadline`` is checked
     before each visible node, each fill and each semantic mask node; deferred masks
-    are built one at a time, after that check.
+    are built one at a time, after that check. ``buffers`` (optional) reuses and
+    receives finished layer buffers (:class:`LayerBuffers`); a reused layer builds no
+    fill and no mask, and gives the same pixels.
     """
     if not isinstance(limits, RenderLimits):
         raise TypeError("limits must be a RenderLimits value")
@@ -440,5 +501,5 @@ def compose(tree: LayerTree, *, limits: RenderLimits, deadline: Deadline | None 
     _check_budget(tree, cost, limits)
     dimensions = tree.dimensions
     root = np.zeros((dimensions.height, dimensions.width, RGBA_BYTES), dtype=np.uint8)
-    _compose_into(root, tree.children, dimensions, deadline)
+    _compose_into(root, tree.children, dimensions, deadline, buffers)
     return Canvas.from_array(root, limits=limits)

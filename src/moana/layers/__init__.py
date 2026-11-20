@@ -7,7 +7,8 @@ their children in an isolated buffer and apply their opacity once. Only the
 :class:`DeferredMask` lets ``render`` rasterise one operation at a time during
 composition (ADR-018). A layer may carry a semantic mask, a DAG of
 :class:`MaskShape` leaves and :class:`MaskCombination` nodes in canvas coordinates
-that clips the layer before it is composited (ADR-022).
+that clips the layer before it is composited (ADR-022). :func:`compose` can reuse
+finished layer buffers through a :class:`LayerBuffers` store (ADR-038).
 """
 
 from moana.layers.composite import (
@@ -16,6 +17,7 @@ from moana.layers.composite import (
     MAX_TILE_PIXELS,
     TILE_ROWS,
     CompositionCost,
+    LayerBuffers,
     MaskCost,
     compose,
     composition_cost,
@@ -50,6 +52,7 @@ __all__ = [
     "Fill",
     "Group",
     "Layer",
+    "LayerBuffers",
     "LayerTree",
     "MaskCombination",
     "MaskCost",

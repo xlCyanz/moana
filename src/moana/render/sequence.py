@@ -37,7 +37,13 @@ from moana.core.budget import DEFAULT_RENDER_LIMITS, Deadline, RenderLimits
 from moana.core.errors import BudgetExceeded, ErrorDetail
 from moana.core.ids import is_id
 from moana.render.budget import MAX_FRAMES, CostEstimate, plan_budget
-from moana.render.pipeline import _check_renderable, _check_request, _render_validated
+from moana.render.cache import RenderCache
+from moana.render.pipeline import (
+    _check_cache,
+    _check_renderable,
+    _check_request,
+    _render_validated,
+)
 from moana.render.result import RenderResult
 from moana.schema import Document, normalize_document, validate_document
 
@@ -172,6 +178,7 @@ def render_admitted(
     estimate: CostEstimate,
     limits: RenderLimits | None = None,
     deadline: Deadline | None = None,
+    cache: RenderCache | None = None,
 ) -> RenderResult:
     """Validate and render one frame document admitted with ``estimate``.
 
@@ -179,8 +186,10 @@ def render_admitted(
     again (checking the cooperative ``deadline`` first, stage ``validate_frame``)
     and planned again; an estimate different from the admitted one is a programming
     error (``ValueError``): the caller rendered another document than it admitted.
+    ``cache`` (optional, ADR-038) reuses finished layer buffers, also between frames.
     """
     request_limits = _check_request(document, limits, deadline)
+    cache = _check_cache(cache)
     if type(frame_id) is not str or not is_id(frame_id):
         raise TypeError("frame_id must be an ID str")
     if not isinstance(estimate, CostEstimate):
@@ -191,7 +200,9 @@ def render_admitted(
     backend = _check_renderable(validated)
     if plan_budget(validated, request_limits, deadline=deadline) != estimate:
         raise ValueError("the document is not the one admitted with this estimate")
-    return _render_validated(validated, frame_id, request_limits, deadline, backend, estimate)
+    return _render_validated(
+        validated, frame_id, request_limits, deadline, backend, estimate, cache
+    )
 
 
 def _pairs(frames: object) -> tuple[tuple[str, Document], ...]:
@@ -219,6 +230,7 @@ def render_sequence(
     *,
     limits: RenderLimits | None = None,
     deadline: Deadline | None = None,
+    cache: RenderCache | None = None,
 ) -> tuple[RenderResult, ...]:
     """Render ``(frame_id, document)`` pairs, admitted together, in the given order.
 
@@ -227,9 +239,10 @@ def render_sequence(
     admitted with :func:`admit_sequence` and only then is each frame validated again
     and rendered; no validated copy is kept between the passes. Raises
     ``ValidationError``, ``ReferenceError``, ``UnsupportedOperation`` or
-    ``BudgetExceeded``.
+    ``BudgetExceeded``. ``cache`` (optional, ADR-038) is passed to every frame.
     """
     pairs = _pairs(frames)
+    cache = _check_cache(cache)
     estimates: list[CostEstimate] = []
     for index, (_, document) in enumerate(pairs):
         _check_request(document, limits, deadline)
@@ -241,7 +254,12 @@ def render_sequence(
     admit_sequence(estimates, limits=limits)
     return tuple(
         render_admitted(
-            document, frame_id=frame_id, estimate=estimate, limits=limits, deadline=deadline
+            document,
+            frame_id=frame_id,
+            estimate=estimate,
+            limits=limits,
+            deadline=deadline,
+            cache=cache,
         )
         for (frame_id, document), estimate in zip(pairs, estimates, strict=True)
     )
