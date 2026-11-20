@@ -39,12 +39,12 @@ El digest del corpus (`corpus_digest`) cubre el nombre y los bytes canónicos de
 
 ## Resultados
 
-`results/` guarda líneas base revisadas, nombradas por plataforma y nunca por máquina o usuario (p. ej. `macos-arm64-py312`). El `.md` se genera siempre desde el JSON canónico y una prueba comprueba que se regenera idéntico. La línea base actual se midió sobre el commit indicado con el trabajo de MOANA-031 todavía sin commit, por eso registra `dirty: true`; conviene repetirla tras integrar el cambio.
+`results/` guarda líneas base revisadas, nombradas por plataforma y nunca por máquina o usuario (p. ej. `macos-arm64-py312`). El `.md` se genera siempre desde el JSON canónico y una prueba comprueba que se regenera idéntico. La línea base actual (`macos-arm64-py312`) se midió el 2026-11-20 sobre `develop` limpio en `1d54429` (`dirty: false`, paquete `0.1.0rc1`), después de la caché opcional de MOANA-032 y del índice incremental de MOANA-036: render estático 30,3 ms, animación de 16 frames 662,7 ms (medianas) y pico de proceso máximo 62,5 MiB. Frente a la anterior (MOANA-031, árbol modificado) `compare` sólo marcó `encode_png` de `corpus/chest` y `corpus/stone-tile` (subidas de 0,06 y 0,03 ms sobre medianas por debajo de 1 ms); una repetición controlada de esos casos dio 0,16 y 0,09 ms, iguales a la línea base anterior, así que es ruido.
 
 ## Límites
 
 - En Windows no existe `resource`: el pico RSS queda `null` con su motivo y el objetivo de 256 MiB queda `null` (desconocido).
-- `tracemalloc` ve el heap de Python y los buffers de NumPy, pero no la memoria nativa de Pillow, aggdraw ni del intérprete; el RSS sí, junto con todo lo importado (~57 MiB tras los imports en la línea base).
+- `tracemalloc` ve el heap de Python y los buffers de NumPy, pero no la memoria nativa de Pillow, aggdraw ni del intérprete; el RSS sí, junto con todo lo importado (~53 MiB tras los imports en la línea base).
 - Los runners compartidos de CI tienen ruido de vecinos, escalado de frecuencia y caché térmica; sus números no son comparables con una máquina local y no deben usarse como gate.
 - El envoltorio contador y el `Deadline` contador añaden un coste mínimo (cientos de llamadas de Python por render) dentro de la muestra.
 - Un usuario o hostname que coincida con una palabra completa de un valor de `environment` (p. ej. `Apple` en `Apple M4`) se informa como fuga: no puede distinguirse de una real.

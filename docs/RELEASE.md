@@ -121,7 +121,7 @@ Los codecs APNG y WebP son opcionales: su disponibilidad depende del build de Pi
 | JSON Schema | `schemas/` coincide con los modelos | `uv run python scripts/generate_schema.py --check` |
 | Seguridad | suite adversaria por frontera de [SECURITY_MODEL.md](architecture/SECURITY_MODEL.md) | `uv run pytest tests/security -q` |
 | Determinismo | manifiesto RGBA revisado entre procesos; comparación entre plataformas en la matriz de CI de `main` | `uv run python -m scripts.determinism report --output artifacts/determinism` |
-| Rendimiento | línea base informativa de MOANA.md §22 en [tests/benchmarks/results](../tests/benchmarks/results/macos-arm64-py312.md) (medida con `0.1.0.dev0` en MOANA-031, commit `26756e4`, antes de la caché de render de MOANA-032; esa caché es opcional y la comparación de benchmark de MOANA-032 mostró el camino por defecto sin cambios) | `uv run python -m tests.benchmarks run` y `compare` |
+| Rendimiento | línea base informativa de MOANA.md §22 en [tests/benchmarks/results](../tests/benchmarks/results/macos-arm64-py312.md) (regenerada con `0.1.0rc1` sobre `develop` limpio en `1d54429`, tras MOANA-032 y MOANA-036: render estático 30,3 ms, animación de 16 frames 662,7 ms, pico de proceso 62,5 MiB; todos los objetivos se cumplen) | `uv run python -m tests.benchmarks run` y `compare` |
 
 CI remoto (matriz `ubuntu/macos/windows × Python 3.12–3.14` más comparación de determinismo, lanzada con `workflow_dispatch`):
 
