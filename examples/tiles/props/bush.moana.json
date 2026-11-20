@@ -1,0 +1,79 @@
+{
+  "schema_version": "1.0",
+  "id": "prop_bush",
+  "revision": 0,
+  "seed": 3401,
+  "canvas": {"width": 16, "height": 16, "profile": "strict"},
+  "palette": {
+    "id": "palette_meadow",
+    "colors": [
+      {"id": "ink", "rgba": "#241E2AFF"},
+      {"id": "grass_0", "rgba": "#2C5536FF"},
+      {"id": "grass_1", "rgba": "#3D773EFF"},
+      {"id": "grass_2", "rgba": "#5B9845FF"},
+      {"id": "grass_3", "rgba": "#91C35EFF"},
+      {"id": "dirt_0", "rgba": "#5A3D2EFF"},
+      {"id": "dirt_1", "rgba": "#80573AFF"},
+      {"id": "dirt_2", "rgba": "#A4794DFF"},
+      {"id": "dirt_3", "rgba": "#C8A26AFF"},
+      {"id": "stone_0", "rgba": "#4A465EFF"},
+      {"id": "stone_1", "rgba": "#747086FF"},
+      {"id": "stone_2", "rgba": "#A5A2ABFF"},
+      {"id": "stone_3", "rgba": "#D8D6CFFF"},
+      {"id": "berry", "rgba": "#E8705AFF"}
+    ],
+    "ramps": [
+      {"id": "grass_ramp", "colors": ["grass_0", "grass_1", "grass_2", "grass_3"]},
+      {"id": "dirt_ramp", "colors": ["dirt_0", "dirt_1", "dirt_2", "dirt_3"]},
+      {"id": "stone_ramp", "colors": ["stone_0", "stone_1", "stone_2", "stone_3"]}
+    ]
+  },
+  "masks": [
+    {"id": "lobe_0_m", "type": "ellipse", "box": [1, 6, 9, 14]},
+    {"id": "lobe_1_m", "type": "ellipse", "box": [5, 2, 13, 11]},
+    {"id": "lobe_2_m", "type": "ellipse", "box": [7, 6, 15, 14]},
+    {"id": "body_m", "type": "union", "masks": ["lobe_0_m", "lobe_1_m", "lobe_2_m"]},
+    {"id": "berries_m", "type": "rect", "box": [5, 4, 13, 12]}
+  ],
+  "regions": [
+    {"id": "foliage", "mask_id": "body_m", "operation_ids": ["lobe_1_shadow", "lobe_1_mid", "lobe_1", "lobe_0_shadow", "lobe_0_mid", "lobe_0", "lobe_2_shadow", "lobe_2_mid", "lobe_2", "lobe_join", "light_0", "light_1", "light_2"]},
+    {"id": "berries", "mask_id": "berries_m", "operation_ids": ["berry_a", "berry_b", "berry_c"]}
+  ],
+  "layers": [
+    {
+      "id": "main",
+      "name": "Arbusto",
+      "operations": [
+        {"id": "shadow", "type": "ellipse", "box": [4, 12, 16, 16], "color": "grass_0"},
+        {"id": "outline", "type": "outline", "mask_id": "body_m", "width": 1, "side": "outer", "color": "ink"},
+        {"id": "lobe_1_shadow", "type": "ellipse", "box": [5, 2, 13, 11], "color": "grass_0"},
+        {"id": "lobe_1_mid", "type": "ellipse", "box": [5, 2, 12, 10], "color": "grass_1"},
+        {"id": "lobe_1", "type": "ellipse", "box": [5, 2, 11, 8], "color": "grass_2"},
+        {"id": "lobe_0_shadow", "type": "ellipse", "box": [1, 6, 9, 14], "color": "grass_0"},
+        {"id": "lobe_0_mid", "type": "ellipse", "box": [1, 6, 8, 13], "color": "grass_1"},
+        {"id": "lobe_0", "type": "ellipse", "box": [1, 6, 7, 11], "color": "grass_2"},
+        {"id": "lobe_2_shadow", "type": "ellipse", "box": [7, 6, 15, 14], "color": "grass_0"},
+        {"id": "lobe_2_mid", "type": "ellipse", "box": [7, 6, 14, 13], "color": "grass_1"},
+        {"id": "lobe_2", "type": "ellipse", "box": [7, 6, 13, 11], "color": "grass_2"},
+        {"id": "lobe_join", "type": "pixel", "at": [6, 6], "color": "grass_2"},
+        {"id": "light_0", "type": "rect", "box": [2, 7, 4, 8], "color": "grass_3"},
+        {"id": "light_1", "type": "rect", "box": [6, 3, 9, 4], "color": "grass_3"},
+        {"id": "light_2", "type": "rect", "box": [8, 7, 10, 8], "color": "grass_3"},
+        {"id": "berry_a", "type": "rect", "box": [3, 11, 5, 12], "color": "berry"},
+        {"id": "berry_b", "type": "rect", "box": [10, 9, 12, 10], "color": "berry"},
+        {"id": "berry_c", "type": "rect", "box": [12, 12, 13, 14], "color": "berry"}
+      ]
+    }
+  ],
+  "metadata": {
+    "title": "Arbusto (prop MOANA-034)",
+    "description": "Arbusto de 16 x 16 de tres lóbulos con luz noroeste, bayas y contorno de tinta; pivote (8, 15) en el suelo.",
+    "author": "Agente de IA de programación bajo la dirección del usuario del repositorio",
+    "tags": [
+      "tiles",
+      "prop",
+      "MOANA-034"
+    ],
+    "provenance": "Fuente propia creada por un agente de IA con operaciones de Moana en este repositorio (MOANA-034); sin assets externos. Licencia: PENDIENTE (la decide el propietario). Revisión artística humana: PENDIENTE."
+  }
+}

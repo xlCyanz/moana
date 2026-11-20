@@ -1,0 +1,68 @@
+{
+  "format": "moana-tile-layout/1",
+  "id": "meadow",
+  "scene": "meadow.moana.json",
+  "document_id": "scene_meadow",
+  "seed": 3401,
+  "tile_size": [16, 16],
+  "pattern_origin": [0, 0],
+  "sources": [
+    {"id": "grass", "kind": "tile", "path": "tiles/grass.moana.json", "pivot": [0, 0], "edges": {"n": "grass*16", "e": "grass*16", "s": "grass*16", "w": "grass*16"}, "border_operations": ["fill"]},
+    {"id": "grass_b", "kind": "tile", "path": "tiles/grass-b.moana.json", "pivot": [0, 0], "edges": {"n": "grass*16", "e": "grass*16", "s": "grass*16", "w": "grass*16"}, "border_operations": ["fill"]},
+    {"id": "dirt", "kind": "tile", "path": "tiles/dirt.moana.json", "pivot": [0, 0], "edges": {"n": "dirt*16", "e": "dirt*16", "s": "dirt*16", "w": "dirt*16"}, "border_operations": ["fill"]},
+    {"id": "dirt_b", "kind": "tile", "path": "tiles/dirt-b.moana.json", "pivot": [0, 0], "edges": {"n": "dirt*16", "e": "dirt*16", "s": "dirt*16", "w": "dirt*16"}, "border_operations": ["fill"]},
+    {"id": "dirt_c", "kind": "tile", "path": "tiles/dirt-c.moana.json", "pivot": [0, 0], "edges": {"n": "dirt*16", "e": "dirt*16", "s": "dirt*16", "w": "dirt*16"}, "border_operations": ["fill"]},
+    {"id": "edge_n", "kind": "tile", "path": "tiles/grass-dirt-edge.moana.json", "pivot": [0, 0], "edges": {"n": "grass*16", "e": "grass*10+dirt*6", "s": "dirt*16", "w": "grass*10+dirt*6"}, "border_operations": ["fill", "grass_run_0", "grass_run_1", "grass_run_2", "grass_run_3", "lip_0", "lip_3"]},
+    {"id": "edge_nb", "kind": "tile", "path": "tiles/grass-dirt-edge-b.moana.json", "pivot": [0, 0], "edges": {"n": "grass*16", "e": "grass*10+dirt*6", "s": "dirt*16", "w": "grass*10+dirt*6"}, "border_operations": ["fill", "grass_run_0", "grass_run_1", "grass_run_2", "grass_run_3", "grass_run_4", "lip_0", "lip_4"]},
+    {"id": "edge_s", "kind": "tile", "path": "tiles/grass-dirt-edge-s.moana.json", "pivot": [0, 0], "edges": {"n": "dirt*16", "e": "dirt*6+grass*10", "s": "grass*16", "w": "dirt*6+grass*10"}, "border_operations": ["fill", "grass_run_0", "grass_run_1", "grass_run_2", "grass_run_3", "grass_run_4", "lip_0", "lip_4"]},
+    {"id": "rock", "kind": "prop", "path": "props/rock.moana.json", "pivot": [8, 15]},
+    {"id": "bush", "kind": "prop", "path": "props/bush.moana.json", "pivot": [8, 15]},
+    {"id": "sign", "kind": "prop", "path": "props/sign.moana.json", "pivot": [8, 15]}
+  ],
+  "variants": [
+    {"id": "grass", "source": "grass", "transform": "none"},
+    {"id": "grass_mx", "source": "grass", "transform": "mirror_x"},
+    {"id": "grass_b", "source": "grass_b", "transform": "none"},
+    {"id": "grass_b_mx", "source": "grass_b", "transform": "mirror_x"},
+    {"id": "dirt", "source": "dirt", "transform": "none"},
+    {"id": "dirt_b", "source": "dirt_b", "transform": "none"},
+    {"id": "dirt_c", "source": "dirt_c", "transform": "none"},
+    {"id": "dirt_c_mx", "source": "dirt_c", "transform": "mirror_x"},
+    {"id": "edge_n", "source": "edge_n", "transform": "none"},
+    {"id": "edge_n_mx", "source": "edge_n", "transform": "mirror_x"},
+    {"id": "edge_nb", "source": "edge_nb", "transform": "none"},
+    {"id": "edge_nb_mx", "source": "edge_nb", "transform": "mirror_x"},
+    {"id": "edge_s", "source": "edge_s", "transform": "none"},
+    {"id": "edge_s_mx", "source": "edge_s", "transform": "mirror_x"},
+    {"id": "rock", "source": "rock", "transform": "none"},
+    {"id": "bush", "source": "bush", "transform": "none"},
+    {"id": "sign", "source": "sign", "transform": "none"}
+  ],
+  "grid": [
+    ["grass", "grass_b", "grass_mx", "grass", "grass_b_mx", "grass_b", "grass_mx", "grass_b_mx"],
+    ["grass_b_mx", "grass_mx", "grass_b", "grass_b_mx", "grass", "grass_mx", "grass_b", "grass"],
+    ["grass_mx", "grass", "grass_b_mx", "grass_b", "grass_mx", "grass", "grass", "grass_b"],
+    ["edge_n", "edge_nb", "edge_n_mx", "edge_nb_mx", "edge_n", "edge_nb_mx", "edge_nb", "edge_n_mx"],
+    ["dirt", "dirt_c", "dirt_b", "dirt_c_mx", "dirt", "dirt_b", "dirt_c", "dirt_c_mx"],
+    ["edge_s", "edge_s_mx", "edge_s_mx", "edge_s", "edge_s", "edge_s_mx", "edge_s", "edge_s_mx"],
+    ["grass_b", "grass_mx", "grass", "grass_b_mx", "grass_mx", "grass_b", "grass_b_mx", "grass"],
+    ["grass", "grass_b_mx", "grass_b", "grass_mx", "grass", "grass_b_mx", "grass_mx", "grass_b"]
+  ],
+  "props": [
+    {"id": "prop_rock", "variant": "rock", "at": [104, 25]},
+    {"id": "prop_sign", "variant": "sign", "at": [43, 46]},
+    {"id": "prop_bush_west", "variant": "bush", "at": [18, 119]},
+    {"id": "prop_bush_east", "variant": "bush", "at": [108, 115]}
+  ],
+  "metadata": {
+    "title": "Prado modular (MOANA-034)",
+    "description": "Escena de 128 x 128: rejilla de 8 x 8 tiles de 16 x 16 (dos hierbas, tres tierras y tres bordes, con espejos horizontales) con roca, cartel y dos arbustos. Derivada de meadow.layout.json con scripts/tiles.py build; origen de patrón común (0, 0).",
+    "author": "Agente de IA de programación bajo la dirección del usuario del repositorio",
+    "tags": [
+      "tiles",
+      "scene",
+      "MOANA-034"
+    ],
+    "provenance": "Fuente propia creada por un agente de IA con operaciones de Moana en este repositorio (MOANA-034); instancias de los tiles y props de examples/tiles, sin assets externos. Licencia: PENDIENTE (la decide el propietario). Revisión artística humana: PENDIENTE."
+  }
+}

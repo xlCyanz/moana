@@ -1,6 +1,6 @@
 # Inventario del repositorio
 
-542 archivos actuales de fuente, documentación, configuración y pruebas al 2026-11-20. Incluye cambios locales todavía sin commit. Excluye entorno virtual, herramientas, cachés, artefactos y metadata Git.
+558 archivos actuales de fuente, documentación, configuración y pruebas al 2026-11-20. Incluye cambios locales todavía sin commit. Excluye entorno virtual, herramientas, cachés, artefactos y metadata Git.
 
 | Archivo |
 | --- |
@@ -256,6 +256,20 @@
 | [examples/specs/path-sail.moana.json](../examples/specs/path-sail.moana.json) |
 | [examples/specs/recolor.edit.json](../examples/specs/recolor.edit.json) |
 | [examples/specs/shaded-orb.moana.json](../examples/specs/shaded-orb.moana.json) |
+| [examples/tiles/README.md](../examples/tiles/README.md) |
+| [examples/tiles/meadow.layout.json](../examples/tiles/meadow.layout.json) |
+| [examples/tiles/meadow.moana.json](../examples/tiles/meadow.moana.json) |
+| [examples/tiles/props/bush.moana.json](../examples/tiles/props/bush.moana.json) |
+| [examples/tiles/props/rock.moana.json](../examples/tiles/props/rock.moana.json) |
+| [examples/tiles/props/sign.moana.json](../examples/tiles/props/sign.moana.json) |
+| [examples/tiles/tiles/dirt-b.moana.json](../examples/tiles/tiles/dirt-b.moana.json) |
+| [examples/tiles/tiles/dirt-c.moana.json](../examples/tiles/tiles/dirt-c.moana.json) |
+| [examples/tiles/tiles/dirt.moana.json](../examples/tiles/tiles/dirt.moana.json) |
+| [examples/tiles/tiles/grass-b.moana.json](../examples/tiles/tiles/grass-b.moana.json) |
+| [examples/tiles/tiles/grass-dirt-edge-b.moana.json](../examples/tiles/tiles/grass-dirt-edge-b.moana.json) |
+| [examples/tiles/tiles/grass-dirt-edge-s.moana.json](../examples/tiles/tiles/grass-dirt-edge-s.moana.json) |
+| [examples/tiles/tiles/grass-dirt-edge.moana.json](../examples/tiles/tiles/grass-dirt-edge.moana.json) |
+| [examples/tiles/tiles/grass.moana.json](../examples/tiles/tiles/grass.moana.json) |
 | [examples/tutorial/potion-recolor.edit.json](../examples/tutorial/potion-recolor.edit.json) |
 | [examples/tutorial/potion-typo.edit.json](../examples/tutorial/potion-typo.edit.json) |
 | [examples/tutorial/potion.moana.json](../examples/tutorial/potion.moana.json) |
@@ -275,6 +289,7 @@
 | [scripts/planning.py](../scripts/planning.py) |
 | [scripts/run_hook.sh](../scripts/run_hook.sh) |
 | [scripts/templates/agent_guide.md](../scripts/templates/agent_guide.md) |
+| [scripts/tiles.py](../scripts/tiles.py) |
 | [scripts/tutorial.py](../scripts/tutorial.py) |
 | [scripts/uv.sh](../scripts/uv.sh) |
 | [scripts/validate.py](../scripts/validate.py) |
@@ -414,6 +429,7 @@
 | [tests/integration/test_quality_examples.py](../tests/integration/test_quality_examples.py) |
 | [tests/integration/test_render_determinism.py](../tests/integration/test_render_determinism.py) |
 | [tests/integration/test_spritesheet_animation.py](../tests/integration/test_spritesheet_animation.py) |
+| [tests/integration/test_tile_scene.py](../tests/integration/test_tile_scene.py) |
 | [tests/security/README.md](../tests/security/README.md) |
 | [tests/security/__init__.py](../tests/security/__init__.py) |
 | [tests/security/corpus.py](../tests/security/corpus.py) |

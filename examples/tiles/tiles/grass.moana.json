@@ -1,0 +1,78 @@
+{
+  "schema_version": "1.0",
+  "id": "tile_grass",
+  "revision": 0,
+  "seed": 3401,
+  "canvas": {"width": 16, "height": 16, "profile": "strict"},
+  "palette": {
+    "id": "palette_meadow",
+    "colors": [
+      {"id": "ink", "rgba": "#241E2AFF"},
+      {"id": "grass_0", "rgba": "#2C5536FF"},
+      {"id": "grass_1", "rgba": "#3D773EFF"},
+      {"id": "grass_2", "rgba": "#5B9845FF"},
+      {"id": "grass_3", "rgba": "#91C35EFF"},
+      {"id": "dirt_0", "rgba": "#5A3D2EFF"},
+      {"id": "dirt_1", "rgba": "#80573AFF"},
+      {"id": "dirt_2", "rgba": "#A4794DFF"},
+      {"id": "dirt_3", "rgba": "#C8A26AFF"},
+      {"id": "stone_0", "rgba": "#4A465EFF"},
+      {"id": "stone_1", "rgba": "#747086FF"},
+      {"id": "stone_2", "rgba": "#A5A2ABFF"},
+      {"id": "stone_3", "rgba": "#D8D6CFFF"},
+      {"id": "berry", "rgba": "#E8705AFF"}
+    ],
+    "ramps": [
+      {"id": "grass_ramp", "colors": ["grass_0", "grass_1", "grass_2", "grass_3"]},
+      {"id": "dirt_ramp", "colors": ["dirt_0", "dirt_1", "dirt_2", "dirt_3"]},
+      {"id": "stone_ramp", "colors": ["stone_0", "stone_1", "stone_2", "stone_3"]}
+    ]
+  },
+  "masks": [
+    {"id": "light_0", "type": "rect", "box": [2, 1, 6, 4]},
+    {"id": "light_1", "type": "rect", "box": [1, 2, 7, 3]},
+    {"id": "light_2", "type": "rect", "box": [10, 6, 13, 9]},
+    {"id": "light_3", "type": "rect", "box": [9, 7, 14, 8]},
+    {"id": "light_4", "type": "rect", "box": [12, 12, 16, 14]},
+    {"id": "light_5", "type": "rect", "box": [0, 12, 2, 14]},
+    {"id": "light_m", "type": "union", "masks": ["light_0", "light_1", "light_2", "light_3", "light_4", "light_5"]},
+    {"id": "dark_0", "type": "rect", "box": [5, 10, 8, 13]},
+    {"id": "dark_1", "type": "rect", "box": [4, 11, 8, 12]},
+    {"id": "dark_m", "type": "union", "masks": ["dark_0", "dark_1"]},
+    {"id": "texture_m", "type": "union", "masks": ["light_m", "dark_m"]}
+  ],
+  "regions": [
+    {"id": "texture", "mask_id": "texture_m", "operation_ids": ["light_patches", "dark_patch"]}
+  ],
+  "layers": [
+    {
+      "id": "main",
+      "name": "Hierba",
+      "operations": [
+        {"id": "fill", "type": "rect", "box": [0, 0, 16, 16], "color": "grass_1"},
+        {"id": "light_patches", "type": "dither", "size": 2, "coverage": 2, "origin": [0, 0], "color_a": "grass_1", "color_b": "grass_2", "mask_id": "light_m"},
+        {"id": "dark_patch", "type": "dither", "size": 2, "coverage": 2, "origin": [0, 0], "color_a": "grass_1", "color_b": "grass_0", "mask_id": "dark_m"},
+        {"id": "tuft_a_l", "type": "line", "start": [2, 6], "end": [3, 7], "color": "grass_3"},
+        {"id": "tuft_a_r", "type": "pixel", "at": [4, 6], "color": "grass_3"},
+        {"id": "tuft_a_base", "type": "rect", "box": [2, 8, 5, 9], "color": "grass_0"},
+        {"id": "tuft_b_l", "type": "line", "start": [11, 1], "end": [12, 2], "color": "grass_3"},
+        {"id": "tuft_b_r", "type": "pixel", "at": [13, 1], "color": "grass_3"},
+        {"id": "tuft_b_base", "type": "rect", "box": [11, 3, 14, 4], "color": "grass_0"},
+        {"id": "tuft_c_l", "type": "line", "start": [9, 11], "end": [10, 12], "color": "grass_3"},
+        {"id": "tuft_c_r", "type": "pixel", "at": [11, 11], "color": "grass_3"},
+        {"id": "tuft_c_base", "type": "rect", "box": [9, 13, 12, 14], "color": "grass_0"}
+      ]
+    }
+  ],
+  "metadata": {
+    "title": "Tile de hierba (MOANA-034)",
+    "description": "Tile repetible de 16 x 16: hierba con manchas de dithering anclado al origen de patrón común (0, 0) y tres matas que no tocan el borde.",
+    "author": "Agente de IA de programación bajo la dirección del usuario del repositorio",
+    "tags": [
+      "tiles",
+      "tile",
+      "MOANA-034"
+    ],
+    "provenance": "Fuente propia creada por un agente de IA con operaciones de Moana en este repositorio (MOANA-034); sin assets externos. Licencia: PENDIENTE (la decide el propietario). Revisión artística humana: PENDIENTE."
+  }
+}
