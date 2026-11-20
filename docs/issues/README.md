@@ -8,7 +8,7 @@ Prioridades: P0 fundamento/bloqueante; P1 funcionalidad central; P2 avanzada; P3
 
 [Roadmap](roadmap.md) · [Dependencias](dependency-map.md) · [Trazabilidad](traceability.md) · [Ciclo de vida](../guides/issue-lifecycle.md).
 
-Estados: {'blocked': 1, 'done': 34, 'review': 1}.
+Estados: {'done': 35, 'ready': 1}.
 
 | Issue | Resultado | Fase | Prioridad | Estado | Dependencias directas |
 | --- | --- | --- | --- | --- | --- |
@@ -46,5 +46,5 @@ Estados: {'blocked': 1, 'done': 34, 'review': 1}.
 | [MOANA-031](MOANA-031.md) | Medir rendimiento y memoria de referencia | P5 | P1 | done | MOANA-010, MOANA-022, MOANA-027 |
 | [MOANA-032](MOANA-032.md) | Optimizar caché y render incremental acotados | P5 | P2 | done | MOANA-018, MOANA-031 |
 | [MOANA-033](MOANA-033.md) | Documentar flujos IA y previews editables | P5 | P1 | done | MOANA-012, MOANA-018, MOANA-020, MOANA-026 |
-| [MOANA-034](MOANA-034.md) | Añadir ejemplos de tiles y escenarios modulares | P5 | P2 | review | MOANA-008, MOANA-016, MOANA-020, MOANA-023 |
-| [MOANA-035](MOANA-035.md) | Preparar release y comprobar Definition of Done | P5 | P1 | blocked | MOANA-007, MOANA-021, MOANA-023, MOANA-024, MOANA-025, MOANA-027, MOANA-029, MOANA-030, MOANA-032, MOANA-033, MOANA-034 |
+| [MOANA-034](MOANA-034.md) | Añadir ejemplos de tiles y escenarios modulares | P5 | P2 | done | MOANA-008, MOANA-016, MOANA-020, MOANA-023 |
+| [MOANA-035](MOANA-035.md) | Preparar release y comprobar Definition of Done | P5 | P1 | ready | MOANA-007, MOANA-021, MOANA-023, MOANA-024, MOANA-025, MOANA-027, MOANA-029, MOANA-030, MOANA-032, MOANA-033, MOANA-034 |
