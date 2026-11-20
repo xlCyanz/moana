@@ -8,12 +8,12 @@
 - Aliases históricos: MOA-028
 - Phase: P1
 - Priority: P1
-- Status: blocked
+- Status: done
 - Complexity: M (relativa, no estimación de tiempo)
 - Dependencies: [MOANA-004](MOANA-004.md)
 - Related modules: tests.visual
 - Requirements: R027 ([trazabilidad](traceability.md))
-- Bloqueo: Dependencias pendientes: MOANA-004
+- Bloqueo: Ninguno
 
 ## Context
 
@@ -43,13 +43,13 @@ No SSIM como criterio de aprobación ni corpus artístico completo.
 
 ## Acceptance criteria
 
-- [ ] AC1: Una diferencia de un píxel falla y genera bbox/conteo correctos
-- [ ] AC2: Una imagen idéntica pasa aunque los bytes comprimidos del PNG sean diferentes
+- [x] AC1: Una diferencia de un píxel falla y genera bbox/conteo correctos
+- [x] AC2: Una imagen idéntica pasa aunque los bytes comprimidos del PNG sean diferentes
 
 ## Required tests
 
-- [ ] T1: Tests del harness con píxel cambiado, dimensiones distintas y alfa cero
-- [ ] T2: Archivos de diagnóstico válidos y baseline intacto tras fallo; manejo de ruta con espacios
+- [x] T1: Tests del harness con píxel cambiado, dimensiones distintas y alfa cero
+- [x] T2: Archivos de diagnóstico válidos y baseline intacto tras fallo; manejo de ruta con espacios
 
 ## Expected deliverables
 
@@ -66,7 +66,7 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Guía para agentes de IA
 
-**Estado para agentes:** No empezar: estado `blocked`. Esperar a que [MOANA-004](MOANA-004.md) estén `done` y el catálogo marque este issue `ready`.
+**Estado para agentes:** Completado; usar sólo como referencia del contrato entregado.
 
 ### 1. Preparación
 
@@ -135,4 +135,13 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Evidence
 
-Pendiente de implementación.
+- tests/visual/harness.py: compare_rgba (unión anclada arriba-izquierda, alfa cero normalizado, conteo changed/only_in_one y bbox), diff_rgba, load_png vía canvas_from_pillow, write_png atómico 0644, assert_matches_golden con diagnósticos expected/actual/diff + manifest.json (moana-visual-diff/1, source opcional) en artifacts/visual/<nombre>, limpieza de diagnósticos previos y presupuesto check_canvas_budget antes de reservar.
+- Actualización de goldens sólo con MOANA_UPDATE_GOLDENS=1 o update=True explícito; rechazada siempre si CI está activo (guarda inmediatamente antes de escribir). Documentado en tests/visual/README.md y docs/guides/development.md.
+- Golden de referencia tests/visual/goldens/harness-reference-4x3.png construido a mano (oráculo independiente).
+- Gate: scripts/validate.py, scripts/check_wheel.py y pre-commit verdes; 51 pruebas visuales (marker visual), también con CI=true.
+- Revisión: moana-qa-engineer; corregidos guarda de CI saltable con update=True, diagnósticos obsoletos, permisos 0600, colisión de nombres entre subcarpetas, presupuesto de entradas y unión, y ambigüedad del negro en diff.png.
+- Aprobado por el propietario el 2026-11-17 tras revisión; PR #45 hacia develop.
+- AC1: tests/visual/test_visual_harness.py::test_one_changed_pixel_fails_with_hand_computed_bbox_and_count, ::test_failure_writes_valid_diagnostics_and_keeps_baseline.
+- AC2: tests/visual/test_visual_harness.py::test_same_pixels_pass_with_different_png_bytes.
+- T1: tests/visual/test_visual_harness.py::test_different_dimensions_fail_over_the_union, ::test_transposed_dimensions_with_same_pixel_count_fail, ::test_zero_alpha_with_residual_rgb_is_equal, ::test_dimension_mismatch_diagnostics, ::test_diff_outside_both_images_differs_from_unchanged_black, ::test_budget_is_checked_before_copying.
+- T2: tests/visual/test_visual_harness.py::test_failure_writes_valid_diagnostics_and_keeps_baseline (rutas con espacios), ::test_ci_never_writes_baseline_even_on_failure, ::test_ci_blocks_explicit_update_argument, ::test_ci_policy, ::test_update_needs_exactly_one, ::test_stale_diagnostics_are_replaced, ::test_default_names_do_not_collide_between_golden_subfolders, ::test_written_files_are_world_readable, ::test_reference_fixture_matches_committed_golden.

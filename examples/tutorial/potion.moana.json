@@ -1,0 +1,51 @@
+{
+  "schema_version": "1.0",
+  "id": "tutorial_potion",
+  "revision": 0,
+  "seed": 0,
+  "canvas": {"width": 16, "height": 16, "profile": "strict"},
+  "palette": {
+    "id": "palette_potion",
+    "colors": [
+      {"id": "ink", "rgba": "#1A1C2CFF"},
+      {"id": "glass", "rgba": "#94B0C2FF"},
+      {"id": "cork", "rgba": "#8B5A2BFF"},
+      {"id": "potion_red", "rgba": "#B13E53FF"},
+      {"id": "potion_green", "rgba": "#38B764FF"},
+      {"id": "shine", "rgba": "#F4F4F4FF"}
+    ],
+    "ramps": []
+  },
+  "masks": [
+    {"id": "liquid_shape", "type": "rect", "box": [5, 9, 11, 14]}
+  ],
+  "regions": [
+    {
+      "id": "potion_liquid",
+      "mask_id": "liquid_shape",
+      "operation_ids": ["liquid_fill", "liquid_shine"]
+    }
+  ],
+  "layers": [
+    {
+      "id": "bottle",
+      "name": "Frasco",
+      "operations": [
+        {"id": "neck_outline", "type": "rect", "box": [6, 1, 10, 6], "color": "ink"},
+        {"id": "neck_glass", "type": "rect", "box": [7, 3, 9, 6], "color": "glass"},
+        {"id": "cork_fill", "type": "rect", "box": [7, 1, 9, 3], "color": "cork"},
+        {"id": "body_outline", "type": "rect", "box": [4, 5, 12, 15], "color": "ink"},
+        {"id": "body_glass", "type": "rect", "box": [5, 6, 11, 14], "color": "glass"},
+        {"id": "glass_shine", "type": "rect", "box": [6, 7, 7, 8], "color": "shine"}
+      ]
+    },
+    {
+      "id": "liquid",
+      "name": "Poción",
+      "operations": [
+        {"id": "liquid_fill", "type": "rect", "box": [5, 9, 11, 14], "color": "potion_red"},
+        {"id": "liquid_shine", "type": "rect", "box": [6, 10, 7, 12], "color": "shine"}
+      ]
+    }
+  ]
+}

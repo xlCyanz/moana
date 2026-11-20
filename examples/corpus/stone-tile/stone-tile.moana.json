@@ -1,0 +1,112 @@
+{
+  "schema_version": "1.0",
+  "id": "corpus_stone_tile",
+  "revision": 0,
+  "seed": 1601,
+  "canvas": {"width": 16, "height": 16, "profile": "strict"},
+  "palette": {
+    "id": "palette_stone_tile",
+    "colors": [
+      {"id": "mortar", "rgba": "#2A2631FF"},
+      {"id": "stone_1", "rgba": "#56506AFF"},
+      {"id": "stone_2", "rgba": "#7A7590FF"},
+      {"id": "stone_3", "rgba": "#A6A3B8FF"},
+      {"id": "moss_green", "rgba": "#5E8C3FFF"}
+    ],
+    "ramps": [
+      {"id": "stone_ramp", "colors": ["stone_1", "stone_2", "stone_3"]}
+    ]
+  },
+  "masks": [
+    {"id": "b0a_m0", "type": "rect", "box": [0, 0, 7, 3]},
+    {"id": "b0b_m0", "type": "rect", "box": [8, 0, 15, 3]},
+    {"id": "b1a_m0", "type": "rect", "box": [4, 4, 11, 7]},
+    {"id": "b1b_m0", "type": "rect", "box": [12, 4, 16, 7]},
+    {"id": "b1b_m1", "type": "rect", "box": [0, 4, 3, 7]},
+    {"id": "b2a_m0", "type": "rect", "box": [0, 8, 5, 11]},
+    {"id": "b2b_m0", "type": "rect", "box": [6, 8, 15, 11]},
+    {"id": "b3a_m0", "type": "rect", "box": [4, 12, 11, 15]},
+    {"id": "b3b_m0", "type": "rect", "box": [12, 12, 16, 15]},
+    {"id": "b3b_m1", "type": "rect", "box": [0, 12, 3, 15]},
+    {"id": "bricks_m", "type": "union", "masks": ["b0a_m0", "b0b_m0", "b1a_m0", "b1b_m0", "b1b_m1", "b2a_m0", "b2b_m0", "b3a_m0", "b3b_m0", "b3b_m1"]},
+    {"id": "moss_m", "type": "rect", "box": [10, 6, 12, 8]}
+  ],
+  "regions": [
+    {"id": "bricks", "mask_id": "bricks_m", "operation_ids": ["b0a_face0", "b0a_top0", "b0a_bottom0", "b0a_left", "b0a_right", "b0b_face0", "b0b_top0", "b0b_bottom0", "b0b_left", "b0b_right", "b1a_face0", "b1a_top0", "b1a_bottom0", "b1a_left", "b1a_right", "b1b_face0", "b1b_face1", "b1b_top0", "b1b_bottom0", "b1b_top1", "b1b_bottom1", "b1b_left", "b1b_right", "b2a_face0", "b2a_top0", "b2a_bottom0", "b2a_left", "b2a_right", "b2b_face0", "b2b_top0", "b2b_bottom0", "b2b_left", "b2b_right", "b3a_face0", "b3a_top0", "b3a_bottom0", "b3a_left", "b3a_right", "b3b_face0", "b3b_face1", "b3b_top0", "b3b_bottom0", "b3b_top1", "b3b_bottom1", "b3b_left", "b3b_right", "chip_b0a", "chip_b1a", "chip_b2b", "chip_b3b"]},
+    {"id": "moss", "mask_id": "moss_m", "operation_ids": ["moss_low", "moss_high"]}
+  ],
+  "layers": [
+    {
+      "id": "wall",
+      "name": "Muro",
+      "operations": [
+        {"id": "mortar_fill", "type": "rect", "box": [0, 0, 16, 16], "color": "mortar"},
+        {"id": "b0a_face0", "type": "rect", "box": [0, 0, 7, 3], "color": "stone_2"},
+        {"id": "b0a_top0", "type": "rect", "box": [0, 0, 6, 1], "color": "stone_3"},
+        {"id": "b0a_bottom0", "type": "rect", "box": [1, 2, 7, 3], "color": "stone_1"},
+        {"id": "b0a_left", "type": "rect", "box": [0, 0, 1, 2], "color": "stone_3"},
+        {"id": "b0a_right", "type": "rect", "box": [6, 0, 7, 3], "color": "stone_1"},
+        {"id": "b0b_face0", "type": "rect", "box": [8, 0, 15, 3], "color": "stone_2"},
+        {"id": "b0b_top0", "type": "rect", "box": [8, 0, 14, 1], "color": "stone_3"},
+        {"id": "b0b_bottom0", "type": "rect", "box": [9, 2, 15, 3], "color": "stone_1"},
+        {"id": "b0b_left", "type": "rect", "box": [8, 0, 9, 2], "color": "stone_3"},
+        {"id": "b0b_right", "type": "rect", "box": [14, 0, 15, 3], "color": "stone_1"},
+        {"id": "b1a_face0", "type": "rect", "box": [4, 4, 11, 7], "color": "stone_2"},
+        {"id": "b1a_top0", "type": "rect", "box": [4, 4, 10, 5], "color": "stone_3"},
+        {"id": "b1a_bottom0", "type": "rect", "box": [5, 6, 11, 7], "color": "stone_1"},
+        {"id": "b1a_left", "type": "rect", "box": [4, 4, 5, 6], "color": "stone_3"},
+        {"id": "b1a_right", "type": "rect", "box": [10, 4, 11, 7], "color": "stone_1"},
+        {"id": "b1b_face0", "type": "rect", "box": [12, 4, 16, 7], "color": "stone_2"},
+        {"id": "b1b_face1", "type": "rect", "box": [0, 4, 3, 7], "color": "stone_2"},
+        {"id": "b1b_top0", "type": "rect", "box": [12, 4, 16, 5], "color": "stone_3"},
+        {"id": "b1b_bottom0", "type": "rect", "box": [13, 6, 16, 7], "color": "stone_1"},
+        {"id": "b1b_top1", "type": "rect", "box": [0, 4, 2, 5], "color": "stone_3"},
+        {"id": "b1b_bottom1", "type": "rect", "box": [0, 6, 3, 7], "color": "stone_1"},
+        {"id": "b1b_left", "type": "rect", "box": [12, 4, 13, 6], "color": "stone_3"},
+        {"id": "b1b_right", "type": "rect", "box": [2, 4, 3, 7], "color": "stone_1"},
+        {"id": "b2a_face0", "type": "rect", "box": [0, 8, 5, 11], "color": "stone_2"},
+        {"id": "b2a_top0", "type": "rect", "box": [0, 8, 4, 9], "color": "stone_3"},
+        {"id": "b2a_bottom0", "type": "rect", "box": [1, 10, 5, 11], "color": "stone_1"},
+        {"id": "b2a_left", "type": "rect", "box": [0, 8, 1, 10], "color": "stone_3"},
+        {"id": "b2a_right", "type": "rect", "box": [4, 8, 5, 11], "color": "stone_1"},
+        {"id": "b2b_face0", "type": "rect", "box": [6, 8, 15, 11], "color": "stone_2"},
+        {"id": "b2b_top0", "type": "rect", "box": [6, 8, 14, 9], "color": "stone_3"},
+        {"id": "b2b_bottom0", "type": "rect", "box": [7, 10, 15, 11], "color": "stone_1"},
+        {"id": "b2b_left", "type": "rect", "box": [6, 8, 7, 10], "color": "stone_3"},
+        {"id": "b2b_right", "type": "rect", "box": [14, 8, 15, 11], "color": "stone_1"},
+        {"id": "b3a_face0", "type": "rect", "box": [4, 12, 11, 15], "color": "stone_2"},
+        {"id": "b3a_top0", "type": "rect", "box": [4, 12, 10, 13], "color": "stone_3"},
+        {"id": "b3a_bottom0", "type": "rect", "box": [5, 14, 11, 15], "color": "stone_1"},
+        {"id": "b3a_left", "type": "rect", "box": [4, 12, 5, 14], "color": "stone_3"},
+        {"id": "b3a_right", "type": "rect", "box": [10, 12, 11, 15], "color": "stone_1"},
+        {"id": "b3b_face0", "type": "rect", "box": [12, 12, 16, 15], "color": "stone_2"},
+        {"id": "b3b_face1", "type": "rect", "box": [0, 12, 3, 15], "color": "stone_2"},
+        {"id": "b3b_top0", "type": "rect", "box": [12, 12, 16, 13], "color": "stone_3"},
+        {"id": "b3b_bottom0", "type": "rect", "box": [13, 14, 16, 15], "color": "stone_1"},
+        {"id": "b3b_top1", "type": "rect", "box": [0, 12, 2, 13], "color": "stone_3"},
+        {"id": "b3b_bottom1", "type": "rect", "box": [0, 14, 3, 15], "color": "stone_1"},
+        {"id": "b3b_left", "type": "rect", "box": [12, 12, 13, 14], "color": "stone_3"},
+        {"id": "b3b_right", "type": "rect", "box": [2, 12, 3, 15], "color": "stone_1"},
+        {"id": "chip_b0a", "type": "rect", "box": [2, 1, 4, 2], "color": "stone_1"},
+        {"id": "chip_b1a", "type": "rect", "box": [8, 5, 10, 6], "color": "stone_1"},
+        {"id": "chip_b2b", "type": "rect", "box": [12, 9, 14, 10], "color": "stone_1"},
+        {"id": "chip_b3b", "type": "rect", "box": [0, 13, 2, 14], "color": "stone_1"}
+      ]
+    },
+    {
+      "id": "moss_layer",
+      "name": "Musgo",
+      "operations": [
+        {"id": "moss_low", "type": "rect", "box": [10, 7, 12, 8], "color": "moss_green"},
+        {"id": "moss_high", "type": "pixel", "at": [10, 6], "color": "moss_green"}
+      ]
+    }
+  ],
+  "metadata": {
+    "title": "Tile de piedra (corpus MOANA-027, tile)",
+    "description": "Tile repetible de 16 x 16: muro de sillares en hiladas alternas con biselado por luz noroeste y musgo en una junta.",
+    "author": "Agente de IA de programación bajo la dirección del usuario del repositorio",
+    "tags": ["corpus", "tile", "MOANA-027"],
+    "provenance": "Fuente propia creada por un agente de IA con operaciones de Moana en este repositorio (MOANA-027); sin assets externos. Ver stone-tile.corpus.json. Revisión artística humana: PENDIENTE."
+  }
+}

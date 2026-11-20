@@ -76,7 +76,7 @@
       "id": "MOANA-001",
       "title": "Definir tipos, coordenadas, errores y límites",
       "phase": "P1",
-      "status": "ready",
+      "status": "done",
       "priority": "P0",
       "dependencies": [
         "MOANA-000"
@@ -100,7 +100,13 @@
         "Parametrizar extremos de rango, cajas negativas, bordes y tamaños 1/128/2048",
         "Propiedades de intersección: conmutatividad, contención y ausencia de expansión"
       ],
-      "evidence": [],
+      "evidence": [
+        "Implementación: src/moana/core/{__init__,coordinates,errors,limits}.py; decisión ADR-010.",
+        "uv run python scripts/validate.py: ruff, mypy estricto, check_repository y pytest verdes; core 100 % de ramas cubiertas.",
+        "uv run python scripts/check_wheel.py: wheel aislado importa moana.core.",
+        "Revisión por subagentes moana-python-engineer y moana-architect; hallazgos alto/medios corregidos (borde excluido +1, errores picklables con json_pointer, GeometryLimits, ADR).",
+        "Aprobado por el propietario el 2026-11-17 tras revisión; PR hacia develop."
+      ],
       "aliases": [
         "MOA-001"
       ],
@@ -122,14 +128,20 @@
         "Los bool son subclase de int; distinguirlos y definir el resultado vacío sin bbox inválida."
       ],
       "blocking_reason": null,
-      "acceptance_evidence": {},
-      "test_evidence": {}
+      "acceptance_evidence": {
+        "AC1": "tests/unit/core/test_core_coordinates.py::test_dimensions_out_of_range_fail, ::test_only_real_python_ints_are_coordinates y ::test_empty_or_inverted_box_fail: dimensión 0, bool/float/str/NumPy y cajas invertidas lanzan ValidationError (code VALIDATION_ERROR, context field/reason).",
+        "AC2": "Semántica en src/moana/core/coordinates.py, docs/architecture/module-contracts.md (core), ADR-010 y MOANA.md §5; tests ::test_unit_box_contains_exactly_one_pixel, ::test_canvas_box_and_clipping, ::test_intersection_of_touching_boxes_is_none; test_core_architecture.py prueba que core no importa NumPy/Pillow."
+      },
+      "test_evidence": {
+        "T1": "test_core_coordinates.py: tamaños 1/128/2048 y 2048×1, coordenadas ±1 048 576 y ±1 048 577, cajas negativas, bordes semiabiertos, rangos de esquinas y clip de caja máxima; test_core_limits.py: límites reducidos y píxeles en lienzos 1×1 y 2048.",
+        "T2": "test_core_coordinates.py con Hypothesis: intersección contra oráculo de conjuntos de píxeles (rango pequeño y cerca del máximo), conmutatividad, contención, no expansión, idempotencia y clip contra conjunto del lienzo."
+      }
     },
     {
       "id": "MOANA-002",
       "title": "Implementar documento Pydantic y JSON Schema",
       "phase": "P1",
-      "status": "blocked",
+      "status": "done",
       "priority": "P0",
       "dependencies": [
         "MOANA-001"
@@ -152,7 +164,14 @@
         "Tabla de entradas válidas/inválidas y equivalencia mapping/bytes",
         "Roundtrip modelo-JSON-modelo, fuzz acotado de profundidad y golden del schema con revisión de compatibilidad"
       ],
-      "evidence": [],
+      "evidence": [
+        "Implementación: src/moana/schema/{__init__,capabilities,models,document,_reader,_issues,_pointers}.py; ErrorDetail y MoanaError.details aditivos en core.errors; límites de cardinalidad §20 en core.limits; decisión ADR-011; MOANA.md 0.1.3-draft.",
+        "JSON Schema generado: schemas/moana-document-1.0.schema.json (scripts/generate_schema.py --check).",
+        "uv run python scripts/validate.py: lock, ruff, format, mypy estricto, check_repository, pytest y build verdes; moana.schema con 100 % de ramas cubiertas.",
+        "uv run python scripts/check_wheel.py: wheel aislado incluye moana/schema.",
+        "Revisión por subagentes moana-python-engineer y moana-architect: corregidos TypeError con blend no hashable, puntero del discriminador, orden numérico de duplicados, nombres largos fuera de punteros, límites movidos a core, metadata vacía como ausente, grupos como capacidad prevista, módulos internos privados y ADR ajustado.",
+        "Aprobado por el propietario el 2026-11-17 tras revisión; PR #40 hacia develop."
+      ],
       "aliases": [
         "MOA-002"
       ],
@@ -174,15 +193,21 @@
       "risks": [
         "Un esquema demasiado permisivo oculta instrucciones desconocidas; uno anticipado sin gramática inventa soporte."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-001",
-      "acceptance_evidence": {},
-      "test_evidence": {}
+      "blocking_reason": null,
+      "acceptance_evidence": {
+        "AC1": "tests/unit/schema/test_schema_document.py::test_minimal_example_normalises_to_published_snapshot (digest igual al base_snapshot de examples/specs/recolor.edit.json; normalizar dos veces es idempotente), ::test_normalisation_materialises_section_12_defaults; test_schema_roundtrip.py::test_schema_is_reproducible_and_versioned y ::test_generated_schema_matches_reviewed_golden ($id moana-document-1.0, generación reproducible igual al archivo versionado).",
+        "AC2": "test_schema_document.py::test_invalid_table_reports_code_pointer_and_reason: casos duplicate_operation_id e id_shared_by_color_and_layer (VALIDATION_ERROR, duplicate_id), unknown_color/layer_id_used_as_color/unknown_ramp_color (REFERENCE_ERROR, unknown_color), bool_as_integer/bool_in_box (int_type), extra_root_member/extra_operation_member (extra_forbidden), cada uno con json_pointer exacto, desde mapping y bytes."
+      },
+      "test_evidence": {
+        "T1": "test_schema_document.py: tabla VALID (8 casos) y INVALID (43 casos con code, pointer y reason esperados) ejecutada desde mapping y desde bytes con resultados y errores idénticos; test_schema_reader.py: límites de bytes/profundidad/nodos inclusivos, claves duplicadas con pointer, NaN/Infinity, BOM, UTF-8 inválido, escaneo lineal ante strings hostiles y equivalencia de profundidad mapping/bytes.",
+        "T2": "test_schema_roundtrip.py: roundtrip modelo→JSON canónico→modelo con Hypothesis (150 documentos), fuzz acotado de profundidad (200 árboles JSON arbitrarios con límite 1–12, sólo errores Moana), golden del JSON Schema con mensaje de revisión de compatibilidad y comprobación de miembros del ejemplo mínimo frente al schema publicado."
+      }
     },
     {
       "id": "MOANA-003",
       "title": "Aplicar presupuesto de trabajo y recursos",
       "phase": "P1",
-      "status": "blocked",
+      "status": "done",
       "priority": "P0",
       "dependencies": [
         "MOANA-001",
@@ -206,7 +231,13 @@
         "Instrumentar allocators falsos para comprobar ausencia de reservas al rechazar",
         "Casos de coordenadas enormes, capas profundas, muchos frames y overflow de productos"
       ],
-      "evidence": [],
+      "evidence": [
+        "Implementación: src/moana/core/budget.py (RenderLimits, Deadline), src/moana/render/{__init__,budget}.py (estimador budget-v1, plan_budget); decisión ADR-012; MOANA.md 0.1.4-draft.",
+        "uv run python scripts/validate.py: lock, ruff, format, mypy estricto, check_repository, pytest y build verdes; core/budget.py y render/budget.py con 100 % de ramas cubiertas.",
+        "uv run python scripts/check_wheel.py: wheel aislado incluye moana/render/budget.py.",
+        "Revisión por subagentes moana-python-engineer y moana-architect (incluye preguntas gráficas de cotas de raster/composición): corregidos tipado de la prueba de arquitectura, exhaustividad con assert_never, rechazo de conteos antes de costear, checkpoints cada 256 operaciones, validación de clock/stage, MAX_FRAMES=256 (§17) y ADR con temporales por filas/tiles, puerta única de límites y prohibición de host_override desde la petición.",
+        "Aprobado por el propietario el 2026-11-17 tras revisión; PR #41 hacia develop."
+      ],
       "aliases": [
         "MOA-003"
       ],
@@ -228,15 +259,21 @@
       "risks": [
         "Un timeout cooperativo no interrumpe una llamada C bloqueada; nunca presentarlo como aislamiento."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-001, MOANA-002",
-      "acceptance_evidence": {},
-      "test_evidence": {}
+      "blocking_reason": null,
+      "acceptance_evidence": {
+        "AC1": "tests/unit/render/test_render_budget.py::test_rejection_happens_without_allocating_raster_buffers (numpy.empty/zeros/ones/full/*_like/ndarray y PIL.Image.new sustituidos por allocators falsos: cero llamadas; pico tracemalloc < 1 MiB rechazando 2048×2048 × 4 frames), ::test_counts_are_rejected_before_costing_operations y ::test_budget_modules_do_not_load_raster_libraries.",
+        "AC2": "test_render_budget.py::test_one_unit_over_a_limit_reports_resource_limit_and_estimate (pixel_visits, buffer_bytes, frame_pixels, operations, layers con resource/limit/estimated y pointer) y ::test_request_exactly_at_each_limit_is_admitted (85 376 visitas y 724 352 bytes calculados a mano); ::test_many_frames_accumulate_until_the_frame_budget admite exactamente 16 777 216 píxeles."
+      },
+      "test_evidence": {
+        "T1": "test_render_budget.py::test_rejection_happens_without_allocating_raster_buffers con allocators falsos de NumPy y Pillow más tracemalloc; test_core_budget.py cubre RenderLimits (bajar libre, subir sólo con host_override) y Deadline con reloj falso.",
+        "T2": "test_render_budget.py: ::test_huge_coordinates_cost_their_unclipped_segments (48 líneas de ±1 048 576 rechazadas, 47 admitidas), ::test_deep_layer_stacks_exceed_visits_before_any_raster (128 capas a 2048², admitidas sólo con host_override), ::test_many_frames_accumulate_until_the_frame_budget y ::test_frame_count_follows_section_17, ::test_operation_costs (rect de ±1 048 576 recortado a A, enteros Python sin overflow) y oráculo Hypothesis de conjuntos de píxeles para rect."
+      }
     },
     {
       "id": "MOANA-004",
       "title": "Crear lienzo RGBA y propiedad de buffers",
       "phase": "P1",
-      "status": "blocked",
+      "status": "done",
       "priority": "P1",
       "dependencies": [
         "MOANA-001",
@@ -260,7 +297,15 @@
         "Fixtures 1×1 y 128×128, transparentes con RGB residual y roundtrip NumPy/Pillow",
         "Pruebas de aliasing, dtype/shape inválidos, límite de memoria y acceso fuera de rango"
       ],
-      "evidence": [],
+      "evidence": [
+        "src/moana/core/canvas.py: Canvas propietario del buffer uint8 C-contiguo (h, w, 4), construcción cerrada, copias en ambos sentidos, alfa cero normalizado, check_canvas_budget antes de reservar.",
+        "src/moana/core/pillow_adapter.py: canvas_to_pillow/canvas_from_pillow sólo RGBA de un frame, sin conversión implícita, errores de Pillow envueltos.",
+        "ADR-013 (docs/architecture/decisions/ADR-013-canvas-buffer.md): adaptadores como submódulos de core no importados por moana.core; sustituye parcialmente ADR-012 §3. MOANA.md 0.1.5-draft.",
+        "tests/unit/core/test_core_architecture.py: NumPy sólo en canvas.py, Pillow sólo en pillow_adapter.py, ningún otro módulo de core importa los adaptadores e import moana.core no carga numpy/PIL/pydantic.",
+        "Gate: scripts/validate.py y scripts/check_wheel.py verdes; cobertura 100 % de canvas.py y pillow_adapter.py.",
+        "Revisión: moana-python-engineer y moana-architect; hallazgos (copy.copy con alias, constructor público, pico de memoria de normalización, errores de Pillow, MaskedArray, limits obligatorio, redacción ADR-012/013) corregidos con pruebas.",
+        "Aprobado por el propietario el 2026-11-17 tras revisión; PR #42 hacia develop."
+      ],
       "aliases": [
         "MOA-004"
       ],
@@ -281,15 +326,21 @@
       "risks": [
         "Vistas writeable=false pueden reabrirse si el propietario se filtra; probar ownership real."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-001, MOANA-003",
-      "acceptance_evidence": {},
-      "test_evidence": {}
+      "blocking_reason": null,
+      "acceptance_evidence": {
+        "AC1": "tests/unit/core/test_core_canvas.py::test_set_get_preserves_rgba_or_normalizes_alpha_zero (Hypothesis 128×128, sin escrituras colaterales) y ::test_out_of_range_access_raises_without_wrap (x/y = -1 y 128 lanzan OutOfBoundsError sin modificar el lienzo).",
+        "AC2": "tests/unit/core/test_core_canvas.py::test_exported_array_does_not_alias_canvas, ::test_imported_array_is_copied_and_never_modified, ::test_shallow_and_deep_copy_do_not_share_the_buffer, ::test_direct_construction_is_closed y ::test_pillow_export_and_import_do_not_alias."
+      },
+      "test_evidence": {
+        "T1": "tests/unit/core/test_core_canvas.py::test_blank_canvas_is_transparent_black_uint8_c_contiguous y ::test_from_array_normalizes_transparent_residual_rgb (1×1 y 128×128, oráculo a mano), ::test_numpy_and_pillow_roundtrip_preserve_rgba, ::test_from_pillow_normalizes_transparent_residual_rgb y ::test_visual_digest_matches_section_14_oracle.",
+        "T2": "tests/unit/core/test_core_canvas.py: aliasing (::test_exported_array_does_not_alias_canvas, ::test_shallow_and_deep_copy_do_not_share_the_buffer), dtype/shape/tipo (::test_from_array_rejects_invalid_type_dtype_shape, ::test_from_array_rejects_masked_array, ::test_from_pillow_rejects_wrong_source_or_mode, ::test_from_pillow_rejects_multiframe_image), memoria (::test_budget_is_checked_before_numpy_allocates, ::test_from_array_checks_budget_before_copying, ::test_lowered_geometry_rejects_largest_canvas_without_allocating, ::test_transparent_import_peak_memory_stays_near_4a con tracemalloc) y fuera de rango (::test_out_of_range_access_raises_without_wrap)."
+      }
     },
     {
       "id": "MOANA-005",
       "title": "Implementar paletas y rampas",
       "phase": "P1",
-      "status": "blocked",
+      "status": "done",
       "priority": "P1",
       "dependencies": [
         "MOANA-001",
@@ -312,7 +363,14 @@
         "Casos de colores duplicados por valor pero IDs diferentes y IDs duplicados inválidos",
         "Pruebas de límites 256/4096, transparencia y remapeo explícito sin colores ocultos"
       ],
-      "evidence": [],
+      "evidence": [
+        "src/moana/palette/{__init__,colors,table}.py: Rgba canónico #RRGGBBAA y luminancia lineal entera, Palette inmutable por IDs con perfiles strict/rgba, edición sin renumerar, ColorRemap explícito, advertencias de rampa no bloqueantes.",
+        "src/moana/core/ids.py: dueño único de los lenguajes de ID y color (schema publica los mismos patrones; generate_schema --check sin cambios); detail_sort_key movido a core.errors; MAX_RAMP_ENTRIES en core.limits.",
+        "ADR-014 (docs/architecture/decisions/ADR-014-palette.md); MOANA.md 0.1.6-draft (§9 luminancia verificable); contratos de módulos y overview actualizados.",
+        "Gate: scripts/validate.py y scripts/check_wheel.py verdes; cobertura 100 % de moana.palette y moana.core.ids.",
+        "Revisión: moana-python-engineer, moana-pixel-artist y moana-architect; corregidos luminancia sobre sRGB codificado, pasos transparentes/semitransparentes, IDs en advertencias, patrones duplicados, unicidad con el ID de paleta, formato de errores distinto del esquema, coste sin cota de from_mapping/ColorRemap, hash de ColorRemap y subclases hostiles de str/dict/list.",
+        "Aprobado por el propietario el 2026-11-17 tras revisión; PR #43 hacia develop."
+      ],
       "aliases": [
         "MOA-005"
       ],
@@ -334,15 +392,21 @@
       "risks": [
         "La transparencia normalizada puede cambiar RGB residual; definirla antes de comparar pertenencia."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-001, MOANA-002",
-      "acceptance_evidence": {},
-      "test_evidence": {}
+      "blocking_reason": null,
+      "acceptance_evidence": {
+        "AC1": "tests/unit/palette/test_palette_table.py::test_strict_rejects_intermediate_alpha, ::test_missing_ramp_reference_is_a_reference_error, ::test_validation_problems_take_precedence_and_are_sorted; paridad con el esquema en tests/unit/palette/test_palette_architecture.py::test_schema_and_palette_report_the_same_semantic_problems.",
+        "AC2": "tests/unit/palette/test_palette_table.py::test_mapping_roundtrip_preserves_order_values_and_identity (strict y rgba), tests/unit/palette/test_palette_architecture.py::test_normalized_document_palette_loads_identically; advertencias no bloqueantes en tests/unit/palette/test_palette_table.py::test_luminance_warning_does_not_block_stylised_ramp, ::test_hue_shifted_ramp_ordered_by_linear_luminance y ::test_transparent_steps_are_reported_and_skipped_for_ordering."
+      },
+      "test_evidence": {
+        "T1": "tests/unit/palette/test_palette_table.py::test_same_value_different_ids_are_independent_colors, ::test_duplicate_color_ids_are_invalid, ::test_ids_are_unique_across_palette_colors_and_ramps y ::test_duplicate_value_equal_and_translucent_steps_are_distinguished.",
+        "T2": "tests/unit/palette/test_palette_table.py::test_profile_color_limits_exact_and_plus_one (256/4096 exacto y +1), ::test_strict_limit_also_applies_to_the_constructor, ::test_ramp_budget_is_checked_before_walking_members, ::test_transparent_values_match_after_normalisation, ::test_remap_is_explicit_single_step_and_closed_over_the_palette, ::test_remap_rejects_unknown_ids_and_non_strings_without_pointers; tests/unit/palette/test_palette_colors.py::test_linear_table_matches_the_srgb_formula."
+      }
     },
     {
       "id": "MOANA-006",
       "title": "Rasterizar primitivas enteras y flood fill",
       "phase": "P1",
-      "status": "blocked",
+      "status": "done",
       "priority": "P1",
       "dependencies": [
         "MOANA-004",
@@ -366,7 +430,14 @@
         "Flood fill de un píxel/todo canvas, coincidencia de color, contención y rechazo por presupuesto",
         "Bow-tie con área firmada cero pero interior even-odd no vacío; verificar máscara manual y no usar shoelace como descarte."
       ],
-      "evidence": [],
+      "evidence": [
+        "src/moana/geometry/{__init__,mask,primitives,fill}.py: Mask inmutable (igualdad por conjunto de píxeles; copy/deepcopy/pickle conservan bits de sólo lectura), rasterize_pixel/line/rect/ellipse/polygon según §6 (Bresenham con extremos ordenados, elipse por centros con isqrt exacto, polígono even-odd por centros con umbral entero, sin shoelace), recorte sin wraparound antes de reservar.",
+        "flood_fill 4-conectado sobre snapshot Canvas con igualdad RGBA exacta, scanline iterativo sin recursión, BudgetExceeded (pixel_visits, buffer_bytes; A visitas, 8A bytes) antes de copiar; semilla fuera del lienzo → máscara vacía (pendiente de ratificar en MOANA.md cuando el esquema active flood_fill).",
+        "ADR-015 (docs/architecture/decisions/ADR-015-raster-primitives.md); contratos de módulos, overview e índice de arquitectura actualizados; memoria de máscaras igual al término mask_bytes de budget-v1 (sin cambio de estimador).",
+        "Gate: scripts/validate.py (601 pruebas) y scripts/check_wheel.py verdes; cobertura 100 % de líneas y ramas en moana.geometry.",
+        "Revisión: moana-graphics-engineer (aprobado; fuerza bruta 20 000 líneas, 20 000 elipses, 4 000 polígonos y 1 500 rellenos sin discrepancias) y moana-architect; corregidos deepcopy/pickle escribibles, recuento de vértices antes de iterar, probe de wheel y documentación de identidad/hash de Mask.",
+        "Aprobado por el propietario el 2026-11-17 tras revisión; PR #44 hacia develop."
+      ],
       "aliases": [
         "MOA-006"
       ],
@@ -388,15 +459,22 @@
       "risks": [
         "Even-odd de autointersecciones no se puede descartar por área firmada cero."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-004, MOANA-005",
-      "acceptance_evidence": {},
-      "test_evidence": {}
+      "blocking_reason": null,
+      "acceptance_evidence": {
+        "AC1": "tests/unit/geometry/test_geometry_primitives.py::test_ac1_reversed_line_gives_identical_mask (8 octantes), ::test_line_properties y ::test_line_matches_literal_recurrence (Hypothesis, recurrencia literal independiente).",
+        "AC2": "tests/unit/geometry/test_geometry_primitives.py::test_rect_is_half_open, ::test_ellipse_5x3_by_pixel_centres, ::test_ellipse_4x4_circle, ::test_triangle_by_pixel_centres, ::test_ellipse_matches_literal_per_pixel_formula, ::test_polygon_matches_literal_even_odd_rule; tests/unit/geometry/test_geometry_fill.py::test_ac2_fill_does_not_cross_colour_boundaries."
+      },
+      "test_evidence": {
+        "T1": "tests/unit/geometry/test_geometry_primitives.py::test_line_octants_match_hand_oracle, ::test_degenerate_line_is_one_pixel, ::test_horizontal_vertical_and_diagonal_lines, ::test_line_tie_breaking_on_shallow_slope, ::test_line_partially_off_canvas_is_clipped_without_wraparound, ::test_rect_partially_off_canvas_and_negative, ::test_ellipse_partially_and_fully_off_canvas, ::test_polygon_off_canvas_and_negative_coordinates, ::test_one_by_one_canvas_cases, ::test_t1_self_intersection_leaves_even_odd_hole.",
+        "T2": "tests/unit/geometry/test_geometry_fill.py::test_fill_of_isolated_single_pixel, ::test_fill_of_uniform_canvas_covers_everything, ::test_colour_match_is_exact_per_channel, ::test_transparent_pixels_match_after_alpha_normalisation, ::test_fill_is_four_connected_not_diagonal, ::test_fill_matches_breadth_first_reference, ::test_budget_rejection_happens_before_any_copy, ::test_budget_admits_exact_limit, ::test_one_by_one_canvas_fill; tests/unit/geometry/test_geometry_memory.py.",
+        "T3": "tests/unit/geometry/test_geometry_primitives.py::test_t3_bow_tie_with_zero_signed_area_is_not_empty (área firmada 0, máscara manual de 8 píxeles)."
+      }
     },
     {
       "id": "MOANA-007",
       "title": "Añadir adaptador de paths AggDraw",
       "phase": "P3",
-      "status": "blocked",
+      "status": "done",
       "priority": "P2",
       "dependencies": [
         "MOANA-006",
@@ -421,7 +499,18 @@
         "Fixtures de curvas pequeñas, joins, cierres y curvas fuera de lienzo",
         "Repetición con entorno fijado y comparación backend por plataforma sin prometer equivalencia al raster entero"
       ],
-      "evidence": [],
+      "evidence": [
+        "src/moana/core/vector_path.py: gramática M/L/Q/C/Z en punto fijo 1/256 (2–4096 comandos, |v| ≤ 2^28, empieza por M, sin subpaths vacíos, sólo M tras Z), aplanado entero de Bernstein con tolerancia 1/16 px y 1–64 segmentos por curva (≤ 65 536 segmentos), FixedPath/PathCommand autovalidados, fórmulas compartidas de buffer, celdas y memoria; stdlib puro reutilizado por schema, render.budget y geometry.",
+        "src/moana/geometry/paths.py: adaptador AggDraw con import perezoso y superficie tipada; regla nonzero con acumulación por winding, cierre implícito, cobertura ≥128 a escala nativa cortada a la caja de los puntos de control y buffer recortado al lienzo antes de reservar; devuelve una Mask binaria sin objetos AggDraw/Pillow; backend ausente, roto, incompatible o con versión fuera de TESTED_AGGDRAW_VERSIONS (1.4.1) → UNSUPPORTED_OPERATION backend_unavailable con un único constructor; fallos del backend → error de dominio.",
+        "src/moana/schema/: operación path y hoja de máscara path (backend aggdraw-v1) en el documento 1.0 como ampliación previa a la publicación; errores de gramática con puntero al comando; cada modelo parsea sus comandos una vez; capabilities().backends y path como capacidad de ejecución (prevista si el backend no está disponible, sin desaparecer).",
+        "src/moana/render/: budget-v4 (idéntico a budget-v3 sin paths; por path, visitas, celdas acotadas por MAX_PATH_CELLS = 2 097 152, límite del motor que host_override no sube porque AGG descarta celdas por encima de 4 194 304, y 128 KiB de memoria nativa de AGG); provenance vector_backend/vector_backend_versions en todos los renders; comprobación del backend antes del presupuesto.",
+        "Garantía limitada (ADR-023 §4): un píxel cuyo cuadrado queda dentro de un único subpath simple pertenece a la máscara; el engorde de ~1/4 px de AGG, los picos en ángulos agudos y la acumulación por winding quedan caracterizados con los contraejemplos A–D, sin equivalencia prometida con el raster entero ni entre plataformas no ensayadas.",
+        "ADR-023 (docs/architecture/decisions/ADR-023-aggdraw-paths.md) con notas de cabecera en ADR-005, ADR-011, ADR-015, ADR-018, ADR-020 y ADR-022; MOANA.md 0.1.10-draft (§6, §12, §13, §14, §20); ejemplo examples/specs/path-sail.moana.json; contratos de módulos, índice de ADR, overview, README, guía de desarrollo, AGENTS.md y CLAUDE.md actualizados.",
+        "Trazabilidad: R004 cubierto; R015 cubierto para aggdraw-v1 sólo en procesos locales (matriz pendiente en main).",
+        "Gate: scripts/validate.py (1414 passed, src/moana al 100 % de líneas y ramas) y scripts/check_wheel.py verdes; mypy también con --platform win32; generate_schema --check al día. Sin ejecución en Linux ni Windows reales.",
+        "Revisión: moana-graphics-engineer (cambios requeridos, aplicados: garantías de ADR-023 §4 corregidas con contraejemplos, corte no local por caja, memoria nativa de AGG en el presupuesto, oráculo independiente del error de cuerda), moana-architect (cambios requeridos, aplicados: contrato de provenance y de capacidad de ejecución, path_cells informado en inspect, evidencia T2 parcial, constante de backend probada) y moana-python-engineer (cambios requeridos, aplicados: parseo único por modelo, FixedPath autovalidado, punteros por comando, constructor único de backend_unavailable, carga robusta de aggdraw, versión de Pillow por metadatos, timeouts en subprocess).",
+        "Aprobado por el propietario el 2026-11-17 tras revisión; PR #53 hacia develop."
+      ],
       "aliases": [
         "MOA-007"
       ],
@@ -443,15 +532,21 @@
       "risks": [
         "No asumir que AggDraw comparte píxeles entre versiones o plataformas no ensayadas."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-006, MOANA-010, MOANA-028",
-      "acceptance_evidence": {},
-      "test_evidence": {}
+      "blocking_reason": null,
+      "acceptance_evidence": {
+        "AC1": "tests/unit/geometry/test_geometry_paths.py::test_ac1_paths_give_binary_masks_inside_their_box, ::test_integer_rectangles_equal_the_integer_rect_mask, ::test_polygon_paths_agree_with_the_integer_polygon_where_guaranteed, ::test_curves_stay_within_the_hull_of_their_control_points, ::test_fill_rule_is_nonzero_winding, ::test_the_box_cut_is_not_local, ::test_result_is_a_moana_mask_without_backend_objects; tests/unit/render/test_render_paths.py::test_ac1_render_has_only_palette_colours_inside_the_path_boxes y ::test_ac1_rgba_profile_keeps_binary_coverage; tests/unit/api/test_api_paths.py::test_example_with_paths_loads_inspects_and_renders.",
+        "AC2": "tests/unit/core/test_core_vector_path.py::test_invalid_commands_raise_located_validation_errors, ::test_fixed_paths_validate_themselves; tests/unit/schema/test_schema_paths.py::test_invalid_path_payloads_are_located_validation_errors y ::test_order_errors_carry_the_command_index; tests/unit/render/test_render_paths.py::test_ac2_unvalidated_models_fail_validation_before_the_adapter, ::test_ac2_missing_backend_fails_before_budget_and_raster, ::test_ac2_untested_version_names_the_version_and_the_mask_leaf y ::test_renderer_and_adapter_report_the_same_backend_error; tests/unit/geometry/test_geometry_paths.py::test_missing_backend_is_an_explicit_unsupported_operation, ::test_a_backend_without_the_used_api_is_incompatible; tests/unit/api/test_api_paths.py::test_capabilities_move_path_to_planned_without_the_backend y ::test_cli_render_without_backend_is_unsupported_operation."
+      },
+      "test_evidence": {
+        "T1": "tests/unit/geometry/test_geometry_paths.py::test_convex_and_join_fixtures_lie_between_the_geometric_oracles, ::test_explicit_and_implicit_close_fill_the_same_pixels, ::test_partly_off_canvas_paths_are_clipped_without_wraparound, ::test_degenerate_paths_of_zero_area_draw_nothing, ::test_far_away_coordinates_cost_nothing_and_still_clip, ::test_case_a_one_pixel_wall_between_two_holes_is_out, ::test_case_b_winding_minus_one_strip_through_a_shared_vertex_is_out, ::test_case_c_stacked_slivers_let_in_a_pixel_far_from_the_outline, ::test_case_d_four_stacked_eighth_pixel_strips_fill_two_rows; tests/unit/core/test_core_vector_path.py::test_chosen_steps_bound_the_chord_error; tests/unit/render/test_render_paths.py::test_budget_v4_hand_oracle_for_a_square_path, ::test_plan_budget_admission_means_render_succeeds_with_paths y ::test_path_cells_over_the_engine_limit_are_rejected_by_the_plan.",
+        "T2": "tests/integration/test_path_determinism.py::test_t2_fresh_processes_with_any_hash_seed_agree (procesos nuevos con PYTHONHASHSEED 0/1/4242/aleatorio y dos serializaciones) y ::test_t2_integer_rectangles_agree_with_the_integer_backend_on_any_platform; tests/unit/geometry/test_geometry_paths.py::test_repeated_rasterisation_is_identical. Entre plataformas: local macOS; matriz pendiente en main, sin equivalencia prometida con el raster entero."
+      }
     },
     {
       "id": "MOANA-008",
       "title": "Añadir transformaciones pixel-perfect",
       "phase": "P1",
-      "status": "blocked",
+      "status": "done",
       "priority": "P1",
       "dependencies": [
         "MOANA-006"
@@ -473,7 +568,14 @@
         "Propiedades de composición/inversas sobre máscaras no cuadradas y pivotes negativos",
         "Clipping de objetos parcialmente fuera y rechazo de escala no entera o rotación arbitraria en strict"
       ],
-      "evidence": [],
+      "evidence": [
+        "src/moana/geometry/transform.py: Transform congelado (pivot, mirror, rotation 0/90/180/270, scale 1..2048, offset) sobre índices de píxel con orden fijo espejo → cuartos de vuelta horarios (x, y) → (−y, x) → escala nearest-neighbor por bloques k×k → traslación; transform_mask por recolección inversa recortada al lienzo sin wraparound (memoria: salida recortada + una copia con relleno del origen); transform_box como conjunto de píxeles; inverse() sin escala.",
+        "Rechazo con ValidationError de rotación arbitraria (arbitrary_rotation), rotación fuera de {0,90,180,270} (out_of_range, allowed), escala no entera o fuera de rango (not_integer/out_of_range) y mirror no booleano (not_boolean).",
+        "ADR-016 (docs/architecture/decisions/ADR-016-pixel-transforms.md); contratos de módulos, overview, índice de arquitectura y README actualizados.",
+        "Gate: scripts/validate.py y scripts/check_wheel.py verdes; transform.py al 100 % de líneas y ramas.",
+        "Revisión: moana-graphics-engineer (aprobado; oráculo directo independiente en 6000 casos, 8 elementos diedros, escala 1–5, pivotes/offsets negativos, sin discrepancias) y moana-python-engineer (aprobado); corregidos doble copia del origen, máscara vacía con almacenamiento, matriz privada, contextos de error, pivote inverso fuera de rango y pruebas de inversa vacuas.",
+        "Aprobado por el propietario el 2026-11-17 tras revisión; PR #46 hacia develop."
+      ],
       "aliases": [
         "MOA-008"
       ],
@@ -494,15 +596,21 @@
       "risks": [
         "Giro de cajas geométricas no equivale a giro de índices; probar dimensiones pares e impares."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-006",
-      "acceptance_evidence": {},
-      "test_evidence": {}
+      "blocking_reason": null,
+      "acceptance_evidence": {
+        "AC1": "tests/unit/geometry/test_geometry_transform.py::test_ac1_four_quarter_turns_reconstruct_the_mask; fixtures a mano ::test_quarter_turn_clockwise_about_pivot_by_hand y ::test_rotation_180_and_270_by_hand.",
+        "AC2": "tests/unit/geometry/test_geometry_transform.py::test_ac2_double_mirror_is_identity, ::test_ac2_scale_two_replicates_each_pixel_in_a_2x2_block, ::test_mirror_about_pivot_column_by_hand y ::test_vertical_mirror_is_mirror_plus_half_turn."
+      },
+      "test_evidence": {
+        "T1": "tests/unit/geometry/test_geometry_transform.py::test_t1_matches_independent_forward_oracle (Hypothesis, máscaras no cuadradas, pivotes y offsets negativos, escala 1–3), ::test_t1_storage_wider_than_bounds_gives_the_same_image, ::test_t1_inverse_restores_unclipped_masks, ::test_t1_rotations_compose_additively_with_negative_pivot, ::test_t1_translations_compose_and_mirror_plus_half_turn_is_vertical_mirror, ::test_t1_inverse_of_mirror_is_itself_and_of_turn_is_opposite_turn, ::test_odd_and_even_sized_boxes_transform_as_pixel_sets, ::test_box_image_equals_bounds_of_transformed_pixels.",
+        "T2": "tests/unit/geometry/test_geometry_transform.py::test_t2_partially_off_canvas_is_clipped_without_wraparound, ::test_t2_fully_off_canvas_is_empty_without_wraparound, ::test_t2_large_scale_is_clipped_before_allocating, ::test_image_with_every_pixel_off_canvas_is_the_empty_mask, ::test_peak_memory_is_output_plus_one_source_copy, ::test_t2_rejects_arbitrary_rotation_and_non_integer_scale (13 casos), ::test_scaled_transform_has_no_inverse, ::test_inverse_pivot_out_of_range_is_not_invertible."
+      }
     },
     {
       "id": "MOANA-009",
       "title": "Implementar capas, grupos y composición",
       "phase": "P2",
-      "status": "blocked",
+      "status": "done",
       "priority": "P1",
       "dependencies": [
         "MOANA-002",
@@ -528,7 +636,14 @@
         "Casos alpha 0/1/127/255 y normalización RGB en transparente",
         "Grupos anidados, profundidad límite, capa invisible y strict que rechaza opacidad intermedia"
       ],
-      "evidence": [],
+      "evidence": [
+        "src/moana/layers/nodes.py: árbol inmutable Fill/Layer/Group/LayerTree con validación de ID, nombre UTF-8 (≤4096 bytes), booleanos, opacidad 0..255, blend sólo normal, IDs únicos, ≤128 capas y grupos, profundidad ≤16 (MAX_GROUP_DEPTH en core.limits), máscaras dentro del lienzo y perfil strict (partial_opacity, partial_alpha).",
+        "src/moana/layers/composite.py: kernel source-over entero literal de MOANA.md §11 en uint32 con round_half_up y normalización de alfa 0; grupos en buffer aislado con opacidad aplicada una vez; nodos ocultos sin coste; locked sin efecto; composition_cost puro y comprobación de presupuesto (geometría, frame_pixels, layers, operations, pixel_visits, buffer_bytes) antes de reservar; temporales por bloques de min(4096, A//4) píxeles; deadline por nodo y fill.",
+        "ADR-017 (docs/architecture/decisions/ADR-017-layers-composition.md); contratos de módulos, overview, índice de arquitectura, README, guía de desarrollo, AGENTS.md y CLAUDE.md actualizados; probe de check_wheel ampliado.",
+        "Gate: scripts/validate.py y scripts/check_wheel.py verdes.",
+        "Revisión: moana-graphics-engineer y moana-python-engineer; corregidos límites de geometría, grupos en el límite de 128, temporales acotados por bloques para respetar budget-v1, deadline por fill, nombre de módulo, UTF-8 estricto, profile en el contexto de errores y pruebas de varios bloques, 1×1 y cota de temporales.",
+        "Aprobado por el propietario el 2026-11-17 tras revisión; PR #47 hacia develop."
+      ],
       "aliases": [
         "MOA-009"
       ],
@@ -549,15 +664,21 @@
       "risks": [
         "La opacidad por hijo cambia la imagen; el bloqueo afecta edición, no render."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-002, MOANA-004, MOANA-005, MOANA-006, MOANA-008",
-      "acceptance_evidence": {},
-      "test_evidence": {}
+      "blocking_reason": null,
+      "acceptance_evidence": {
+        "AC1": "tests/unit/layers/test_layers_compose.py::test_ac1_semitransparent_fixture_matches_hand_computation (161,80,90,255 calculado a mano) y ::test_ac1_random_trees_match_the_scalar_oracle (Hypothesis, oráculo escalar independiente con grupos).",
+        "AC2": "tests/unit/layers/test_layers_compose.py::test_ac2_order_decides_which_colour_is_on_top, ::test_ac2_hiding_a_layer_removes_exactly_its_pixels y ::test_ac2_group_opacity_is_applied_once_to_the_group_result (contraejemplo por hijo)."
+      },
+      "test_evidence": {
+        "T1": "tests/unit/layers/test_layers_compose.py::test_t1_alpha_cases_match_hand_values (alfa 0/1/127/255) y ::test_t1_transparent_result_is_normalised_to_zero.",
+        "T2": "tests/unit/layers/test_layers_compose.py::test_t2_nested_groups_compose_like_the_oracle, ::test_t2_maximum_depth_composes_and_one_more_is_rejected, ::test_t2_hidden_group_skips_its_subtree_and_costs_nothing, ::test_t2_locked_does_not_change_the_render, ::test_t2_budget_is_checked_before_any_buffer, ::test_t2_other_budgets_are_enforced; tests/unit/layers/test_layers_nodes.py::test_t2_strict_rejects_intermediate_opacity y ::test_t2_depth_limit_counts_nested_groups."
+      }
     },
     {
       "id": "MOANA-010",
       "title": "Construir pipeline de render determinista",
       "phase": "P2",
-      "status": "blocked",
+      "status": "done",
       "priority": "P0",
       "dependencies": [
         "MOANA-002",
@@ -583,7 +704,16 @@
         "Variar PYTHONHASHSEED, orden de claves de objeto y repetir en subprocesos",
         "Entradas no soportadas, references inválidas, cancelación entre operaciones y límites previos al render"
       ],
-      "evidence": [],
+      "evidence": [
+        "src/moana/render/pipeline.py: render(document, *, frame_id, limits, deadline) ejecuta validación (revalida el árbol canónico) → frame (sólo None en schema 1.0) → registro explícito de rasterizadores (RENDERABLE_OPERATION_TYPES) → paleta resuelta → plan_budget → LayerTree con máscaras diferidas → compose; sin disco, caché, concurrencia, reloj ni hash().",
+        "src/moana/render/result.py: RenderResult inmutable (width, height, rgba bytes, digest §14 recalculado, warnings empty_bounds con puntero, renderer_version, provenance) y Provenance como manifiesto de reproducción (snapshot, seed, frame, render-v1, backend integer, budget-v2, RNG, moana_version).",
+        "src/moana/layers: DeferredMask para construir una máscara a la vez dentro de compose; src/moana/render/budget.py: estimador budget-v2 (raster + pasada de pintado sobre mask_box; bytes max(40A, 14A + 80·tile) + máscara).",
+        "src/moana/core/procedural.py: RNG por celda de §14 (SHA-256 del JSON canónico [seed, operation_id, x, y, channel, version], u = 8 bytes big-endian, u·n//2^64); src/moana/core/digest.py: digest visual único para Canvas y RenderResult.",
+        "ADR-018 (docs/architecture/decisions/ADR-018-render-pipeline.md); notas de cabecera en ADR-012, ADR-015 y ADR-017; MOANA.md 0.1.7-draft (§13 render disponible con deadline, §20 budget-v2); contratos de módulos, overview, README, guía de desarrollo, AGENTS.md y CLAUDE.md actualizados; probe de check_wheel ampliado.",
+        "Gate: scripts/validate.py y scripts/check_wheel.py verdes; render, layers, core.procedural y core.digest al 100 % de líneas y ramas.",
+        "Revisión: moana-graphics-engineer y moana-architect (cambios requeridos, aplicados): cota de bytes en lienzos de 1–3 píxeles, RNG movido a core, digest único, moana_version, frame_id tras validar y sin puntero, aviso empty_bounds, RuntimeError para cajas diferidas incorrectas, bytes de máscara diferida en composition_cost, colisión de nombres budget-v2 resuelta y pruebas de 1×1, coordenadas negativas, documento vacío y propiedad plan ⇒ render.",
+        "Aprobado por el propietario el 2026-11-17 tras revisión; PR #48 hacia develop."
+      ],
       "aliases": [
         "MOA-010"
       ],
@@ -604,15 +734,21 @@
       "risks": [
         "hash(), reloj o estado global rompen reproducibilidad aunque el primer test pase."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-002, MOANA-003, MOANA-006, MOANA-009",
-      "acceptance_evidence": {},
-      "test_evidence": {}
+      "blocking_reason": null,
+      "acceptance_evidence": {
+        "AC1": "tests/integration/test_render_determinism.py::test_ac1_t1_fresh_processes_with_any_hash_seed_agree (subprocesos nuevos) y ::test_t1_repeated_renders_in_one_process_agree; digests recalculados a mano con hashlib en tests/unit/render/test_render_pipeline.py::test_semitransparent_scene_matches_hand_computation, ::test_every_primitive_in_a_strict_scene y ::test_minimal_example_document.",
+        "AC2": "tests/unit/core/test_core_procedural.py::test_ac2_an_operation_sequence_depends_only_on_its_own_identity; tests/unit/render/test_render_pipeline.py::test_ac2_adding_an_operation_only_changes_its_own_pixels, ::test_ac2_render_does_not_modify_the_document y ::test_ac2_render_writes_and_reads_no_file."
+      },
+      "test_evidence": {
+        "T1": "tests/integration/test_render_determinism.py::test_ac1_t1_fresh_processes_with_any_hash_seed_agree (PYTHONHASHSEED 0, 1, 4242 y random × tres codificaciones) y ::test_t1_key_order_and_whitespace_do_not_change_the_render (claves en orden inverso, espacios, sort_keys).",
+        "T2": "tests/unit/render/test_render_pipeline.py::test_t2_unsupported_arguments_are_type_errors, ::test_t2_only_documents_are_rendered, ::test_t2_unknown_frame_is_a_reference_error, ::test_t2_invalid_references_are_rejected_with_pointers, ::test_t2_operation_without_rasteriser_is_unsupported, ::test_t2_cancellation_between_operations, ::test_t2_expired_deadline_stops_before_any_raster, ::test_t2_budgets_are_checked_before_any_raster_or_buffer y ::test_plan_budget_admission_means_render_succeeds."
+      }
     },
     {
       "id": "MOANA-011",
       "title": "Exportar PNG y manifiesto de salida",
       "phase": "P2",
-      "status": "blocked",
+      "status": "done",
       "priority": "P1",
       "dependencies": [
         "MOANA-010"
@@ -635,7 +771,15 @@
         "Paleta 256/257, destino existente, permiso denegado y fallo simulado durante escritura",
         "Carrera de dos escritores con overwrite=false: uno gana y el otro falla sin reemplazar; no usar exists+replace como exclusión."
       ],
-      "evidence": [],
+      "evidence": [
+        "src/moana/export/png.py: encode_png/export_png reciben cualquier RasterFrame (width, height, rgba bytes; RenderResult lo cumple sin que export importe render), validan marco, opciones y presupuesto (export_dimension, export_area, buffer_bytes 24 B/px) antes de reservar, codifican RGBA maestro o indexado (paleta declarada en orden, ≤256 entradas, tRNS explícito, sin cuantización) con compress_level 9 sin chunks volátiles, escalan nearest 1..64 como preview y verifican en memoria la ida y vuelta de píxeles y los chunks PLTE/tRNS antes de escribir.",
+        "src/moana/export/atomic.py: commit_bytes escribe un temporal hermano O_EXCL con fsync y hace commit con os.link (overwrite=False, nunca reemplaza; sin enlaces duros falla con no_replace_unavailable, también por winerror en Windows) u os.replace (overwrite=True); el temporal se borra siempre; errores ExportError con reason, nombre de archivo y errno, sin ruta completa; nombres no representables son invalid_name.",
+        "ExportManifest con path, media_type, mode, dimensiones, frames, scale, master, dimensiones y digest de origen, pixel_digest, file_sha256, byte_size y warnings (scaled_preview); to_mapping ordenado.",
+        "ADR-019 (docs/architecture/decisions/ADR-019-png-export.md); MOANA.md §13 indica que export_png ya existe; contratos de módulos, índice de ADR, overview, README, guía de desarrollo, AGENTS.md y CLAUDE.md actualizados; probe de check_wheel ampliado con export/.",
+        "Gate: scripts/validate.py y scripts/check_wheel.py verdes; moana.export al 100 % de líneas y ramas; mypy también con --platform win32.",
+        "Revisión: moana-python-engineer (cambios requeridos, aplicados: geteuid en win32, OSError de inspección envueltos sin rutas, nombres con NUL o no codificables, temporal con prefijo truncado para nombres largos, carrera determinista que tumba exists+replace, winerror sin enlaces duros, EEXIST tras link propio, rgba leído una vez) y moana-graphics-engineer (aprobado con cambios menores, aplicados: planos de índice sin int64 duplicado y desglose de memoria documentado, verificación de PLTE/tRNS, tests de chunks exactos, escala 64 sobre 1×1 indexado, bytes iguales entre procesos y presupuesto antes de cualquier temporal).",
+        "Aprobado por el propietario el 2026-11-17 tras revisión; PR #49 hacia develop."
+      ],
       "aliases": [
         "MOA-011"
       ],
@@ -656,15 +800,22 @@
       "risks": [
         "Una comprobación exists seguida de replace puede sobreescribir por carrera; usar commit sin reemplazo cuando overwrite=false."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-010",
-      "acceptance_evidence": {},
-      "test_evidence": {}
+      "blocking_reason": null,
+      "acceptance_evidence": {
+        "AC1": "tests/unit/export/test_export_png.py::test_ac1_rgba_png_decodes_exactly_to_the_frame y ::test_ac1_rendered_document_round_trips (render de examples minimal.moana.json exportado y decodificado igual a RenderResult.rgba, source_digest == digest).",
+        "AC2": "tests/unit/export/test_export_png.py::test_ac2_t2_failure_during_write_keeps_previous_content (fallos simulados en write, fsync, link y replace, con y sin overwrite: destino anterior intacto, sin temporales ni manifiesto), ::test_roundtrip_mismatch_writes_nothing y ::test_palette_chunks_are_verified."
+      },
+      "test_evidence": {
+        "T1": "tests/unit/export/test_export_png.py::test_t1_nearest_scale_replicates_blocks[1,2,4], ::test_t1_indexed_round_trip_keeps_declared_order_and_transparency[1,2,4] (PLTE/tRNS exactos), ::test_t1_transparent_frame_round_trips_in_both_modes, ::test_maximum_scale_on_a_single_indexed_pixel, ::test_encoding_is_stable_and_has_no_volatile_chunks y ::test_encoded_bytes_agree_across_fresh_processes_and_hash_seeds.",
+        "T2": "tests/unit/export/test_export_png.py::test_t2_palette_of_256_is_accepted_and_257_rejected, ::test_indexed_export_never_quantises, ::test_t2_existing_destination_is_kept_unless_overwrite, ::test_t2_permission_denied_leaves_nothing, ::test_unsearchable_parent_is_permission_denied, ::test_ac2_t2_failure_during_write_keeps_previous_content, ::test_budget_is_checked_before_scaling, ::test_unrepresentable_names_are_rejected_before_writing y ::test_errors_do_not_echo_full_paths.",
+        "T3": "tests/unit/export/test_export_png.py::test_t3_competitor_created_between_checks_and_commit_is_never_replaced (determinista: falla con exists+replace), ::test_t3_two_threads_one_wins_the_other_fails_without_replacing (25 repeticiones con barrera) y ::test_t3_two_processes_race_for_the_same_name."
+      }
     },
     {
       "id": "MOANA-012",
       "title": "Exponer API pública y CLI estático",
       "phase": "P2",
-      "status": "blocked",
+      "status": "done",
       "priority": "P1",
       "dependencies": [
         "MOANA-010",
@@ -688,7 +839,17 @@
         "Integración CLI en directorio ajeno al repo con paths con espacios",
         "Tests de exit codes, no traceback por defecto, stdout parseable y error de operación futura"
       ],
-      "evidence": [],
+      "evidence": [
+        "src/moana/api/: fachada tipada (load_document desde path autorizado, bytes o mapping con archivo regular abierto sin bloquear y lectura acotada a max_bytes+1; render; export_png RGBA; inspect_document con presupuesto informado; capabilities con lo previsto separado) que sólo compone schema, render y export; retornos congelados sin objetos NumPy/Pillow; apply_edit no se exporta (PLANNED_FUNCTIONS).",
+        "src/moana/cli/: comando estático moana (validate, inspect, render, export --scale/--overwrite, capabilities; edit previsto → UNSUPPORTED_OPERATION 2) con un único objeto JSON por invocación, códigos de salida del error de dominio (0/2/3/4/5/1), stdout cerrado → 5, interrupción → 130 con INTERRUPTED, errores de uso con mensaje fijo, sin abreviaturas y sin traceback salvo --debug; importa sólo moana.api, moana.core.errors y moana.__version__. Entrypoint [project.scripts] moana; uv.lock sin cambios.",
+        "src/moana/core/errors.py: ReadError (READ_ERROR, salida 5) para lecturas fallidas, sin rutas completas; amplía ADR-010 (nota de cabecera).",
+        "scripts/check_wheel.py: instala las dependencias de ejecución fijadas por hash desde el lock (primero offline, después en línea con aviso) y el wheel sin dependencias; ejecuta el moana instalado fuera del repo con paths con espacios, entorno sin PYTHONPATH/PYTHONHOME/VIRTUAL_ENV y timeout, y decodifica el PNG de 128×128.",
+        "ADR-020 (docs/architecture/decisions/ADR-020-public-api-cli.md); MOANA.md 0.1.8-draft (§3 distribución, §13 fachada, firmas reales, inspect_document/capabilities, READ_ERROR, CLI y códigos; ejemplo con moana.schema.snapshot_digest); contratos de módulos, índice de ADR, overview, README, guía de desarrollo, AGENTS.md, CLAUDE.md y docstring del paquete actualizados.",
+        "Trazabilidad: R014 cubierto; R038 cubierto en parte (render y preview desde API/CLI); la edición y el tutorial render-preview-edit quedan para MOANA-018 y MOANA-033.",
+        "Gate: scripts/validate.py y scripts/check_wheel.py verdes; moana.api, moana.cli y moana.core.errors al 100 % de líneas y ramas; mypy también con --platform win32. Sin ejecutar en Windows real (pruebas de FIFO, dispositivo, permisos y pipe real se omiten en win32).",
+        "Revisión: moana-architect (cambios requeridos, aplicados: ReadError en core.errors con ADR-010 ampliado, CLI sólo sobre api, errores de uso sin argv, TypeError en vez de assert, capacidades sin desapariciones, check_wheel offline primero, documentación del contrato) y moana-python-engineer (cambios requeridos, aplicados: BrokenPipe sin traceback, directorio sin permiso → READ_ERROR, JSON pasado como str, FIFO sin bloqueo, --scale estricto, entorno aislado en check_wheel, prueba real de lectura acotada, interrupción en todas las fases, sin abreviaturas, ayuda de edit, --debug tras el comando).",
+        "Aprobado por el propietario el 2026-11-17 tras revisión; PR #51 hacia develop."
+      ],
       "aliases": [
         "MOA-012"
       ],
@@ -710,15 +871,21 @@
       "risks": [
         "Help o ejemplos no deben exponer operaciones aún no implementadas como disponibles."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-010, MOANA-011",
-      "acceptance_evidence": {},
-      "test_evidence": {}
+      "blocking_reason": null,
+      "acceptance_evidence": {
+        "AC1": "scripts/check_wheel.py (check_cli: wheel limpio, moana validate y export fuera del repo, PNG 128×128 decodificado: «Installed CLI OK»); tests/unit/api/test_api_facade.py::test_export_writes_a_verified_128_png.",
+        "AC2": "tests/unit/cli/test_cli_main.py::test_help_distinguishes_available_and_planned, ::test_edit_help_says_it_is_planned, ::test_capabilities_lists_available_apart_from_planned, ::test_document_errors_map_to_exit_codes, ::test_io_errors_do_not_leak_the_full_path, ::test_export_overwrite y ::test_planned_command_is_unsupported; tests/unit/api/test_api_facade.py::test_capabilities_separate_available_from_planned y ::test_schema_only_operations_are_reported_as_planned. (Nota MOANA-018: test_edit_help_says_it_is_planned, test_help_distinguishes_available_and_planned y test_planned_command_is_unsupported se sustituyeron cuando edit pasó a disponible; la evidencia vigente está en tests/unit/cli/test_cli_edit.py y tests/unit/cli/test_cli_main.py.)"
+      },
+      "test_evidence": {
+        "T1": "tests/integration/test_cli_paths.py::test_cli_outside_the_repository_with_spaces (script instalado y python -m, paths relativos y absolutos con espacios y ñ/í), ::test_cli_failures_in_a_fresh_process y ::test_console_script_is_installed.",
+        "T2": "tests/unit/cli/test_cli_main.py::test_every_domain_error_maps_to_its_exit_code, ::test_document_errors_map_to_exit_codes, ::test_usage_errors_are_invalid_input, ::test_internal_error_hides_the_traceback_unless_debug, ::test_debug_is_accepted_after_the_command, ::test_interrupt_exits_130_with_an_interrupted_error, ::test_closed_stdout_exits_with_the_documented_code, ::test_closed_pipe_in_a_real_process y ::test_planned_command_is_unsupported (operación futura); la fixture run exige una sola línea JSON ASCII en stdout y ningún traceback. (Nota MOANA-018: test_edit_help_says_it_is_planned, test_help_distinguishes_available_and_planned y test_planned_command_is_unsupported se sustituyeron cuando edit pasó a disponible; la evidencia vigente está en tests/unit/cli/test_cli_edit.py y tests/unit/cli/test_cli_main.py.)"
+      }
     },
     {
       "id": "MOANA-013",
       "title": "Añadir máscaras y regiones semánticas",
       "phase": "P3",
-      "status": "blocked",
+      "status": "done",
       "priority": "P1",
       "dependencies": [
         "MOANA-009",
@@ -741,7 +908,19 @@
         "Álgebra de conjuntos en fixtures 1/8/128 píxeles y máscaras vacías",
         "Ciclos directos/indirectos, máscara fuera del canvas y grupos transformados"
       ],
-      "evidence": [],
+      "evidence": [
+        "src/moana/geometry/algebra.py: álgebra de máscaras (union, intersect, subtract como pliegue por la izquierda, xor) con MaskBuilder y combined_box; resultados recortados al lienzo; Mask inmutable sin NumPy en contratos públicos.",
+        "src/moana/schema/: masks (hojas rect/ellipse/polygon y combinaciones por ID) y regions (operaciones agrupadas con mask_id) en el documento 1.0, Layer.mask_id; references.py resuelve el DAG con Tarjan iterativo, rechaza ciclos (mask_cycle) y referencias rotas antes de render, y protege documentos sin validar con ReferenceError en vez de bucles o KeyError; resolve_region y mask_dependencies públicos; JSON Schema regenerado.",
+        "src/moana/layers/: MaskShape/MaskCombination (igualdad por identidad) y Layer.mask; la capa se recorta a su máscara antes de la opacidad (aplicada una vez); los nodos de caja vacía no evalúan operandos.",
+        "src/moana/render/budget.py: budget-v3 con coste de máscaras por referencia expandida y suelo de 1 visita por nodo evaluado, idéntico al compositor; un DAG ancho y profundo de hojas llenas se rechaza con BudgetExceeded antes del raster y uno de hojas vacías cuesta el suelo y termina en milisegundos (32×8 ≈ 3,5e10 referencias: 0,011 s).",
+        "src/moana/core/coordinates.py: combined_box puro compartido por geometry.algebra y render.budget; límites MAX_MASKS, MAX_MASK_OPERANDS, MAX_MASK_DEPTH y MAX_REGIONS en core.limits.",
+        "moana.api: resolve_region reexportado; inspect_document informa masks, regions y mask_id por capa; capabilities con mask_types y planned_mask_types [path].",
+        "ADR-022 (docs/architecture/decisions/ADR-022-masks-regions.md), con notas de cabecera en ADR-011, ADR-017, ADR-018 y ADR-020; MOANA.md 0.1.9-draft (§11, §12, §13, §16, §20): schema 1.0 ampliado como excepción previa a la primera publicación, después toda ampliación sube el minor; ejemplo examples/specs/masked-eyes.moana.json; contratos de módulos, índice de ADR, overview, README, guía de desarrollo, AGENTS.md y CLAUDE.md actualizados.",
+        "Trazabilidad: R012 cubierto. La hoja path queda prevista para MOANA-007.",
+        "Gate: scripts/validate.py (1223 passed, src/moana al 100 % de líneas y ramas) y scripts/check_wheel.py verdes; mypy también con --platform win32; generate_schema --check al día. Sin ejecución en Windows real (matriz pendiente en main).",
+        "Revisión: moana-graphics-engineer (cambios requeridos, aplicados: coste exponencial de DAG con hojas vacías, trabajo no contado en _clear_outside, oráculo de caja independiente) y moana-architect (cambios requeridos, aplicados: el mismo riesgo exponencial, excepción de versión del schema documentada frente a §16, ciclos en documentos sin validar, aritmética de cajas extraída a core, MaskNode homónimos aclarados, MaskCombination con eq=False, regla de grupos transformados como norma futura).",
+        "Aprobado por el propietario el 2026-11-17 tras revisión; PR #52 hacia develop."
+      ],
       "aliases": [
         "MOA-013"
       ],
@@ -763,15 +942,21 @@
       "risks": [
         "Un grupo transformado requiere semántica clara de máscara en canvas frente a geometría local."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-009, MOANA-010",
-      "acceptance_evidence": {},
-      "test_evidence": {}
+      "blocking_reason": null,
+      "acceptance_evidence": {
+        "AC1": "tests/unit/layers/test_layers_masks.py::test_ac1_masked_layer_changes_no_pixel_outside_its_mask, ::test_ac1_layer_opacity_is_applied_once_inside_the_mask, ::test_ac1_random_masks_match_the_scalar_oracle, ::test_each_operator_clips_the_layer_to_its_set; tests/unit/render/test_render_masks.py::test_ac1_masked_operation_changes_no_pixel_outside_its_mask, ::test_ac1_mask_reaching_outside_the_canvas_is_clipped y ::test_example_renders_to_the_hand_computed_face.",
+        "AC2": "tests/unit/schema/test_schema_masks.py::test_ac2_left_eye_resolves_by_id, ::test_ac2_region_resolution_does_not_depend_on_array_order, ::test_ac2_unknown_region_or_mask_is_a_reference_error, ::test_unvalidated_cycles_and_broken_references_fail_fast; tests/unit/api/test_api_masks.py::test_ac2_resolve_region_through_the_facade y ::test_inspect_of_an_unvalidated_cycle_fails_fast; tests/unit/render/test_render_masks.py::test_ac2_cycles_and_broken_references_fail_before_any_raster."
+      },
+      "test_evidence": {
+        "T1": "tests/unit/geometry/test_geometry_algebra.py::test_fixtures_have_the_documented_sizes (1/8/128 píxeles), ::test_t1_binary_operators_match_set_oracle, ::test_t1_hand_results_on_the_fixtures, ::test_t1_associative_and_commutative_operators, ::test_t1_subtract_is_left_fold_and_not_commutative, ::test_t1_empty_mask_identities, ::test_t1_results_are_clipped_to_the_canvas y ::test_t1_property_matches_python_sets (caja esperada calculada desde los conjuntos).",
+        "T2": "tests/unit/schema/test_schema_masks.py::test_t2_direct_cycle_is_rejected, ::test_t2_indirect_cycle_marks_every_edge_of_the_loop, ::test_t2_missing_references_point_to_the_member, ::test_t2_mask_depth_limit, ::test_t2_mask_outside_the_canvas_is_valid, ::test_shared_operands_are_not_cycles; tests/unit/layers/test_layers_masks.py::test_t2_mask_fully_outside_the_canvas_hides_the_layer, ::test_t2_transformed_group_content_is_clipped_by_a_canvas_mask, ::test_t2_group_opacity_applies_once_over_masked_children, ::test_wide_deep_dag_of_full_masks_is_rejected_before_composing; tests/unit/render/test_render_masks.py::test_t2_mask_fully_outside_the_canvas_draws_nothing, ::test_wide_deep_dag_of_empty_masks_costs_the_floor y ::test_wide_deep_dag_of_full_masks_is_rejected_before_raster."
+      }
     },
     {
       "id": "MOANA-014",
       "title": "Crear contornos y análisis de clusters",
       "phase": "P3",
-      "status": "blocked",
+      "status": "done",
       "priority": "P1",
       "dependencies": [
         "MOANA-013",
@@ -795,7 +980,19 @@
         "Máscaras con huecos, contactos de esquina, diagonal y borde de canvas",
         "Componentes conocidos, outline de ancho 1/2 y operación editable que reproduce la máscara"
       ],
-      "evidence": [],
+      "evidence": [
+        "Operación editable outline en schema 1.0 ({id, type, mask_id, width 1..16, side outer|inner, color}) bajo la excepción previa a la primera publicación (ADR-022/023/025); fila de miembros colors=(color,), masks=(mask_id,), sin geometría: set_color la recolorea, translate/set_geometry dan not_geometric; probado también con History (undo/redo).",
+        "Morfología Chebyshev (moana.geometry.dilate/erode, core.morphology.morphology_bytes) con sumas prefijas int32 acumuladas en el sitio, radio 1–16 (MAX_MORPHOLOGY_RADIUS), clipping antes de reservar, sin wraparound y exterior transparente; outline_mask: outer = dilate−máscara, inner = máscara−erode; pico medido ≤ 0,997 de morphology_bytes en cajas 1×1…2048² y radios 1/3/16.",
+        "Render: cada outline es un fill diferido sobre outline_box; budget-v6 = budget-v5 + término de outline (visitas(M)+16·P; bytes(M)+área(Bm)+morphology_bytes+2·área(X)); idéntico a v5 sin outline.",
+        "Análisis de clusters en techniques (Python puro, sin NumPy directo): runs por fila + union-find en buffers array, conectividad 4/8, avisos singleton e irregular_steps, tope MAX_CLUSTER_RUNS=262144 (cluster_runs) y memoria acotada por cluster_bytes (CLUSTER_RUN_BYTES=512); excepciones por región (ClusterException, máx. MAX_CLUSTER_EXCEPTIONS=64) resueltas con MaskCover (una consulta vectorizada por hallazgo); deadline comprobado en cada etapa; el documento nunca cambia.",
+        "moana.render.render_with_regions valida una vez, resuelve regiones antes de rasterizar y admite la solicitud entera (render + regiones + cover + análisis) contra un único presupuesto; moana.api.analyze_clusters valida la configuración antes de renderizar; sin comando CLI (ADR-027).",
+        "Limitaciones documentadas en ADR-027: esquinas gruesas Chebyshev en contornos anchos (§8), irregular_steps casi no se dispara sobre contornos cerrados ni arcos que pasan de runs a columnas y da falsos positivos en curvas de duplicación 1,1,2,4 (suprimibles por región); peor caso medido 1,1 s sin excepciones y 1,9 s con 64 en un tablero 512².",
+        "Ejemplo examples/specs/outlined-slime.moana.json: contorno exterior ink, contorno interior slime_dark recortado al lado en sombra (capa body_shade) y dos glints singleton conservados por la excepción eye_glints (0 avisos con ella, 2 sin ella); revisión artística de agente (no aprobación humana).",
+        "ADR-027 (docs/architecture/decisions/ADR-027-outlines-clusters.md) con notas de cabecera en ADR-011, ADR-015, ADR-018, ADR-020, ADR-022 y ADR-025; MOANA.md 0.1.15-draft (§8, §12, §13, §19, §20); contratos de módulos, índice de ADR, overview, README, AGENTS.md y CLAUDE.md actualizados; JSON Schema regenerado; sin módulo quality (MOANA-026).",
+        "Gate sobre develop 74dae10 (MOANA-019 incluido): scripts/validate.py (1932 passed, src/moana al 100 % de líneas y ramas) y scripts/check_wheel.py verdes; mypy también con --platform win32; generate_schema --check al día. Evidencia de plataforma: local macOS; matriz pendiente en main.",
+        "Revisión: moana-graphics-engineer (cambios requeridos, aplicados: morphology_bytes como cota real con cumsum en el sitio y término de búferes de iteración, test de pico en 42 cajas/radios), moana-architect (cambios requeridos, aplicados: deadline y cota en la supresión, presupuesto por solicitud, rebase sobre MOANA-019, comentarios y contratos), moana-qa-engineer (cambios requeridos, aplicados: MaskCover y MAX_CLUSTER_EXCEPTIONS, memoria de clusters acotada, casos límite exactos, test de escalera corregido, severity Literal) y moana-pixel-artist (cambios requeridos, aplicados: sombreado según la luz y sheen separado del ojo).",
+        "Aprobado por el propietario el 2026-11-17 tras revisión; PR #57 hacia develop."
+      ],
       "aliases": [
         "MOA-014"
       ],
@@ -817,15 +1014,21 @@
       "risks": [
         "No eliminar ojos o partículas por ser singletons; las métricas no inferirán intención."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-013, MOANA-005",
-      "acceptance_evidence": {},
-      "test_evidence": {}
+      "blocking_reason": null,
+      "acceptance_evidence": {
+        "AC1": "tests/unit/techniques/test_techniques_outline.py::test_ac1_outer_width_1_rings_the_square_and_fills_its_hole, ::test_ac1_inner_width_1_follows_the_border_and_the_hole, ::test_ac1_width_2_doubles_the_ring_on_both_sides, ::test_ac1_inner_width_2_around_a_single_pixel_hole, ::test_ac1_clipping_at_the_canvas_corner y ::test_outline_matches_the_set_oracle (Hypothesis contra oráculo de conjuntos); tests/unit/render/test_render_outline.py::test_ac1_document_outline_at_the_canvas_edge; tests/unit/geometry/test_geometry_morphology.py::test_width_16_matches_the_set_oracle_on_explicit_masks.",
+        "AC2": "tests/unit/api/test_api_clusters.py::test_ac2_without_exception_the_glint_warns, ::test_ac2_region_exception_keeps_the_glint_without_warning (canonical_json, snapshot_digest y normalize_document idénticos) y ::test_example_outlined_slime_keeps_its_glints_by_exception; tests/unit/techniques/test_techniques_clusters.py::test_ac2_region_exception_suppresses_and_keeps_the_finding_visible y ::test_many_exceptions_cost_one_cover_query_per_finding."
+      },
+      "test_evidence": {
+        "T1": "tests/unit/techniques/test_techniques_outline.py::test_t1_full_canvas_has_no_outer_outline_and_an_edge_inner_one, ::test_t1_corner_contact_fills_the_notches y ::test_t1_diagonal_line; tests/unit/techniques/test_techniques_clusters.py::test_t1_corner_contact_is_two_clusters_with_4_and_one_with_8, ::test_t1_hole_does_not_split_a_ring_and_the_hole_colour_is_its_own_cluster y ::test_t1_canvas_edges_never_wrap; tests/unit/geometry/test_geometry_morphology.py::test_a_hole_shrinks_under_dilation_and_grows_under_erosion, ::test_corner_contact_and_diagonal, ::test_dilation_clips_to_the_canvas_without_wraparound, ::test_erosion_treats_the_off_canvas_exterior_as_transparent y ::test_operators_match_the_set_oracle.",
+        "T2": "tests/unit/techniques/test_techniques_clusters.py::test_t2_known_components_with_counts_boxes_and_areas, ::test_components_match_breadth_first_search (Hypothesis contra BFS), ::test_run_limit_is_exact_at_a_512_checkerboard, ::test_peak_memory_stays_within_cluster_bytes y ::test_deadline_is_checked_in_every_stage; tests/unit/render/test_render_outline.py::test_t2_outer_width_1_paints_exactly_the_ring_and_the_hole, ::test_t2_inner_width_2_over_a_body_keeps_the_rest_of_the_body, ::test_editing_recolours_the_outline_but_cannot_move_it, ::test_history_recolours_an_outline_and_undo_redo_restore_the_pixels y ::test_outline_fill_peak_stays_within_its_cost; tests/unit/techniques/test_techniques_outline.py::test_t2_outline_is_disjoint_from_or_inside_the_mask; tests/unit/geometry/test_geometry_morphology.py::test_peak_memory_stays_within_morphology_bytes; tests/unit/api/test_api_clusters.py::test_settings_fail_before_validation_and_rendering, ::test_unknown_region_fails_before_rendering, ::test_one_budget_covers_render_regions_cover_and_analysis y ::test_deadline_reaches_the_regions_and_the_analysis; tests/unit/render/test_render_regions.py y tests/unit/geometry/test_geometry_cover.py."
+      }
     },
     {
       "id": "MOANA-015",
       "title": "Añadir bandas de sombreado e iluminación",
       "phase": "P3",
-      "status": "blocked",
+      "status": "done",
       "priority": "P1",
       "dependencies": [
         "MOANA-005",
@@ -848,7 +1051,19 @@
         "Bandas vacías, solapamientos, clamp y cambios de orientación",
         "Fixtures manuales con rampa de 3/5 tonos y píxeles de frontera"
       ],
-      "evidence": [],
+      "evidence": [
+        "Operación shade en schema 1.0 (excepción previa a la primera publicación, ADR-022/023/025/027): {id, type, ramp, ramp_order monotonic|stylized, light {direction 8+front, height 0–3, intensity, ambient}, bands 1–64 × {id, mask_id, facing, offset}}; referencia unknown_ramp; IDs de banda globales en el DAG de máscaras; JSON Schema regenerado; moana.schema.document_ids expone todos los IDs del documento (incluidas bandas).",
+        "Sin normales inferidas: cada banda trae su facing authored; exposure entera −6..6, band_level = round_half_away(intensity·exp/6), índice = clamp(ambient + level + offset) a la rampa (moana.core.shading, moana.techniques.shading: ShadeLight, exposure, band_level, ramp_index, band_index, last_wins, resolve_bands). Ningún color se calcula: sólo se elige un paso de la rampa.",
+        "Render: un fill diferido por banda con máscara = banda − bandas posteriores que la tocan (shade_later); partes disjuntas, gana la última banda listada, ningún paso translúcido se mezcla con otra banda; budget-v7 idéntico a v6 sin shade, con SHADE_FIXED_BYTES=8192 y SHADE_FOLD_BYTES=24576 (3 operandos × NPY_BUFSIZE) medidos con tracemalloc en 360 configuraciones.",
+        "Advertencia configurable del riesgo del issue: ramp_order monotonic emite Palette.ramp_warnings en …/ramp; stylized sólo suprime la luminancia no creciente.",
+        "Edición: NodeMembers gana columnas ramps e items (filas anidadas limitadas a masks por test); las bandas son items con ID global: insert_operation valida sus IDs (duplicate_id/reused_id con puntero de banda), borrar un shade o su capa retira esos IDs y los incluye en affected_ids; las máscaras de banda se editan por su ID (AC2). Parámetros de banda/luz sin comando propio (seguimiento en ADR-028 §6). OperationSummary.color puede ser null.",
+        "Ejemplo examples/specs/shaded-orb.moana.json: orbe con rampa de 5 tonos, luz nw, bandas de cuerpo, sombra (clamp −1→0), lado iluminado, terminadores ne/sw, rebote y brillo; sin advertencias y 0 singletons (analyze_clusters en el test); revisión artística de agente, no aprobación humana.",
+        "Contorno selectivo de §8 pendiente: ADR-028 lo asigna a MOANA-017, con nota técnica en el catálogo.",
+        "ADR-028 (docs/architecture/decisions/ADR-028-band-shading.md) con notas de cabecera en ADR-011, 014, 018, 020, 022, 024, 025 y 027; MOANA.md 0.1.16-draft (§9, §10, §12, §13, §15, §17, §20); contratos de módulos, índice de ADR, overview, README, AGENTS.md y CLAUDE.md actualizados. El issue toca también schema, render, editing y api (justificado en ADR-028).",
+        "Gate sobre 6793f4b: scripts/validate.py (2098 passed, src/moana al 100 % de líneas y ramas) y scripts/check_wheel.py verdes; mypy también con --platform win32; generate_schema --check al día. Evidencia de plataforma: local macOS; matriz pendiente en main.",
+        "Revisión: moana-architect (cambios requeridos, aplicados: IDs de banda en reused_id/affected_ids, document_ids público, filas anidadas acotadas, selective outline asignado, docstrings), moana-graphics-engineer (cambios requeridos, aplicados: cota por fill general con SHADE_FOLD_BYTES de 3 operandos y test por banda en cajas desplazadas, fixture 1×1), moana-qa-engineer (aprobado con menores, aplicados: cifra de cobertura, propiedad AC1 de documento, bordes de schema, rampa de 1 tono, field en ramp_warnings) y moana-pixel-artist (cambios requeridos, aplicados: terminadores ne/sw y rebote limitado al cuadrante se, 0 singletons).",
+        "Aprobado por el propietario el 2026-11-17 tras revisión; PR #58 hacia develop."
+      ],
       "aliases": [
         "MOA-015"
       ],
@@ -870,15 +1085,21 @@
       "risks": [
         "La estética de una rampa puede contradecir luminancia monótona; emitir advertencia configurable."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-005, MOANA-013",
-      "acceptance_evidence": {},
-      "test_evidence": {}
+      "blocking_reason": null,
+      "acceptance_evidence": {
+        "AC1": "tests/unit/techniques/test_techniques_shading.py::test_ac1_overlap_goes_to_the_last_listed_band y ::test_ac1_visible_parts_are_disjoint_and_cover_the_union; tests/unit/render/test_render_shade.py::test_ac1_overlap_takes_the_last_band_and_only_ramp_colours, ::test_ac1_every_pixel_takes_the_ramp_step_of_the_last_band_containing_it (Hypothesis contra oráculo de conjuntos), ::test_ac1_exact_pixels_on_a_one_pixel_canvas y ::test_ac1_translucent_ramp_steps_never_blend_two_bands.",
+        "AC2": "tests/unit/editing/test_editing_shade.py::test_ac2_moving_the_shadow_mask_keeps_ids_and_changes_one_column (diff documentado: columna x=4, 8 píxeles; también en ADR-028 §6) y ::test_ac2_any_shadow_edit_only_changes_pixels_of_the_old_or_new_mask (diferencia simétrica); ::test_removing_a_shade_retires_its_band_ids, ::test_an_inserted_band_id_must_be_new y ::test_removing_a_layer_reports_the_band_ids_of_its_shades."
+      },
+      "test_evidence": {
+        "T1": "tests/unit/techniques/test_techniques_shading.py::test_t1_turning_the_light_swaps_the_lit_and_the_shadowed_band, ::test_t1_rotating_light_and_facings_together_changes_nothing, ::test_t1_opposite_facings_get_opposite_levels_within_intensity, ::test_t1_steps_are_clamped_to_the_ramp, ::test_t1_offsets_beyond_the_ramp_are_clamped y ::test_t1_empty_bands_and_fully_covered_bands; tests/unit/render/test_render_shade.py::test_t1_listing_order_decides_the_overlap, ::test_t1_turning_the_light_swaps_the_tones_without_touching_the_masks, ::test_t1_offsets_are_clamped_to_the_ramp y ::test_t1_empty_bands_paint_nothing.",
+        "T2": "tests/unit/techniques/test_techniques_shading.py::test_t2_five_tone_ramp_under_an_east_light y ::test_t2_three_tone_ramp_under_a_front_light; tests/unit/render/test_render_shade.py::test_t2_five_tone_fixture_with_boundary_pixels, ::test_t2_three_tone_fixture_under_a_front_light y ::test_every_band_fill_peak_stays_within_its_cost; tests/unit/schema/test_schema_shade.py (payload, negativos, 64 bandas, unknown_ramp)."
+      }
     },
     {
       "id": "MOANA-016",
       "title": "Implementar dithering ordenado",
       "phase": "P3",
-      "status": "blocked",
+      "status": "done",
       "priority": "P1",
       "dependencies": [
         "MOANA-005",
@@ -901,7 +1122,18 @@
         "Todos los thresholds, coberturas y posiciones del período",
         "Máscaras no rectangulares, costuras entre tiles y repetición temporal sin parpadeo"
       ],
-      "evidence": [],
+      "evidence": [
+        "src/moana/techniques/dither.py: dithering ordenado Bayer 2×2/4×4 con las matrices normativas de §10; t = M[(y−oy) mod N][(x−ox) mod N] con módulo matemático; B si t < coverage, A en el resto; split_dither reparte exactamente la máscara en dos partes disjuntas; techniques sólo importa core y geometry.",
+        "src/moana/geometry/pattern.py: select_periodic genérico sobre la caja recortada de la máscara (sin reservar fuera de ella); src/moana/core/dither.py: DITHER_SIZES y PATTERN_INDEX_BYTES compartidos.",
+        "src/moana/schema/: operación dither en schema 1.0 (size 2|4, coverage 0..size², origin, color_a, color_b, mask_id obligatorios) como ampliación previa a la primera publicación; referencias de color y máscara validadas antes del render; tabla de miembros por tipo OPERATION_MEMBERS/MASK_MEMBERS (NodeMembers: colores, máscaras, geometría) con prueba de exhaustividad.",
+        "src/moana/render/: cada dither son dos fills diferidos sobre la caja de su máscara (layers.evaluate_mask, una máscara construida a la vez); budget-v5 (idéntico a budget-v4 sin dither) con CostEstimate.fills/BudgetReport.fills y el recurso operations comparando fills (2 por dither).",
+        "Ejemplo examples/specs/dither-dusk.moana.json: bandas del cielo de 4 filas alineadas con el período 4×4 (coberturas 6/8/10, rampa night/dusk/ember/glow), duna a contraluz más oscura que el horizonte con núcleo sólido y transición 2×2 con origen [0,-1] que difiere visiblemente de [0,0]; revisado a 1× y 8× por agente (sin aprobación artística humana).",
+        "ADR-025 (docs/architecture/decisions/ADR-025-ordered-dithering.md) con notas de cabecera en ADR-011, ADR-012, ADR-015, ADR-017, ADR-018, ADR-020 y ADR-022; MOANA.md 0.1.12-draft (§10, §12, §13, §20); contratos de módulos, índice de ADR, overview, README, guía de desarrollo, AGENTS.md y CLAUDE.md actualizados.",
+        "Trazabilidad: R009 cubierto (dithering ordenado). Seguimientos documentados en ADR-025: coste por nodo de máscara (budget-v6) e inspect sólo con color A.",
+        "Gate: scripts/validate.py (1548 passed, src/moana al 100 % de líneas y ramas) y scripts/check_wheel.py verdes; mypy también con --platform win32; generate_schema --check al día. Determinismo entre procesos en macOS; matriz pendiente en main.",
+        "Revisión: moana-graphics-engineer (aprobado; riesgo heredado de coste por nodo documentado), moana-architect (cambios requeridos, aplicados: fills separado de operations, nota en ADR-012, constantes en core, tabla de miembros para integrar MOANA-018) y moana-pixel-artist (cambios requeridos, aplicados: contraste duna/horizonte, anclaje negativo visible, bandas alineadas al período, rampa con ember, núcleo de sombra sólido).",
+        "Aprobado por el propietario el 2026-11-17 tras revisión; PR #54 hacia develop."
+      ],
       "aliases": [
         "MOA-016"
       ],
@@ -922,15 +1154,21 @@
       "risks": [
         "El módulo negativo y los overrides temporales deben tener tests propios."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-005, MOANA-013",
-      "acceptance_evidence": {},
-      "test_evidence": {}
+      "blocking_reason": null,
+      "acceptance_evidence": {
+        "AC1": "tests/unit/techniques/test_techniques_dither.py::test_ac1_extreme_coverages_inside_non_rectangular_masks; tests/unit/render/test_render_dither.py::test_ac1_extreme_coverages_paint_only_a_or_only_b_inside_the_mask, ::test_dither_without_background_leaves_outside_transparent y ::test_transparent_colour_b_keeps_the_background.",
+        "AC2": "tests/unit/techniques/test_techniques_dither.py::test_ac2_negative_origin_and_period_translations_match y ::test_ac2_negative_origin_uses_the_floor_modulo; tests/unit/render/test_render_dither.py::test_ac2_origin_translations_by_the_period_give_identical_bytes; tests/integration/test_dither_determinism.py::test_example_dune_matches_hand_computed_pixels (origen [0,-1] distinto de [0,0])."
+      },
+      "test_evidence": {
+        "T1": "tests/unit/techniques/test_techniques_dither.py::test_matrices_are_the_normative_ones, ::test_t1_every_threshold_position_and_coverage y ::test_t1_every_coverage_on_a_full_canvas_period_counts; tests/unit/render/test_render_dither.py::test_t1_every_coverage_matches_the_literal_matrix; tests/integration/test_dither_determinism.py::test_example_sky_matches_the_hand_computed_bayer_bands.",
+        "T2": "tests/unit/techniques/test_techniques_dither.py::test_t2_non_rectangular_masks_split_exactly, ::test_t2_adjacent_tiles_with_a_shared_anchor_have_no_seam, ::test_t2_repeated_dithering_is_identical y ::test_property_parts_partition_the_mask_like_the_oracle; tests/unit/render/test_render_dither.py::test_t2_combined_non_rectangular_mask, ::test_t2_adjacent_tiles_with_a_shared_anchor_have_no_seam y ::test_t2_repeated_renders_never_flicker; tests/integration/test_dither_determinism.py::test_t2_fresh_processes_with_any_hash_seed_agree y ::test_t2_repeated_renders_in_one_process_agree."
+      }
     },
     {
       "id": "MOANA-017",
       "title": "Crear presets de materiales versionados",
       "phase": "P3",
-      "status": "blocked",
+      "status": "done",
       "priority": "P1",
       "dependencies": [
         "MOANA-014",
@@ -945,7 +1183,8 @@
       "out_of_scope": "No afirmar calidad profesional sólo por aprobar fixtures ni usar assets sin licencia.",
       "technical": [
         "Semilla por operación/coordenada según §14; ningún shader ejecutable en JSON",
-        "Parámetros con rango, fuente, versión y recetas reproducibles; registrar procedencia de ejemplos"
+        "Parámetros con rango, fuente, versión y recetas reproducibles; registrar procedencia de ejemplos",
+        "Contorno selectivo de MOANA.md §8 (pendiente desde MOANA-015, ADR-028): reutilizar ShadeLight/exposure/band_index de moana.techniques.shading para decidir qué tramos del outline se aclaran u oscurecen, sin una segunda regla de luz."
       ],
       "acceptance": [
         "Cada material puede editarse sin perder IDs ni introducir colores fuera del perfil",
@@ -955,7 +1194,18 @@
         "Fixtures pequeñas por material con máscara y límites de densidad/escala",
         "Pruebas de estabilidad entre frames y revisión visual a 1×/4× documentada como humana o pendiente"
       ],
-      "evidence": [],
+      "evidence": [
+        "Tabla de presets versionados de sólo lectura moana.core.materials.MATERIAL_PRESETS (MappingProxyType de filas frozen por (name, version)): v1 skin (poros, max_density 4), cloth (tejido en cesta), metal (veta diagonal), wood (veta horizontal) y stone (moteado); procedencia propia y licencia de las recetas por decidir; MAX_MATERIAL_SCALE=8 es margen para versiones futuras (ninguna fila v1 supera 4).",
+        "Textura por celdas determinista moana.techniques.materials: celdas scale×scale ancladas en origin con división entera hacia abajo (también negativos), puerta cell_choice(seed, op_id, cx, cy, 0, 64) < density con SHA-256 y enteros big-endian (cell_choices vectorizado igual byte a byte al escalar), paso ±1 de rampa con clamp; sin floats, hash() ni sets.",
+        "Operación material en schema 1.0 (excepción previa a la publicación, ADR-030 §8, que también cubre el comando set_parameters del batch 1.0; DOCUMENT_MIGRATIONS de ADR-031 sigue sin pasos): bandas con ID global y la misma regla de luz de shade (band_index, ADR-028), sin segunda regla; colección raíz materials aceptada sólo vacía.",
+        "Operación selective_outline: anillo de outline_mask como base y tramos authored con ramp[band_index]; partes disjuntas cuya unión es el anillo, cajas declaradas dentro de su máscara.",
+        "Edición: columna parameters en NodeMembers (lista blanca por tipo; outline y dither vacías a propósito) y comando set_parameters revalidado; el error not_parameter apunta a /commands/i/parameters sin repetir la clave del usuario. Mover un sprite con textura exige translate de las máscaras y set_parameters de origin en el mismo batch.",
+        "Presupuesto budget-v8: visitas y bytes por parte (banda + textura) medidos con tracemalloc en geometrías extremas (2048×1, 2048², orígenes ±2048, muchas bandas) sin superar la cota; documentos admitidos de mayor coste renderizan en <1 s.",
+        "Cinco ejemplos editables examples/specs/material-{skin,cloth,metal,wood,stone}.moana.json con sombra plana tras la textura (0 contactos del paso más oscuro con la tinta) y contorno selectivo; singletons c4 tras la revisión: skin 2, cloth 2 (antes 334), metal 67 (diagonales continuas, 0 en c8), wood 0, stone 7.",
+        "Revisiones de agente: gráficos aprobado; arquitectura, QA y pixel-art con correcciones aplicadas. Revisión artística humana a 1×/4×: PENDIENTE (registrada en metadata.provenance de los ejemplos y en ADR-030).",
+        "Gate local macOS: scripts/validate.py 2614 passed con src/moana al 100 %, check_wheel OK, mypy --platform win32 OK, JSON Schema al día, pre-commit OK; matriz pendiente en main.",
+        "Aprobado por el propietario el 2026-11-17 tras revisión; PR #61 hacia develop."
+      ],
       "aliases": [
         "MOA-017"
       ],
@@ -977,15 +1227,21 @@
       "risks": [
         "Una receta reproducible puede seguir siendo visualmente mala; separar evaluación humana."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-014, MOANA-015, MOANA-016",
-      "acceptance_evidence": {},
-      "test_evidence": {}
+      "blocking_reason": null,
+      "acceptance_evidence": {
+        "AC1": "tests/unit/editing/test_editing_material.py::test_ac1_tuning_a_material_keeps_ids_and_stays_in_the_palette, ::test_ac1_material_edits_are_undoable_in_the_history; tests/unit/render/test_render_material.py::test_ac1_every_pixel_is_the_ramp_step_of_its_last_band_plus_its_texel, ::test_ac1_the_light_and_facings_follow_the_shade_rule",
+        "AC2": "tests/unit/editing/test_editing_material.py::test_ac2_inserted_operation_keeps_existing_texture; tests/unit/render/test_render_material.py::test_ac2_same_seed_same_texture_and_another_operation_changes_nothing; tests/unit/techniques/test_techniques_materials.py::test_ac2_same_seed_same_texture_and_the_key_is_the_operation"
+      },
+      "test_evidence": {
+        "T1": "tests/unit/techniques/test_techniques_materials.py::test_t1_cloth_full_density_is_a_basket_weave, ::test_t1_metal_full_density_is_a_diagonal_streak_every_fourth_cell, ::test_t1_wood_full_density_is_horizontal_grain_every_third_row, ::test_t1_zero_density_never_moves_a_pixel, ::test_t1_every_preset_matches_the_independent_hash_oracle, ::test_t1_limits_of_density_and_scale, ::test_t1_marked_fraction_follows_the_density, ::test_t1_a_cell_marked_at_one_density_stays_marked_above_it, ::test_t1_every_pixel_of_a_cell_shares_its_offset; tests/unit/render/test_render_material.py::test_t1_cloth_weave_moves_basket_pixels_one_step_down, ::test_t1_metal_streak_moves_diagonal_pixels_one_step_up, ::test_t1_wood_grain_with_scale_two_and_an_offset_origin, ::test_t1_clamp_keeps_texture_steps_inside_the_ramp, ::test_t1_one_pixel_canvas, ::test_t1_band_entirely_off_the_canvas_paints_nothing, ::test_t1_zero_density_is_plain_band_shading, ::test_t1_seeded_presets_match_the_independent_oracle; límites de densidad/escala en tests/unit/schema/test_schema_material.py",
+        "T2": "tests/unit/render/test_render_material.py::test_t2_a_frame_that_moves_mask_and_origin_together_moves_every_pixel, ::test_t2_recipe_golden_of_every_example, ::test_t2_recipe_golden_of_every_preset_row; tests/unit/techniques/test_techniques_materials.py::test_t2_texture_follows_its_origin; tests/integration/test_material_determinism.py::test_t2_fresh_processes_with_any_hash_seed_agree, ::test_t2_repeated_renders_in_one_process_agree, ::test_t2_the_texture_does_not_depend_on_the_order_of_json_keys; revisión visual a 1×/4×/8× por agentes (pixel-art); revisión humana PENDIENTE"
+      }
     },
     {
       "id": "MOANA-018",
       "title": "Implementar batches de edición atómica",
       "phase": "P3",
-      "status": "blocked",
+      "status": "done",
       "priority": "P0",
       "dependencies": [
         "MOANA-002",
@@ -1013,7 +1269,18 @@
         "Comparar documento original byte a byte, render antes/después y batch sin cambio visual",
         "Dos ramas con revision=1 y contenidos distintos rechazan el batch de la otra rama mediante base_snapshot."
       ],
-      "evidence": [],
+      "evidence": [
+        "src/moana/editing/: batches atómicos con los ocho comandos de §15 (set_color, set_geometry, translate, set_visibility, replace_palette_color, insert_operation, remove, reorder) dirigidos por ID; EditBatch estricto (1–1024 comandos, MAX_EDIT_COMMANDS); los comandos se aplican sobre una copia normalizada y el resultado se revalida entero (DAG de máscaras, límites, perfil) antes de construir nada; el documento fuente nunca cambia.",
+        "Revisión optimista: base_revision y base_snapshot identifican conjuntamente la base; una revisión distinta (stale_revision) o un snapshot distinto (snapshot_mismatch) dan EditConflict (EDIT_CONFLICT, salida 4); revision_overflow se comprueba antes de aplicar.",
+        "Reglas por tipo leídas de la tabla moana.schema.OPERATION_MEMBERS/MASK_MEMBERS (ADR-025): remove rechaza referencias vivas (live_reference), set_color exige un único miembro de color (multiple_colors en dither), translate/set_geometry rechazan tipos sin geometría (not_geometric), insert valida todos los colores; un ID borrado no se reinserta en el mismo batch (reused_id); capas bloqueadas rechazadas salvo replace_palette_color, que no pertenece a ninguna capa.",
+        "Fachada: moana.api.apply_edit, edit_document y load_edit_batch (lectura acotada del batch); comando moana edit DOC BATCH que imprime revisión, snapshot, IDs afectados y el documento sin escribir archivos; capabilities con edit_commands y sin funciones ni comandos previstos.",
+        "affected_ids lista objetivos, insertados y eliminados; la caja de diferencia y las dependencias indirectas quedan para el manifiesto de historial de MOANA-020 (project), según §15 y ADR-024.",
+        "ADR-024 (docs/architecture/decisions/ADR-024-atomic-edits.md) con notas de cabecera en ADR-011, ADR-020 y ADR-025; MOANA.md 0.1.13-draft (§13, §15); contratos de módulos, índice de ADR, overview, README, guía de desarrollo, AGENTS.md y CLAUDE.md actualizados; scripts/check_wheel.py ejecuta moana edit con el wheel instalado.",
+        "Trazabilidad: R016 cubierto; R038 cubierto en edición (render, preview y edición desde API/CLI); la persistencia queda para MOANA-020. La evidencia de MOANA-012 que citaba el comando edit previsto queda sustituida por tests/unit/cli/test_cli_edit.py.",
+        "Gate: scripts/validate.py (1698 passed, src/moana al 100 % de líneas y ramas) y scripts/check_wheel.py verdes; mypy también con --platform win32; generate_schema --check al día. Sin ejecución en Windows real (matriz pendiente en main).",
+        "Revisión: moana-architect (cambios requeridos, aplicados: tabla de miembros por tipo compatible con dither, imports privados de schema listados y fijados, documentos de estado, capas bloqueadas y paleta, aplazamiento de bbox a MOANA-020), moana-python-engineer (aprobado; bajos aplicados: robustez con model_construct, tablas inmutables, dispatch tipado, mensajes de batch) y moana-qa-engineer (aprobado con cambios; aplicados: reinserción de IDs, coste de translate en paths, máscaras path/regiones, casos no-op y fuera de lienzo, rollback en la validación final, oráculo mínimo en Hypothesis, CLI sin escritura de archivos).",
+        "Aprobado por el propietario el 2026-11-17 tras revisión; PR #55 hacia develop."
+      ],
       "aliases": [
         "MOA-018"
       ],
@@ -1035,15 +1302,22 @@
       "risks": [
         "Tras undo pueden existir revisiones numéricas iguales en ramas distintas; verificar también identidad del snapshot."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-002, MOANA-010, MOANA-012, MOANA-013",
-      "acceptance_evidence": {},
-      "test_evidence": {}
+      "blocking_reason": null,
+      "acceptance_evidence": {
+        "AC1": "tests/unit/editing/test_editing_apply.py::test_ac1_recolor_changes_only_its_reference_and_the_revision (diff campo a campo: sólo /revision y /layers/0/operations/0/color), ::test_ac1_ids_order_and_untouched_members_are_preserved y ::test_no_op_and_off_canvas_batches_still_bump_the_revision.",
+        "AC2": "tests/unit/editing/test_editing_apply.py::test_ac2_an_invalid_second_command_rolls_back_the_first, ::test_a_failure_in_the_final_validation_rolls_everything_back, ::test_property_failing_batch_is_all_or_nothing, ::test_ac2_stale_revision_is_an_edit_conflict, ::test_ac2_a_previous_revision_cannot_be_reused_after_an_edit y ::test_revision_overflow_is_rejected_before_any_command; tests/unit/cli/test_cli_edit.py (conflicto con salida 4)."
+      },
+      "test_evidence": {
+        "T1": "tests/unit/editing/test_editing_apply.py: casos válidos y negativos de cada comando (test_t1_*), reorder al principio (test_t1_reorder_to_the_start_and_after_a_sibling), dependencias vivas (test_t1_remove_rejects_live_references, test_t1_reorder_keeps_references_alive), ::test_removed_id_cannot_be_reinserted_in_the_same_batch y ::test_property_matches_a_minimal_oracle; tests/unit/editing/test_editing_dither.py (remove con referencias vivas, multiple_colors, not_geometric, insert y reorder de dither); tests/unit/editing/test_editing_members.py::test_every_geometric_member_has_a_translate_shape.",
+        "T2": "tests/unit/editing/test_editing_apply.py::test_t2_source_document_is_byte_identical_after_success_and_failure, ::test_t2_render_before_and_after_a_recolor y ::test_t2_batch_without_visual_change_keeps_the_visual_digest; tests/unit/cli/test_cli_edit.py::test_edit_writes_no_files; tests/integration/test_cli_paths.py::test_cli_edit_in_a_fresh_process.",
+        "T3": "tests/unit/editing/test_editing_apply.py::test_t3_branches_with_the_same_revision_reject_each_other (dos ramas con revision=1 se rechazan mutuamente con snapshot_mismatch y cada batch se acepta en su rama)."
+      }
     },
     {
       "id": "MOANA-019",
       "title": "Añadir undo/redo e historial inmutable",
       "phase": "P3",
-      "status": "blocked",
+      "status": "done",
       "priority": "P1",
       "dependencies": [
         "MOANA-018"
@@ -1066,7 +1340,17 @@
         "Secuencias de 1/10/100 ediciones y navegación a límites",
         "Fallo de batch no agrega snapshot; ramas, revisiones y budget de historial"
       ],
-      "evidence": [],
+      "evidence": [
+        "src/moana/editing/history.py: History inmutable (frozen) con start, edit, undo, redo, checkout, snapshot, children_of, leaves, can_undo, can_redo, current y document; cada Snapshot guarda documento, digest, padre, batch canónico, affected_ids, revisión y tamaño en bytes de JSON canónico; las ramas se identifican por digest, nunca por número de revisión.",
+        "Undo/redo mueven el cursor sin crear revisiones; editar tras undo crea una rama y sustituye sólo el redo activo de ese padre; las ramas antiguas siguen accesibles con checkout (sin revisión nueva); un batch fallido no añade nada ni mueve el cursor.",
+        "Presupuesto: MAX_HISTORY_SNAPSHOTS=1024 y MAX_HISTORY_BYTES=32 MiB de JSON canónico, comprobados antes de añadir; es una medida determinista proporcional, no una cota de RAM (factor trazado ~10–17×, fijado por un test slow con tracemalloc, k=24). HistoryLimits sólo puede bajar los máximos.",
+        "Convergencia: el mismo edit tras undo reutiliza el snapshot guardado (conserva el primer batch y affected_ids); un digest alcanzado desde otro padre da EditConflict (existing_snapshot, salida 4), reintentable con checkout; la alternativa queda anotada como riesgo de MOANA-020.",
+        "El constructor de History valida y congela un historial hecho a mano (ValidationError reason invalid_history; BudgetExceeded sobre límites), base de la reconstrucción desde persistencia en MOANA-020; los métodos usan un constructor interno sin revalidación.",
+        "ADR-026 (docs/architecture/decisions/ADR-026-edit-history.md) con nota de cabecera en ADR-024; MOANA.md 0.1.14-draft (§15); contratos de módulos, índice de ADR, overview, README, AGENTS.md y CLAUDE.md actualizados. Sin cambios en api, cli, schema ni capabilities: la persistencia y su exposición quedan para MOANA-020.",
+        "Gate: scripts/validate.py (1750 passed, src/moana al 100 % de líneas y ramas) y scripts/check_wheel.py verdes; mypy también con --platform win32; generate_schema --check al día. Evidencia de plataforma: local macOS; matriz pendiente en main.",
+        "Revisión: moana-architect (cambios requeridos, aplicados: presupuesto de bytes rebajado y documentado como medida no-RAM, existing_snapshot como EditConflict, constructor validado, hash coherente, parse_limits) y moana-qa-engineer/python (cambios requeridos, aplicados: test de memoria trazada, propiedades Hypothesis con checkout e invariantes de árbol, reutilización con otro batch, casos de límite exactos, equivalencia de canonical_batch).",
+        "Aprobado por el propietario el 2026-11-17 tras revisión; PR #56 hacia develop."
+      ],
       "aliases": [
         "MOA-019"
       ],
@@ -1087,15 +1371,21 @@
       "risks": [
         "No usar el número de revisión como identidad global del historial."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-018",
-      "acceptance_evidence": {},
-      "test_evidence": {}
+      "blocking_reason": null,
+      "acceptance_evidence": {
+        "AC1": "tests/unit/editing/test_editing_history.py::test_ac1_undo_and_redo_restore_document_and_rgba (documento y RGBA idénticos tras undo/redo) y ::test_ac1_oracles_are_consistent_with_the_fixture.",
+        "AC2": "tests/unit/editing/test_editing_history.py::test_ac2_edit_after_undo_replaces_only_the_active_redo y ::test_ac2_undo_of_an_old_branch_reactivates_its_redo; propiedades ::test_property_history_matches_a_list_and_cursor_model y ::test_property_history_with_checkouts_matches_a_path_tree."
+      },
+      "test_evidence": {
+        "T1": "tests/unit/editing/test_editing_history.py::test_t1_sequences_and_navigation_limits[1], [10] y [100]; ::test_t1_snapshot_records_parent_batch_revision_and_size.",
+        "T2": "tests/unit/editing/test_editing_history.py::test_t2_failed_batch_adds_nothing_and_keeps_the_cursor, ::test_t2_branches_with_the_same_revision_have_distinct_digests, ::test_t2_checkout_creates_no_revision, ::test_t2_checkout_of_an_unknown_digest_is_a_reference_error, ::test_t2_snapshot_budget_rejects_before_adding, ::test_t2_byte_budget_rejects_before_adding, ::test_t2_exact_byte_budget_accepts_and_one_byte_less_rejects, ::test_t2_a_single_snapshot_budget_rejects_every_edit, ::test_t2_traced_memory_is_proportional_to_total_bytes (slow), ::test_t2_same_edit_after_undo_reuses_the_stored_snapshot, ::test_t2_reuse_keeps_the_first_batch_and_affected_ids, ::test_t2_a_digest_reached_from_another_parent_is_rejected, ::test_t2_hand_built_history_is_validated, ::test_t2_hand_built_history_rejects_corruption (18 casos), ::test_t2_hand_built_history_types_and_budget, ::test_canonical_batch_uses_the_canonical_document_encoding, ::test_t2_history_limits_can_only_be_lowered, ::test_t2_defaults_and_argument_types y ::test_t2_history_values_are_frozen."
+      }
     },
     {
       "id": "MOANA-020",
       "title": "Persistir proyectos y assets seguros",
       "phase": "P4",
-      "status": "blocked",
+      "status": "done",
       "priority": "P1",
       "dependencies": [
         "MOANA-018",
@@ -1122,7 +1412,19 @@
         "ZIP con ../, rutas absolutas, symlink, nombres en colisión, ratio excesivo y bomba de imagen",
         "Fallo después de escribir nuevos assets conserva manifiesto y assets previos; el envelope rechaza campos extra sin alterar el schema de Document."
       ],
-      "evidence": [],
+      "evidence": [
+        "Módulo moana.project (ADR-029): Project, Asset.from_png, save_project (directorio), save_project_archive (.moana ZIP), save_document (.moana.json), load_project, encode_project, ProjectLimits (sólo se pueden bajar) y SaveReport; depende sólo de core, schema (API pública, incluida document_ids), editing, Pydantic y Pillow encapsulado; nada inferior lo importa (test AST con rglob). Sin fachada ni CLI (MOANA.md §13 no los prevé).",
+        "Sobre ProjectManifest {kind, project_version 1.0, document, assets, history} estricto, congelado y separado de Document (JSON Schema de Document intacto); lector propio acotado (bytes, profundidad, nodos, claves duplicadas, números no finitos); un documento plano se valida con el lector de schema.",
+        "Almacén inmutable por hash: assets/<sha256>.png, history/snapshots/<digest>.json y history/batches/<sha256>.json escritos antes de confirmar el manifiesto; el guardado comprueba antes de escribir todo lo que la carga comprobará (forma canónica del documento, snapshots, batches, manifiesto, historial), de modo que lo guardado siempre carga con los mismos límites.",
+        "Escritura atómica (temporal O_EXCL, fsync, os.replace/os.link, fsync de directorios con aborto en fallo) con la misma tabla de razones que export.atomic (no_replace_unavailable, permission_denied, invalid_name; test de paridad); en POSIX toda E/S va por descriptores de directorio O_DIRECTORY|O_NOFOLLOW (cierra el TOCTOU por symlink intermedio; fallback documentado en Windows); errores sin rutas sensibles.",
+        "ZIP inspeccionado sin extraer: EOCD estricto (sin comentario ni ZIP64, directorio central acotado), cifrado, compresión exótica, symlinks, rutas absolutas/unidad/traversal/barra invertida, duplicados y colisiones NFC+casefold, ratio ≤ 100:1, expansión ≤ 256 MiB, ≤ 256 entradas y 64 MiB; escritura determinista con la misma zlib (identidad estable = hash del manifiesto).",
+        "Assets PNG RGBA de 8 bits: longitud y SHA-256 exactos, IHDR ≤ 2048 por eje y presupuesto de píxeles antes de Pillow; APNG, ICC, PNG truncado (IEND) y DecompressionBombError rechazados como errores de dominio; IDAT CRC no verificado por Moana (riesgo bajo aceptado: el SHA-256 va antes).",
+        "Historial: entradas {snapshot, parent, batch, redo} reconstruidas reaplicando cada batch y con el constructor validado de History; convergencia rechazada como en ADR-026 §4; HistoryLimits es configuración del anfitrión que carga; cubre documentos con shade (affected_ids con IDs de banda). IDs de assets distintos de schema.document_ids (incluidas bandas).",
+        "Diez límites nuevos en moana.core.limits (MAX_PROJECT_*, MAX_ASSET_*, MAX_ARCHIVE_*). ADR-029 con notas de cabecera en ADR-010, ADR-024 y ADR-026; MOANA.md 0.1.17-draft (§16); contratos de módulos, índice de ADR, overview, README, AGENTS.md y CLAUDE.md actualizados. Seguimientos: causa raíz de documentos cuya forma canónica supera el límite (schema/History), módulo común de escritura atómica, recolección de huérfanos, previews, migraciones y fachada/CLI.",
+        "Gate sobre develop 4265cdf (MOANA-015 incluido): scripts/validate.py (2318 passed, src/moana al 100 % de líneas y ramas) y scripts/check_wheel.py verdes; mypy también con --platform win32; generate_schema --check al día. Evidencia de plataforma: local macOS; la rama Windows sin dir_fd sólo se prueba forzando el fallback; matriz pendiente en main.",
+        "Revisión: moana-architect (cambios requeridos, aplicados: document_ids de schema, paridad con export.atomic, determinismo del ZIP acotado, clases de error, superficie pública documentada), moana-python-engineer con foco en seguridad (cambios requeridos, aplicados: ruta filtrada en PermissionError, directorio central acotado, ZIP64 y comentario rechazados, TOCTOU de escritura con dir_fd, Pillow, números no finitos, criterio único de symlinks) y moana-qa-engineer (cambios requeridos, aplicados: guardados que no recargaban, fallos de disco paso a paso con assets e historial, orden de fsync, propiedad Hypothesis de roundtrip, bordes exactos).",
+        "Aprobado por el propietario el 2026-11-17 tras revisión; PR #59 hacia develop."
+      ],
       "aliases": [
         "MOA-020"
       ],
@@ -1141,17 +1443,25 @@
         "Roundtrips, rechazo de rutas/archivos peligrosos y fallos durante la escritura."
       ],
       "risks": [
-        "Guardar el mismo asset path in-place antes del manifiesto rompe atomicidad; versiones inmutables necesarias."
+        "Guardar el mismo asset path in-place antes del manifiesto rompe atomicidad; versiones inmutables necesarias.",
+        "Convergencia del historial (MOANA-019, ADR-026 §4): un digest alcanzado desde otro padre se rechaza con EditConflict (existing_snapshot); permitirla exige separar la identidad de la entrada de historial (padre + batch + digest) del almacén por contenido, con un ADR nuevo antes de persistir."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-018, MOANA-019, MOANA-011",
-      "acceptance_evidence": {},
-      "test_evidence": {}
+      "blocking_reason": null,
+      "acceptance_evidence": {
+        "AC1": "tests/unit/project/test_project_roundtrip.py::test_ac1_directory_roundtrip_preserves_ids_revisions_history_and_rgba, ::test_ac1_history_limits_are_the_loader_configuration, ::test_ac1_loaded_history_keeps_navigating_and_editing, ::test_ac1_archive_roundtrip_is_deterministic, ::test_ac1_shaded_document_history_roundtrip.",
+        "AC2": "tests/unit/project/test_project_security.py::test_ac2_asset_path_outside_the_layout_is_rejected, ::test_ac2_wrong_checksum_never_loads_partially, ::test_ac2_longer_asset_file_is_a_checksum_mismatch, ::test_ac2_linked_assets_never_leave_the_root, ::test_ac2_special_files_are_not_read, ::test_ac2_asset_ids_are_unique_and_distinct_from_document_ids, ::test_ac2_asset_id_of_a_shade_band_is_an_id_collision."
+      },
+      "test_evidence": {
+        "T1": "tests/unit/project/test_project_atomic.py::test_t1_failure_at_every_step_keeps_the_previous_project, ::test_t1_commit_order_content_then_directories_then_manifest, ::test_t1_directory_sync_failure_aborts_before_the_commit, ::test_t1_archive_failure_keeps_the_previous_archive, ::test_t1_single_file_saves_never_overwrite_implicitly, ::test_t1_atomic_write_errors_match_export_atomic, ::test_t1_eexist_for_the_same_file_is_success, ::test_t1_missing_hard_links_fail_before_writing_content, ::test_t1_directory_creation_failures, ::test_t1_subdirectory_creation_failures, ::test_t1_temporary_file_creation_failures, ::test_t1_unsafe_project_directories_are_refused, ::test_t1_linked_directories_are_refused, ::test_t1_caller_path_links_are_followed, ::test_t1_link_swapped_in_after_mkdir_is_refused, ::test_t1_link_swapped_in_after_opening_never_redirects_writes, ::test_t1_unreadable_ancestor_is_permission_denied_without_the_path, ::test_t1_inspection_failures_of_the_destination; tests/unit/project/test_project_budgets.py::test_t1_canonical_form_over_the_node_limit_is_refused_before_writing, ::test_t1_one_operation_less_saves_and_loads_in_every_format, ::test_t1_every_stored_part_is_checked_with_the_reader_bounds, ::test_t1_an_archive_holds_128_snapshots_but_not_129, ::test_t1_property_any_saved_project_loads_back_identically; tests/unit/project/test_project_roundtrip.py::test_t1_geometric_document_roundtrip, ::test_t1_project_without_assets_or_history, ::test_t1_png_asset_roundtrip_keeps_source_bytes, ::test_t1_layout_uses_immutable_hash_paths, ::test_t1_envelope_file_loads_with_assets_beside_it, ::test_t1_resave_reuses_content_and_needs_overwrite, ::test_t1_corrupt_content_file_is_rewritten_on_save, ::test_t1_missing_project_is_a_read_error, ::test_t1_cursor_document_is_the_manifest_document.",
+        "T2": "tests/unit/project/test_project_budgets.py::test_t2_expansion_ratio_border_is_exactly_100_to_1; tests/unit/project/test_project_security.py::test_t2_archive_names_are_rejected_before_extraction, ::test_t2_symlink_entries_are_rejected, ::test_t2_duplicate_and_colliding_names_are_rejected, ::test_t2_excessive_expansion_ratio_is_rejected, ::test_t2_archive_budgets_are_checked_from_the_central_directory, ::test_t2_encrypted_or_exotic_entries_are_rejected, ::test_t2_corrupt_archives_are_rejected, ::test_t2_corrupt_entry_data_fails_its_crc, ::test_t2_archive_without_manifest_or_declared_file, ::test_t2_dense_entries_are_stored_so_saved_archives_always_load, ::test_t2_image_bomb_is_rejected_before_decoding, ::test_t2_asset_pixel_and_byte_budgets, ::test_t2_project_pixel_budget_across_assets, ::test_t2_png_assets_are_checked_before_full_decode, ::test_t2_truncated_png_is_rejected_even_if_pillow_tolerates_it, ::test_t2_pillow_decompression_bomb_is_a_domain_error, ::test_t2_asset_values_are_consistent.",
+        "T3": "tests/unit/project/test_project_atomic.py::test_t3_failure_after_new_assets_keeps_previous_manifest_and_assets, ::test_t3_new_save_never_rewrites_referenced_bytes; tests/unit/project/test_project_budgets.py::test_t3_finite_floats_are_read_and_overflowing_ones_rejected, ::test_t3_too_many_asset_references_is_a_budget, ::test_t3_declared_asset_length_over_the_limit_is_a_budget, ::test_t3_too_many_history_entries_is_a_budget; tests/unit/project/test_project_manifest.py::test_t3_envelope_rejects_extra_fields_without_touching_document_schema, ::test_t3_extra_document_member_keeps_its_document_error, ::test_t3_envelope_members_are_strict, ::test_t3_missing_history_defaults_to_empty, ::test_t3_parse_manifest_requires_an_object, ::test_t3_manifest_reading_is_bounded, ::test_t3_manifest_byte_limit, ::test_t3_plain_json_files_are_documents_or_envelopes, ::test_t3_tampered_snapshot_file_is_a_checksum_mismatch, ::test_t3_batch_that_does_not_reproduce_its_snapshot, ::test_t3_unusable_batches_are_rejected, ::test_t3_unusable_snapshots_are_rejected, ::test_t3_inconsistent_history_entries_are_rejected, ::test_t3_history_budgets_are_checked_while_reading, ::test_t3_convergent_branches_stay_rejected_after_loading."
+      }
     },
     {
       "id": "MOANA-021",
       "title": "Versionar y migrar formatos de proyecto",
       "phase": "P4",
-      "status": "blocked",
+      "status": "done",
       "priority": "P1",
       "dependencies": [
         "MOANA-020"
@@ -1173,7 +1483,19 @@
         "Fixtures de migración, migración repetida/idempotencia del destino y versión futura",
         "Simular fallo intermedio y comprobar que el original permanece intacto"
       ],
-      "evidence": [],
+      "evidence": [
+        "Versiones de formato separadas: sólo schema_version y project_version (MAJOR.MINOR, comparadas como enteros) seleccionan migraciones; moana.__version__, RENDERER_VERSION y ESTIMATOR_VERSION nunca (test).",
+        "Registro inmutable moana.schema.versions (MigrationRegistry, Migration) validado al construirse (origen < destino ≤ actual, un paso por origen e ID, cadenas ≤ MAX_MIGRATION_STEPS=16); DOCUMENT_MIGRATIONS y PROJECT_MIGRATIONS de producción sólo conocen 1.0 y no registran migraciones; SUPPORTED_SCHEMA_VERSIONS fijado a la misma fuente por test; los batches conservan su contrato de versión anterior.",
+        "Sin formatos históricos inventados: 0.8 y 0.9 existen sólo en tests/fixtures/migration (registro TEST_ONLY_MIGRATIONS y miembro test_only_format exigido y retirado por el último paso); src/ no menciona esas versiones.",
+        "Leer nunca migra: validate_document y parse_manifest comprueban la versión antes del modelo y lanzan UnsupportedVersion (relation future/past/unknown o migration_required, con field y supported) sin repetir la versión no confiable; load_project no escribe (bytes, inodo y mtime intactos en .moana.json, directorio y ZIP).",
+        "Migración pura moana.schema.migrate_document: sin E/S, rechaza hojas no JSON antes del primer paso (invalid_value), copia acotada antes y después de cada paso, cualquier excepción de un paso es migration_failed con el ID del paso y sin datos del documento, salida cíclica o no JSON también; el resultado se valida y un documento actual es la identidad.",
+        "moana.project.migrate_project: lee la fuente con el mismo despacho de sólo lectura que load_project (project/_load.py), migra en memoria, conserva assets, guarda en un destino nuevo sin sobrescribir (exists) y rechaza un destino igual o dentro de la fuente (destination_inside_source); una fuente actual no escribe nada; un proyecto antiguo con historial es history_not_migratable.",
+        "Procedencia y copia original: miembro opcional migrations del sobre (MigrationRecord: source_kind, member, source/target_version con origen < destino, steps 1–16, path, byte_length, sha256 único), omitido si vacío (hashes de manifiestos existentes intactos); JSON original exacto en migrations/<sha256>.json (lista blanca en ZIP), verificado al cargar; límites MAX_PROJECT_MIGRATIONS=8 y copia ≤ max_manifest_bytes.",
+        "Sin CLI ni fachada (MOANA.md §13 no prevé migrate). ADR-031 (docs/architecture/decisions/ADR-031-format-versions-migrations.md) con notas de cabecera en ADR-011 y ADR-029; MOANA.md 0.1.18-draft (§16); contratos de módulos, índice de ADR, overview, README, AGENTS.md y CLAUDE.md actualizados; tests/__init__.py añadido (descubrimiento y tests/visual sin cambios).",
+        "Gate sobre 55e564e: scripts/validate.py (2419 passed, src/moana al 100 % de líneas y ramas) y scripts/check_wheel.py verdes; mypy también con --platform win32; generate_schema --check al día. Evidencia de plataforma: local macOS; matriz pendiente en main.",
+        "Revisión: moana-architect (aprobado; medios aplicados: member en MigrationRecord, módulo interno _load sin importar privados, fuente única de versiones), moana-python-engineer con foco en seguridad (cambios requeridos, aplicados: cualquier excepción de un paso como migration_failed sin filtrar datos, hojas no JSON rechazadas, registros estrictos y únicos, destino dentro de la fuente rechazado) y moana-qa-engineer (cambios menores, aplicados: origen ZIP en AC1/AC2, estado de directorios en las comprobaciones, bordes de versión y presupuesto, fallo en el segundo paso, Hypothesis contra 1.0 construido a mano).",
+        "Aprobado por el propietario el 2026-11-17 tras revisión; PR #60 hacia develop."
+      ],
       "aliases": [
         "MOA-021"
       ],
@@ -1195,15 +1517,21 @@
       "risks": [
         "No inventar un formato histórico publicado; una fixture de prueba debe identificarse como tal."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-020",
-      "acceptance_evidence": {},
-      "test_evidence": {}
+      "blocking_reason": null,
+      "acceptance_evidence": {
+        "AC1": "tests/unit/schema/test_schema_migrations.py::test_ac1_test_only_fixture_migrates_to_v1_keeping_semantics_and_render; tests/unit/project/test_project_migrations.py::test_ac1_document_fixture_migrates_into_a_new_project, ::test_ac1_project_fixture_keeps_assets_and_render, ::test_ac1_migration_records_survive_saving_again, ::test_ac1_a_migrated_project_can_be_migrated_again, ::test_ac1_archive_fixture_migrates_and_stays_intact.",
+        "AC2": "tests/unit/project/test_project_migrations.py::test_ac2_opening_an_old_file_neither_writes_nor_migrates, ::test_ac2_migration_never_replaces_an_existing_project, ::test_ac2_destination_inside_the_source_is_refused, ::test_ac2_a_document_migrated_beside_itself_stays_intact, ::test_ac2_unresolvable_paths_are_compared_as_absolute."
+      },
+      "test_evidence": {
+        "T1": "tests/unit/schema/test_schema_migrations.py::test_t1_production_registry_claims_no_unpublished_format, ::test_t1_format_versions_are_distinct_from_package_and_renderer, ::test_t1_parse_version, ::test_t1_future_and_unknown_versions_are_rejected, ::test_t1_registered_older_version_requires_explicit_migration, ::test_t1_registry_is_checked_on_construction, ::test_t1_chains_longer_than_the_limit_are_rejected, ::test_t1_migrating_the_destination_again_is_the_identity, ::test_t1_step_failures_are_domain_errors, ::test_t1_intermediate_trees_stay_bounded, ::test_t1_hostile_step_output_is_a_migration_failure, ::test_t1_malformed_test_only_sources_fail_with_the_step_id, ::test_t1_step_exceptions_never_leak_document_data, ::test_t1_non_json_input_is_rejected_before_any_step, ::test_t1_migration_result_is_validated, ::test_t1_registry_must_target_the_current_document_schema, ::test_t1_non_string_version_is_left_to_validation, ::test_t1_version_spelling_variants_are_unknown, ::test_t1_supported_versions_have_one_source, ::test_t1_property_migration_preserves_ids_and_is_idempotent; tests/unit/project/test_project_migrations.py::test_t1_migrating_the_destination_again_writes_nothing, ::test_t1_unknown_document_versions_are_rejected_before_writing, ::test_t1_unknown_project_versions_are_rejected, ::test_t1_envelope_errors_keep_their_pointers, ::test_t1_history_has_no_migration_contract, ::test_t1_registry_must_migrate_documents_to_the_current_schema, ::test_t1_preserved_originals_are_verified_and_bounded, ::test_t1_migration_records_are_strict, ::test_t1_each_original_is_preserved_once, ::test_t1_migration_budget_is_checked_before_writing, ::test_t1_future_envelope_wins_over_an_old_document, ::test_t1_backups_are_checked_in_memory.",
+        "T2": "tests/unit/project/test_project_migrations.py::test_t2_failure_at_every_step_keeps_the_original_intact, ::test_t2_a_failing_second_step_writes_nothing."
+      }
     },
     {
       "id": "MOANA-022",
       "title": "Implementar timeline y evaluación de frames",
       "phase": "P4",
-      "status": "blocked",
+      "status": "done",
       "priority": "P1",
       "dependencies": [
         "MOANA-018",
@@ -1227,7 +1555,18 @@
         "Frame único, 256 frames, límite de duración/área y loops",
         "Overrides de geometría/color/visibilidad y textura estable entre frames"
       ],
-      "evidence": [],
+      "evidence": [
+        "Colección `animations` soportada en schema 1.0 (excepción previa a la publicación, ADR-032; DOCUMENT_MIGRATIONS de ADR-031 sigue sin pasos): Animation {id, loop_count 0–65535, pivot entero dentro del lienzo con bordes, frames 1–256}, Frame {id, duration_ms 1–60000, overrides ≤1024}; IDs de animación y frame globales; overrides set_visibility/translate/set_color con la forma exacta del comando de edición; límites nuevos en moana.core.limits (MAX_ANIMATIONS=64, MAX_ANIMATION_FRAMES=256, MAX_FRAME_DURATION_MS, MAX_FRAME_OVERRIDES, MAX_LOOP_COUNT).",
+        "Cada frame se evalúa siempre contra la base (nunca contra el anterior) con moana.editing.apply_commands, que sólo acepta los tres overrides (TypeError para el resto), aplica las reglas del editor (locked_layer, not_geometric, out_of_range, invalid_result) y no crea revisión; un frame sin overrides es la base estática; semilla, revisión e IDs de la base.",
+        "Render en streaming con presupuesto acumulado: moana.render.plan_frame/admit_sequence/render_admitted/render_sequence; pasada 1 evalúa TODOS los frames (un override inválido en cualquiera impide render parcial) y guarda sólo CostEstimate; admisión de Σ visitas, Σ píxeles de frame y pico + RGBA retenido + RESULT_OVERHEAD_BYTES antes del primer buffer; pasada 2 reevalúa y renderiza frame a frame. render no importa editing.",
+        "Peor caso medido (256 frames × 2000 operaciones): RSS 693 MB → 129 MiB, pico tracemalloc 266,7 MiB → 68,7 MiB; render_frame 3,2 s y 54 MiB. Deadline comprobado antes de cada validación y frame; el coste de CPU de validar no entra en pixel_visits (documentado en ADR-032 con la recomendación de pasar Deadline).",
+        "El editor conoce las animaciones: remove de un destino animado o de un color usado por set_color es live_reference; un ID nuevo que choque con animación o frame es duplicate_id; persistencia (directorio, .moana, .moana.json), migrate_project e History funcionan con documentos animados.",
+        "moana.animation: evaluate_frame, evaluate_animation, render_animation, render_frame con duración, inicio y pivote por frame; loop_count es sólo dato (cada frame se renderiza una vez). moana.api.render(frame_id=…) renderiza un frame (§13); moana.render.render(frame_id) sigue dibujando sólo la base (frame_not_evaluated). Sin CLI, GIF ni spritesheet.",
+        "Limitación documentada: mover un sprite texturizado (material/dither) en un frame desliza la textura respecto del sprite porque no hay override de origin en el MVP (ADR-032 §4, MOANA.md §17; seguimiento: override acotado de origin).",
+        "Ejemplo examples/specs/bouncing-slime.moana.json (16×16, rest/rise/apex/fall 150/100/120/100 ms, pivote [8,16]) con squash/stretch por capas alternadas con set_visibility, espaciado físico y sombra que se encoge con la altura, según la revisión de pixel-art; revisión artística humana PENDIENTE.",
+        "Revisiones de agente: arquitectura, gráficos, python/QA y pixel-art con correcciones aplicadas. Gate local macOS: scripts/validate.py 2732 passed con src/moana al 100 %, check_wheel OK, mypy --platform win32 OK, JSON Schema al día, pre-commit OK; matriz pendiente en main.",
+        "Aprobado por el propietario el 2026-11-17 tras revisión; PR #62 hacia develop."
+      ],
       "aliases": [
         "MOA-022"
       ],
@@ -1249,15 +1588,21 @@
       "risks": [
         "Un bucle infinito de playback no autoriza un render infinito; exportar secuencia finita."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-018, MOANA-019, MOANA-010",
-      "acceptance_evidence": {},
-      "test_evidence": {}
+      "blocking_reason": null,
+      "acceptance_evidence": {
+        "AC1": "tests/unit/animation/test_animation_frames.py::test_ac1_any_evaluation_order_gives_the_same_bytes_per_frame, ::test_ac1_frames_never_inherit_the_previous_frame, ::test_ac1_one_frame_alone_equals_the_same_frame_in_a_sequence, ::test_ac1_evaluating_does_not_touch_the_base",
+        "AC2": "tests/unit/animation/test_animation_frames.py::test_ac2_durations_pivots_and_offsets_are_preserved, ::test_ac2_provenance_names_the_frame_and_keeps_the_revision, ::test_ac2_an_invalid_override_in_any_frame_renders_nothing, ::test_ac2_an_override_whose_result_is_invalid_renders_nothing, ::test_ac2_budget_of_the_whole_request_is_checked_before_any_frame; tests/unit/render/test_render_sequence.py::test_ac2_a_frame_over_budget_alone_names_its_index_and_renders_nothing"
+      },
+      "test_evidence": {
+        "T1": "tests/unit/animation/test_animation_frames.py::test_t1_single_frame_animation, ::test_t1_256_frames_render_each_frame_once, ::test_t1_256_frames_at_exactly_16777216_accumulated_pixels, ::test_t1_accumulated_frame_pixels_limit_is_inclusive, ::test_t1_default_budget_rejects_a_sequence_over_16777216_frame_pixels, ::test_t1_loop_count_never_multiplies_the_render, ::test_t1_deadline_is_checked_before_every_validation_and_frame, ::test_t1_a_short_deadline_fails_near_its_limit; tests/unit/animation/test_animation_memory.py::test_t1_render_frame_holds_one_frame_document, ::test_t1_selected_frames_do_not_keep_the_unrequested_ones, ::test_t1_rendering_every_frame_stays_within_the_admitted_bytes; tests/unit/schema/test_schema_animations.py::test_t1_frame_count_is_one_to_256, ::test_t1_duration_is_a_whole_millisecond_count_1_to_60000, ::test_t1_longest_timeline_is_bounded, ::test_t1_loop_count_zero_is_infinite_playback, ::test_t1_pivot_lies_on_the_canvas_edges_included, ::test_t1_animation_and_override_counts_are_bounded; tests/unit/render/test_render_sequence.py::test_t1_accumulated_totals_are_checked_against_one_budget, ::test_t1_plan_frame_estimates_without_rendering, ::test_t1_render_admitted_renders_only_the_admitted_document",
+        "T2": "tests/unit/animation/test_animation_frames.py::test_t2_each_override_changes_only_its_target, ::test_t2_evaluated_frames_are_static_documents_with_stable_ids, ::test_t2_dither_phase_is_anchored_and_stable_between_frames, ::test_t2_material_texture_is_identical_in_every_frame, ::test_t2_moving_a_textured_sprite_slides_its_texture, ::test_t2_a_frame_without_overrides_does_not_call_the_editor; tests/unit/editing/test_editing_commands.py::test_t2_only_override_commands_are_accepted; tests/unit/editing/test_editing_animations.py::test_t2_removing_an_animated_node_or_colour_is_a_live_reference, ::test_t2_new_ids_cannot_reuse_animation_or_frame_ids; tests/unit/project/test_project_animations.py::test_t2_an_animated_document_survives_every_format, ::test_t2_history_edits_an_animated_document; tests/unit/schema/test_schema_animations.py::test_t2_override_references_must_exist, ::test_t2_animation_and_frame_ids_are_global"
+      }
     },
     {
       "id": "MOANA-023",
       "title": "Exportar spritesheets y manifest reversible",
       "phase": "P4",
-      "status": "blocked",
+      "status": "done",
       "priority": "P1",
       "dependencies": [
         "MOANA-022",
@@ -1280,7 +1625,17 @@
         "Columnas 1/N, último renglón incompleto, margen/padding y canvas no cuadrado",
         "Atlas excesivo, manifest corrupto y roundtrip recortes/tiempos"
       ],
-      "evidence": [],
+      "evidence": [
+        "moana.export.spritesheet (ADR-033): grid uniforme en orden de frames con columns 1–256 (columns > n es too_many_columns, sin clamp), margin y padding 0–2048; frame i en x = margin + (i % columns)·(w + padding), y = margin + (i // columns)·(h + padding); rect [x,y,w,h] ≡ caja semiabierta [x,y,x+w,y+h); huecos (0,0,0,0); sin trim ni rotación; todos los frames del mismo tamaño (size_mismatch).",
+        "Frames por el protocolo SpriteFrame (frame_id, duration_ms, pivot, result: RasterFrame), que moana.animation.FrameRender cumple sin que export importe animation (test de arquitectura); SheetFrame/FramePixels para recortes reexportables; bloque opcional animation {id, loop_count} vía SheetAnimation.",
+        "Presupuesto antes de reservar el atlas: frames ≤ 256 (comprobado con len antes de leer frames), Σ píxeles de frame ≤ max_frame_pixels, lado y área de la hoja, buffer_bytes = 32·área; frames no normalizados rechazados antes del atlas.",
+        "Manifiesto JSON canónico versionado (format moana-spritesheet, version 1) con image {name, media_type, width, height, digest visual, sha256 de procedencia}, layout, frames {frame_id, rect, duration_ms, pivot, source_size, trim_offset [0,0], digest}; parser estricto (tamaño ≤ 1 MiB antes de decodificar, versión antes que miembros → UnsupportedVersion, bool/float nunca enteros, claves duplicadas, NaN, anidamiento, rects iguales a su celda) con ValidationError reason + json_pointer sin rutas ni eco de claves.",
+        "Escritura en dos archivos con commit_bytes: todo codificado y verificado en memoria, overwrite=False comprueba ambos destinos antes de escribir, atlas primero y manifiesto al final (un fallo del manifiesto informa committed sin borrar el atlas). Recorte: IHDR/IEND y presupuesto len(png) + 12·A antes de decodificar, digest del atlas, not_normalized y dirty_gap independientes de los digests, digest por frame; load_spritesheet abre con O_NONBLOCK y exige archivo regular (un FIFO nunca bloquea).",
+        "Guía para motores en ADR-033 y MOANA.md §17: filtrado nearest sin mipmaps, padding ≥ 1 (≥ 2 con mipmaps) si hay filtrado, padding no es extrusión; pivote en píxeles enteros del frame fuente con conversión (px/w, 1 − py/h) para motores Y-up; semántica de trim_offset fijada. MOANA.md 0.1.21-draft.",
+        "Cubiertas con tests las líneas que MOANA-022 dejó sin cubrir (animation/frames.py:185, render/sequence.py:189 y 237).",
+        "Revisiones de agente: gráficos (aprobado), python (cambios aplicados: nombres no UTF-8/C1, FIFO, versión antes de miembros, reutilización de destination_path/is_normalized, consistencia de errores) y pixel-art (guía de motores, bloque animation); revisión artística humana PENDIENTE. Gate local macOS: scripts/validate.py verde con src/moana al 100 %, check_wheel OK, mypy --platform win32 OK, pre-commit OK; matriz pendiente en main.",
+        "Aprobado por el propietario el 2026-11-17 tras revisión; PR #63 hacia develop."
+      ],
       "aliases": [
         "MOA-023"
       ],
@@ -1302,15 +1657,21 @@
       "risks": [
         "Confundir rect xywh con bbox semiabierta causa offsets; especificar ambos claramente."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-022, MOANA-011",
-      "acceptance_evidence": {},
-      "test_evidence": {}
+      "blocking_reason": null,
+      "acceptance_evidence": {
+        "AC1": "tests/unit/export/test_export_spritesheet.py::test_slice_rebuilds_frames_and_reexports_identically, ::test_translucent_pixels_survive_the_roundtrip, ::test_rects_are_disjoint_inside_and_roundtrip (hypothesis); tests/integration/test_spritesheet_animation.py::test_bouncing_slime_sheet_rebuilds_every_frame (RGBA, digests, duraciones, pivotes y animation con columnas/margen/padding (1,0,0), (2,1,1), (4,2,3)).",
+        "AC2": "tests/unit/export/test_export_spritesheet.py::test_export_is_byte_identical_across_directories, ::test_rects_are_disjoint_inside_and_roundtrip (rects disjuntos, dentro del margen, separados ≥ padding, huecos transparentes), ::test_atlas_pixels_are_checked_independently_of_digests (dirty_gap, not_normalized), ::test_corrupt_manifest_is_located (rect_mismatch, rect_out_of_sheet)."
+      },
+      "test_evidence": {
+        "T1": "tests/unit/export/test_export_spritesheet.py::test_layout_matches_hand_computed_grid y ::test_atlas_pixels_are_placed_by_hand_and_gaps_are_transparent (oráculos a mano: una columna, una fila, último renglón incompleto, sólo margen, sólo padding, frame único; frames 3×2 y 2×3 no cuadrados), ::test_manifest_records_every_frame_value, ::test_invalid_layout_options.",
+        "T2": "tests/unit/export/test_export_spritesheet.py::test_excessive_sheet_is_rejected_before_the_atlas_exists, ::test_rejected_large_sheet_allocates_almost_nothing (tracemalloc), ::test_too_many_frames_is_rejected_before_reading_any_frame, ::test_slicing_checks_its_budget_before_decoding, ::test_corrupt_manifest_is_located, ::test_unreadable_manifest_bytes, ::test_manifest_size_version_and_type, ::test_digest_mismatches_are_located, ::test_bad_atlas_images, ::test_load_never_blocks_on_a_fifo, ::test_animation_block_roundtrips_and_is_optional, ::test_slice_rebuilds_frames_and_reexports_identically (recortes y tiempos)."
+      }
     },
     {
       "id": "MOANA-024",
       "title": "Exportar GIF con política de pérdidas",
       "phase": "P4",
-      "status": "blocked",
+      "status": "done",
       "priority": "P1",
       "dependencies": [
         "MOANA-022",
@@ -1334,7 +1695,16 @@
         "Paleta llena, 255 colores más transparente, alpha intermedio y disposal",
         "Frames duplicados fusionados, loop, duraciones cortas y decode acumulado en Pillow"
       ],
-      "evidence": [],
+      "evidence": [
+        "moana.export.gif (ADR-034): encode_gif/export_gif sobre el protocolo SpriteFrame (moana.animation.FrameRender lo cumple; el pivote se ignora). Paleta compartida ≤ 256 sin cuantizar: derivada (transparente en el índice 0 si hace falta y opacos ordenados por (r, g, b)) o Palette declarada (orden declarado; transparente añadido si falta); 256 opacos + transparencia es too_many_colors.",
+        "Alfa: 0 → índice transparente, 255 opaco; alfa intermedio es partial_alpha salvo background opaco explícito, aplanado con (c·a + b·(255 − a) + 127) // 255 y pérdida alpha_flattened. Duraciones: exact (por defecto) rechaza no múltiplos de 10 ms; round = max(10, 10·⌊(d + 5)/10⌋) con pérdida duration_rounded; aviso estructurado GifWarning short_delay por frame < 20 ms.",
+        "Disposal background (2) por defecto con frames completos; none (1) rechaza frames que mostrarían el anterior, también en la costura del bucle (disposal_reveals_previous). loop_count en Moana = reproducciones totales (0 infinito): NETSCAPE 0, N−1 o ausente para N = 1 (MOANA.md §17).",
+        "Contenedor GIF89a escrito por Moana (tabla global única, índice de fondo = transparente, sin fusionar frames, sin recortes); Pillow sólo comprime LZW cada plano de índices y su salida se analiza estrictamente (encoder_layout). Verificación decodificando con Pillow: timelines equivalentes tras fusionar frames iguales consecutivos (timeline_mismatch) y bucle (loop_mismatch); bytes idénticos para la misma entrada.",
+        "Presupuesto antes de leer píxeles: frames ≤ 256 (len), Σ píxeles de frame, lado, área y buffer_bytes = 48·A + 4·n·A (pico RSS medido por la revisión de gráficos por debajo del presupuesto); escritura atómica sin sobrescribir por defecto. Comprobación de frames compartida con spritesheet en moana.export._frames.",
+        "Documentación: ADR-034, MOANA.md 0.1.22-draft (§17 bucle, §18 GIF), module-contracts, sección «GIF animado» en docs/standards/pixel-art.md (duraciones, alfa, paleta, escala previa, disposal). Test determinista para el tramo de selective_outline tapado por un tramo posterior (render/pipeline.py:277).",
+        "Revisiones de agente: gráficos (aprobado; contenedor contrastado con ffmpeg y giftext), python (aprobado con observaciones aplicadas) y pixel-art (aprobado con menores aplicados); revisión artística humana PENDIENTE. Gate local macOS: scripts/validate.py verde con src/moana al 100 %, check_wheel OK, mypy --platform win32 OK, pre-commit OK; matriz pendiente en main.",
+        "Aprobado por el propietario el 2026-11-17 tras revisión; PR #64 hacia develop."
+      ],
       "aliases": [
         "MOA-024"
       ],
@@ -1356,15 +1726,21 @@
       "risks": [
         "Los encoders pueden fusionar frames idénticos; comparar tiempo/imagen, no sólo count."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-022, MOANA-005, MOANA-011",
-      "acceptance_evidence": {},
-      "test_evidence": {}
+      "blocking_reason": null,
+      "acceptance_evidence": {
+        "AC1": "tests/integration/test_gif_animation.py::test_bouncing_slime_gif_decodes_to_the_rendered_timeline (frames decodificados = RGBA renderizado, 150/100/120/100 ms, bucle infinito, bytes idénticos); tests/unit/export/test_export_gif.py::test_accumulated_decode_equals_every_target_frame, ::test_decoded_timeline_equals_the_target y ::test_none_disposal_timeline_equals_the_target (hypothesis).",
+        "AC2": "tests/unit/export/test_export_gif.py::test_losses_need_explicit_acceptance, ::test_colours_beyond_the_table_are_never_quantised, ::test_partial_alpha_is_rejected_without_background, ::test_short_durations_and_rounding_policy, ::test_flatten_background_is_reported_for_reproduction."
+      },
+      "test_evidence": {
+        "T1": "tests/unit/export/test_export_gif.py::test_full_palette_of_256_opaque_colours, ::test_255_opaque_colours_plus_transparency, ::test_256_opaque_colours_plus_transparency_is_rejected, ::test_partial_alpha_is_flattened_exactly_with_background (valores a mano), ::test_background_disposal_never_shows_an_older_frame_through_a_hole, ::test_none_disposal_rejects_frames_that_reveal_the_previous_one, ::test_none_disposal_checks_the_loop_seam, ::test_a_file_whose_disposal_shows_older_frames_never_verifies.",
+        "T2": "tests/unit/export/test_export_gif.py::test_duplicated_frames_keep_an_equivalent_timeline, ::test_verification_accepts_a_decoder_that_merges_duplicates, ::test_equivalent_timeline_merges_equal_neighbours, ::test_loop_count_roundtrips (0, 1, 2, 7, 65535 con bytes NETSCAPE a mano), ::test_loop_mismatch_is_an_error, ::test_short_durations_and_rounding_policy, ::test_accumulated_decode_equals_every_target_frame, ::test_rejected_large_gif_allocates_almost_nothing, ::test_admitted_gif_stays_within_its_traced_estimate."
+      }
     },
     {
       "id": "MOANA-025",
       "title": "Añadir APNG y WebP lossless opcionales",
       "phase": "P4",
-      "status": "blocked",
+      "status": "done",
       "priority": "P2",
       "dependencies": [
         "MOANA-022",
@@ -1387,7 +1763,16 @@
         "Pruebas condicionadas a capacidades con skip explicado y reporte del build",
         "Mock de codec ausente y casos multi-frame, alfa parcial y duración"
       ],
-      "evidence": [],
+      "evidence": [
+        "moana.export.codecs: export_capabilities()/codec_status() comprueban en tiempo de ejecución, sin caché ni estado global, cada formato (png, gif, apng, webp): codec presente (PIL.features) y roundtrip mínimo en memoria con alfa parcial, varios frames y bucle; reason missing o roundtrip_failed (cualquier excepción de la sonda se informa, nunca rompe). La matriz de este build (macOS, Pillow 13.0.0, zlib 1.3.1.zlib-ng, libwebp 1.6.0: los cuatro disponibles) consta en ADR-035; moana.api.capabilities y `moana capabilities` publican export_codecs (export_formats se conserva).",
+        "moana.export.animated (ADR-035): encode_apng/export_apng y encode_webp/export_webp sólo lossless (sin opción lossy) sobre el protocolo SpriteFrame; el codec se exige (UnsupportedOperation codec_unavailable con formato, codec y versión de Pillow) antes de leer frames y de crear temporal o destino, sin sustituir formato. APNG usa extensión .png y media type image/apng; WebP .webp.",
+        "APNG con contenedor escrito por Moana (IHDR RGBA8, acTL, fcTL por frame completo con dispose NONE y blend SOURCE, retardos ms/1000 exactos, IDAT/fdAT con un único contador de secuencia; Pillow sólo comprime); WebP lossless con opciones fijas (method 4, exact) compartidas con la sonda; frames iguales fusionados por libwebp verificados como timeline equivalente y una sola imagen distinta guardada como VP8L fija (detección por chunks RIFF) con AnimationWarning still_image y stored_durations_ms/stored_loop_count None.",
+        "loop_count = reproducciones totales (0 infinito), escrito tal cual en num_plays de APNG y ANIM de WebP; verificación decodificando con Pillow (frames normalizados, milisegundos exactos, bucle) antes del commit atómico; bytes idénticos con las mismas versiones de codec, que el informe registra.",
+        "Presupuesto antes de leer píxeles con buffer_bytes = C + F·A + O·n·A calibrado con RSS real en subprocesos (APNG 0/48/12; WebP 24 MiB/64/32, porque tracemalloc no ve la memoria nativa de libwebp); test de RSS en subproceso. Helpers compartidos con GIF en moana.export._frames (bytes de GIF idénticos tras el refactor, comprobado por la revisión de gráficos).",
+        "Documentación: ADR-035, MOANA.md 0.1.23-draft (§13 export_codecs, §18), module-contracts, sección «APNG y WebP» en docs/standards/pixel-art.md.",
+        "Revisiones de agente: gráficos (APNG contrastado con ffprobe/ffmpeg y WebP con webpinfo/dwebp; presupuesto WebP corregido) y python (sondas robustas, avisos estructurados, detección RIFF y errores sin eco) con cambios aplicados. Gate local macOS: scripts/validate.py verde con src/moana al 100 %, check_wheel OK, mypy --platform win32 OK, pre-commit OK; matriz pendiente en main (RSS no medido en Linux ni Windows).",
+        "Aprobado por el propietario el 2026-11-17 tras revisión; PR #65 hacia develop."
+      ],
       "aliases": [
         "MOA-025"
       ],
@@ -1408,15 +1793,21 @@
       "risks": [
         "Un skip de codec no equivale a soporte probado; publicar capability matrix."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-022, MOANA-011",
-      "acceptance_evidence": {},
-      "test_evidence": {}
+      "blocking_reason": null,
+      "acceptance_evidence": {
+        "AC1": "tests/unit/export/test_export_animated.py::test_multi_frame_partial_alpha_and_durations_roundtrip_exactly[apng|webp], ::test_decoded_timeline_equals_the_target (hypothesis), ::test_apng_container_is_full_frame_with_exact_delays, ::test_webp_stores_exact_milliseconds_and_the_loop, ::test_loop_count_is_total_plays; tests/integration/test_animated_export.py::test_bouncing_slime_decodes_to_the_rendered_timeline[apng|webp].",
+        "AC2": "tests/unit/export/test_export_animated.py::test_an_absent_codec_is_unsupported_and_writes_nothing[apng|webp] (directorio sin cambios y frames sin leer), ::test_a_failing_probe_is_unsupported_too; tests/unit/export/test_export_codecs.py::test_a_missing_webp_module_is_reported_and_refused."
+      },
+      "test_evidence": {
+        "T1": "tests/unit/export/test_export_codecs.py::test_capability_matrix_reports_every_format_of_this_build (matriz contra PIL.features, impresa); marcas needs_apng/needs_webp con el informe del build como motivo de skip (ningún skip en este equipo); ::test_a_probe_that_raises_anything_is_a_failed_roundtrip.",
+        "T2": "tests/unit/export/test_export_animated.py::test_an_absent_codec_is_unsupported_and_writes_nothing (codec ausente simulado), ::test_multi_frame_partial_alpha_and_durations_roundtrip_exactly (alfa (255,0,0,128) y (1,2,3,1); 1, 33, 1001, 59999 y 60000 ms), ::test_apng_keeps_duplicated_frames, ::test_webp_merged_duplicates_keep_an_equivalent_timeline, ::test_equal_webp_frames_collapse_to_a_still_image_with_a_warning, ::test_webp_reports_the_timeline_the_file_stores; tests/integration/test_animated_export.py::test_webp_budget_covers_the_measured_process_memory."
+      }
     },
     {
       "id": "MOANA-026",
       "title": "Crear informes de calidad gráfica",
       "phase": "P5",
-      "status": "blocked",
+      "status": "done",
       "priority": "P1",
       "dependencies": [
         "MOANA-014",
@@ -1441,7 +1832,16 @@
         "Corpus sintético con defectos conocidos y versiones corregidas",
         "Tests de no mutación, orden estable, regiones superpuestas y estabilidad temporal"
       ],
-      "evidence": [],
+      "evidence": [
+        "Nuevo paquete moana.quality (ADR-036; §3 ampliado: depende de core, palette, geometry y techniques; ningún módulo de dominio lo importa): evaluate_quality(image, *, canvas, palette, config, regions, frames, loop, limits, deadline) lee píxeles ya renderizados por protocolo (RasterImage, TimelineFrame), nunca renderiza ni modifica entradas, y devuelve QualityReport canónico con rule set quality-v1, digests, métricas, hallazgos y aviso fijo de que no es puntuación, garantía profesional ni revisión humana.",
+        "Hard checks (error, nunca suprimibles: not_suppressible): canvas_dimensions, alpha_normalized, palette_strict (un hallazgo por valor fuera de paleta strict) y outside_mask (regiones de contención). Advertencias configurables por regla y por región: singleton (agrupados por color por encima de 16), irregular_steps (vía moana.techniques.analyze_clusters con cluster_connectivity 8 por defecto; la silueta usa 4), color_excess (> 32), noise (≥ 8 singletons y > 50 ‰ del área opaca), temporal_flicker (incluida la costura del bucle) y temporal_change opcional (> 900 ‰ de la unión opaca). Umbrales enteros por mil con floor.",
+        "Métricas sin juicio: colores distintos, área opaca, componentes, clusters, singletons, ‰ de singletons, bbox y por frame digest, píxeles cambiados y ‰. Orden estable regla → región → frame → y, x; configuración canónica (el orden de entrada no cambia los bytes); supresión Suppression(rule_id, region_id) sólo si todos los píxeles del hallazgo están en la región; regiones superpuestas evaluadas por separado.",
+        "Presupuesto: quality_cost admitido antes de crear arrays (frames ≤ 256, ≤ 64 regiones, hallazgos acotados por regla con tope listado de 4096, mínimo garantizado de 64 por regla y recuentos omitidos por regla; frames de tamaño distinto al lienzo no se leen); deadline por fila, región y frame; picos tracemalloc medidos bajo la estimación en imágenes de alta entropía.",
+        "Fachada moana.api.evaluate_quality(document, *, config, animation_id, limits, deadline): animación desconocida rechazada antes de renderizar; render base, máscaras de región, frames de animación y quality_cost admitidos contra un único presupuesto; sin CLI (MOANA-033).",
+        "Los 12 ejemplos pasan todos los hard checks (también cada frame de bouncing-slime); advertencias registradas en ADR-036 con procedimiento de revisión y digest SHA-256 del informe canónico de cada ejemplo fijado en el test de integración. Documentación: MOANA.md 0.1.24-draft (§3, §13, §19), module-contracts, ADR-036.",
+        "Revisiones de agente: arquitectura, QA y pixel-art con cambios aplicados (conectividad de clusters, agrupación, ruido relativo al área, temporal_change opcional, presupuesto único, memoria acotada); revisión artística humana PENDIENTE. Gate local macOS: scripts/validate.py verde con src/moana al 100 %, check_wheel OK, mypy --platform win32 OK, pre-commit OK; matriz pendiente en main.",
+        "Aprobado por el propietario el 2026-11-17 tras revisión; PR #66 hacia develop."
+      ],
       "aliases": [
         "MOA-026"
       ],
@@ -1462,15 +1862,21 @@
       "risks": [
         "Un score no debe presentarse como garantía profesional ni como aprobación humana."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-014, MOANA-015, MOANA-022",
-      "acceptance_evidence": {},
-      "test_evidence": {}
+      "blocking_reason": null,
+      "acceptance_evidence": {
+        "AC1": "tests/unit/quality/test_quality_rules.py::test_ac1_off_palette_is_an_error_and_a_singleton_a_warning y los casos off_palette/singleton de ::test_t1_defect_reports_the_expected_finding.",
+        "AC2": "tests/unit/quality/test_quality_report.py::test_ac2_suppressing_one_eye_hides_only_that_eye, ::test_ac2_errors_in_a_suppressed_region_stay_active, ::test_suppression_never_hides_a_finding_with_pixels_outside_its_region, ::test_ac2_report_is_identical_across_runs; tests/unit/api/test_api_quality.py::test_ac2_report_is_identical_across_processes_and_hash_seeds (PYTHONHASHSEED 0 y 1234)."
+      },
+      "test_evidence": {
+        "T1": "tests/unit/quality/test_quality_rules.py::test_t1_defect_reports_the_expected_finding y ::test_t1_corrected_version_has_no_finding_of_that_rule sobre el corpus sintético tests/fixtures/quality.py (defectos contados a mano y versiones corregidas), ::test_metrics_match_independent_counts (búsqueda independiente), ::test_singletons_are_grouped_per_colour_above_the_listing_limit.",
+        "T2": "tests/unit/quality/test_quality_report.py::test_t2_inputs_are_not_modified, ::test_t2_report_bytes_do_not_depend_on_configuration_order, ::test_findings_follow_rule_region_frame_y_x, ::test_t2_overlapping_regions_each_count_the_shared_pixel, ::test_t2_shared_pixel_is_suppressed_by_the_first_region_in_canonical_order, ::test_cap_keeps_every_rule_before_filling_in_report_order, ::test_measured_memory_of_a_high_entropy_image_stays_within_the_estimate; tests/unit/quality/test_quality_rules.py::test_loop_compares_the_seam_from_the_last_frame_to_the_first; tests/unit/api/test_api_quality.py::test_t2_temporal_stability_of_the_bouncing_slime, ::test_quality_never_modifies_the_document, ::test_whole_request_is_admitted_against_one_budget; tests/integration/test_quality_examples.py::test_example_report_matches_its_pinned_digest."
+      }
     },
     {
       "id": "MOANA-027",
       "title": "Construir corpus artístico y rúbrica humana",
       "phase": "P5",
-      "status": "blocked",
+      "status": "done",
       "priority": "P1",
       "dependencies": [
         "MOANA-017",
@@ -1497,7 +1903,14 @@
         "Render de todo el corpus y cambio localizado por región con diff",
         "Inspección visual documentada, estabilidad de animación y auditoría de procedencia"
       ],
-      "evidence": [],
+      "evidence": [
+        "Corpus artístico de referencia en examples/corpus/<slug>/ (ADR-037): adventurer (personaje 24×32), frog (criatura 32×27), chest (objeto 32×28), stone-tile (tile 16×16 sin costuras) y adventurer-walk (animación de 6 frames a 120 ms); paleta strict y luz NW en todos. Cada ejemplo: documento .moana.json (única fuente), registro .corpus.json (moana-corpus-entry/1) con brief, procedencia (creado por un agente de IA mediante operaciones de Moana; licencia PENDIENTE de decisión del propietario), digests de render fijados, informe de calidad, inspección del agente y rúbrica; previews 1×, 4×, silueta y clusters (más 3×3 del tile y tira de la animación) como goldens del harness visual.",
+        "Rúbrica moana-rubric/1 validada por moana.quality.parse_rubric: categorías legibilidad, silueta, clusters, paleta, luz/material y continuidad temporal en animaciones; cada una pending_human_review o reviewed (1–5); professional sólo con hard checks superados, human_review (reviewer_kind human, render_fingerprint del render revisado) y todas las puntuaciones ≥ 4; agent_assessment etiquetado como no humano y nunca cuenta.",
+        "scripts/corpus.py check/facts sin escritura: audita procedencia, versiones de renderer/estimador/semilla, digests, hard checks, categorías y huella del render revisado (un cambio de arte tras una revisión humana falla la auditoría); rechaza claves JSON duplicadas.",
+        "Los cinco ejemplos superan los hard checks con 0 advertencias y sin supresiones. Revisiones de agente: pixel-art (piernas separadas, ciclo de 6 frames con contrapeso, ruido de la rana, biseles del cofre a favor de la luz NW, periodo del tile), QA (invariante de rúbrica, ramas de auditoría parametrizadas) y documentación (licencia explícitamente pendiente, autoría de agente) aplicadas. Revisión artística humana PENDIENTE: ningún ejemplo es profesional.",
+        "Documentación: MOANA.md 0.1.25-draft (§19), ADR-037, module-contracts, examples/corpus/README.md, tests/visual/README.md. Gate local macOS: scripts/validate.py 3273 passed con src/moana al 100 %, corpus check OK, check_wheel OK, mypy --platform win32 OK, pre-commit OK; matriz pendiente en main. Seguimiento propuesto: reglas de clusters por frame en quality (fuera de alcance).",
+        "Aprobado por el propietario el 2026-11-17 tras revisión; PR #67 hacia develop."
+      ],
       "aliases": [
         "MOA-027"
       ],
@@ -1519,15 +1932,21 @@
       "risks": [
         "No marcar como aprobada la calidad artística mientras falte una persona revisora."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-017, MOANA-022, MOANA-026, MOANA-028",
-      "acceptance_evidence": {},
-      "test_evidence": {}
+      "blocking_reason": null,
+      "acceptance_evidence": {
+        "AC1": "tests/integration/test_art_corpus.py::test_five_categories_pass_hard_checks_and_show_every_warning (cinco categorías, hard checks superados, advertencias registradas iguales a las reales, sin supresiones), ::test_check_requires_the_five_categories, ::test_provenance_audit_passes; scripts/corpus.py check → «Corpus OK: 5 examples, 5 pending human review».",
+        "AC2": "tests/unit/quality/test_quality_rubric.py::test_professional_without_human_review_is_rejected, ::test_agent_assessment_never_makes_an_example_professional, ::test_one_low_score_blocks_professional, ::test_failed_hard_checks_block_professional, ::test_fixture_human_review_makes_a_professional_example, ::test_malformed_reviews_are_rejected; tests/integration/test_art_corpus.py::test_real_records_satisfy_the_rubric_invariant, ::test_real_corpus_is_pending_until_reviewed."
+      },
+      "test_evidence": {
+        "T1": "tests/integration/test_art_corpus.py::test_corpus_renders_to_its_pinned_digests (doble render y digests por frame), ::test_localized_shirt_recolour_stays_inside_the_shirt_region (oráculo con cajas literales y expected/actual/diff del harness); tests/visual/test_corpus_previews.py::test_corpus_preview_matches_its_golden, ::test_scale_is_nearest_neighbour, ::test_cluster_view_singletons_agree_with_quality_metrics.",
+        "T2": "tests/integration/test_art_corpus.py::test_walk_cycle_is_stable (sin hallazgos temporales, costura del bucle, suelo, paleta y frames sin singletons), ::test_provenance_audit_passes, ::test_audit_reports_tampered_records (mutaciones parametrizadas incluida la deriva de versiones y semilla), ::test_audit_reports_a_real_failing_hard_check, ::test_main_exit_codes, ::test_records_reject_duplicate_keys; inspección visual del agente a 1× y 8× registrada en agent_inspection (no humana)."
+      }
     },
     {
       "id": "MOANA-028",
       "title": "Crear harness de regresión visual",
       "phase": "P1",
-      "status": "blocked",
+      "status": "done",
       "priority": "P1",
       "dependencies": [
         "MOANA-004"
@@ -1549,7 +1968,14 @@
         "Tests del harness con píxel cambiado, dimensiones distintas y alfa cero",
         "Archivos de diagnóstico válidos y baseline intacto tras fallo; manejo de ruta con espacios"
       ],
-      "evidence": [],
+      "evidence": [
+        "tests/visual/harness.py: compare_rgba (unión anclada arriba-izquierda, alfa cero normalizado, conteo changed/only_in_one y bbox), diff_rgba, load_png vía canvas_from_pillow, write_png atómico 0644, assert_matches_golden con diagnósticos expected/actual/diff + manifest.json (moana-visual-diff/1, source opcional) en artifacts/visual/<nombre>, limpieza de diagnósticos previos y presupuesto check_canvas_budget antes de reservar.",
+        "Actualización de goldens sólo con MOANA_UPDATE_GOLDENS=1 o update=True explícito; rechazada siempre si CI está activo (guarda inmediatamente antes de escribir). Documentado en tests/visual/README.md y docs/guides/development.md.",
+        "Golden de referencia tests/visual/goldens/harness-reference-4x3.png construido a mano (oráculo independiente).",
+        "Gate: scripts/validate.py, scripts/check_wheel.py y pre-commit verdes; 51 pruebas visuales (marker visual), también con CI=true.",
+        "Revisión: moana-qa-engineer; corregidos guarda de CI saltable con update=True, diagnósticos obsoletos, permisos 0600, colisión de nombres entre subcarpetas, presupuesto de entradas y unión, y ambigüedad del negro en diff.png.",
+        "Aprobado por el propietario el 2026-11-17 tras revisión; PR #45 hacia develop."
+      ],
       "aliases": [
         "MOA-028"
       ],
@@ -1570,15 +1996,21 @@
       "risks": [
         "El harness no puede usar el renderer como oráculo de sus propias pruebas."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-004",
-      "acceptance_evidence": {},
-      "test_evidence": {}
+      "blocking_reason": null,
+      "acceptance_evidence": {
+        "AC1": "tests/visual/test_visual_harness.py::test_one_changed_pixel_fails_with_hand_computed_bbox_and_count, ::test_failure_writes_valid_diagnostics_and_keeps_baseline.",
+        "AC2": "tests/visual/test_visual_harness.py::test_same_pixels_pass_with_different_png_bytes."
+      },
+      "test_evidence": {
+        "T1": "tests/visual/test_visual_harness.py::test_different_dimensions_fail_over_the_union, ::test_transposed_dimensions_with_same_pixel_count_fail, ::test_zero_alpha_with_residual_rgb_is_equal, ::test_dimension_mismatch_diagnostics, ::test_diff_outside_both_images_differs_from_unchanged_black, ::test_budget_is_checked_before_copying.",
+        "T2": "tests/visual/test_visual_harness.py::test_failure_writes_valid_diagnostics_and_keeps_baseline (rutas con espacios), ::test_ci_never_writes_baseline_even_on_failure, ::test_ci_blocks_explicit_update_argument, ::test_ci_policy, ::test_update_needs_exactly_one, ::test_stale_diagnostics_are_replaced, ::test_default_names_do_not_collide_between_golden_subfolders, ::test_written_files_are_world_readable, ::test_reference_fixture_matches_committed_golden."
+      }
     },
     {
       "id": "MOANA-029",
       "title": "Verificar determinismo entre procesos y plataformas",
       "phase": "P2",
-      "status": "blocked",
+      "status": "done",
       "priority": "P1",
       "dependencies": [
         "MOANA-010",
@@ -1604,7 +2036,16 @@
         "Fixtures de diagonales, alpha, grupos, transparencias y clipping",
         "Subprocesos con semillas distintas, orden de claves y export/decode frente a RGBA maestro"
       ],
-      "evidence": [],
+      "evidence": [
+        "tests/fixtures/determinism/: corpus fijo de seis casos (diagonales con línea de empate escrita al revés, alfa, grupos aislados vía moana.layers, transparencias, clipping con línea no diagonal recortada y empate exacto .5 de round_half_up) y manifiesto RGBA revisado generado desde un oráculo independiente del renderer (máscaras a mano §6/ADR-015 y fórmula escalar §11), nunca desde un render.",
+        "scripts/determinism.py: probe (render, PNG RGBA en memoria, export_png a archivo, indexado en casos strict; decodificación con modo exigido), report (4 PYTHONHASHSEED × 3 serializaciones contra el manifiesto, entorno/lock/codec, expected/actual/diff al divergir, informe error si una sonda falla) y compare (sólo stdlib; exige los informes esperados, sin duplicados de sistema/Python y con Darwin, Linux y Windows; divergencia de píxeles falla, bytes PNG distintos con el mismo codec avisan; nunca reescribe el manifiesto).",
+        ".github/workflows/ci.yml: paso de informe en verify (diagnostics-<os>-<py>/determinism) y job determinism (needs verify, sólo lectura, acciones fijadas por SHA, download-artifact v8.0.2 verificado con git ls-remote) que compara los 9 informes; triggers sin cambios (matriz sólo en main, decisión del usuario).",
+        "ADR-021 (docs/architecture/decisions/ADR-021-cross-platform-determinism.md): entre plataformas se garantizan píxeles decodificados (digest §14); bytes PNG sólo con el mismo codec (ADR-019). Contratos de módulos, índice de ADR, guía de desarrollo, AGENTS.md y CLAUDE.md actualizados.",
+        "Evidencia entre plataformas: sólo local en macOS arm64 / Python 3.12 (Pillow 13.0.0, zlib-ng 1.3.1); la matriz Linux/macOS/Windows × 3.12/3.13/3.14 queda pendiente de la ejecución del workflow Quality en main.",
+        "Gate: scripts/validate.py verde; scripts/determinism.py al 100 % de líneas y ramas con sus tests; mypy también con --platform win32.",
+        "Revisión: moana-qa-engineer (cambios menores, aplicados: cobertura de plataformas y duplicados en compare, informe de error por sonda fallida, ramas negativas, test de workflow con shlex) y moana-graphics-engineer (valores recalculados a mano correctos; cambios aplicados: empate .5, orden lexicográfico de Bresenham, línea no diagonal recortada, modo PNG exigido al decodificar, aviso de bytes dentro del mismo codec, redacción de ADR-021).",
+        "Aprobado por el propietario el 2026-11-17 tras revisión; PR #50 hacia develop."
+      ],
       "aliases": [
         "MOA-029"
       ],
@@ -1626,15 +2067,21 @@
       "risks": [
         "Identidad del perfil entero y de AggDraw son garantías separadas."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-010, MOANA-011, MOANA-028",
-      "acceptance_evidence": {},
-      "test_evidence": {}
+      "blocking_reason": null,
+      "acceptance_evidence": {
+        "AC1": "Job determinism de .github/workflows/ci.yml (--expected-reports 9 --expected-platforms Darwin,Linux,Windows; pendiente de la primera ejecución en main); tests/integration/test_cross_platform_determinism.py::test_ac1_compare_accepts_the_full_matrix, ::test_ac2_compare_rejects_duplicate_and_missing_platforms y ::test_ac1_t2_fresh_processes_seeds_and_key_orders_agree (local macOS); tests/test_repository_tools.py::test_ci_publishes_and_compares_determinism_reports.",
+        "AC2": "tests/integration/test_cross_platform_determinism.py::test_ac2_pixel_divergence_writes_diagnostics_and_keeps_the_manifest (expected/actual/diff, píxeles distintos y bbox, manifiesto intacto), ::test_ac2_failing_probe_still_writes_an_error_report, ::test_ac2_compare_separates_codec_from_pixel_differences, ::test_ac2_compare_warns_when_bytes_differ_within_one_codec y el resto de test_ac2_*; tests/test_repository_tools.py::test_ci_actions_are_pinned_and_permissions_minimal."
+      },
+      "test_evidence": {
+        "T1": "tests/integration/test_cross_platform_determinism.py::test_t1_manifest_is_the_independent_oracle, ::test_t1_corpus_covers_the_required_fixtures, ::test_t1_hand_values_of_the_semitransparent_cases, ::test_t1_rounding_case_detects_half_even, ::test_t1_line_masks_depend_on_sorting_and_clip_order y ::test_t1_render_matches_manifest (6 casos × 3 variantes).",
+        "T2": "tests/integration/test_cross_platform_determinism.py::test_t2_export_and_decode_agree_with_the_master, ::test_ac1_t2_fresh_processes_seeds_and_key_orders_agree (12 subprocesos: PYTHONHASHSEED 0/1/4242/random × 3 serializaciones) y ::test_decode_requires_the_promised_png_mode."
+      }
     },
     {
       "id": "MOANA-030",
       "title": "Ejercitar amenazas y entradas adversarias",
       "phase": "P5",
-      "status": "blocked",
+      "status": "done",
       "priority": "P0",
       "dependencies": [
         "MOANA-003",
@@ -1660,7 +2107,13 @@
         "Duplicados JSON, nesting, ciclos, NaN, tamaños enormes y ZIP traversal/bomb",
         "Monkeypatch de asignación/IO, mutación parcial de batch, decode enorme y fallo de checksum"
       ],
-      "evidence": [],
+      "evidence": [
+        "Suite adversaria tests/security/ sin cambios en src/: guards.py (trampas forbid_allocation/forbid_writes/forbid_effects sobre NumPy zeros/empty/full/ones/*_like/frombuffer/array/asarray/ascontiguousarray/arange/repeat/pad/concatenate/stack/tile/broadcast_to y Pillow new/open/frombytes/frombuffer/fromarray, y sobre os.open/open/replace/rename/mkdir/unlink…; TripwireHit deriva de pytest Failed para que ni un except Exception la oculte ni Hypothesis pierda el ejemplo mínimo; measure/assert_bounded, tree_state, peak_bytes relativo y compatible con tracemalloc activo, assert_clean_error), corpus.py (57 HostileCase generados en memoria, sin binarios ni payload ejecutable, con marcador SECRET que nunca debe aparecer en un error) y coverage.py (mapa frontera → mitigación → tests).",
+        "Cobertura de las 10 fronteras de docs/architecture/SECURITY_MODEL.md (nueva frontera spritesheet → frames): JSON → modelo, modelo → plan, resolución → render, plan → raster, asset → Pillow, ZIP → filesystem, export/proyecto → disco, batch → documento, spritesheet → frames e instalación/CI (uv.lock con sha256 y workflows con token de sólo lectura y acciones fijadas por SHA, análisis estático sin red). test_threat_coverage.py falla si una frontera de la tabla no tiene tests o un test citado no existe.",
+        "AC2: cada rechazo del corpus y de los tests paramétricos de presupuesto, archivo y persistencia se mide con un tope de 2 s y 32 MiB de memoria trazada (máximos medidos 99 ms y 8,01 MiB); propiedades Hypothesis con derandomize=True y deadline explícito; la memoria nativa de Pillow/AggDraw la garantizan las trampas, no los picos. Límites conocidos documentados en tests/security/README.md (bytearray, .copy()/.astype(), os.chmod/utime/ftruncate sin trampa; el saver decide «existe» en el commit para evitar carreras).",
+        "Revisiones de agente QA y Python aplicadas (cotas AC2, peak_bytes con traza previa, TripwireHit visible para Hypothesis, oráculos con reason y pointer, trampas ampliadas, casos de spritesheet, APNG e ICC, helpers deduplicados). Gate local macOS: scripts/validate.py 3499 passed con src/moana al 100 %, pytest tests/security 202 passed (también con PYTHONTRACEMALLOC=1), check_wheel OK, mypy --platform win32 OK, pre-commit OK; matriz pendiente en main (las ramas de rutas Windows sólo corren allí).",
+        "Aprobado por el propietario el 2026-11-17 tras revisión; PR #69 hacia develop."
+      ],
       "aliases": [
         "MOA-030"
       ],
@@ -1681,15 +2134,21 @@
       "risks": [
         "Las pruebas hostiles deben ser acotadas y nunca desactivar protecciones de Pillow."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-003, MOANA-020, MOANA-021, MOANA-022",
-      "acceptance_evidence": {},
-      "test_evidence": {}
+      "blocking_reason": null,
+      "acceptance_evidence": {
+        "AC1": "tests/security/test_threat_coverage.py::test_ac1_every_threat_boundary_has_tests y ::test_ac1_every_mapped_test_exists_and_is_documented (10 fronteras); tests/security/test_corpus.py::test_ac1_t1_corpus_case_is_rejected_before_buffers_and_io (57 casos con trampas de asignación y E/S armadas); tests/security/test_supply_chain.py::test_ac1_every_locked_artifact_is_pinned_by_sha256 y ::test_ac1_ci_has_a_read_only_token_pinned_actions_and_no_secrets; tests/security/test_errors.py::test_ac1_*.",
+        "AC2": "tests/security/test_corpus.py::test_ac1_t1_corpus_case_is_rejected_before_buffers_and_io (assert_bounded: < 2 s y < 32 MiB por caso); tests/security/test_budgets.py::test_t2_export_over_budget_writes_nothing_and_allocates_nothing y ::test_t2_hostile_canvas_is_rejected_within_bounded_memory; tests/security/test_archives.py (todos vía _load_hostile acotado); tests/security/test_persistence.py::test_t2_existing_destination_is_never_replaced_implicitly y ::test_t2_property_injected_io_failure_keeps_the_previous_output (árbol byte a byte idéntico, sin temporales); tests/security/test_guards.py::test_peak_bytes_is_relative_and_keeps_an_outer_trace_running."
+      },
+      "test_evidence": {
+        "T1": "tests/security/test_documents.py::test_t1_property_duplicate_member_is_located_wherever_planted, ::test_t1_property_nesting_beyond_32_is_rejected_before_parsing, ::test_t1_property_mask_reference_cycles_never_reach_the_renderer, ::test_t1_mask_reference_chain_beyond_depth_16_is_rejected, ::test_t1_property_nan_and_infinity_are_rejected_anywhere; tests/security/test_archives.py::test_t1_property_traversal_names_are_refused_before_extraction, ::test_t1_declared_ratio_bomb_is_refused_before_decompression, ::test_t1_expanded_total_is_budgeted_before_any_entry_is_decompressed; tests/security/test_budgets.py::test_t1_*; casos zip-*, json-* y sheet-* del corpus.",
+        "T2": "tests/security/test_guards.py::test_t2_allocation_tripwire_fires_on_numpy_and_pillow y ::test_t2_tripwire_is_not_swallowed_by_except_exception (controles positivos); tests/security/test_persistence.py::test_t2_property_injected_io_failure_keeps_the_previous_output (fallo inyectado en cada os.write/os.fsync); tests/security/test_editing.py::test_t2_property_failing_command_anywhere_mutates_nothing; tests/security/test_assets_integrity.py::test_t2_bomb_headers_are_rejected_before_pillow, ::test_t2_checksum_failure_of_any_stored_file_loads_nothing, ::test_t2_tampered_spritesheet_atlas_fails_its_digests."
+      }
     },
     {
       "id": "MOANA-031",
       "title": "Medir rendimiento y memoria de referencia",
       "phase": "P5",
-      "status": "blocked",
+      "status": "done",
       "priority": "P1",
       "dependencies": [
         "MOANA-010",
@@ -1713,7 +2172,13 @@
         "Benchmark estático 32 capas/500 rects y animación 16 frames",
         "Comprobar contadores, ausencia de trabajo eliminado por caché y comparabilidad de versiones"
       ],
-      "evidence": [],
+      "evidence": [
+        "Benchmark informativo de MOANA.md §22 en tests/benchmarks/ sin cambios en src/: corpus programático (static 128×128 strict con 32 capas y 500 rects; animation con 16 frames de igual complejidad, 32 translate + 8 set_color distintos por frame; además los 5 ejemplos de examples/corpus), runner `uv run python -m tests.benchmarks run` con un subproceso nuevo por caso (PYTHONHASHSEED=0, stdin cerrado, timeout proporcional), 5 warmups y 30 muestras, fases parse / render en memoria / render_frame / encode_png / write_png separadas, mediana, p95 por rango más cercano, mín, máx y media; pico RSS por proceso (ru_maxrss en macOS, VmHWM en Linux, null con motivo en Windows) y pico tracemalloc etiquetado como sólo Python.",
+        "Informe canónico `moana-benchmark/1` (JSON con claves ordenadas y resumen Markdown regenerable desde el JSON): CPU, núcleos, arquitectura, SO, Python, numpy/Pillow/aggdraw/pydantic, sha256 de uv.lock, commit y dirty, renderer/backend/estimator y digest del corpus; objetivos 100 ms / 2 s / 256 MiB con met true/false/null y nota de que son informativos; sin hostname, usuario, rutas absolutas ni marca de tiempo (write_report rechaza un informe con fugas). `compare` rechaza informes no comparables (formato, corpus, renderer, backend, estimator, warmups, muestras, casos, fases o informe mal formado) y marca `investigate` si la mediana o el pico RSS suben más de un 20 % (comparación exacta sin división); no es un gate.",
+        "Línea base tests/benchmarks/results/macos-arm64-py312.{json,md} (Apple M4, macOS, CPython 3.12.16; commit 33ee89e con dirty=true porque se midió antes del commit): static 30,11 ms mediana / 30,95 ms p95; secuencia de 16 frames 853,44 ms / 869,82 ms (29,81 ms por frame); pico de proceso 66,8 MiB. Los tres objetivos se cumplen. Hallazgo para MOANA-032 sin optimizar: ~45 % del tiempo de la secuencia es evaluación de frames, no raster.",
+        "Revisiones de agente QA y Python aplicadas (falso positivo de privacidad con el usuario `runner` de GitHub, timeouts, detector de rutas en cualquier posición, comparación exacta y estricta, VmHWM en Linux, Markdown regenerable, tracemalloc relativo). Gate local macOS: scripts/validate.py 3600 passed con src/moana al 100 %, tests/benchmarks 101 passed (también con USER=runner y PYTHONTRACEMALLOC=1), check_wheel OK, mypy --platform win32 OK, pre-commit OK; matriz pendiente en main. Los tests del gate nunca comprueban latencia.",
+        "Aprobado por el propietario el 2026-11-17 tras revisión; PR #70 hacia develop."
+      ],
       "aliases": [
         "MOA-031"
       ],
@@ -1734,15 +2199,21 @@
       "risks": [
         "No usar fluctuaciones de runners compartidos como gate rígido sin estabilizar entorno."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-010, MOANA-022, MOANA-027",
-      "acceptance_evidence": {},
-      "test_evidence": {}
+      "blocking_reason": null,
+      "acceptance_evidence": {
+        "AC1": "tests/benchmarks/results/macos-arm64-py312.json y .md (objetivos cumplidos y máquina registrada); tests/benchmarks/test_benchmark_runner.py::test_t1_smoke_report_is_well_formed, ::test_t1_targets_are_stated_with_true_false_or_null, ::test_committed_baseline_summary_regenerates_from_its_json, ::test_privacy_vocabulary_is_not_a_leak, ::test_privacy_findings_detect_leaks_in_the_environment, ::test_write_report_refuses_a_leaking_report.",
+        "AC2": "tests/benchmarks/test_benchmark_budgets.py::test_ac2_oversized_static_is_rejected_on_pixel_visits, ::test_ac2_operation_budget_rejects_the_benchmark_corpus, ::test_ac2_cumulative_animation_budget_is_checked_before_any_frame, ::test_ac2_a_request_within_budget_is_not_reported_as_rejected (rechazo con BUDGET_EXCEEDED, 0 llamadas al rasterizador y pico tracemalloc muy por debajo de un buffer RGBA)."
+      },
+      "test_evidence": {
+        "T1": "tests/benchmarks/test_benchmark_corpus.py::test_t1_static_case_has_32_layers_and_500_rects, ::test_t1_animation_has_16_frames_of_equal_complexity (oráculos contados sobre el JSON); tests/benchmarks/test_benchmark_runner.py::test_t1_smoke_report_is_well_formed y ::test_t1_animation_reports_the_sequence_and_every_frame.",
+        "T2": "tests/benchmarks/test_benchmark_runner.py::test_t2_counters_are_equal_non_zero_and_match_the_json, ::test_t2_every_sample_matches_an_independent_reference, ::test_t2_a_changed_rect_is_drawn_again_with_the_same_work, ::test_t2_the_engine_has_no_memoisation, ::test_stats_against_hand_computed_values; tests/benchmarks/test_benchmark_compare.py::test_t2_a_rise_over_20_percent_is_flagged, ::test_t2_the_20_percent_boundary_is_exact, ::test_t2_non_comparable_reports_are_refused, ::test_t2_malformed_reports_are_refused."
+      }
     },
     {
       "id": "MOANA-032",
       "title": "Optimizar caché y render incremental acotados",
       "phase": "P5",
-      "status": "blocked",
+      "status": "done",
       "priority": "P2",
       "dependencies": [
         "MOANA-018",
@@ -1767,7 +2238,13 @@
         "Comparar render completo/incremental para cambios de paleta, máscara, grupo y orden",
         "Evicción LRU, versiones distintas, mutación externa impedida y benchmark antes/después"
       ],
-      "evidence": [],
+      "evidence": [
+        "Medición previa (ADR-038, macOS arm64): render estático de 32 capas/500 rects ≈ 29–30 ms (relleno ≈ 17 ms, composición ≈ 7 ms); animación de 16 frames ≈ 857 ms, de los que ≈ 360 ms son la doble evaluación de cada frame (admisión y render), y la mitad de cada evaluación es editing.index_nodes reconstruido por comando (fuera de alcance, seguimiento propuesto).",
+        "Decisión: caché opcional y desactivada por defecto de buffers de capa terminados `moana.render.RenderCache(max_bytes)` (1 B–256 MiB, LRU por bytes, entrada = longitud + 256 B, entradas mayores que el límite rechazadas, CacheStats). Parámetro `cache=None` en render, render_admitted, render_sequence, animation.render_animation y render_frame; protocolo `moana.layers.LayerBuffers` en compose. Ganancias medidas: re-render tras editar un rect −41 %, apply_edit + render −35 %, animación −12 %; coste en frío +5 % (motivo para dejarla desactivada). Rechazadas con números: retener frames evaluados (rompe el streaming acotado de ADR-032), dirty rects (domina la composición), caché por operación o prefijo compuesto.",
+        "Clave privada versionada `moana-layer-cache/1`: SHA-256 del JSON canónico de versiones de renderer/backend/estimador/RNG, NumPy y AggDraw/Pillow si hay paths, lienzo, perfil y semilla, la capa sin name/locked/visible/opacity, el cierre transitivo de máscaras y el RGBA resuelto de cada color y rampa referenciados (bandas y segmentos incluidos); opacidad, visibilidad y orden no invalidan. Entradas `bytes` copiadas al insertar, vistas de sólo lectura en los aciertos; plan_budget, el chequeo de composición y el deadline corren antes de cualquier acierto. Sin fachada ni CLI; no thread-safe (documentado).",
+        "Revisiones de agente: gráficos (3364 renders cacheados con mutaciones encadenadas sobre los 17 ejemplos y animaciones, 0 divergencias) y arquitectura (sin imports prohibidos ni ciclos) aprobadas; correcciones aplicadas (clave privada, test de grupos a nivel de layers, memo del cierre de máscaras con clave idéntica, errores separados). Documentación: ADR-038, MOANA.md 0.1.26-draft (§14, §22), module-contracts, ADR-017/018/032 ampliados. Benchmark por defecto sin cambios (static 29,78 → 29,93 ms; animación 852,2 → 850,8 ms; compare ok). Gate local macOS: scripts/validate.py 3661 passed con src/moana al 100 %, check_wheel OK, mypy --platform win32 OK, pre-commit OK; matriz pendiente en main.",
+        "Aprobado por el propietario el 2026-11-17 tras revisión; PR #72 hacia develop."
+      ],
       "aliases": [
         "MOA-032"
       ],
@@ -1788,15 +2265,21 @@
       "risks": [
         "Si no hay beneficio, documentar decisión de no introducir caché y su evidencia."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-018, MOANA-031",
-      "acceptance_evidence": {},
-      "test_evidence": {}
+      "blocking_reason": null,
+      "acceptance_evidence": {
+        "AC1": "tests/unit/render/test_render_cache.py::test_ac1_cold_and_warm_renders_equal_the_uncached_render y ::test_t1_incremental_render_equals_full_render (igualdad completa de RenderResult: RGBA, digest, advertencias y procedencia).",
+        "AC2": "tests/unit/render/test_render_cache.py::test_ac2_an_edit_changes_the_key_of_every_consumer_and_only_them, ::test_ac2_a_mask_edit_repaints_both_consumers_and_reuses_the_rest, ::test_ac2_a_cache_smaller_than_the_document_stays_bounded_and_exact, ::test_ac2_memoised_keys_equal_the_written_out_recipe, ::test_t2_property_lru_model_and_limit_after_every_insert (límite comprobado tras cada inserción)."
+      },
+      "test_evidence": {
+        "T1": "tests/unit/render/test_render_cache.py::test_t1_incremental_render_equals_full_render[palette_ramp_colour|palette_shared_colour|mask_leaf_geometry|mask_combination_operands|layer_visibility|layer_opacity|layer_mask_reference|layer_order|operation_parameter|operation_colour_reference|operation_geometry|seed], ::test_t1_groups_with_opacity_and_nesting_reuse_layer_buffers_exactly (grupos a nivel de layers: el documento 1.0 no tiene grupos), ::test_t1_animation_frames_cached_equal_uncached.",
+        "T2": "tests/unit/render/test_render_cache.py::test_t2_lru_evicts_the_least_recently_used_entry_first, ::test_t2_property_lru_model_and_limit_after_every_insert, ::test_t2_another_version_never_reuses_an_entry, ::test_t2_mutating_the_inserted_buffer_does_not_change_the_entry, ::test_t2_budgets_are_enforced_before_any_hit; benchmark antes/después con caché desactivada en ADR-038 (compare ok)."
+      }
     },
     {
       "id": "MOANA-033",
       "title": "Documentar flujos IA y previews editables",
       "phase": "P5",
-      "status": "blocked",
+      "status": "done",
       "priority": "P1",
       "dependencies": [
         "MOANA-012",
@@ -1823,7 +2306,14 @@
         "Ejecutar snippets/tutorial en entorno wheel limpio",
         "Validar ejemplos JSON contra schema y comprobar sólo región prevista cambia salvo dependencias declaradas"
       ],
-      "evidence": [],
+      "evidence": [
+        "Guía en español docs/guides/ai-workflows.md: brief → documento JSON → moana capabilities/validate/inspect → export 1× y --scale 4 → moana edit (set_color por ID con base_revision y base_snapshot) → guardado explícito de edit.document (moana edit no escribe archivos) → re-validate/re-export → diff que imprime 'bbox (5, 9, 11, 14) changed 28'; mismo flujo en Python (examples/tutorial/potion_flow.py con moana.api, moana.project.save_document y MoanaError); tabla de recuperación con cinco errores reales (4 EDIT_CONFLICT stale_revision, 2 REFERENCE_ERROR unknown_target, 3 BUDGET_EXCEEDED export_dimension/export_area 2048 px, 5 EXPORT_ERROR exists, 2 usage); notas Windows (PowerShell 5.1 redirige en UTF-16).",
+        "Ejemplos examples/tutorial/: potion.moana.json (16×16 strict, capas bottle/liquid, región potion_liquid, máscara liquid_shape [5,9,11,14)), potion-recolor.edit.json y potion-typo.edit.json. Oráculo a mano: liquid_fill cubre 6×5 = 30 px menos los 2 de liquid_shine dibujados encima ((6,10),(6,11)) = 28 px cambiados, todos dentro de la máscara.",
+        "Fuente única: scripts/tutorial.py parsea los bloques sh de la guía en una lista ordenada de pasos (programa, argumentos, redirección, '# exit N') con parser estricto (rechaza pipes, &&, ;, $, globs, continuaciones y etiquetas de bloque fuera de sh/json/python) y los ejecuta; el test unitario los corre con moana.cli.main en proceso y python -I; scripts/check_wheel.py::check_tutorial ejecuta los mismos 18 pasos con el moana instalado del wheel y el python del venv aislado y aplica check_outputs (oráculo de 28 píxeles).",
+        "AC2/limitaciones: sección «Pautas para agentes» (conservar fuente y revisión, sin generación de imágenes, sin persistencia/proyectos/historial por CLI, GIF/APNG/WebP/spritesheets sólo en Python, los informes de calidad no son aprobación humana); punteros en .agents/skills/moana-pixel-art y moana-python; enlaces en examples/README.md y agent-workflow.md. Sin cambios en src/; capabilities sin cambios (sigue exacto). mypy cubre examples/.",
+        "Revisiones de agente: documentación (comandos reales re-ejecutados, sin APIs inventadas) y Python (T1 debía ejecutar la guía y no una copia; parser estricto; pasos ordenados) con todas las correcciones aplicadas. Gate local macOS: scripts/validate.py 3686 passed con src/moana al 100 %, check_wheel OK (tutorial 18 pasos), mypy --platform win32 OK, pre-commit OK; matriz pendiente en main; variantes PowerShell no ejecutadas.",
+        "Aprobado por el propietario el 2026-11-17 tras revisión; PR #73 hacia develop."
+      ],
       "aliases": [
         "MOA-033"
       ],
@@ -1845,15 +2335,21 @@
       "risks": [
         "No documentar una API de diseño como importable antes de completar sus dependencias."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-012, MOANA-018, MOANA-020, MOANA-026",
-      "acceptance_evidence": {},
-      "test_evidence": {}
+      "blocking_reason": null,
+      "acceptance_evidence": {
+        "AC1": "tests/unit/api/test_tutorial.py::test_guide_shell_blocks_run_as_documented (ejecuta todos los bloques sh de docs/guides/ai-workflows.md con sus códigos de salida, revisión 0→1, affected_ids ['liquid_fill'], PNG 1× 16×16 y 4× 64×64 por vecino, píxeles cambiados = oráculo, examples/ intacto) y ::test_guide_paths_and_python_excerpt_exist; scripts/check_wheel.py::check_tutorial en wheel limpio.",
+        "AC2": "Sección «Pautas para agentes» de docs/guides/ai-workflows.md; tests/unit/api/test_tutorial.py::test_documented_failures_are_atomic (stale_revision exit 4 y unknown_target exit 2 sin cambiar el documento) y ::test_python_flow_reports_moana_errors; .agents/skills/moana-pixel-art/SKILL.md y moana-python/SKILL.md."
+      },
+      "test_evidence": {
+        "T1": "scripts/check_wheel.py::check_tutorial (venv aislado sólo con el wheel: 'Installed tutorial OK: 18 documented steps', changed_pixels 28, changed_outside_region 0, revision [0, 1]) sobre scripts/tutorial.py::run_steps/check_outputs; tests/unit/api/test_tutorial.py::test_parser_rejects_unsupported_shell, ::test_parser_reads_redirect_and_exit_code, ::test_unknown_block_language_and_wrong_exit_fail.",
+        "T2": "tests/unit/api/test_tutorial.py::test_examples_validate_against_current_schema (claves y schema_version contra schemas/moana-document-1.0.schema.json, validate_document, batches con revisión y snapshot del documento; el schema publicado = modelo por tests/unit/schema/test_schema_roundtrip.py::test_generated_schema_matches_reviewed_golden) y ::test_recolor_changes_only_the_region_and_preserves_the_rest (sólo cambia el color de liquid_fill, IDs/capas/máscaras/regiones iguales, píxeles cambiados = oráculo a mano)."
+      }
     },
     {
       "id": "MOANA-034",
       "title": "Añadir ejemplos de tiles y escenarios modulares",
       "phase": "P5",
-      "status": "blocked",
+      "status": "done",
       "priority": "P2",
       "dependencies": [
         "MOANA-008",
@@ -1879,7 +2375,13 @@
         "Costuras horizontal/vertical, espejos y traslación por múltiplos de tile",
         "Editar un prop por ID y verificar regiones; inspección de legibilidad a escala nativa"
       ],
-      "evidence": [],
+      "evidence": [
+        "examples/tiles/: fuentes 16×16 (tiles grass, grass-b, dirt, dirt-b, dirt-c, grass-dirt-edge, grass-dirt-edge-b, grass-dirt-edge-s; props rock, bush, sign con pivote (8,15) y luz NO), layout meadow.layout.json (formato local moana-tile-layout/1: fuentes, perfiles de borde, variantes con espejo, rejilla 8×8, props por pivote) y escena derivada meadow.moana.json (documento schema 1.0 ordinario: 68 capas tile_r{r}_c{c} y prop_*, 807 operaciones, 637 máscaras, 75 regiones, 14 colores). README con grid, origen de patrón, pivotes, bordes, variantes, paleta, IDs, edición por ID, atlas, procedencia; licencia y revisión humana PENDIENTES (decisión del propietario).",
+        "scripts/tiles.py check|build|preview: instancia la geometría existente (moana.geometry.Transform/transform_box) con IDs prefijados por instancia sin rasgos nuevos de schema; la textura pertenece al lienzo (dither con origen común, nunca reflejado; rechaza period_mismatch, dither_origin, phase_mismatch); perfiles de borde emparejados (edge_mismatch, detail_on_edge); espejos verificados contra np.flip del render de la fuente (mirror_asymmetry); rutas confinadas a la carpeta del layout y tamaños acotados (path_escape, too_large); layout validado con modelos estrictos (invalid_layout, invalid_source, duplicate_id); presupuesto de documento (budget) y props dentro del lienzo (off_canvas). La escena versionada es el build exacto de sus fuentes (check falla si está desactualizada).",
+        "Revisiones de agente: pixel-artist (arbusto, periodicidad, bordes, flecha, rampa de piedra con desplazamiento de tono, labio sur iluminado, grieta de la roca) y graphics-engineer (frame del atlas en (0,0), espejo de líneas con empates, confinamiento de rutas, errores agrupados, IDs duplicados, presupuesto, oráculos no tautológicos) con todas las correcciones aplicadas. Periodicidad a 32 px medida tras corregir: hierba 81→66 %, camino 93→81 %. evaluate_quality sin hallazgos ni singletons en escena, fuentes y variantes (no es aprobación humana). Sin cambios en src/.",
+        "Gate local macOS: scripts/validate.py 3788 passed con src/moana al 100 %, check_wheel OK, mypy --platform win32 OK, tiles.py check OK, corpus.py check OK, pre-commit OK; matriz pendiente en main.",
+        "Aprobado por el propietario el 2026-11-20 tras revisión; PR #74 hacia develop."
+      ],
       "aliases": [
         "MOA-034"
       ],
@@ -1901,15 +2403,21 @@
       "risks": [
         "Repetición horizontal/vertical necesita fixtures de costura y revisión a escala nativa."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-008, MOANA-016, MOANA-020, MOANA-023",
-      "acceptance_evidence": {},
-      "test_evidence": {}
+      "blocking_reason": null,
+      "acceptance_evidence": {
+        "AC1": "tests/integration/test_tile_scene.py::test_raw_tile_wraps_onto_itself, ::test_repeated_tile_equals_its_periodic_extension, ::test_scene_seams_keep_the_material_on_both_sides (sin costuras) y ::test_scene_keeps_the_shared_palette_and_editable_ids (paleta compartida, perfil strict, píxeles dentro de la paleta, capas tile_r{r}_c{c} y props, regiones prefijadas).",
+        "AC2": "tests/integration/test_tile_scene.py::test_atlas_rebuilds_the_scene_pixel_for_pixel (export_spritesheet → load_spritesheet → pegado en at − pivote = render de la escena) y ::test_atlas_rebuilds_the_scene_with_another_pattern_origin[(16,0)|(2,2)|(-4,6)]."
+      },
+      "test_evidence": {
+        "T1": "tests/integration/test_tile_scene.py::test_repeated_tile_equals_its_periodic_extension, ::test_raw_tile_wraps_onto_itself, ::test_dither_phase_belongs_to_the_canvas_across_every_seam (oráculo Bayer 2×2 en coordenadas de lienzo), ::test_mirrored_variant_is_the_flipped_source_geometry, ::test_mirrored_variant_keeps_the_canvas_texture_phase, ::test_mirrored_props_are_pixel_mirrors, ::test_the_scene_cells_are_the_tiles_translated_by_whole_tiles, ::test_documented_edges_match_the_rendered_tile; negativos ::test_grass_cannot_sit_on_top_of_dirt, ::test_side_seam_between_edge_and_grass_is_rejected, ::test_invalid_sources_and_layouts_are_rejected, ::test_source_paths_stay_in_the_layout_folder, ::test_scene_over_the_document_budget_is_rejected.",
+        "T2": "tests/integration/test_tile_scene.py::test_recolouring_the_sign_board_by_id_changes_only_the_board (caja a mano [37,34,49,39) y render_with_regions; IDs y demás capas iguales, revisión +1), ::test_moving_the_rock_by_id_touches_only_its_old_and_new_boxes y ::test_scene_and_tiles_read_at_native_scale (export 1× y 4× por vecino, evaluate_quality sin hallazgos ni singletons; revisión humana pendiente)."
+      }
     },
     {
       "id": "MOANA-035",
       "title": "Preparar release y comprobar Definition of Done",
       "phase": "P5",
-      "status": "blocked",
+      "status": "done",
       "priority": "P1",
       "dependencies": [
         "MOANA-007",
@@ -1943,7 +2451,14 @@
         "Instalación desde ambos artefactos, smoke CLI y migraciones en entorno limpio",
         "Revisión final de traceability, CI remoto real, corpus, seguridad y benchmark archivados"
       ],
-      "evidence": [],
+      "evidence": [
+        "Decisiones del propietario en la sesión de trabajo del 2026-11-20: licencia MIT para código, documentación, ejemplos y corpus (LICENSE «Copyright (c) 2026 xlCyanz and Moana contributors»; pyproject license = \"MIT\" y license-files según PEP 639, sin clasificador License) y versión 0.1.0rc1 (Development Status 3 - Alpha). Textos de licencia pendiente actualizados (README, CONTRIBUTING, MOANA.md §19/§25 y 0.1.27-draft, materials._LICENSE, corpus y tiles, ADR-030/037 con nota de actualización); la revisión artística humana sigue pendiente.",
+        "docs/RELEASE.md: versiones (paquete, schema 1.0, proyecto, render-v1, budget-v8, quality-v1, aggdraw-v1, registro de migraciones sólo 1.0), matriz de compatibilidad (Python 3.12–3.14 × ubuntu/macos/windows, rangos de Pillow/NumPy/AggDraw, APNG/WebP opcionales), capacidades implementadas frente a previstas desde moana.api.capabilities y auditoría R001–R040 (entregado sólo si todos los issues que lo cubren están done) generadas y comprobadas por scripts/release.py report|write|check; checklist DoD, evidencia archivada, limitaciones y pasos de publicación como acción separada no ejecutada. CHANGELOG con sección 0.1.0rc1.",
+        "scripts/check_wheel.py construye wheel y sdist una vez, audita ambos (sin entornos, cachés, artefactos, secretos ni enlaces; LICENSE y License-Expression: MIT) e instala cada uno en un venv limpio: sonda de importación, smoke CLI, tutorial de 18 pasos, migración con el original intacto y corpus contra sus digests (scripts/install_smoke.py); en la pasada sdist las entradas salen del sdist extraído.",
+        "CI remoto real: develop 714c2f6 falló (run 44768996258, primera ejecución remota de la matriz); corregido en PR #75 (ADR-039) con la matriz verde 9/9 más determinismo en 3857617 (run 44777404728). La ejecución sobre el commit candidato se registra al aprobar.",
+        "Revisiones de agente QA y documentación con todas las correcciones aplicadas. Gate local macOS: scripts/validate.py con src/moana al 100 %, check_wheel OK (wheel y sdist), mypy --platform win32 OK, release.py/corpus.py/tiles.py check OK, pre-commit OK. Sin publicación: ni PyPI, ni tag, ni GitHub Release.",
+        "Aprobado por el propietario el 2026-11-20 tras revisión; PR #76 hacia develop."
+      ],
       "aliases": [
         "MOA-035"
       ],
@@ -1965,9 +2480,79 @@
       "risks": [
         "No declarar CI remoto de cambios locales ni licencia decidida sin evidencia del propietario."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-007, MOANA-021, MOANA-023, MOANA-024, MOANA-025, MOANA-027, MOANA-029, MOANA-030, MOANA-032, MOANA-033, MOANA-034",
-      "acceptance_evidence": {},
-      "test_evidence": {}
+      "blocking_reason": null,
+      "acceptance_evidence": {
+        "AC1": "scripts/check_wheel.py: «Artifact audit OK» y, para wheel y sdist, «Installed CLI OK», «Installed tutorial OK: 18 documented steps», «Installed migrations OK … original preserved» e «Installed corpus OK: 5 examples match their pinned digests»; tests/test_repository_tools.py::test_t1_sdist_ships_every_input_of_the_installed_checks.",
+        "AC2": "docs/RELEASE.md (licencia MIT decidida por el propietario el 2026-11-20, checklist DoD, limitaciones, revisión humana pendiente explícita, publicación separada no ejecutada), LICENSE, README.md, CHANGELOG.md; tests/test_repository_tools.py::test_t2_release_versions_and_licence_come_from_the_code."
+      },
+      "test_evidence": {
+        "T1": "scripts/check_wheel.py (instalación limpia desde wheel y desde sdist, smoke CLI, tutorial, migraciones y corpus); tests/test_repository_tools.py::test_t1_sdist_audit_accepts_a_clean_sdist, ::test_t1_sdist_audit_rejects_environment_and_secret_paths, ::test_t1_sdist_audit_rejects_links, ::test_t1_sdist_audit_requires_licence_and_sources, ::test_t1_sdist_and_wheel_audits_need_their_metadata, ::test_t1_wheel_audit_requires_licence_metadata, ::test_t1_built_artifacts_need_one_wheel_and_one_sdist, ::test_t1_migration_smoke_preserves_the_original, ::test_t1_corpus_smoke_detects_a_changed_pinned_digest, ::test_t1_install_smoke_failures_are_explicit.",
+        "T2": "tests/test_repository_tools.py::test_t2_release_document_is_in_sync_with_code_and_catalogs, ::test_t2_requirement_audit_does_not_confuse_planning_with_delivery, ::test_t2_release_check_reports_stale_or_malformed_documents, ::test_t2_release_check_rejects_duplicated_or_misordered_markers, ::test_t2_release_reports_a_moved_ci_matrix_clearly; CI remoto real archivado en docs/RELEASE.md (runs 44768996258 y 44777404728); corpus.py check, suite tests/security y benchmark tests/benchmarks/results archivados."
+      }
+    },
+    {
+      "id": "MOANA-036",
+      "title": "Índice incremental de nodos en la edición por batches",
+      "phase": "P5",
+      "status": "done",
+      "priority": "P2",
+      "dependencies": [
+        "MOANA-018",
+        "MOANA-022",
+        "MOANA-031"
+      ],
+      "requirements": [
+        "R028"
+      ],
+      "scope": "Sustituir la reconstrucción de `editing.index_nodes` por comando dentro de `apply_commands` por un índice de trabajo mantenido de forma incremental durante el batch (altas, bajas, renombres y movimientos), con resultados, errores y atomicidad idénticos.",
+      "out_of_scope": "No cambiar el formato de batch, la semántica de comandos, los códigos de error ni el render; sin paralelismo ni caché entre batches o documentos.",
+      "technical": [
+        "El índice incremental debe ser observablemente equivalente a `index_nodes` tras cada comando, incluida la regla de que la primera declaración gana ante IDs duplicados",
+        "Mantener el rechazo atómico, los punteros JSON de error y el orden de `affected_ids`; coste por comando independiente del número de nodos salvo en los comandos que recorren subárboles"
+      ],
+      "acceptance": [
+        "Batches y timelines producen documentos, revisiones, snapshots, errores y RGBA idénticos antes y después del cambio",
+        "El coste de `apply_commands` deja de crecer como comandos × nodos y la animación de 16 frames del benchmark mejora de forma medida"
+      ],
+      "tests": [
+        "Propiedad: tras cada comando de batches aleatorios deterministas el índice incremental coincide con `index_nodes` recalculado, incluidos fallos a mitad de batch",
+        "Recuento de operaciones (sin reloj) que fije índices O(1) por comando y benchmark antes/después de MOANA.md §22 con `compare`"
+      ],
+      "aliases": [],
+      "complexity": "M",
+      "modules": [
+        "editing",
+        "animation"
+      ],
+      "context": "El benchmark de MOANA-031 y la medición de MOANA-032 (ADR-038) mostraron que `editing.index_nodes` se reconstruye para cada comando (src/moana/editing/apply.py) y supone cerca de la mitad de `apply_commands`; la animación evalúa cada frame dos veces (admisión y render), así que domina su coste. El test lineal de ADR-039 fija hoy una reconstrucción por comando.",
+      "objective": "Eliminar la reconstrucción del índice por comando conservando exactamente la semántica de la edición atómica.",
+      "proposed_implementation": [
+        "Introducir un índice de trabajo privado en `_Work` actualizado por cada comando que añade, elimina, renombra o mueve nodos, con verificación opcional contra `index_nodes` en tests",
+        "Actualizar el test de linealidad de ADR-039 al nuevo recuento y medir con `python -m tests.benchmarks run|compare` antes y después"
+      ],
+      "deliverables": [
+        "Índice incremental privado en `moana.editing` con equivalencia probada frente a la reconstrucción completa.",
+        "Benchmark antes/después archivado y decisión registrada (ADR nuevo o ampliación) si cambia un contrato de rendimiento."
+      ],
+      "risks": [
+        "Un índice desincronizado podría resolver IDs obsoletos: la prueba de propiedad debe cubrir cada comando que modifica la estructura, también en fallos y rollback."
+      ],
+      "blocking_reason": null,
+      "evidence": [
+        "Índice privado moana.editing._tree.WorkingIndex dentro de _Work: se construye una vez por batch en la primera consulta (perezoso, para conservar invalid_source en el puntero del primer comando) y cada comando estructural lo actualiza: insert_operation (operación y sus bandas/segmentos), remove (destino, operaciones e items retirados), set_geometry/set_parameters (objetos reemplazados, sin cambio de IDs), reorder (sin cambio con IDs únicos); set_color/translate/set_visibility/replace_palette_color mutan en el sitio. is_color sustituye la reconstrucción de la paleta por comando. Con IDs duplicados (origen sin validar) cada cambio estructural reconstruye entero y la primera declaración sigue ganando. Rollback atómico sin trabajo extra: el índice muere con _Work. Un índice desincronizado falla como AssertionError interno, nunca como invalid_source. index_nodes se conserva como referencia.",
+        "Benchmark MOANA.md §22 (macOS arm64, 5 warmups + 30 muestras; antes sobre eb0d177 limpio, después sin otra carga; compare ok en todas las filas): animación de 16 frames 874,9 → 658,8 ms (−24,7 %), corpus adventurer-walk 72,6 → 46,4 ms (−36,2 %), render estático 30,6 → 29,9 ms (ruido), tracemalloc idéntico. La línea base versionada de tests/benchmarks/results no se regenera aquí (se mide sobre un commit integrado limpio en un cambio aparte).",
+        "ADR-040 (decisión, pruebas, mediciones, costes que siguen: Node.position O(hermanos), live_references de remove O(nodos), reconstrucción con IDs duplicados); ADR-024 y ADR-039 «Ampliado por ADR-040»; module-contracts (coste de apply_batch). RELEASE.md: el run 44783751159 del candidato terminó verde 9/9 más determinismo.",
+        "Revisiones de agente Python y arquitectura aprobadas sin hallazgos medios ni altos; correcciones bajas aplicadas. Gate local macOS: scripts/validate.py 3851 passed con src/moana al 100 %, check_wheel OK, mypy --platform win32 OK, release.py check OK, pre-commit OK; matriz pendiente en main.",
+        "Aprobado por el propietario el 2026-11-20 tras revisión; PR #80 hacia develop."
+      ],
+      "acceptance_evidence": {
+        "AC1": "tests/unit/editing/test_editing_index.py::test_ac1_example_batches_match_the_rebuilding_editor (todos los examples/**/*.edit.json, incluido el digest de render), ::test_ac1_timelines_match_the_rebuilding_editor (bouncing-slime, adventurer-walk y animación del benchmark: documentos evaluados, RGBA y digest de cada frame) y ::test_ac1_failing_override_reports_the_same_error, contra RebuildingIndex (el algoritmo anterior conservado sólo en el test).",
+        "AC2": "tests/unit/editing/test_editing_apply.py::test_worst_case_translate_batch_stays_linear (256 y 1024 comandos: una construcción del índice por batch, nodos indexados = objetos con id contados aparte, una consulta por comando, cero revalidaciones de nodo y una del documento) y benchmark antes/después de ADR-040 (animación −24,7 %)."
+      },
+      "test_evidence": {
+        "T1": "tests/unit/editing/test_editing_index.py::test_t1_index_matches_a_fresh_rebuild_after_every_command (Hypothesis derandomize, 1000 ejemplos sobre specs, corpus, tiles y tutorial; tras cada comando, éxito o fallo, el índice = index_nodes recalculado y el resultado o error completo = RebuildingIndex), ::test_t1_every_structural_command_keeps_the_index_exact, ::test_t1_structural_cases_name_existing_targets, ::test_t1_duplicate_ids_keep_first_declaration_wins, ::test_t1_duplicate_ids_are_seen_by_palette_membership, ::test_t1_the_index_is_built_lazily_once, ::test_t1_a_desynchronised_removal_is_not_a_key_error.",
+        "T2": "tests/unit/editing/test_editing_apply.py::test_worst_case_translate_batch_stays_linear (recuento de operaciones sin reloj en dos tamaños) y python -m tests.benchmarks run|compare antes/después (ADR-040)."
+      }
     }
   ]
 }

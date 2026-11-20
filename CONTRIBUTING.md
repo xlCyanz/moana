@@ -29,4 +29,4 @@ La distribución se construye con `uv build`; el gate usa `uv build --no-build-i
 
 Goldens futuros se mantienen junto a su fuente JSON, licencia/procedencia y renderer/lock. Presentar expected/actual/diff; un revisor acepta la intención visual. No modificar referencias en CI. El corpus profesional exige revisión humana distinta de la validación matemática.
 
-La licencia del proyecto aún no ha sido elegida. No subir assets de terceros sin permiso ni publicar una distribución antes de resolver esa decisión.
+Licencia: MIT ([LICENSE](LICENSE)), decidida por el propietario el 2026-11-20. No subir assets de terceros sin permiso; publicar una distribución es una acción separada que exige autorización explícita.

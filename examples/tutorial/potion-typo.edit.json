@@ -1,0 +1,8 @@
+{
+  "schema_version": "1.0",
+  "base_revision": 0,
+  "base_snapshot": "sha256:50aacff270be883c2a20692d8f04c077cabdb0dcc6b01d049e5ea1654cc22430",
+  "commands": [
+    {"type": "set_color", "target_id": "liquid_fil", "color": "potion_green"}
+  ]
+}

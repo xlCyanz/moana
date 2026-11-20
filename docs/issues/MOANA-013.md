@@ -8,12 +8,12 @@
 - Aliases históricos: MOA-013
 - Phase: P3
 - Priority: P1
-- Status: blocked
+- Status: done
 - Complexity: L (relativa, no estimación de tiempo)
 - Dependencies: [MOANA-009](MOANA-009.md), [MOANA-010](MOANA-010.md)
 - Related modules: layers, schema
 - Requirements: R012 ([trazabilidad](traceability.md))
-- Bloqueo: Dependencias pendientes: MOANA-009, MOANA-010
+- Bloqueo: Ninguno
 
 ## Context
 
@@ -43,13 +43,13 @@ No inferencia automática de regiones desde un PNG.
 
 ## Acceptance criteria
 
-- [ ] AC1: Una operación enmascarada no modifica píxeles fuera de su máscara
-- [ ] AC2: Regiones permiten resolver ojo izquierdo por ID; ciclos y referencias rotas se rechazan antes de render
+- [x] AC1: Una operación enmascarada no modifica píxeles fuera de su máscara
+- [x] AC2: Regiones permiten resolver ojo izquierdo por ID; ciclos y referencias rotas se rechazan antes de render
 
 ## Required tests
 
-- [ ] T1: Álgebra de conjuntos en fixtures 1/8/128 píxeles y máscaras vacías
-- [ ] T2: Ciclos directos/indirectos, máscara fuera del canvas y grupos transformados
+- [x] T1: Álgebra de conjuntos en fixtures 1/8/128 píxeles y máscaras vacías
+- [x] T2: Ciclos directos/indirectos, máscara fuera del canvas y grupos transformados
 
 ## Expected deliverables
 
@@ -66,7 +66,7 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Guía para agentes de IA
 
-**Estado para agentes:** No empezar: estado `blocked`. Esperar a que [MOANA-009](MOANA-009.md), [MOANA-010](MOANA-010.md) estén `done` y el catálogo marque este issue `ready`.
+**Estado para agentes:** Completado; usar sólo como referencia del contrato entregado.
 
 ### 1. Preparación
 
@@ -135,4 +135,18 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Evidence
 
-Pendiente de implementación.
+- src/moana/geometry/algebra.py: álgebra de máscaras (union, intersect, subtract como pliegue por la izquierda, xor) con MaskBuilder y combined_box; resultados recortados al lienzo; Mask inmutable sin NumPy en contratos públicos.
+- src/moana/schema/: masks (hojas rect/ellipse/polygon y combinaciones por ID) y regions (operaciones agrupadas con mask_id) en el documento 1.0, Layer.mask_id; references.py resuelve el DAG con Tarjan iterativo, rechaza ciclos (mask_cycle) y referencias rotas antes de render, y protege documentos sin validar con ReferenceError en vez de bucles o KeyError; resolve_region y mask_dependencies públicos; JSON Schema regenerado.
+- src/moana/layers/: MaskShape/MaskCombination (igualdad por identidad) y Layer.mask; la capa se recorta a su máscara antes de la opacidad (aplicada una vez); los nodos de caja vacía no evalúan operandos.
+- src/moana/render/budget.py: budget-v3 con coste de máscaras por referencia expandida y suelo de 1 visita por nodo evaluado, idéntico al compositor; un DAG ancho y profundo de hojas llenas se rechaza con BudgetExceeded antes del raster y uno de hojas vacías cuesta el suelo y termina en milisegundos (32×8 ≈ 3,5e10 referencias: 0,011 s).
+- src/moana/core/coordinates.py: combined_box puro compartido por geometry.algebra y render.budget; límites MAX_MASKS, MAX_MASK_OPERANDS, MAX_MASK_DEPTH y MAX_REGIONS en core.limits.
+- moana.api: resolve_region reexportado; inspect_document informa masks, regions y mask_id por capa; capabilities con mask_types y planned_mask_types [path].
+- ADR-022 (docs/architecture/decisions/ADR-022-masks-regions.md), con notas de cabecera en ADR-011, ADR-017, ADR-018 y ADR-020; MOANA.md 0.1.9-draft (§11, §12, §13, §16, §20): schema 1.0 ampliado como excepción previa a la primera publicación, después toda ampliación sube el minor; ejemplo examples/specs/masked-eyes.moana.json; contratos de módulos, índice de ADR, overview, README, guía de desarrollo, AGENTS.md y CLAUDE.md actualizados.
+- Trazabilidad: R012 cubierto. La hoja path queda prevista para MOANA-007.
+- Gate: scripts/validate.py (1223 passed, src/moana al 100 % de líneas y ramas) y scripts/check_wheel.py verdes; mypy también con --platform win32; generate_schema --check al día. Sin ejecución en Windows real (matriz pendiente en main).
+- Revisión: moana-graphics-engineer (cambios requeridos, aplicados: coste exponencial de DAG con hojas vacías, trabajo no contado en _clear_outside, oráculo de caja independiente) y moana-architect (cambios requeridos, aplicados: el mismo riesgo exponencial, excepción de versión del schema documentada frente a §16, ciclos en documentos sin validar, aritmética de cajas extraída a core, MaskNode homónimos aclarados, MaskCombination con eq=False, regla de grupos transformados como norma futura).
+- Aprobado por el propietario el 2026-11-17 tras revisión; PR #52 hacia develop.
+- AC1: tests/unit/layers/test_layers_masks.py::test_ac1_masked_layer_changes_no_pixel_outside_its_mask, ::test_ac1_layer_opacity_is_applied_once_inside_the_mask, ::test_ac1_random_masks_match_the_scalar_oracle, ::test_each_operator_clips_the_layer_to_its_set; tests/unit/render/test_render_masks.py::test_ac1_masked_operation_changes_no_pixel_outside_its_mask, ::test_ac1_mask_reaching_outside_the_canvas_is_clipped y ::test_example_renders_to_the_hand_computed_face.
+- AC2: tests/unit/schema/test_schema_masks.py::test_ac2_left_eye_resolves_by_id, ::test_ac2_region_resolution_does_not_depend_on_array_order, ::test_ac2_unknown_region_or_mask_is_a_reference_error, ::test_unvalidated_cycles_and_broken_references_fail_fast; tests/unit/api/test_api_masks.py::test_ac2_resolve_region_through_the_facade y ::test_inspect_of_an_unvalidated_cycle_fails_fast; tests/unit/render/test_render_masks.py::test_ac2_cycles_and_broken_references_fail_before_any_raster.
+- T1: tests/unit/geometry/test_geometry_algebra.py::test_fixtures_have_the_documented_sizes (1/8/128 píxeles), ::test_t1_binary_operators_match_set_oracle, ::test_t1_hand_results_on_the_fixtures, ::test_t1_associative_and_commutative_operators, ::test_t1_subtract_is_left_fold_and_not_commutative, ::test_t1_empty_mask_identities, ::test_t1_results_are_clipped_to_the_canvas y ::test_t1_property_matches_python_sets (caja esperada calculada desde los conjuntos).
+- T2: tests/unit/schema/test_schema_masks.py::test_t2_direct_cycle_is_rejected, ::test_t2_indirect_cycle_marks_every_edge_of_the_loop, ::test_t2_missing_references_point_to_the_member, ::test_t2_mask_depth_limit, ::test_t2_mask_outside_the_canvas_is_valid, ::test_shared_operands_are_not_cycles; tests/unit/layers/test_layers_masks.py::test_t2_mask_fully_outside_the_canvas_hides_the_layer, ::test_t2_transformed_group_content_is_clipped_by_a_canvas_mask, ::test_t2_group_opacity_applies_once_over_masked_children, ::test_wide_deep_dag_of_full_masks_is_rejected_before_composing; tests/unit/render/test_render_masks.py::test_t2_mask_fully_outside_the_canvas_draws_nothing, ::test_wide_deep_dag_of_empty_masks_costs_the_floor y ::test_wide_deep_dag_of_full_masks_is_rejected_before_raster.

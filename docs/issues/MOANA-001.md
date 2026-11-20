@@ -8,7 +8,7 @@
 - Aliases históricos: MOA-001
 - Phase: P1
 - Priority: P0
-- Status: ready
+- Status: done
 - Complexity: M (relativa, no estimación de tiempo)
 - Dependencies: [MOANA-000](MOANA-000.md)
 - Related modules: core
@@ -43,13 +43,13 @@ No reservar buffers ni dibujar; no crear aún modelos de documento.
 
 ## Acceptance criteria
 
-- [ ] AC1: Una dimensión 0, coordenada bool o bbox invertida falla con error de dominio identificable
-- [ ] AC2: Cajas 1×1 y recortes vacíos tienen semántica documentada y no dependen de NumPy
+- [x] AC1: Una dimensión 0, coordenada bool o bbox invertida falla con error de dominio identificable
+- [x] AC2: Cajas 1×1 y recortes vacíos tienen semántica documentada y no dependen de NumPy
 
 ## Required tests
 
-- [ ] T1: Parametrizar extremos de rango, cajas negativas, bordes y tamaños 1/128/2048
-- [ ] T2: Propiedades de intersección: conmutatividad, contención y ausencia de expansión
+- [x] T1: Parametrizar extremos de rango, cajas negativas, bordes y tamaños 1/128/2048
+- [x] T2: Propiedades de intersección: conmutatividad, contención y ausencia de expansión
 
 ## Expected deliverables
 
@@ -66,7 +66,7 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Guía para agentes de IA
 
-**Estado para agentes:** Listo: todas las dependencias están `done`; puede empezarse.
+**Estado para agentes:** Completado; usar sólo como referencia del contrato entregado.
 
 ### 1. Preparación
 
@@ -137,4 +137,12 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Evidence
 
-Pendiente de implementación.
+- Implementación: src/moana/core/{__init__,coordinates,errors,limits}.py; decisión ADR-010.
+- uv run python scripts/validate.py: ruff, mypy estricto, check_repository y pytest verdes; core 100 % de ramas cubiertas.
+- uv run python scripts/check_wheel.py: wheel aislado importa moana.core.
+- Revisión por subagentes moana-python-engineer y moana-architect; hallazgos alto/medios corregidos (borde excluido +1, errores picklables con json_pointer, GeometryLimits, ADR).
+- Aprobado por el propietario el 2026-11-17 tras revisión; PR hacia develop.
+- AC1: tests/unit/core/test_core_coordinates.py::test_dimensions_out_of_range_fail, ::test_only_real_python_ints_are_coordinates y ::test_empty_or_inverted_box_fail: dimensión 0, bool/float/str/NumPy y cajas invertidas lanzan ValidationError (code VALIDATION_ERROR, context field/reason).
+- AC2: Semántica en src/moana/core/coordinates.py, docs/architecture/module-contracts.md (core), ADR-010 y MOANA.md §5; tests ::test_unit_box_contains_exactly_one_pixel, ::test_canvas_box_and_clipping, ::test_intersection_of_touching_boxes_is_none; test_core_architecture.py prueba que core no importa NumPy/Pillow.
+- T1: test_core_coordinates.py: tamaños 1/128/2048 y 2048×1, coordenadas ±1 048 576 y ±1 048 577, cajas negativas, bordes semiabiertos, rangos de esquinas y clip de caja máxima; test_core_limits.py: límites reducidos y píxeles en lienzos 1×1 y 2048.
+- T2: test_core_coordinates.py con Hypothesis: intersección contra oráculo de conjuntos de píxeles (rango pequeño y cerca del máximo), conmutatividad, contención, no expansión, idempotencia y clip contra conjunto del lienzo.

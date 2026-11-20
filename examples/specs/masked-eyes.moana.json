@@ -1,0 +1,56 @@
+{
+  "schema_version": "1.0",
+  "id": "masked_eyes",
+  "revision": 0,
+  "seed": 0,
+  "canvas": {"width": 16, "height": 16, "profile": "strict"},
+  "palette": {
+    "id": "palette_face",
+    "colors": [
+      {"id": "skin", "rgba": "#F2C29BFF"},
+      {"id": "white", "rgba": "#FFFFFFFF"},
+      {"id": "iris", "rgba": "#36AFA5FF"}
+    ],
+    "ramps": []
+  },
+  "masks": [
+    {"id": "eyes_open", "type": "subtract", "masks": ["eyes", "lid"]},
+    {"id": "eyes", "type": "union", "masks": ["eye_left_shape", "eye_right_shape"]},
+    {"id": "eye_left_shape", "type": "rect", "box": [4, 6, 7, 9]},
+    {"id": "eye_right_shape", "type": "rect", "box": [9, 6, 12, 9]},
+    {"id": "lid", "type": "rect", "box": [0, 6, 16, 7]},
+    {"id": "face_shape", "type": "ellipse", "box": [1, 1, 15, 15]}
+  ],
+  "regions": [
+    {"id": "eye_left", "mask_id": "eye_left_shape", "operation_ids": ["iris_left"]},
+    {"id": "eye_right", "mask_id": "eye_right_shape", "operation_ids": ["iris_right"]},
+    {
+      "id": "eyes_region",
+      "mask_id": "eyes_open",
+      "operation_ids": ["eye_whites", "iris_left", "iris_right"]
+    }
+  ],
+  "layers": [
+    {
+      "id": "face",
+      "name": "Cara",
+      "mask_id": "face_shape",
+      "operations": [{"id": "face_fill", "type": "rect", "box": [0, 0, 16, 16], "color": "skin"}]
+    },
+    {
+      "id": "whites",
+      "name": "Blancos de los ojos",
+      "mask_id": "eyes_open",
+      "operations": [{"id": "eye_whites", "type": "rect", "box": [0, 0, 16, 16], "color": "white"}]
+    },
+    {
+      "id": "irises",
+      "name": "Iris",
+      "mask_id": "eyes_open",
+      "operations": [
+        {"id": "iris_left", "type": "rect", "box": [5, 6, 6, 9], "color": "iris"},
+        {"id": "iris_right", "type": "rect", "box": [10, 6, 11, 9], "color": "iris"}
+      ]
+    }
+  ]
+}

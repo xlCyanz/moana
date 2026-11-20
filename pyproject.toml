@@ -5,8 +5,10 @@ build-backend = "hatchling.build"
 [project]
 name = "moana-pixel-engine"
 dynamic = ["version"]
-description = "Infrastructure and contracts for a deterministic Python pixel art engine"
+description = "Deterministic, editable pixel art engine driven by JSON documents"
 readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
 requires-python = ">=3.12"
 dependencies = [
   "pillow>=12,<14",
@@ -15,13 +17,16 @@ dependencies = [
   "pydantic>=2.10,<3",
 ]
 classifiers = [
-  "Development Status :: 1 - Planning",
+  "Development Status :: 3 - Alpha",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: 3.14",
   "Typing :: Typed",
 ]
+
+[project.scripts]
+moana = "moana.cli:main"
 
 [dependency-groups]
 dev = [
@@ -43,7 +48,7 @@ path = "src/moana/__init__.py"
 packages = ["src/moana"]
 
 [tool.hatch.build.targets.sdist]
-include = ["/src", "/tests", "/scripts", "/docs", "/examples", "/.agents", "/.claude", "/.codex", "/.github", "/MOANA.md", "/AGENTS.md", "/CLAUDE.md", "/README.md", "/CONTRIBUTING.md", "/CHANGELOG.md", "/SECURITY.md", "/pyproject.toml", "/uv.lock", "/.python-version", "/.uv-version", "/.pre-commit-config.yaml", "/.editorconfig", "/.gitattributes", "/.gitignore"]
+include = ["/src", "/tests", "/scripts", "/docs", "/examples", "/schemas", "/.agents", "/.claude", "/.codex", "/.github", "/MOANA.md", "/AGENTS.md", "/CLAUDE.md", "/README.md", "/CONTRIBUTING.md", "/CHANGELOG.md", "/SECURITY.md", "/LICENSE", "/pyproject.toml", "/uv.lock", "/.python-version", "/.uv-version", "/.pre-commit-config.yaml", "/.editorconfig", "/.gitattributes", "/.gitignore"]
 
 [tool.ruff]
 target-version = "py312"
@@ -56,7 +61,7 @@ select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
 [tool.mypy]
 python_version = "3.12"
 strict = true
-files = ["src", "scripts", "tests"]
+files = ["src", "scripts", "tests", "examples"]
 mypy_path = "src"
 
 [[tool.mypy.overrides]]

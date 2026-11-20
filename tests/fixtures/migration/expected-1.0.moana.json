@@ -1,0 +1,29 @@
+{
+  "schema_version": "1.0",
+  "id": "legacy_sprite",
+  "revision": 0,
+  "seed": 7,
+  "canvas": {"width": 16, "height": 16, "profile": "strict"},
+  "palette": {
+    "id": "legacy_palette",
+    "colors": [
+      {"id": "ink", "rgba": "#182338FF"},
+      {"id": "cloth", "rgba": "#36AFA5FF"}
+    ],
+    "ramps": []
+  },
+  "layers": [
+    {
+      "id": "body",
+      "name": "Body",
+      "visible": true,
+      "locked": false,
+      "opacity": 255,
+      "blend": "normal",
+      "operations": [
+        {"id": "body_fill", "type": "rect", "box": [2, 3, 10, 12], "color": "cloth"},
+        {"id": "eye", "type": "pixel", "at": [5, 6], "color": "ink"}
+      ]
+    }
+  ]
+}

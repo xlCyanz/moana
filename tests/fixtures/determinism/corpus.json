@@ -1,0 +1,250 @@
+{
+  "format": "moana-determinism-corpus/1",
+  "cases": {
+    "diagonals": {
+      "kind": "document",
+      "document": {
+        "schema_version": "1.0",
+        "id": "diagonals",
+        "canvas": {"width": 8, "height": 6, "profile": "strict"},
+        "palette": {
+          "id": "pal",
+          "colors": [
+            {"id": "clear", "rgba": "#00000000"},
+            {"id": "ink", "rgba": "#102030FF"},
+            {"id": "gold", "rgba": "#FAC800FF"},
+            {"id": "sea", "rgba": "#1E5A8CFF"},
+            {"id": "rose", "rgba": "#C83C5AFF"}
+          ]
+        },
+        "layers": [
+          {
+            "id": "lines",
+            "name": "Diagonales",
+            "operations": [
+              {"id": "main", "type": "line", "start": [-2, -2], "end": [7, 7], "color": "ink"},
+              {"id": "anti", "type": "line", "start": [5, 0], "end": [0, 5], "color": "gold"},
+              {"id": "shallow", "type": "line", "start": [7, 4], "end": [4, 5], "color": "sea"},
+              {"id": "tie", "type": "line", "start": [7, 2], "end": [5, 1], "color": "rose"}
+            ]
+          }
+        ]
+      }
+    },
+    "alpha": {
+      "kind": "document",
+      "document": {
+        "schema_version": "1.0",
+        "id": "alpha",
+        "canvas": {"width": 4, "height": 3, "profile": "rgba"},
+        "palette": {
+          "id": "pal",
+          "colors": [
+            {"id": "red", "rgba": "#FF000080"},
+            {"id": "blue", "rgba": "#0000FF80"},
+            {"id": "white", "rgba": "#FFFFFFFF"},
+            {"id": "green", "rgba": "#00FF00FF"}
+          ]
+        },
+        "layers": [
+          {
+            "id": "base",
+            "name": "Base",
+            "operations": [
+              {"id": "wash_red", "type": "rect", "box": [0, 0, 3, 2], "color": "red"},
+              {"id": "wash_blue", "type": "rect", "box": [1, 0, 4, 3], "color": "blue"}
+            ]
+          },
+          {
+            "id": "top",
+            "name": "Arriba",
+            "opacity": 128,
+            "operations": [
+              {"id": "spark", "type": "pixel", "at": [2, 1], "color": "white"},
+              {"id": "leaf", "type": "pixel", "at": [0, 2], "color": "green"}
+            ]
+          }
+        ]
+      }
+    },
+    "transparency": {
+      "kind": "document",
+      "document": {
+        "schema_version": "1.0",
+        "id": "transparency",
+        "canvas": {"width": 3, "height": 2, "profile": "rgba"},
+        "palette": {
+          "id": "pal",
+          "colors": [
+            {"id": "solid", "rgba": "#3366CCFF"},
+            {"id": "ghost", "rgba": "#FF00FF00"},
+            {"id": "faint", "rgba": "#FF804001"},
+            {"id": "half", "rgba": "#20406080"}
+          ]
+        },
+        "layers": [
+          {
+            "id": "base",
+            "name": "Base",
+            "operations": [
+              {"id": "block", "type": "rect", "box": [0, 0, 2, 1], "color": "solid"},
+              {"id": "glaze", "type": "pixel", "at": [2, 0], "color": "half"}
+            ]
+          },
+          {
+            "id": "not_an_eraser",
+            "name": "Alfa cero",
+            "operations": [
+              {"id": "ghost_cover", "type": "rect", "box": [0, 0, 3, 2], "color": "ghost"}
+            ]
+          },
+          {
+            "id": "zero_opacity",
+            "name": "Opacidad cero",
+            "opacity": 0,
+            "operations": [
+              {"id": "muted_cover", "type": "rect", "box": [0, 0, 3, 2], "color": "solid"}
+            ]
+          },
+          {
+            "id": "hidden",
+            "name": "Oculta",
+            "visible": false,
+            "operations": [
+              {"id": "hidden_cover", "type": "rect", "box": [0, 0, 3, 2], "color": "solid"}
+            ]
+          },
+          {
+            "id": "faint_layer",
+            "name": "Alfa uno",
+            "operations": [
+              {"id": "whisper", "type": "pixel", "at": [2, 1], "color": "faint"}
+            ]
+          },
+          {
+            "id": "vanishing",
+            "name": "Se redondea a cero",
+            "opacity": 1,
+            "operations": [
+              {"id": "lost_whisper", "type": "pixel", "at": [1, 1], "color": "faint"}
+            ]
+          }
+        ]
+      }
+    },
+    "clipping": {
+      "kind": "document",
+      "document": {
+        "schema_version": "1.0",
+        "id": "clipping",
+        "canvas": {"width": 5, "height": 4, "profile": "strict"},
+        "palette": {
+          "id": "pal",
+          "colors": [
+            {"id": "clear", "rgba": "#00000000"},
+            {"id": "ink", "rgba": "#102030FF"},
+            {"id": "gold", "rgba": "#FAC800FF"},
+            {"id": "sea", "rgba": "#1E5A8CFF"},
+            {"id": "rose", "rgba": "#C83C5AFF"},
+            {"id": "mint", "rgba": "#3CC88CFF"}
+          ]
+        },
+        "layers": [
+          {
+            "id": "edges",
+            "name": "Recortes",
+            "operations": [
+              {"id": "corner", "type": "rect", "box": [-3, -3, 2, 2], "color": "ink"},
+              {
+                "id": "bar",
+                "type": "polygon",
+                "points": [[2, -5], [4, -5], [4, 1], [2, 1]],
+                "color": "gold"
+              },
+              {"id": "moon", "type": "ellipse", "box": [3, 2, 9, 8], "color": "sea"},
+              {"id": "beam", "type": "line", "start": [-10, 3], "end": [10, 3], "color": "rose"},
+              {"id": "lost", "type": "pixel", "at": [7, 1], "color": "ink"},
+              {"id": "beyond", "type": "rect", "box": [5, 0, 9, 4], "color": "gold"},
+              {"id": "slope", "type": "line", "start": [-3, 0], "end": [4, 2], "color": "mint"}
+            ]
+          }
+        ]
+      }
+    },
+    "rounding": {
+      "kind": "document",
+      "document": {
+        "schema_version": "1.0",
+        "id": "rounding",
+        "canvas": {"width": 1, "height": 1, "profile": "rgba"},
+        "palette": {
+          "id": "pal",
+          "colors": [
+            {"id": "dark", "rgba": "#C0000080"},
+            {"id": "speck", "rgba": "#01000080"}
+          ]
+        },
+        "layers": [
+          {
+            "id": "tie",
+            "name": "Empate .5",
+            "operations": [
+              {"id": "under", "type": "pixel", "at": [0, 0], "color": "dark"},
+              {"id": "over", "type": "pixel", "at": [0, 0], "color": "speck"}
+            ]
+          }
+        ]
+      }
+    },
+    "groups": {
+      "kind": "tree",
+      "tree": {
+        "width": 4,
+        "height": 2,
+        "profile": "rgba",
+        "children": [
+          {
+            "kind": "layer",
+            "id": "floor",
+            "fills": [{"type": "rect", "box": [2, 0, 4, 1], "rgba": "#00FF00FF"}]
+          },
+          {
+            "kind": "group",
+            "id": "glass",
+            "opacity": 128,
+            "children": [
+              {
+                "kind": "layer",
+                "id": "back",
+                "fills": [{"type": "rect", "box": [0, 0, 2, 2], "rgba": "#FF0000FF"}]
+              },
+              {
+                "kind": "layer",
+                "id": "front",
+                "fills": [{"type": "rect", "box": [1, 0, 3, 2], "rgba": "#0000FFFF"}]
+              },
+              {
+                "kind": "group",
+                "id": "inner",
+                "opacity": 200,
+                "children": [
+                  {
+                    "kind": "layer",
+                    "id": "spark",
+                    "fills": [{"type": "pixel", "at": [3, 1], "rgba": "#FFFFFFFF"}]
+                  },
+                  {
+                    "kind": "layer",
+                    "id": "ghost",
+                    "visible": false,
+                    "fills": [{"type": "rect", "box": [0, 0, 4, 2], "rgba": "#FF0000FF"}]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

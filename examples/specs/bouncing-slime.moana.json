@@ -1,0 +1,468 @@
+{
+  "schema_version": "1.0",
+  "id": "bouncing_slime",
+  "revision": 0,
+  "seed": 0,
+  "canvas": {
+    "width": 16,
+    "height": 16,
+    "profile": "strict"
+  },
+  "palette": {
+    "id": "palette_bounce",
+    "colors": [
+      {
+        "id": "ink",
+        "rgba": "#1B1A2EFF"
+      },
+      {
+        "id": "slime",
+        "rgba": "#4FB06DFF"
+      },
+      {
+        "id": "slime_light",
+        "rgba": "#9BE08AFF"
+      },
+      {
+        "id": "shadow_near",
+        "rgba": "#2B2B3BFF"
+      },
+      {
+        "id": "shadow_far",
+        "rgba": "#55556AFF"
+      }
+    ]
+  },
+  "masks": [
+    {
+      "id": "round_shape",
+      "type": "ellipse",
+      "box": [
+        3,
+        7,
+        13,
+        15
+      ]
+    },
+    {
+      "id": "squash_shape",
+      "type": "ellipse",
+      "box": [
+        2,
+        9,
+        14,
+        15
+      ]
+    },
+    {
+      "id": "stretch_shape",
+      "type": "ellipse",
+      "box": [
+        4,
+        5,
+        12,
+        15
+      ]
+    }
+  ],
+  "layers": [
+    {
+      "id": "ground_wide",
+      "name": "Sombra wide",
+      "visible": true,
+      "operations": [
+        {
+          "id": "shadow_wide",
+          "type": "ellipse",
+          "box": [
+            1,
+            14,
+            15,
+            16
+          ],
+          "color": "shadow_near"
+        }
+      ]
+    },
+    {
+      "id": "ground_mid",
+      "name": "Sombra mid",
+      "visible": false,
+      "operations": [
+        {
+          "id": "shadow_mid",
+          "type": "ellipse",
+          "box": [
+            4,
+            15,
+            12,
+            16
+          ],
+          "color": "shadow_near"
+        }
+      ]
+    },
+    {
+      "id": "ground_small",
+      "name": "Sombra small",
+      "visible": false,
+      "operations": [
+        {
+          "id": "shadow_small",
+          "type": "ellipse",
+          "box": [
+            5,
+            15,
+            11,
+            16
+          ],
+          "color": "shadow_far"
+        }
+      ]
+    },
+    {
+      "id": "body_round",
+      "name": "Cuerpo round",
+      "visible": true,
+      "operations": [
+        {
+          "id": "round_fill",
+          "type": "ellipse",
+          "box": [
+            3,
+            7,
+            13,
+            15
+          ],
+          "color": "slime"
+        },
+        {
+          "id": "round_sheen",
+          "type": "rect",
+          "box": [
+            5,
+            8,
+            7,
+            9
+          ],
+          "color": "slime_light"
+        },
+        {
+          "id": "round_outline",
+          "type": "outline",
+          "mask_id": "round_shape",
+          "width": 1,
+          "side": "outer",
+          "color": "ink"
+        }
+      ]
+    },
+    {
+      "id": "body_squash",
+      "name": "Cuerpo squash",
+      "visible": false,
+      "operations": [
+        {
+          "id": "squash_fill",
+          "type": "ellipse",
+          "box": [
+            2,
+            9,
+            14,
+            15
+          ],
+          "color": "slime"
+        },
+        {
+          "id": "squash_sheen",
+          "type": "rect",
+          "box": [
+            4,
+            10,
+            6,
+            11
+          ],
+          "color": "slime_light"
+        },
+        {
+          "id": "squash_outline",
+          "type": "outline",
+          "mask_id": "squash_shape",
+          "width": 1,
+          "side": "outer",
+          "color": "ink"
+        }
+      ]
+    },
+    {
+      "id": "body_stretch",
+      "name": "Cuerpo stretch",
+      "visible": false,
+      "operations": [
+        {
+          "id": "stretch_fill",
+          "type": "ellipse",
+          "box": [
+            4,
+            5,
+            12,
+            15
+          ],
+          "color": "slime"
+        },
+        {
+          "id": "stretch_sheen",
+          "type": "rect",
+          "box": [
+            6,
+            6,
+            7,
+            8
+          ],
+          "color": "slime_light"
+        },
+        {
+          "id": "stretch_outline",
+          "type": "outline",
+          "mask_id": "stretch_shape",
+          "width": 1,
+          "side": "outer",
+          "color": "ink"
+        }
+      ]
+    },
+    {
+      "id": "face",
+      "name": "Cara",
+      "operations": [
+        {
+          "id": "eye_l",
+          "type": "pixel",
+          "at": [
+            6,
+            11
+          ],
+          "color": "ink"
+        },
+        {
+          "id": "eye_r",
+          "type": "pixel",
+          "at": [
+            9,
+            11
+          ],
+          "color": "ink"
+        }
+      ]
+    }
+  ],
+  "animations": [
+    {
+      "id": "bounce",
+      "loop_count": 0,
+      "pivot": [
+        8,
+        16
+      ],
+      "frames": [
+        {
+          "id": "rest",
+          "duration_ms": 150,
+          "overrides": [
+            {
+              "type": "set_visibility",
+              "target_id": "body_round",
+              "visible": false
+            },
+            {
+              "type": "set_visibility",
+              "target_id": "body_squash",
+              "visible": true
+            },
+            {
+              "type": "translate",
+              "target_id": "eye_l",
+              "dx": 0,
+              "dy": 1
+            },
+            {
+              "type": "translate",
+              "target_id": "eye_r",
+              "dx": 0,
+              "dy": 1
+            }
+          ]
+        },
+        {
+          "id": "rise",
+          "duration_ms": 100,
+          "overrides": [
+            {
+              "type": "set_visibility",
+              "target_id": "body_round",
+              "visible": false
+            },
+            {
+              "type": "set_visibility",
+              "target_id": "body_stretch",
+              "visible": true
+            },
+            {
+              "type": "set_visibility",
+              "target_id": "ground_wide",
+              "visible": false
+            },
+            {
+              "type": "set_visibility",
+              "target_id": "ground_mid",
+              "visible": true
+            },
+            {
+              "type": "translate",
+              "target_id": "stretch_shape",
+              "dx": 0,
+              "dy": -3
+            },
+            {
+              "type": "translate",
+              "target_id": "stretch_fill",
+              "dx": 0,
+              "dy": -3
+            },
+            {
+              "type": "translate",
+              "target_id": "stretch_sheen",
+              "dx": 0,
+              "dy": -3
+            },
+            {
+              "type": "translate",
+              "target_id": "eye_l",
+              "dx": 0,
+              "dy": -4
+            },
+            {
+              "type": "translate",
+              "target_id": "eye_r",
+              "dx": 0,
+              "dy": -4
+            }
+          ]
+        },
+        {
+          "id": "apex",
+          "duration_ms": 120,
+          "overrides": [
+            {
+              "type": "set_visibility",
+              "target_id": "ground_wide",
+              "visible": false
+            },
+            {
+              "type": "set_visibility",
+              "target_id": "ground_small",
+              "visible": true
+            },
+            {
+              "type": "translate",
+              "target_id": "round_shape",
+              "dx": 0,
+              "dy": -5
+            },
+            {
+              "type": "translate",
+              "target_id": "round_fill",
+              "dx": 0,
+              "dy": -5
+            },
+            {
+              "type": "translate",
+              "target_id": "round_sheen",
+              "dx": 0,
+              "dy": -5
+            },
+            {
+              "type": "translate",
+              "target_id": "eye_l",
+              "dx": 0,
+              "dy": -5
+            },
+            {
+              "type": "translate",
+              "target_id": "eye_r",
+              "dx": 0,
+              "dy": -5
+            }
+          ]
+        },
+        {
+          "id": "fall",
+          "duration_ms": 100,
+          "overrides": [
+            {
+              "type": "set_visibility",
+              "target_id": "body_round",
+              "visible": false
+            },
+            {
+              "type": "set_visibility",
+              "target_id": "body_stretch",
+              "visible": true
+            },
+            {
+              "type": "set_visibility",
+              "target_id": "ground_wide",
+              "visible": false
+            },
+            {
+              "type": "set_visibility",
+              "target_id": "ground_mid",
+              "visible": true
+            },
+            {
+              "type": "translate",
+              "target_id": "stretch_shape",
+              "dx": 0,
+              "dy": -3
+            },
+            {
+              "type": "translate",
+              "target_id": "stretch_fill",
+              "dx": 0,
+              "dy": -3
+            },
+            {
+              "type": "translate",
+              "target_id": "stretch_sheen",
+              "dx": 0,
+              "dy": -3
+            },
+            {
+              "type": "translate",
+              "target_id": "eye_l",
+              "dx": 0,
+              "dy": -4
+            },
+            {
+              "type": "translate",
+              "target_id": "eye_r",
+              "dx": 0,
+              "dy": -4
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "title": "Bouncing slime (timeline)",
+    "description": "Ejemplo editable de timeline (MOANA-022, ADR-032): un slime de 16 x 16 con tres cuerpos authored (redondo, aplastado y estirado) que cada frame muestra u oculta, sube 3 px en rise/fall y 5 px en el apex, con la cara siempre visible y una sombra que encoge (ground_wide, ground_mid, ground_small con shadow_far) al alejarse del suelo. Cada frame se evalúa sólo contra la base.",
+    "author": "Moana (agente de IA)",
+    "tags": [
+      "animation",
+      "timeline",
+      "MOANA-022"
+    ],
+    "provenance": "Creado para Moana por un agente de IA (MOANA-022, ADR-032) a partir de MOANA.md §8-§10 y §17; sin assets, texturas ni paletas externas. Revisión artística humana: PENDIENTE."
+  }
+}

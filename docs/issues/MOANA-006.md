@@ -8,12 +8,12 @@
 - Aliases históricos: MOA-006
 - Phase: P1
 - Priority: P1
-- Status: blocked
+- Status: done
 - Complexity: L (relativa, no estimación de tiempo)
 - Dependencies: [MOANA-004](MOANA-004.md), [MOANA-005](MOANA-005.md)
 - Related modules: geometry, layers
 - Requirements: R003 ([trazabilidad](traceability.md))
-- Bloqueo: Dependencias pendientes: MOANA-004, MOANA-005
+- Bloqueo: Ninguno
 
 ## Context
 
@@ -43,14 +43,14 @@ No paths Bézier, AA ni trazos de grosor implícito.
 
 ## Acceptance criteria
 
-- [ ] AC1: Invertir una línea produce la misma máscara y los extremos están incluidos
-- [ ] AC2: Rectángulos, elipses y polígonos concuerdan con fixtures manuales; fill no atraviesa límites de color
+- [x] AC1: Invertir una línea produce la misma máscara y los extremos están incluidos
+- [x] AC2: Rectángulos, elipses y polígonos concuerdan con fixtures manuales; fill no atraviesa límites de color
 
 ## Required tests
 
-- [ ] T1: Octantes de línea, degenerados, bordes semiabiertos y autointersecciones even-odd
-- [ ] T2: Flood fill de un píxel/todo canvas, coincidencia de color, contención y rechazo por presupuesto
-- [ ] T3: Bow-tie con área firmada cero pero interior even-odd no vacío; verificar máscara manual y no usar shoelace como descarte.
+- [x] T1: Octantes de línea, degenerados, bordes semiabiertos y autointersecciones even-odd
+- [x] T2: Flood fill de un píxel/todo canvas, coincidencia de color, contención y rechazo por presupuesto
+- [x] T3: Bow-tie con área firmada cero pero interior even-odd no vacío; verificar máscara manual y no usar shoelace como descarte.
 
 ## Expected deliverables
 
@@ -67,7 +67,7 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Guía para agentes de IA
 
-**Estado para agentes:** No empezar: estado `blocked`. Esperar a que [MOANA-004](MOANA-004.md), [MOANA-005](MOANA-005.md) estén `done` y el catálogo marque este issue `ready`.
+**Estado para agentes:** Completado; usar sólo como referencia del contrato entregado.
 
 ### 1. Preparación
 
@@ -137,4 +137,14 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Evidence
 
-Pendiente de implementación.
+- src/moana/geometry/{__init__,mask,primitives,fill}.py: Mask inmutable (igualdad por conjunto de píxeles; copy/deepcopy/pickle conservan bits de sólo lectura), rasterize_pixel/line/rect/ellipse/polygon según §6 (Bresenham con extremos ordenados, elipse por centros con isqrt exacto, polígono even-odd por centros con umbral entero, sin shoelace), recorte sin wraparound antes de reservar.
+- flood_fill 4-conectado sobre snapshot Canvas con igualdad RGBA exacta, scanline iterativo sin recursión, BudgetExceeded (pixel_visits, buffer_bytes; A visitas, 8A bytes) antes de copiar; semilla fuera del lienzo → máscara vacía (pendiente de ratificar en MOANA.md cuando el esquema active flood_fill).
+- ADR-015 (docs/architecture/decisions/ADR-015-raster-primitives.md); contratos de módulos, overview e índice de arquitectura actualizados; memoria de máscaras igual al término mask_bytes de budget-v1 (sin cambio de estimador).
+- Gate: scripts/validate.py (601 pruebas) y scripts/check_wheel.py verdes; cobertura 100 % de líneas y ramas en moana.geometry.
+- Revisión: moana-graphics-engineer (aprobado; fuerza bruta 20 000 líneas, 20 000 elipses, 4 000 polígonos y 1 500 rellenos sin discrepancias) y moana-architect; corregidos deepcopy/pickle escribibles, recuento de vértices antes de iterar, probe de wheel y documentación de identidad/hash de Mask.
+- Aprobado por el propietario el 2026-11-17 tras revisión; PR #44 hacia develop.
+- AC1: tests/unit/geometry/test_geometry_primitives.py::test_ac1_reversed_line_gives_identical_mask (8 octantes), ::test_line_properties y ::test_line_matches_literal_recurrence (Hypothesis, recurrencia literal independiente).
+- AC2: tests/unit/geometry/test_geometry_primitives.py::test_rect_is_half_open, ::test_ellipse_5x3_by_pixel_centres, ::test_ellipse_4x4_circle, ::test_triangle_by_pixel_centres, ::test_ellipse_matches_literal_per_pixel_formula, ::test_polygon_matches_literal_even_odd_rule; tests/unit/geometry/test_geometry_fill.py::test_ac2_fill_does_not_cross_colour_boundaries.
+- T1: tests/unit/geometry/test_geometry_primitives.py::test_line_octants_match_hand_oracle, ::test_degenerate_line_is_one_pixel, ::test_horizontal_vertical_and_diagonal_lines, ::test_line_tie_breaking_on_shallow_slope, ::test_line_partially_off_canvas_is_clipped_without_wraparound, ::test_rect_partially_off_canvas_and_negative, ::test_ellipse_partially_and_fully_off_canvas, ::test_polygon_off_canvas_and_negative_coordinates, ::test_one_by_one_canvas_cases, ::test_t1_self_intersection_leaves_even_odd_hole.
+- T2: tests/unit/geometry/test_geometry_fill.py::test_fill_of_isolated_single_pixel, ::test_fill_of_uniform_canvas_covers_everything, ::test_colour_match_is_exact_per_channel, ::test_transparent_pixels_match_after_alpha_normalisation, ::test_fill_is_four_connected_not_diagonal, ::test_fill_matches_breadth_first_reference, ::test_budget_rejection_happens_before_any_copy, ::test_budget_admits_exact_limit, ::test_one_by_one_canvas_fill; tests/unit/geometry/test_geometry_memory.py.
+- T3: tests/unit/geometry/test_geometry_primitives.py::test_t3_bow_tie_with_zero_signed_area_is_not_empty (área firmada 0, máscara manual de 8 píxeles).

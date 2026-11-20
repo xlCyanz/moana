@@ -14,6 +14,8 @@ Lee [MOANA.md](../../../MOANA.md) §§7–10 y 19, y el [flujo artístico](../..
 5. Inspecciona 1× y 4× nearest-neighbor, silueta y paleta. Distingue fallos estructurales de decisiones estilísticas como píxeles brillantes aislados.
 6. En animación comprueba volumen, suelo, pivote y estabilidad de patrones. Muestra antes/después y región afectada.
 
+Para crear, previsualizar y recolorear por ID con los comandos reales (`moana validate`/`inspect`/`export --scale 4`/`edit`, revisión y `base_snapshot`, recuperación de errores y limitaciones que hay que comunicar) sigue la [guía de flujos IA](../../../docs/guides/ai-workflows.md).
+
 La rúbrica humana es evidencia aparte de los tests. Si no hubo revisión humana, indícala pendiente. Pillow/NumPy no garantizan arte profesional.
 
 Elige sólo la referencia pertinente:

@@ -1,0 +1,114 @@
+{
+  "format": "moana-corpus-entry/1",
+  "id": "stone-tile",
+  "category": "tile",
+  "document": "stone-tile.moana.json",
+  "animation_id": null,
+  "brief": {
+    "subject": "Tile repetible de muro de sillares con una pequeña mata de musgo en una junta.",
+    "size": [
+      16,
+      16
+    ],
+    "palette_intent": "5 colores: rampa de piedra de 3 pasos, mortero oscuro y un verde de musgo.",
+    "light": "Noroeste: arista superior e izquierda de cada sillar clara, inferior y derecha oscura.",
+    "constraints": [
+      "16 × 16 sin costuras: sillares partidos que continúan en el borde opuesto.",
+      "La tercera hilada tiene un sillar corto para romper el periodo de 8 filas.",
+      "Comprobado con la repetición 3 × 3 de la preview `tiled-3x3-4x`; un tile único siempre se repite de forma visible en áreas grandes."
+    ]
+  },
+  "provenance": {
+    "author": "Agente de IA de programación (Claude Code) bajo la dirección del usuario del repositorio",
+    "authored_by": "ai_agent",
+    "method": "Creado por un agente de IA mediante operaciones de Moana (formas, máscaras, regiones, paleta y técnicas del motor) en un documento JSON; sin modelo de imagen y sin calcar arte externo. El archivo .moana.json es la única fuente.",
+    "date": "2026-11-19",
+    "licence": "MIT (LICENSE del repositorio), decidida por el propietario el 2026-11-20. Sin assets ni derechos de terceros.",
+    "third_party_assets": [],
+    "seed": 1601,
+    "renderer_version": "render-v1",
+    "estimator_version": "budget-v8",
+    "vector_backend": null
+  },
+  "render": {
+    "digest": "sha256:66daa50b5a6c66f8cfef4c9654e45b852dd1736e9f700cb7e6035d3e26764e98",
+    "frame_digests": null
+  },
+  "quality": {
+    "rule_set": "quality-v1",
+    "passed_hard_checks": true,
+    "warnings": {},
+    "report_digest": "sha256:41c799adc555950e560d5b7249587e2c2c9e6ba8490a6347e6ffa429d5955991",
+    "config": "default",
+    "suppressions": []
+  },
+  "agent_inspection": {
+    "notice": "Notas de inspección visual de un agente de IA (a 1× y a 8× por vecino más cercano); no son una revisión humana.",
+    "notation": "Coordenadas (x, y) sobre la imagen a 1×; cajas [x0, y0, x1, y1) semiabiertas.",
+    "date": "2026-11-19",
+    "passes": [
+      "Pasada 1 (1× y 8×): dos desgastes dejaban un píxel de tono base aislado y el musgo tenía el tono claro debajo del oscuro; se corrigieron.",
+      "Pasada 2 (1× y 8×, tras la revisión de pixel art): el musgo se reduce a 3 px ([10, 7, 12, 8) y (10, 6)) en un solo verde, porque un píxel claro aislado encima habría sido singleton; la hilada 2 pasa a [0, 8, 5, 11) y [6, 8, 15, 11) para romper el periodo de 8 filas; el desgaste de (0, 13)-(1, 13) pasa a stone_1. Repetición 3 × 3 sin costuras. Sin advertencias."
+    ]
+  },
+  "rubric": {
+    "format": "moana-rubric/1",
+    "categories": {
+      "legibility": {
+        "status": "pending_human_review",
+        "score": null,
+        "justification": null
+      },
+      "silhouette": {
+        "status": "pending_human_review",
+        "score": null,
+        "justification": null
+      },
+      "clusters": {
+        "status": "pending_human_review",
+        "score": null,
+        "justification": null
+      },
+      "palette": {
+        "status": "pending_human_review",
+        "score": null,
+        "justification": null
+      },
+      "light_material": {
+        "status": "pending_human_review",
+        "score": null,
+        "justification": null
+      }
+    },
+    "human_review": null,
+    "agent_assessment": {
+      "notice": "AI agent assessment: not a human review and never an approval; it does not count towards the professional rule.",
+      "assessor_kind": "ai_agent",
+      "agent": "Claude Code (agente de IA de programación)",
+      "date": "2026-11-19",
+      "scores": {
+        "legibility": {
+          "score": 4,
+          "justification": "Sillares y juntas legibles a 1× y en repetición."
+        },
+        "silhouette": {
+          "score": 3,
+          "justification": "Un tile no tiene silueta propia; el patrón de hiladas es regular."
+        },
+        "clusters": {
+          "score": 4,
+          "justification": "Clusters de arista y cara limpios; sin singletons."
+        },
+        "palette": {
+          "score": 4,
+          "justification": "Paleta mínima con contraste suficiente entre mortero y piedra."
+        },
+        "light_material": {
+          "score": 4,
+          "justification": "Biselado coherente con la luz; poca variación de material."
+        }
+      }
+    },
+    "professional": false
+  }
+}

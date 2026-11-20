@@ -59,13 +59,13 @@ uv run python -m scripts.check_repository
 5. Reflejar el cambio en GitHub con autorización para escribir en el repositorio remoto:
 
 ```sh
-uv run python scripts/github_sync.py          # dry run: muestra las escrituras
+uv run python scripts/github_sync.py          # dry run: muestra sólo las escrituras necesarias
 uv run python scripts/github_sync.py --apply  # labels, milestones, issues y dependencias
 ```
 
 ## Espejo en GitHub
 
-El catálogo es la fuente de verdad; GitHub es un espejo regenerable. `scripts/github_sync.py` (idempotente, vía `gh` autenticado) mantiene:
+El catálogo es la fuente de verdad; GitHub es un espejo regenerable. `scripts/github_sync.py` (idempotente, vía `gh` autenticado) reconcilia todo el backlog en cada ejecución, pero compara cada objeto con su estado actual en GitHub y sólo escribe los campos que difieren: con el backlog ya sincronizado sólo hace lecturas y termina con `0 writes`. Los fallos de red transitorios se reintentan hasta 4 veces con espera exponencial (2, 4 y 8 s); un `POST` sólo se repite si falló antes de llegar a GitHub (por ejemplo `dial tcp … i/o timeout`), para no duplicar issues ni labels. Mantiene:
 
 - **Issues**: título `MOANA-xxx — título`; cuerpo igual al documento generado, con la sección «Guía para agentes de IA» y enlaces convertidos a issues y archivos de `main`. Los issues `done` se cierran como completados. La correspondencia ID → número queda en [github-map.json](../issues/github-map.json).
 - **Milestones**: uno por fase (`P0 — Inicialización` … `P5 — Evaluación y release`), con su puerta de salida; se cierran cuando todos sus issues están `done`.

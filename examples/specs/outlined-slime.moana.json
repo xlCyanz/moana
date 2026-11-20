@@ -1,0 +1,72 @@
+{
+  "schema_version": "1.0",
+  "id": "outlined_slime",
+  "revision": 0,
+  "seed": 0,
+  "canvas": {"width": 24, "height": 24, "profile": "strict"},
+  "palette": {
+    "id": "palette_slime",
+    "colors": [
+      {"id": "ink", "rgba": "#1B1A2EFF"},
+      {"id": "slime_dark", "rgba": "#2E7D5BFF"},
+      {"id": "slime", "rgba": "#4FB06DFF"},
+      {"id": "slime_light", "rgba": "#9BE08AFF"},
+      {"id": "glint", "rgba": "#FFFFFFFF"}
+    ],
+    "ramps": [{"id": "slime_ramp", "colors": ["slime_dark", "slime", "slime_light"]}]
+  },
+  "masks": [
+    {"id": "body_shape", "type": "ellipse", "box": [3, 7, 21, 22]},
+    {"id": "glint_left", "type": "pixel", "at": [8, 13]},
+    {"id": "glint_right", "type": "pixel", "at": [14, 13]},
+    {"id": "glints", "type": "union", "masks": ["glint_left", "glint_right"]},
+    {"id": "shade_side", "type": "polygon", "points": [[24, 0], [24, 24], [0, 24]]}
+  ],
+  "regions": [
+    {"id": "body", "mask_id": "body_shape", "operation_ids": ["body_fill"]},
+    {"id": "eye_glints", "mask_id": "glints", "operation_ids": ["glint_l", "glint_r"]}
+  ],
+  "layers": [
+    {
+      "id": "slime_body",
+      "name": "Cuerpo",
+      "operations": [
+        {"id": "body_fill", "type": "ellipse", "box": [3, 7, 21, 22], "color": "slime"},
+        {"id": "sheen", "type": "ellipse", "box": [6, 9, 11, 12], "color": "slime_light"},
+        {
+          "id": "body_outline",
+          "type": "outline",
+          "mask_id": "body_shape",
+          "width": 1,
+          "side": "outer",
+          "color": "ink"
+        }
+      ]
+    },
+    {
+      "id": "body_shade",
+      "name": "Sombra",
+      "mask_id": "shade_side",
+      "operations": [
+        {
+          "id": "body_rim",
+          "type": "outline",
+          "mask_id": "body_shape",
+          "width": 1,
+          "side": "inner",
+          "color": "slime_dark"
+        }
+      ]
+    },
+    {
+      "id": "face",
+      "name": "Cara",
+      "operations": [
+        {"id": "eye_l", "type": "rect", "box": [8, 13, 10, 16], "color": "ink"},
+        {"id": "eye_r", "type": "rect", "box": [14, 13, 16, 16], "color": "ink"},
+        {"id": "glint_l", "type": "pixel", "at": [8, 13], "color": "glint"},
+        {"id": "glint_r", "type": "pixel", "at": [14, 13], "color": "glint"}
+      ]
+    }
+  ]
+}
