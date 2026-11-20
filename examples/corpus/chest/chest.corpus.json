@@ -23,7 +23,7 @@
     "authored_by": "ai_agent",
     "method": "Creado por un agente de IA mediante operaciones de Moana (formas, máscaras, regiones, paleta y técnicas del motor) en un documento JSON; sin modelo de imagen y sin calcar arte externo. El archivo .moana.json es la única fuente.",
     "date": "2026-11-19",
-    "licence": "PENDIENTE: la decide el propietario del repositorio (README.md); hasta entonces no se asigna ninguna. Sin assets ni derechos de terceros.",
+    "licence": "MIT (LICENSE del repositorio), decidida por el propietario el 2026-11-20. Sin assets ni derechos de terceros.",
     "third_party_assets": [],
     "seed": 1907,
     "renderer_version": "render-v1",

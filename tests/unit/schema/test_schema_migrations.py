@@ -70,7 +70,7 @@ def test_t1_production_registry_claims_no_unpublished_format() -> None:
 
 def test_t1_format_versions_are_distinct_from_package_and_renderer() -> None:
     # Package, renderer and estimator versions never select a migration.
-    assert moana.__version__ == "0.1.0.dev0"
+    assert moana.__version__ == "0.1.0rc1"
     assert RENDERER_VERSION == "render-v1"
     assert ESTIMATOR_VERSION.startswith("budget-v")
     for other in (moana.__version__, RENDERER_VERSION, ESTIMATOR_VERSION):

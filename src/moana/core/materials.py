@@ -86,7 +86,7 @@ _PROVENANCE: Final = (
     "Recipe authored for Moana (MOANA-017, ADR-030) by an AI agent from MOANA.md "
     "section 10; no external asset, texture or palette was used."
 )
-_LICENSE: Final = "Same licence as the Moana repository (to be decided before publishing)."
+_LICENSE: Final = "MIT (same licence as the Moana repository)."
 
 _ROWS: Final = (
     MaterialPreset(

@@ -8,7 +8,7 @@
 - Aliases históricos: MOA-035
 - Phase: P5
 - Priority: P1
-- Status: ready
+- Status: done
 - Complexity: L (relativa, no estimación de tiempo)
 - Dependencies: [MOANA-007](MOANA-007.md), [MOANA-021](MOANA-021.md), [MOANA-023](MOANA-023.md), [MOANA-024](MOANA-024.md), [MOANA-025](MOANA-025.md), [MOANA-027](MOANA-027.md), [MOANA-029](MOANA-029.md), [MOANA-030](MOANA-030.md), [MOANA-032](MOANA-032.md), [MOANA-033](MOANA-033.md), [MOANA-034](MOANA-034.md)
 - Related modules: release, docs
@@ -43,13 +43,13 @@ No publicar en PyPI/GitHub ni declarar CI remoto verde sin ejecutarlo y sin auto
 
 ## Acceptance criteria
 
-- [ ] AC1: Wheel y sdist se instalan limpios y tutorial/corpus funcionan sin checkout
-- [ ] AC2: DoD completa, licencia decidida por propietario y limitaciones/artistic review pendientes explícitas antes de publicar
+- [x] AC1: Wheel y sdist se instalan limpios y tutorial/corpus funcionan sin checkout
+- [x] AC2: DoD completa, licencia decidida por propietario y limitaciones/artistic review pendientes explícitas antes de publicar
 
 ## Required tests
 
-- [ ] T1: Instalación desde ambos artefactos, smoke CLI y migraciones en entorno limpio
-- [ ] T2: Revisión final de traceability, CI remoto real, corpus, seguridad y benchmark archivados
+- [x] T1: Instalación desde ambos artefactos, smoke CLI y migraciones en entorno limpio
+- [x] T2: Revisión final de traceability, CI remoto real, corpus, seguridad y benchmark archivados
 
 ## Expected deliverables
 
@@ -66,7 +66,7 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Guía para agentes de IA
 
-**Estado para agentes:** Listo: todas las dependencias están `done`; puede empezarse.
+**Estado para agentes:** Completado; usar sólo como referencia del contrato entregado.
 
 ### 1. Preparación
 
@@ -137,4 +137,13 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Evidence
 
-Pendiente de implementación.
+- Decisiones del propietario en la sesión de trabajo del 2026-11-20: licencia MIT para código, documentación, ejemplos y corpus (LICENSE «Copyright (c) 2026 xlCyanz and Moana contributors»; pyproject license = "MIT" y license-files según PEP 639, sin clasificador License) y versión 0.1.0rc1 (Development Status 3 - Alpha). Textos de licencia pendiente actualizados (README, CONTRIBUTING, MOANA.md §19/§25 y 0.1.27-draft, materials._LICENSE, corpus y tiles, ADR-030/037 con nota de actualización); la revisión artística humana sigue pendiente.
+- docs/RELEASE.md: versiones (paquete, schema 1.0, proyecto, render-v1, budget-v8, quality-v1, aggdraw-v1, registro de migraciones sólo 1.0), matriz de compatibilidad (Python 3.12–3.14 × ubuntu/macos/windows, rangos de Pillow/NumPy/AggDraw, APNG/WebP opcionales), capacidades implementadas frente a previstas desde moana.api.capabilities y auditoría R001–R040 (entregado sólo si todos los issues que lo cubren están done) generadas y comprobadas por scripts/release.py report|write|check; checklist DoD, evidencia archivada, limitaciones y pasos de publicación como acción separada no ejecutada. CHANGELOG con sección 0.1.0rc1.
+- scripts/check_wheel.py construye wheel y sdist una vez, audita ambos (sin entornos, cachés, artefactos, secretos ni enlaces; LICENSE y License-Expression: MIT) e instala cada uno en un venv limpio: sonda de importación, smoke CLI, tutorial de 18 pasos, migración con el original intacto y corpus contra sus digests (scripts/install_smoke.py); en la pasada sdist las entradas salen del sdist extraído.
+- CI remoto real: develop 714c2f6 falló (run 44768996258, primera ejecución remota de la matriz); corregido en PR #75 (ADR-039) con la matriz verde 9/9 más determinismo en 3857617 (run 44777404728). La ejecución sobre el commit candidato se registra al aprobar.
+- Revisiones de agente QA y documentación con todas las correcciones aplicadas. Gate local macOS: scripts/validate.py con src/moana al 100 %, check_wheel OK (wheel y sdist), mypy --platform win32 OK, release.py/corpus.py/tiles.py check OK, pre-commit OK. Sin publicación: ni PyPI, ni tag, ni GitHub Release.
+- Aprobado por el propietario el 2026-11-20 tras revisión; PR #76 hacia develop.
+- AC1: scripts/check_wheel.py: «Artifact audit OK» y, para wheel y sdist, «Installed CLI OK», «Installed tutorial OK: 18 documented steps», «Installed migrations OK … original preserved» e «Installed corpus OK: 5 examples match their pinned digests»; tests/test_repository_tools.py::test_t1_sdist_ships_every_input_of_the_installed_checks.
+- AC2: docs/RELEASE.md (licencia MIT decidida por el propietario el 2026-11-20, checklist DoD, limitaciones, revisión humana pendiente explícita, publicación separada no ejecutada), LICENSE, README.md, CHANGELOG.md; tests/test_repository_tools.py::test_t2_release_versions_and_licence_come_from_the_code.
+- T1: scripts/check_wheel.py (instalación limpia desde wheel y desde sdist, smoke CLI, tutorial, migraciones y corpus); tests/test_repository_tools.py::test_t1_sdist_audit_accepts_a_clean_sdist, ::test_t1_sdist_audit_rejects_environment_and_secret_paths, ::test_t1_sdist_audit_rejects_links, ::test_t1_sdist_audit_requires_licence_and_sources, ::test_t1_sdist_and_wheel_audits_need_their_metadata, ::test_t1_wheel_audit_requires_licence_metadata, ::test_t1_built_artifacts_need_one_wheel_and_one_sdist, ::test_t1_migration_smoke_preserves_the_original, ::test_t1_corpus_smoke_detects_a_changed_pinned_digest, ::test_t1_install_smoke_failures_are_explicit.
+- T2: tests/test_repository_tools.py::test_t2_release_document_is_in_sync_with_code_and_catalogs, ::test_t2_requirement_audit_does_not_confuse_planning_with_delivery, ::test_t2_release_check_reports_stale_or_malformed_documents, ::test_t2_release_check_rejects_duplicated_or_misordered_markers, ::test_t2_release_reports_a_moved_ci_matrix_clearly; CI remoto real archivado en docs/RELEASE.md (runs 44768996258 y 44777404728); corpus.py check, suite tests/security y benchmark tests/benchmarks/results archivados.

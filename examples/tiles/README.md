@@ -111,7 +111,7 @@ Periodicidad medida (porcentaje de píxeles iguales a su vecino desplazado 32 px
 
 Creado por un agente de IA de programación (Claude Code), bajo la dirección del usuario del repositorio, con operaciones de Moana escritas en los documentos JSON; sin modelo de imagen, sin calcar arte externo y sin assets de terceros. Los scripts auxiliares que usó el agente para escribir las fuentes no se versionan; `scripts/tiles.py` sólo deriva la escena, el atlas y las previews.
 
-Licencia: **PENDIENTE**. La decide el propietario del repositorio (como en el [corpus](../corpus/README.md)); hasta entonces no se asigna ninguna.
+Licencia: **MIT** ([LICENSE](../../LICENSE)), decidida por el propietario del repositorio el 2026-11-20 (como en el [corpus](../corpus/README.md)); cada fuente y el layout la declaran en `metadata.provenance`. La revisión artística humana sigue **PENDIENTE**.
 
 ## Pruebas
 

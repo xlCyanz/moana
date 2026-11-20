@@ -181,7 +181,7 @@ def test_provenance_audit_passes(slug: str) -> None:
     assert provenance["authored_by"] == "ai_agent"
     assert provenance["seed"] == entry.document.seed
     assert provenance["third_party_assets"] == []
-    assert provenance["licence"].startswith("PENDIENTE")
+    assert provenance["licence"].startswith("MIT ")
     assert entry.record["agent_inspection"]["passes"]
     metadata = entry.document.metadata
     assert metadata is not None and metadata.provenance is not None
