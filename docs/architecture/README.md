@@ -70,6 +70,7 @@ El paquete contiene `src/moana/__init__.py`, `py.typed` y `src/moana/core/` (MOA
 - [ADR-037: corpus artístico y rúbrica humana: registro por ejemplo, previews como goldens y regla profesional](decisions/ADR-037-art-corpus-rubric.md).
 - [ADR-038: caché opcional de buffers de capa acotada por bytes, claves por dependencias transitivas y decisión medida](decisions/ADR-038-layer-buffer-cache.md).
 - [ADR-039: portabilidad de la matriz de CI: nombres portables, clasificación por `os.stat`, nombres ZIP almacenados y pruebas sin reloj](decisions/ADR-039-ci-matrix-portability.md).
+- [ADR-040: índice incremental de nodos en la edición por batches](decisions/ADR-040-incremental-edit-index.md).
 - [Modelo de amenazas](SECURITY_MODEL.md).
 
 Un ADR nuevo registra contexto, decisión, alternativas, consecuencias y evidencia. Cambiar un ADR aceptado se hace mediante otro que lo sustituya y actualizando el contrato principal.

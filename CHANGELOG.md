@@ -2,7 +2,7 @@
 
 ## Sin publicar
 
-Sin cambios todavía.
+- MOANA-036: índice de nodos incremental en la edición por batches (ADR-040). apply_batch/apply_commands construyen el índice una vez por batch y cada comando estructural lo actualiza, en vez de reconstruirlo por comando; documentos, revisiones, snapshots, errores, affected_ids y RGBA idénticos (probado contra el algoritmo anterior con Hypothesis). Animación de 16 frames −24,7 % y corpus adventurer-walk −36,2 % en el benchmark de MOANA.md §22.
 
 ## 0.1.0rc1 — 2026-11-20 (release candidate, sin publicar)
 

@@ -9,6 +9,7 @@ from __future__ import annotations
 import copy
 import json
 import time
+from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
 
@@ -18,8 +19,16 @@ from hypothesis import strategies as st
 
 from moana.core import errors
 from moana.core.limits import MAX_EDIT_COMMANDS
-from moana.editing import MAX_TRANSLATION, EditBatch, EditResult, SetColor, apply, apply_batch
-from moana.editing._tree import index_nodes
+from moana.editing import (
+    MAX_TRANSLATION,
+    EditBatch,
+    EditResult,
+    SetColor,
+    _tree,
+    apply,
+    apply_batch,
+)
+from moana.editing._tree import Node, WorkingIndex
 from moana.render import render
 from moana.schema import (
     Document,
@@ -1025,15 +1034,33 @@ def test_unvalidated_documents_fail_cleanly(
     assert caught.value.context["reason"] == "invalid_source"
 
 
+def count_ids(value: object) -> int:
+    """Objects with an ``id`` member anywhere in a JSON tree (written apart from the index)."""
+    if isinstance(value, list):
+        return sum(count_ids(item) for item in value)
+    if isinstance(value, dict):
+        return ("id" in value) + sum(count_ids(item) for item in value.values())
+    return 0
+
+
 def test_worst_case_translate_batch_stays_linear(monkeypatch: pytest.MonkeyPatch) -> None:
-    """ADR-024 point 9: per command one linear reindex, no node revalidation.
+    """ADR-024 point 9 as amended by ADR-040: one index per batch, O(1) per command.
 
     The cost is bounded by counting the expensive steps, not by wall-clock time (a
-    30 s threshold failed on loaded CI runners under coverage): revalidating the
-    3001-command path on every ``translate`` is what made this batch take tens of
-    seconds, and a single full validation of the result is the only one allowed.
+    30 s threshold failed on loaded CI runners under coverage, ADR-039): revalidating
+    the 3001-command path on every ``translate`` made this batch take tens of
+    seconds, and rebuilding the ID index per command made it commands x nodes. Now
+    the index is built once per batch (it visits each node of the document once,
+    whatever the batch size), each command makes one O(1) lookup, there is no node
+    revalidation and a single full validation of the result.
     """
-    calls = {"index_nodes": 0, "node_validation": 0, "document_validation": 0}
+    calls = {
+        "index_build": 0,
+        "indexed_nodes": 0,
+        "lookup": 0,
+        "node_validation": 0,
+        "document_validation": 0,
+    }
 
     def counting(name: str, original: Any) -> Any:
         def call(*args: Any, **kwargs: Any) -> Any:
@@ -1042,7 +1069,15 @@ def test_worst_case_translate_batch_stays_linear(monkeypatch: pytest.MonkeyPatch
 
         return call
 
-    monkeypatch.setattr(apply, "index_nodes", counting("index_nodes", index_nodes))
+    def counted_members(tree: Tree) -> Iterator[Node]:
+        calls["index_build"] += 1
+        for node in members(tree):
+            calls["indexed_nodes"] += 1
+            yield node
+
+    members = _tree._members
+    monkeypatch.setattr(_tree, "_members", counted_members)
+    monkeypatch.setattr(WorkingIndex, "get", counting("lookup", WorkingIndex.get))
     monkeypatch.setattr(apply, "_validated", counting("node_validation", apply._validated))
     monkeypatch.setattr(
         apply, "validate_document", counting("document_validation", validate_document)
@@ -1054,7 +1089,8 @@ def test_worst_case_translate_batch_stays_linear(monkeypatch: pytest.MonkeyPatch
     path = {"id": "big", "type": "path", "backend": "aggdraw-v1", "color": "ink"}
     source["layers"][0]["operations"].append({**path, "commands": commands})
     document = validate_document(source)
-    for size in (MAX_EDIT_COMMANDS // 4, MAX_EDIT_COMMANDS):  # counts must scale linearly
+    nodes = count_ids(normalize_document(document))
+    for size in (MAX_EDIT_COMMANDS // 4, MAX_EDIT_COMMANDS):  # counts must not grow with nodes
         calls.update(dict.fromkeys(calls, 0))
         moves = [
             {"type": "translate", "target_id": "big", "dx": 1 if i % 2 else -1, "dy": 0}
@@ -1063,8 +1099,14 @@ def test_worst_case_translate_batch_stays_linear(monkeypatch: pytest.MonkeyPatch
         started = time.perf_counter()
         result = apply_batch(document, batch(document, *moves))
         elapsed = time.perf_counter() - started
-        assert calls == {"index_nodes": size, "node_validation": 0, "document_validation": 1}
-        assert elapsed < 300  # hang guard only: about 2 s on a laptop, 33 s on a CI runner
+        assert calls == {
+            "index_build": 1,
+            "indexed_nodes": nodes,
+            "lookup": size,
+            "node_validation": 0,
+            "document_validation": 1,
+        }
+        assert elapsed < 300  # hang guard only
         layers = normalize_document(result.document)["layers"]
         assert layers == normalize_document(document)["layers"]
 
