@@ -22,12 +22,13 @@ from __future__ import annotations
 import errno
 import os
 import secrets
+import stat
 from pathlib import Path
 from typing import Final
 
 from moana.core.errors import ExportError
 
-__all__ = ["commit_bytes"]
+__all__ = ["commit_bytes", "stat_is_directory"]
 
 _TEMP_ATTEMPTS: Final = 8
 _TEMP_NAME_CHARS: Final = 32  # keeps the temporary name within NAME_MAX for any valid name
@@ -134,12 +135,42 @@ def _same_file(first: Path, second: Path) -> bool:
         return False
 
 
+def stat_is_directory(path: str | Path) -> bool:
+    """Whether ``os.stat`` reports a directory; any failure counts as not one (ADR-039).
+
+    Only for naming the reason of a failure that already happened (``is_directory``
+    or another one). ``os.path.isdir`` is not used: on Windows it bypasses ``os.stat``,
+    so the reason would depend on the platform.
+    """
+    try:
+        return stat.S_ISDIR(os.stat(path).st_mode)
+    except (OSError, ValueError):
+        return False
+
+
+def _is_dir(path: Path) -> bool:
+    """``True`` for a directory, ``False`` if absent; any other ``OSError`` propagates.
+
+    ``Path.is_dir`` cannot be used: since Python 3.14 it returns ``False`` for every
+    ``OSError``, so an unsearchable parent looked like a missing directory. Failing
+    closed (ADR-039), a link loop (``ELOOP``) or an invalid Windows name is
+    ``io_error`` with its ``errno``. A NUL in the name (``ValueError``) only reaches
+    here when :func:`commit_bytes` is called directly (the export entry points
+    reject it first); it counts as no directory and the temporary file creation
+    reports ``invalid_name``.
+    """
+    try:
+        return stat.S_ISDIR(os.stat(path).st_mode)
+    except (FileNotFoundError, NotADirectoryError, ValueError):
+        return False
+
+
 def _check_destination(directory: Path, destination: Path, name: str) -> None:
     """Diagnose the destination before writing; never lets an ``OSError`` with a path escape."""
     try:
-        if not directory.is_dir():
+        if not _is_dir(directory):
             raise _failure("destination directory does not exist", "missing_directory", name)
-        if destination.is_dir():
+        if _is_dir(destination):
             raise _failure("destination is a directory", "is_directory", name)
     except PermissionError as exc:
         raise _failure(

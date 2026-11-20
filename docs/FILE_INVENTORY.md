@@ -1,6 +1,6 @@
 # Inventario del repositorio
 
-558 archivos actuales de fuente, documentación, configuración y pruebas al 2026-11-20. Incluye cambios locales todavía sin commit. Excluye entorno virtual, herramientas, cachés, artefactos y metadata Git.
+559 archivos actuales de fuente, documentación, configuración y pruebas al 2026-11-20. Incluye cambios locales todavía sin commit. Excluye entorno virtual, herramientas, cachés, artefactos y metadata Git.
 
 | Archivo |
 | --- |
@@ -120,6 +120,7 @@
 | [docs/architecture/decisions/ADR-036-quality-reports.md](../docs/architecture/decisions/ADR-036-quality-reports.md) |
 | [docs/architecture/decisions/ADR-037-art-corpus-rubric.md](../docs/architecture/decisions/ADR-037-art-corpus-rubric.md) |
 | [docs/architecture/decisions/ADR-038-layer-buffer-cache.md](../docs/architecture/decisions/ADR-038-layer-buffer-cache.md) |
+| [docs/architecture/decisions/ADR-039-ci-matrix-portability.md](../docs/architecture/decisions/ADR-039-ci-matrix-portability.md) |
 | [docs/architecture/module-contracts.md](../docs/architecture/module-contracts.md) |
 | [docs/architecture/overview.md](../docs/architecture/overview.md) |
 | [docs/guides/agent-workflow.md](../docs/guides/agent-workflow.md) |

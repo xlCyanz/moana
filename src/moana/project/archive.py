@@ -127,7 +127,9 @@ def _entry_reason(info: zipfile.ZipInfo) -> str | None:
         return "compression"
     if stat.S_ISLNK(info.external_attr >> 16):
         return "symlink"
-    return _name_reason(info.filename)
+    # The stored name: ``filename`` is already rewritten by ``zipfile`` (cut at a NUL,
+    # and ``\\`` turned into ``/`` where ``os.sep`` is a backslash, as on Windows).
+    return _name_reason(info.orig_filename)
 
 
 def _check_ratio(info: zipfile.ZipInfo, index: int, ratio: int) -> None:

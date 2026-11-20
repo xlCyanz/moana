@@ -42,6 +42,7 @@ __all__ = [
     "caller_path",
     "read_caller_file",
     "read_failure",
+    "stat_is_directory",
     "write_failure",
 ]
 
@@ -113,6 +114,7 @@ def caller_path(path: object) -> Path:
     try:
         if not raw or "\x00" in raw:
             raise UnicodeEncodeError("utf-8", raw, 0, 1, "empty or NUL")
+        raw.encode("utf-8")  # strict: lone surrogates are rejected on every platform
         os.fsencode(raw)
     except UnicodeEncodeError:
         raise ValidationError(
@@ -152,6 +154,20 @@ def _read_descriptor(descriptor: int, limit: int, name: str, *, zip_limit: int |
         os.close(descriptor)
 
 
+def stat_is_directory(path: Path) -> bool:
+    """Whether ``os.stat`` reports a directory; any failure counts as not one (ADR-039).
+
+    Used instead of ``os.path.isdir`` (which on Windows bypasses ``os.stat``) and
+    ``Path.is_dir`` (whose error handling changed in Python 3.14): one primitive
+    classifies the same way on every platform and version. ``project`` does not import
+    ``export``, hence its own copy of ``moana.export.atomic.stat_is_directory``.
+    """
+    try:
+        return stat.S_ISDIR(os.stat(path).st_mode)
+    except (OSError, ValueError):
+        return False
+
+
 def read_caller_file(path: Path, limit: int, *, zip_limit: int | None = None) -> bytes:
     """Bounded read of a file the caller named (links followed, opened without blocking).
 
@@ -164,10 +180,10 @@ def read_caller_file(path: Path, limit: int, *, zip_limit: int | None = None) ->
     except FileNotFoundError as exc:
         raise read_failure("the project file is missing", "not_found", name, exc) from None
     except PermissionError as exc:
-        reason = "is_directory" if os.path.isdir(path) else "permission_denied"
+        reason = "is_directory" if stat_is_directory(path) else "permission_denied"
         raise read_failure("the project file cannot be opened", reason, name, exc) from None
     except OSError as exc:
-        reason = "is_directory" if os.path.isdir(path) else "io_error"
+        reason = "is_directory" if stat_is_directory(path) else "io_error"
         raise read_failure("the project file cannot be opened", reason, name, exc) from None
     return _read_descriptor(descriptor, limit, name, zip_limit=zip_limit)
 

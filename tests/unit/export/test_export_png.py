@@ -480,6 +480,33 @@ def test_unsearchable_parent_is_permission_denied(tmp_path: Path) -> None:
         locked.chmod(0o700)
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="POSIX symbolic link loop (ELOOP)")
+@pytest.mark.parametrize("overwrite", [False, True])
+@pytest.mark.parametrize("where", ["destination", "parent"])
+def test_link_loops_fail_closed_as_io_error(tmp_path: Path, where: str, overwrite: bool) -> None:
+    """ADR-039: an ``ELOOP`` while inspecting is ``io_error``, never "missing" or "absent"."""
+    loop = tmp_path / ("x.png" if where == "destination" else "loop")
+    loop.symlink_to(loop)
+    target = loop if where == "destination" else loop / "x.png"
+    with pytest.raises(ExportError) as excinfo:
+        export_png(SAMPLE, target, overwrite=overwrite)
+    assert excinfo.value.context["reason"] == "io_error"
+    assert excinfo.value.context["errno"] == "ELOOP"
+    assert str(tmp_path) not in str(excinfo.value)
+    assert [p.name for p in tmp_path.iterdir()] == [loop.name]
+    assert loop.is_symlink() and os.readlink(loop) == str(loop)
+
+
+def test_stat_is_directory_never_raises(tmp_path: Path) -> None:
+    from moana.export.atomic import stat_is_directory
+
+    (tmp_path / "file").write_bytes(b"")
+    assert stat_is_directory(tmp_path)
+    assert not stat_is_directory(tmp_path / "file")
+    assert not stat_is_directory(tmp_path / "missing")
+    assert not stat_is_directory(str(tmp_path / "a\x00b"))
+
+
 class _BytesPath:
     def __fspath__(self) -> bytes:
         return b"x.png"

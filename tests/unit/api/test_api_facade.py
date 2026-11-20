@@ -154,6 +154,20 @@ def test_permission_error_on_a_directory_reports_a_directory(
     assert caught.value.context["reason"] == "is_directory"
 
 
+def test_permission_error_on_an_unstatable_path_is_permission_denied(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """ADR-039: the reason comes from ``os.stat`` on every platform; a failure is no directory."""
+    from moana.api.loading import _stat_is_directory
+
+    monkeypatch.setattr(os, "open", failing_open(PermissionError(errno.EACCES, "denied")))
+    with pytest.raises(ReadError) as caught:
+        load_document(tmp_path / "missing.moana.json")
+    assert caught.value.context["reason"] == "permission_denied"
+    assert _stat_is_directory(tmp_path)
+    assert not _stat_is_directory(tmp_path / "a\x00b")
+
+
 def posix_non_root() -> bool:
     """Whether POSIX permission bits are enforced for this process."""
     if sys.platform == "win32":

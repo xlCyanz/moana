@@ -73,7 +73,7 @@ from moana.core.limits import (
     MIN_FRAME_DURATION_MS,
 )
 from moana.export._frames import checked_sprite_frames
-from moana.export.atomic import commit_bytes
+from moana.export.atomic import commit_bytes, stat_is_directory
 from moana.export.png import (
     EXPORT_BYTES_PER_PIXEL,
     MEDIA_TYPE,
@@ -1009,10 +1009,10 @@ def _read_bounded(path: object, field: str, maximum: int) -> bytes:
     except FileNotFoundError:
         raise _read_failure("not_found", field, name) from None
     except PermissionError:
-        reason = "is_directory" if os.path.isdir(raw) else "permission_denied"
+        reason = "is_directory" if stat_is_directory(raw) else "permission_denied"
         raise _read_failure(reason, field, name) from None
     except (OSError, ValueError):
-        reason = "is_directory" if os.path.isdir(raw) else "io_error"
+        reason = "is_directory" if stat_is_directory(raw) else "io_error"
         raise _read_failure(reason, field, name) from None
     try:
         mode = os.fstat(descriptor).st_mode

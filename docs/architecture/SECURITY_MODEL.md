@@ -2,6 +2,8 @@
 
 El núcleo opera sobre documentos no confiables; la aplicación anfitriona autoriza los paths de entrada/salida. Ningún documento concede permisos. Contrato normativo: MOANA.md §20.
 
+Los nombres que elige el llamador deben codificarse en UTF-8 estricto en todas las plataformas, y los nombres de entradas ZIP se validan sobre el nombre almacenado (NUL y barra invertida son `invalid_name`): [ADR-039](decisions/ADR-039-ci-matrix-portability.md).
+
 | Amenaza | Frontera | Mitigación prevista | Evidencia |
 | --- | --- | --- | --- |
 | Campos/código arbitrarios | JSON → modelo | strict, extra forbid, lista explícita de operaciones, sin eval | MOANA-002/030 |

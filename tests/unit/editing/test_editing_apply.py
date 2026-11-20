@@ -18,7 +18,8 @@ from hypothesis import strategies as st
 
 from moana.core import errors
 from moana.core.limits import MAX_EDIT_COMMANDS
-from moana.editing import MAX_TRANSLATION, EditBatch, EditResult, SetColor, apply_batch
+from moana.editing import MAX_TRANSLATION, EditBatch, EditResult, SetColor, apply, apply_batch
+from moana.editing._tree import index_nodes
 from moana.render import render
 from moana.schema import (
     Document,
@@ -1024,7 +1025,28 @@ def test_unvalidated_documents_fail_cleanly(
     assert caught.value.context["reason"] == "invalid_source"
 
 
-def test_worst_case_translate_batch_stays_fast() -> None:
+def test_worst_case_translate_batch_stays_linear(monkeypatch: pytest.MonkeyPatch) -> None:
+    """ADR-024 point 9: per command one linear reindex, no node revalidation.
+
+    The cost is bounded by counting the expensive steps, not by wall-clock time (a
+    30 s threshold failed on loaded CI runners under coverage): revalidating the
+    3001-command path on every ``translate`` is what made this batch take tens of
+    seconds, and a single full validation of the result is the only one allowed.
+    """
+    calls = {"index_nodes": 0, "node_validation": 0, "document_validation": 0}
+
+    def counting(name: str, original: Any) -> Any:
+        def call(*args: Any, **kwargs: Any) -> Any:
+            calls[name] += 1
+            return original(*args, **kwargs)
+
+        return call
+
+    monkeypatch.setattr(apply, "index_nodes", counting("index_nodes", index_nodes))
+    monkeypatch.setattr(apply, "_validated", counting("node_validation", apply._validated))
+    monkeypatch.setattr(
+        apply, "validate_document", counting("document_validation", validate_document)
+    )
     source = load("minimal.moana.json")
     commands: list[list[object]] = [["M", 0, 0]]
     commands += [["L", (i % 50) * 256, (i // 50) * 256] for i in range(2999)]
@@ -1032,14 +1054,19 @@ def test_worst_case_translate_batch_stays_fast() -> None:
     path = {"id": "big", "type": "path", "backend": "aggdraw-v1", "color": "ink"}
     source["layers"][0]["operations"].append({**path, "commands": commands})
     document = validate_document(source)
-    moves = [
-        {"type": "translate", "target_id": "big", "dx": 1 if i % 2 else -1, "dy": 0}
-        for i in range(MAX_EDIT_COMMANDS)
-    ]
-    started = time.perf_counter()
-    result = apply_batch(document, batch(document, *moves))
-    assert time.perf_counter() - started < 30  # generous: about 2 s on a laptop (ADR-024)
-    assert normalize_document(result.document)["layers"] == normalize_document(document)["layers"]
+    for size in (MAX_EDIT_COMMANDS // 4, MAX_EDIT_COMMANDS):  # counts must scale linearly
+        calls.update(dict.fromkeys(calls, 0))
+        moves = [
+            {"type": "translate", "target_id": "big", "dx": 1 if i % 2 else -1, "dy": 0}
+            for i in range(size)
+        ]
+        started = time.perf_counter()
+        result = apply_batch(document, batch(document, *moves))
+        elapsed = time.perf_counter() - started
+        assert calls == {"index_nodes": size, "node_validation": 0, "document_validation": 1}
+        assert elapsed < 300  # hang guard only: about 2 s on a laptop, 33 s on a CI runner
+        layers = normalize_document(result.document)["layers"]
+        assert layers == normalize_document(document)["layers"]
 
 
 ORACLE_COMMANDS = st.one_of(
