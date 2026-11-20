@@ -27,7 +27,7 @@ MOANA.md §19 define una rúbrica humana (legibilidad a 1×, silueta, clusters, 
 
 - Ningún ejemplo es profesional hasta que una persona registre su revisión; el corpus inicial queda `pending_human_review` con una valoración del agente rotulada.
 - Un cambio de arte cambia digests, informe y previews: se actualizan juntos con `facts` y el flujo de goldens, mostrando expected/actual/diff. Si el ejemplo tenía revisión humana, la auditoría falla hasta una nueva revisión.
-- Licencia de los ejemplos: PENDIENTE; la decide el propietario del repositorio (README raíz). Hasta entonces el registro no asigna ninguna y lo declara así.
+- Licencia de los ejemplos: PENDIENTE; la decide el propietario del repositorio (README raíz). Hasta entonces el registro no asigna ninguna y lo declara así. *Actualización 2026-11-20 (MOANA-035):* el propietario decidió MIT ([LICENSE](../../../LICENSE)) para código, documentación, ejemplos y corpus; los registros declaran `provenance.licence` MIT. La revisión humana sigue pendiente.
 - Los ejemplos los creó un agente de IA mediante operaciones de Moana; el `.moana.json` es la única fuente y los scripts auxiliares del agente no se versionan.
 
 ## Evidencia

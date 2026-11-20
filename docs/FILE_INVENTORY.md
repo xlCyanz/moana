@@ -1,6 +1,6 @@
 # Inventario del repositorio
 
-559 archivos actuales de fuente, documentación, configuración y pruebas al 2026-11-20. Incluye cambios locales todavía sin commit. Excluye entorno virtual, herramientas, cachés, artefactos y metadata Git.
+563 archivos actuales de fuente, documentación, configuración y pruebas al 2026-11-20. Incluye cambios locales todavía sin commit. Excluye entorno virtual, herramientas, cachés, artefactos y metadata Git.
 
 | Archivo |
 | --- |
@@ -67,6 +67,7 @@
 | [CHANGELOG.md](../CHANGELOG.md) |
 | [CLAUDE.md](../CLAUDE.md) |
 | [CONTRIBUTING.md](../CONTRIBUTING.md) |
+| [LICENSE](../LICENSE) |
 | [MOANA.md](../MOANA.md) |
 | [README.md](../README.md) |
 | [SECURITY.md](../SECURITY.md) |
@@ -76,6 +77,7 @@
 | [docs/DEPENDENCIES.md](../docs/DEPENDENCIES.md) |
 | [docs/FILE_INVENTORY.md](../docs/FILE_INVENTORY.md) |
 | [docs/INITIALIZATION_REPORT.md](../docs/INITIALIZATION_REPORT.md) |
+| [docs/RELEASE.md](../docs/RELEASE.md) |
 | [docs/ROADMAP.md](../docs/ROADMAP.md) |
 | [docs/TESTING.md](../docs/TESTING.md) |
 | [docs/TRACEABILITY.md](../docs/TRACEABILITY.md) |
@@ -287,7 +289,9 @@
 | [scripts/determinism.py](../scripts/determinism.py) |
 | [scripts/generate_schema.py](../scripts/generate_schema.py) |
 | [scripts/github_sync.py](../scripts/github_sync.py) |
+| [scripts/install_smoke.py](../scripts/install_smoke.py) |
 | [scripts/planning.py](../scripts/planning.py) |
+| [scripts/release.py](../scripts/release.py) |
 | [scripts/run_hook.sh](../scripts/run_hook.sh) |
 | [scripts/templates/agent_guide.md](../scripts/templates/agent_guide.md) |
 | [scripts/tiles.py](../scripts/tiles.py) |

@@ -84,8 +84,8 @@ Estado: 7/8 issues completados.
 - [MOANA-032](MOANA-032.md) — Optimizar caché y render incremental acotados (done)
 - [MOANA-033](MOANA-033.md) — Documentar flujos IA y previews editables (done)
 - [MOANA-034](MOANA-034.md) — Añadir ejemplos de tiles y escenarios modulares (done)
-- [MOANA-035](MOANA-035.md) — Preparar release y comprobar Definition of Done (ready)
+- [MOANA-035](MOANA-035.md) — Preparar release y comprobar Definition of Done (review)
 
 ## Siguiente paso
 
-Implementar [MOANA-035](MOANA-035.md): Preparar release y comprobar Definition of Done.
+No hay issues ready. Revisar bloqueos y dependencias antes de iniciar.

@@ -51,7 +51,7 @@ El tile añade [la repetición 3 × 3 a 4×](stone-tile/previews/stone-tile-tile
 
 Procedencia: cada ejemplo lo creó un agente de IA de programación, bajo la dirección del usuario del repositorio, mediante operaciones de Moana (formas, máscaras, regiones, paleta y técnicas del motor) escritas en el documento JSON. No se usó ningún modelo de imagen, no se calcó arte externo y no hay assets de terceros. El archivo `<slug>.moana.json` es la única fuente: los scripts auxiliares que usó el agente para escribirlo no se versionan, y cualquier cambio se hace sobre el documento (a mano, con `moana edit` o con `moana.api.apply_edit`).
 
-Licencia: **PENDIENTE**. La decide el propietario del repositorio (ver el README raíz); hasta entonces no se asigna ninguna y el registro lo declara así.
+Licencia: **MIT** ([LICENSE](../../LICENSE)), decidida por el propietario del repositorio el 2026-11-20 para código, documentación, ejemplos y corpus; cada registro la declara en `provenance.licence`. La revisión artística humana sigue **PENDIENTE**: la licencia no aprueba el arte.
 
 Cada fuente declara regiones semánticas para editar una parte sin tocar las demás; por ejemplo `hair`, `eyes`, `shirt` y `boots` en la aventurera; `skin`, `belly` y `eyes` en la rana; `wood`, `metal` y `lock` en el cofre; `bricks` y `moss` en el tile. La prueba de integración recolorea la camisa con un batch y comprueba que sólo cambian píxeles de la región `shirt`.
 
