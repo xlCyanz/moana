@@ -62,7 +62,7 @@ Los codecs APNG y WebP son opcionales: su disponibilidad depende del build de Pi
 | Exportación desde Python | `png`, `gif`, `apng` (opcional), `webp` (opcional) | — |
 | Backends vectoriales | `aggdraw-v1` | — |
 
-### Auditoría de requisitos (40; implementado: 33; implementado con pendientes: 4; parcial: 3; pendiente: 0)
+### Auditoría de requisitos (40; implementado: 36; implementado con pendientes: 4; parcial: 0; pendiente: 0)
 
 | ID | Requisito | Issues (estado) | Entrega | Pendiente |
 | --- | --- | --- | --- | --- |
@@ -96,15 +96,15 @@ Los codecs APNG y WebP son opcionales: su disponibilidad depende del build de Pi
 | R028 | Rendimiento y recursos medidos | MOANA-003 (done), MOANA-031 (done), MOANA-032 (done) | implementado | — |
 | R029 | Caché e incrementalidad | MOANA-032 (done) | implementado | — |
 | R030 | Arquitectura modular y documentación | MOANA-000 (done), MOANA-001 (done), MOANA-010 (done) | implementado | — |
-| R031 | Paquete instalable y artefactos | MOANA-000 (done), MOANA-035 (review) | parcial | — |
+| R031 | Paquete instalable y artefactos | MOANA-000 (done), MOANA-035 (done) | implementado | — |
 | R032 | Entorno Python y herramientas de calidad | MOANA-000 (done) | implementado | — |
 | R033 | Siete skills especializadas | MOANA-000 (done) | implementado | — |
 | R034 | Codex, roles y flujos de agentes | MOANA-000 (done), MOANA-033 (done) | implementado | — |
 | R035 | Hooks y automatización CI | MOANA-000 (done), MOANA-029 (done) | implementado con pendientes | matriz de CI remota verde (9 trabajos + determinismo) en `3857617`, run 44777404728; falta observarla sobre el commit candidato |
-| R036 | Issues, roadmap, dependencias y trazabilidad | MOANA-000 (done), MOANA-035 (review) | parcial | — |
+| R036 | Issues, roadmap, dependencias y trazabilidad | MOANA-000 (done), MOANA-035 (done) | implementado | — |
 | R037 | Objetos, tiles y escenarios | MOANA-034 (done) | implementado con pendientes | revisión artística humana de tiles y escena pendiente |
 | R038 | Preview y modificación específica por IA | MOANA-012 (done), MOANA-018 (done), MOANA-027 (done), MOANA-033 (done) | implementado | — |
-| R039 | Criterios de aceptación y Definition of Done | MOANA-000 (done), MOANA-035 (review) | parcial | — |
+| R039 | Criterios de aceptación y Definition of Done | MOANA-000 (done), MOANA-035 (done) | implementado | — |
 | R040 | Transformaciones pixel-perfect | MOANA-008 (done) | implementado | — |
 
 <!-- release:end -->
@@ -127,7 +127,7 @@ CI remoto (matriz `ubuntu/macos/windows × Python 3.12–3.14` más comparación
 
 - `develop` `714c2f6`: [run 44768996258](https://github.com/xlCyanz/moana/actions/runs/44768996258) **falló** (8 de 9 trabajos: portabilidad en Windows, Linux y Python 3.14; los digests de determinismo coincidían). Era la primera ejecución remota real de la matriz: hasta entonces sólo corría en `main`.
 - Corrección en PR #75 ([ADR-039](architecture/decisions/ADR-039-ci-matrix-portability.md)), commit `3857617`: [run 44777404728](https://github.com/xlCyanz/moana/actions/runs/44777404728) **verde**, 9/9 trabajos y determinismo entre plataformas.
-- Commit candidato de MOANA-035: pendiente; se lanza al aprobar el PR del candidato y se registra aquí antes del merge.
+- Commit candidato de MOANA-035 `69b7ddc`: [run 44783751159](https://github.com/xlCyanz/moana/actions/runs/44783751159). Al hacer merge (por decisión del propietario, sin esperar al final) iban 5/9 trabajos verdes (macOS 3.13/3.14, ubuntu 3.13/3.14, windows 3.14) y 4 en curso; el resultado final se comprueba en esa ejecución.
 
 ## Definition of Done de la release (MOANA.md §25)
 

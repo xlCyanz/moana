@@ -2417,7 +2417,7 @@
       "id": "MOANA-035",
       "title": "Preparar release y comprobar Definition of Done",
       "phase": "P5",
-      "status": "review",
+      "status": "done",
       "priority": "P1",
       "dependencies": [
         "MOANA-007",
@@ -2456,7 +2456,8 @@
         "docs/RELEASE.md: versiones (paquete, schema 1.0, proyecto, render-v1, budget-v8, quality-v1, aggdraw-v1, registro de migraciones sólo 1.0), matriz de compatibilidad (Python 3.12–3.14 × ubuntu/macos/windows, rangos de Pillow/NumPy/AggDraw, APNG/WebP opcionales), capacidades implementadas frente a previstas desde moana.api.capabilities y auditoría R001–R040 (entregado sólo si todos los issues que lo cubren están done) generadas y comprobadas por scripts/release.py report|write|check; checklist DoD, evidencia archivada, limitaciones y pasos de publicación como acción separada no ejecutada. CHANGELOG con sección 0.1.0rc1.",
         "scripts/check_wheel.py construye wheel y sdist una vez, audita ambos (sin entornos, cachés, artefactos, secretos ni enlaces; LICENSE y License-Expression: MIT) e instala cada uno en un venv limpio: sonda de importación, smoke CLI, tutorial de 18 pasos, migración con el original intacto y corpus contra sus digests (scripts/install_smoke.py); en la pasada sdist las entradas salen del sdist extraído.",
         "CI remoto real: develop 714c2f6 falló (run 44768996258, primera ejecución remota de la matriz); corregido en PR #75 (ADR-039) con la matriz verde 9/9 más determinismo en 3857617 (run 44777404728). La ejecución sobre el commit candidato se registra al aprobar.",
-        "Revisiones de agente QA y documentación con todas las correcciones aplicadas. Gate local macOS: scripts/validate.py con src/moana al 100 %, check_wheel OK (wheel y sdist), mypy --platform win32 OK, release.py/corpus.py/tiles.py check OK, pre-commit OK. Sin publicación: ni PyPI, ni tag, ni GitHub Release."
+        "Revisiones de agente QA y documentación con todas las correcciones aplicadas. Gate local macOS: scripts/validate.py con src/moana al 100 %, check_wheel OK (wheel y sdist), mypy --platform win32 OK, release.py/corpus.py/tiles.py check OK, pre-commit OK. Sin publicación: ni PyPI, ni tag, ni GitHub Release.",
+        "Aprobado por el propietario el 2026-11-20 tras revisión; PR #76 hacia develop."
       ],
       "aliases": [
         "MOA-035"
