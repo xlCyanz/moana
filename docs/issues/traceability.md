@@ -33,7 +33,7 @@
 | R025 | Evaluación gráfica y diagnósticos | 19 | [MOANA-014](MOANA-014.md), [MOANA-026](MOANA-026.md) | Hard/soft checks, bbox y supresiones |
 | R026 | Validación y seguridad de datos | 20 | [MOANA-001](MOANA-001.md), [MOANA-002](MOANA-002.md), [MOANA-003](MOANA-003.md), [MOANA-020](MOANA-020.md), [MOANA-030](MOANA-030.md) | Entradas adversarias rechazadas antes de reservar/IO |
 | R027 | Testing y regresión visual | 21 | [MOANA-004](MOANA-004.md), [MOANA-027](MOANA-027.md), [MOANA-028](MOANA-028.md), [MOANA-029](MOANA-029.md), [MOANA-030](MOANA-030.md) | Unit/property/integration y diffs exactos |
-| R028 | Rendimiento y recursos medidos | 22 | [MOANA-003](MOANA-003.md), [MOANA-031](MOANA-031.md), [MOANA-032](MOANA-032.md) | Benchmark reproducible y memoria acotada |
+| R028 | Rendimiento y recursos medidos | 22 | [MOANA-003](MOANA-003.md), [MOANA-031](MOANA-031.md), [MOANA-032](MOANA-032.md), [MOANA-036](MOANA-036.md) | Benchmark reproducible y memoria acotada |
 | R029 | Caché e incrementalidad | 22 | [MOANA-032](MOANA-032.md) | Equivalencia caché on/off y límites LRU |
 | R030 | Arquitectura modular y documentación | 3 | [MOANA-000](MOANA-000.md), [MOANA-001](MOANA-001.md), [MOANA-010](MOANA-010.md) | Dependencias internas y ADR revisados |
 | R031 | Paquete instalable y artefactos | 4, 25 | [MOANA-000](MOANA-000.md), [MOANA-035](MOANA-035.md) | Build y smoke de wheel/sdist aislados |

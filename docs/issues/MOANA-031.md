@@ -122,14 +122,14 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 ### 8. Cierre
 
 1. En `docs/issues/catalog.json`, para este issue: `status` → `review` (o `done` tras aprobación); completar `acceptance_evidence` (AC1, AC2), `test_evidence` (T1, T2) y `evidence` con rutas concretas de tests y archivos.
-2. Issues que desbloquea ([MOANA-032](MOANA-032.md)): si todas sus dependencias quedan `done`, pasarlos a `ready` con `blocking_reason: null`.
+2. Issues que desbloquea ([MOANA-032](MOANA-032.md), [MOANA-036](MOANA-036.md)): si todas sus dependencias quedan `done`, pasarlos a `ready` con `blocking_reason: null`.
 3. Ejecutar `uv run python scripts/planning.py` y `uv run python -m scripts.check_repository`.
 4. Abrir PR hacia `develop` enlazando este issue de GitHub (`Closes #<número>`), con comandos ejecutados y evidencia por AC/T. El CI completo corre al integrar `develop` en `main`.
 5. Commit y push sólo con autorización del usuario. No declarar CI remoto ni aprobación artística humana sin evidencia.
 
 ### 9. Prohibido en este issue
 
-- Implementar alcance de otros issues, incluidos los que desbloquea ([MOANA-032](MOANA-032.md)).
+- Implementar alcance de otros issues, incluidos los que desbloquea ([MOANA-032](MOANA-032.md), [MOANA-036](MOANA-036.md)).
 - Actualizar goldens automáticamente, desactivar checks, editar `uv.lock` a mano o añadir dependencias sin motivo técnico registrado.
 - `eval`/`exec`/`pickle`, red o estado global mutable en el núcleo; lecturas de texto sin `encoding="utf-8"`.
 

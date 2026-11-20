@@ -62,7 +62,7 @@ Los codecs APNG y WebP son opcionales: su disponibilidad depende del build de Pi
 | Exportación desde Python | `png`, `gif`, `apng` (opcional), `webp` (opcional) | — |
 | Backends vectoriales | `aggdraw-v1` | — |
 
-### Auditoría de requisitos (40; implementado: 36; implementado con pendientes: 4; parcial: 0; pendiente: 0)
+### Auditoría de requisitos (40; implementado: 35; implementado con pendientes: 4; parcial: 1; pendiente: 0)
 
 | ID | Requisito | Issues (estado) | Entrega | Pendiente |
 | --- | --- | --- | --- | --- |
@@ -93,7 +93,7 @@ Los codecs APNG y WebP son opcionales: su disponibilidad depende del build de Pi
 | R025 | Evaluación gráfica y diagnósticos | MOANA-014 (done), MOANA-026 (done) | implementado | — |
 | R026 | Validación y seguridad de datos | MOANA-001 (done), MOANA-002 (done), MOANA-003 (done), MOANA-020 (done), MOANA-030 (done) | implementado | — |
 | R027 | Testing y regresión visual | MOANA-004 (done), MOANA-027 (done), MOANA-028 (done), MOANA-029 (done), MOANA-030 (done) | implementado | — |
-| R028 | Rendimiento y recursos medidos | MOANA-003 (done), MOANA-031 (done), MOANA-032 (done) | implementado | — |
+| R028 | Rendimiento y recursos medidos | MOANA-003 (done), MOANA-031 (done), MOANA-032 (done), MOANA-036 (ready) | parcial | — |
 | R029 | Caché e incrementalidad | MOANA-032 (done) | implementado | — |
 | R030 | Arquitectura modular y documentación | MOANA-000 (done), MOANA-001 (done), MOANA-010 (done) | implementado | — |
 | R031 | Paquete instalable y artefactos | MOANA-000 (done), MOANA-035 (done) | implementado | — |
