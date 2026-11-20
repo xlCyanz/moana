@@ -59,7 +59,7 @@ select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
 [tool.mypy]
 python_version = "3.12"
 strict = true
-files = ["src", "scripts", "tests"]
+files = ["src", "scripts", "tests", "examples"]
 mypy_path = "src"
 
 [[tool.mypy.overrides]]

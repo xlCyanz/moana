@@ -5,7 +5,10 @@ pinned by ``uv.lock`` (hash-checked, no development tools; offline from the uv c
 when possible, otherwise downloaded from the package index). The probe imports the
 package, then the installed ``moana`` command validates the normative example and
 exports it as a 128 x 128 PNG from a directory outside the repository whose paths
-contain spaces (MOANA-012 AC1).
+contain spaces (MOANA-012 AC1). It then runs the ``sh`` blocks of
+``docs/guides/ai-workflows.md`` in order through :mod:`scripts.tutorial` with the
+installed ``moana`` and the venv interpreter in isolated mode, checking every
+documented exit code and the recolored pixels (MOANA-033 T1).
 """
 
 from __future__ import annotations
@@ -22,6 +25,7 @@ from pathlib import Path
 if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+from scripts.tutorial import check_outputs, command_runner, guide_steps, prepare, run_steps
 from scripts.validate import ROOT, tool_environment, uv_executable
 
 EXAMPLE = ROOT / "examples" / "specs" / "minimal.moana.json"
@@ -47,8 +51,10 @@ def isolated_environment() -> dict[str, str]:
     return environment
 
 
-def run_cli(command: Path, arguments: list[str], cwd: Path) -> dict[str, object]:
-    """Run the installed command and return its single JSON stdout object."""
+def run_cli(
+    command: Path, arguments: list[str], cwd: Path, *, exit_code: int = 0
+) -> dict[str, object]:
+    """Run the installed command, check its exit code and return its JSON stdout object."""
     completed = subprocess.run(
         [str(command), *arguments],
         cwd=cwd,
@@ -58,14 +64,18 @@ def run_cli(command: Path, arguments: list[str], cwd: Path) -> dict[str, object]
         encoding="utf-8",
         timeout=CLI_TIMEOUT,
     )
-    if completed.returncode != 0:
+    if completed.returncode != exit_code:
         raise RuntimeError(
             f"moana {arguments[0]} exited {completed.returncode}\n"
             f"--- stdout ---\n{completed.stdout}\n--- stderr ---\n{completed.stderr}"
         )
     payload = json.loads(completed.stdout)
-    if not isinstance(payload, dict) or payload.get("ok") is not True:
-        raise RuntimeError(f"moana {arguments[0]} did not succeed: {completed.stdout}")
+    if not isinstance(payload, dict) or payload.get("ok") is not (exit_code == 0):
+        ok = payload.get("ok") if isinstance(payload, dict) else None
+        raise RuntimeError(
+            f"moana {arguments[0]}: unexpected ok={ok} (expected exit {exit_code}): "
+            f"{completed.stdout}"
+        )
     return payload
 
 
@@ -100,6 +110,24 @@ def check_cli(python: Path, root: Path) -> None:
     if not isinstance(summary, dict) or summary.get("revision") != 1:
         raise RuntimeError(f"edit did not produce revision 1: {edited}")
     print("Installed CLI OK:", json.dumps(validated["document"], sort_keys=True))
+    check_tutorial(python, command, root)
+
+
+def check_tutorial(python: Path, command: Path, root: Path) -> None:
+    """MOANA-033 T1: the guide's commands work with the installed wheel only."""
+    work = root / "tutorial work"
+    prepare(work)
+    environment = isolated_environment()
+    outcomes = run_steps(
+        guide_steps(),
+        work,
+        moana=command_runner([str(command)], environment),
+        python=[str(python), "-I"],
+        environment=environment,
+    )
+    check_outputs(work)
+    flow = next(outcome for outcome in outcomes if "potion_flow.py" in outcome.step.line)
+    print(f"Installed tutorial OK: {len(outcomes)} documented steps;", flow.stdout.strip())
 
 
 def install_runtime_dependencies(uv: str, python: Path, requirements: Path) -> None:

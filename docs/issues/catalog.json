@@ -2279,7 +2279,7 @@
       "id": "MOANA-033",
       "title": "Documentar flujos IA y previews editables",
       "phase": "P5",
-      "status": "ready",
+      "status": "done",
       "priority": "P1",
       "dependencies": [
         "MOANA-012",
@@ -2306,7 +2306,14 @@
         "Ejecutar snippets/tutorial en entorno wheel limpio",
         "Validar ejemplos JSON contra schema y comprobar sólo región prevista cambia salvo dependencias declaradas"
       ],
-      "evidence": [],
+      "evidence": [
+        "Guía en español docs/guides/ai-workflows.md: brief → documento JSON → moana capabilities/validate/inspect → export 1× y --scale 4 → moana edit (set_color por ID con base_revision y base_snapshot) → guardado explícito de edit.document (moana edit no escribe archivos) → re-validate/re-export → diff que imprime 'bbox (5, 9, 11, 14) changed 28'; mismo flujo en Python (examples/tutorial/potion_flow.py con moana.api, moana.project.save_document y MoanaError); tabla de recuperación con cinco errores reales (4 EDIT_CONFLICT stale_revision, 2 REFERENCE_ERROR unknown_target, 3 BUDGET_EXCEEDED export_dimension/export_area 2048 px, 5 EXPORT_ERROR exists, 2 usage); notas Windows (PowerShell 5.1 redirige en UTF-16).",
+        "Ejemplos examples/tutorial/: potion.moana.json (16×16 strict, capas bottle/liquid, región potion_liquid, máscara liquid_shape [5,9,11,14)), potion-recolor.edit.json y potion-typo.edit.json. Oráculo a mano: liquid_fill cubre 6×5 = 30 px menos los 2 de liquid_shine dibujados encima ((6,10),(6,11)) = 28 px cambiados, todos dentro de la máscara.",
+        "Fuente única: scripts/tutorial.py parsea los bloques sh de la guía en una lista ordenada de pasos (programa, argumentos, redirección, '# exit N') con parser estricto (rechaza pipes, &&, ;, $, globs, continuaciones y etiquetas de bloque fuera de sh/json/python) y los ejecuta; el test unitario los corre con moana.cli.main en proceso y python -I; scripts/check_wheel.py::check_tutorial ejecuta los mismos 18 pasos con el moana instalado del wheel y el python del venv aislado y aplica check_outputs (oráculo de 28 píxeles).",
+        "AC2/limitaciones: sección «Pautas para agentes» (conservar fuente y revisión, sin generación de imágenes, sin persistencia/proyectos/historial por CLI, GIF/APNG/WebP/spritesheets sólo en Python, los informes de calidad no son aprobación humana); punteros en .agents/skills/moana-pixel-art y moana-python; enlaces en examples/README.md y agent-workflow.md. Sin cambios en src/; capabilities sin cambios (sigue exacto). mypy cubre examples/.",
+        "Revisiones de agente: documentación (comandos reales re-ejecutados, sin APIs inventadas) y Python (T1 debía ejecutar la guía y no una copia; parser estricto; pasos ordenados) con todas las correcciones aplicadas. Gate local macOS: scripts/validate.py 3686 passed con src/moana al 100 %, check_wheel OK (tutorial 18 pasos), mypy --platform win32 OK, pre-commit OK; matriz pendiente en main; variantes PowerShell no ejecutadas.",
+        "Aprobado por el propietario el 2026-11-17 tras revisión; PR #73 hacia develop."
+      ],
       "aliases": [
         "MOA-033"
       ],
@@ -2329,8 +2336,14 @@
         "No documentar una API de diseño como importable antes de completar sus dependencias."
       ],
       "blocking_reason": null,
-      "acceptance_evidence": {},
-      "test_evidence": {}
+      "acceptance_evidence": {
+        "AC1": "tests/unit/api/test_tutorial.py::test_guide_shell_blocks_run_as_documented (ejecuta todos los bloques sh de docs/guides/ai-workflows.md con sus códigos de salida, revisión 0→1, affected_ids ['liquid_fill'], PNG 1× 16×16 y 4× 64×64 por vecino, píxeles cambiados = oráculo, examples/ intacto) y ::test_guide_paths_and_python_excerpt_exist; scripts/check_wheel.py::check_tutorial en wheel limpio.",
+        "AC2": "Sección «Pautas para agentes» de docs/guides/ai-workflows.md; tests/unit/api/test_tutorial.py::test_documented_failures_are_atomic (stale_revision exit 4 y unknown_target exit 2 sin cambiar el documento) y ::test_python_flow_reports_moana_errors; .agents/skills/moana-pixel-art/SKILL.md y moana-python/SKILL.md."
+      },
+      "test_evidence": {
+        "T1": "scripts/check_wheel.py::check_tutorial (venv aislado sólo con el wheel: 'Installed tutorial OK: 18 documented steps', changed_pixels 28, changed_outside_region 0, revision [0, 1]) sobre scripts/tutorial.py::run_steps/check_outputs; tests/unit/api/test_tutorial.py::test_parser_rejects_unsupported_shell, ::test_parser_reads_redirect_and_exit_code, ::test_unknown_block_language_and_wrong_exit_fail.",
+        "T2": "tests/unit/api/test_tutorial.py::test_examples_validate_against_current_schema (claves y schema_version contra schemas/moana-document-1.0.schema.json, validate_document, batches con revisión y snapshot del documento; el schema publicado = modelo por tests/unit/schema/test_schema_roundtrip.py::test_generated_schema_matches_reviewed_golden) y ::test_recolor_changes_only_the_region_and_preserves_the_rest (sólo cambia el color de liquid_fill, IDs/capas/máscaras/regiones iguales, píxeles cambiados = oráculo a mano)."
+      }
     },
     {
       "id": "MOANA-034",
@@ -2448,7 +2461,7 @@
       "risks": [
         "No declarar CI remoto de cambios locales ni licencia decidida sin evidencia del propietario."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-033, MOANA-034",
+      "blocking_reason": "Dependencias pendientes: MOANA-034",
       "acceptance_evidence": {},
       "test_evidence": {}
     }
