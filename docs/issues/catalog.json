@@ -2489,6 +2489,58 @@
         "T1": "scripts/check_wheel.py (instalación limpia desde wheel y desde sdist, smoke CLI, tutorial, migraciones y corpus); tests/test_repository_tools.py::test_t1_sdist_audit_accepts_a_clean_sdist, ::test_t1_sdist_audit_rejects_environment_and_secret_paths, ::test_t1_sdist_audit_rejects_links, ::test_t1_sdist_audit_requires_licence_and_sources, ::test_t1_sdist_and_wheel_audits_need_their_metadata, ::test_t1_wheel_audit_requires_licence_metadata, ::test_t1_built_artifacts_need_one_wheel_and_one_sdist, ::test_t1_migration_smoke_preserves_the_original, ::test_t1_corpus_smoke_detects_a_changed_pinned_digest, ::test_t1_install_smoke_failures_are_explicit.",
         "T2": "tests/test_repository_tools.py::test_t2_release_document_is_in_sync_with_code_and_catalogs, ::test_t2_requirement_audit_does_not_confuse_planning_with_delivery, ::test_t2_release_check_reports_stale_or_malformed_documents, ::test_t2_release_check_rejects_duplicated_or_misordered_markers, ::test_t2_release_reports_a_moved_ci_matrix_clearly; CI remoto real archivado en docs/RELEASE.md (runs 44768996258 y 44777404728); corpus.py check, suite tests/security y benchmark tests/benchmarks/results archivados."
       }
+    },
+    {
+      "id": "MOANA-036",
+      "title": "Índice incremental de nodos en la edición por batches",
+      "phase": "P5",
+      "status": "ready",
+      "priority": "P2",
+      "dependencies": [
+        "MOANA-018",
+        "MOANA-022",
+        "MOANA-031"
+      ],
+      "requirements": [
+        "R028"
+      ],
+      "scope": "Sustituir la reconstrucción de `editing.index_nodes` por comando dentro de `apply_commands` por un índice de trabajo mantenido de forma incremental durante el batch (altas, bajas, renombres y movimientos), con resultados, errores y atomicidad idénticos.",
+      "out_of_scope": "No cambiar el formato de batch, la semántica de comandos, los códigos de error ni el render; sin paralelismo ni caché entre batches o documentos.",
+      "technical": [
+        "El índice incremental debe ser observablemente equivalente a `index_nodes` tras cada comando, incluida la regla de que la primera declaración gana ante IDs duplicados",
+        "Mantener el rechazo atómico, los punteros JSON de error y el orden de `affected_ids`; coste por comando independiente del número de nodos salvo en los comandos que recorren subárboles"
+      ],
+      "acceptance": [
+        "Batches y timelines producen documentos, revisiones, snapshots, errores y RGBA idénticos antes y después del cambio",
+        "El coste de `apply_commands` deja de crecer como comandos × nodos y la animación de 16 frames del benchmark mejora de forma medida"
+      ],
+      "tests": [
+        "Propiedad: tras cada comando de batches aleatorios deterministas el índice incremental coincide con `index_nodes` recalculado, incluidos fallos a mitad de batch",
+        "Recuento de operaciones (sin reloj) que fije índices O(1) por comando y benchmark antes/después de MOANA.md §22 con `compare`"
+      ],
+      "aliases": [],
+      "complexity": "M",
+      "modules": [
+        "editing",
+        "animation"
+      ],
+      "context": "El benchmark de MOANA-031 y la medición de MOANA-032 (ADR-038) mostraron que `editing.index_nodes` se reconstruye para cada comando (src/moana/editing/apply.py) y supone cerca de la mitad de `apply_commands`; la animación evalúa cada frame dos veces (admisión y render), así que domina su coste. El test lineal de ADR-039 fija hoy una reconstrucción por comando.",
+      "objective": "Eliminar la reconstrucción del índice por comando conservando exactamente la semántica de la edición atómica.",
+      "proposed_implementation": [
+        "Introducir un índice de trabajo privado en `_Work` actualizado por cada comando que añade, elimina, renombra o mueve nodos, con verificación opcional contra `index_nodes` en tests",
+        "Actualizar el test de linealidad de ADR-039 al nuevo recuento y medir con `python -m tests.benchmarks run|compare` antes y después"
+      ],
+      "deliverables": [
+        "Índice incremental privado en `moana.editing` con equivalencia probada frente a la reconstrucción completa.",
+        "Benchmark antes/después archivado y decisión registrada (ADR nuevo o ampliación) si cambia un contrato de rendimiento."
+      ],
+      "risks": [
+        "Un índice desincronizado podría resolver IDs obsoletos: la prueba de propiedad debe cubrir cada comando que modifica la estructura, también en fallos y rollback."
+      ],
+      "blocking_reason": null,
+      "evidence": [],
+      "acceptance_evidence": {},
+      "test_evidence": {}
     }
   ]
 }
