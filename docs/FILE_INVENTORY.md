@@ -1,6 +1,6 @@
 # Inventario del repositorio
 
-563 archivos actuales de fuente, documentación, configuración y pruebas al 2026-11-20. Incluye cambios locales todavía sin commit. Excluye entorno virtual, herramientas, cachés, artefactos y metadata Git.
+566 archivos actuales de fuente, documentación, configuración y pruebas al 2026-11-20. Incluye cambios locales todavía sin commit. Excluye entorno virtual, herramientas, cachés, artefactos y metadata Git.
 
 | Archivo |
 | --- |
@@ -123,6 +123,7 @@
 | [docs/architecture/decisions/ADR-037-art-corpus-rubric.md](../docs/architecture/decisions/ADR-037-art-corpus-rubric.md) |
 | [docs/architecture/decisions/ADR-038-layer-buffer-cache.md](../docs/architecture/decisions/ADR-038-layer-buffer-cache.md) |
 | [docs/architecture/decisions/ADR-039-ci-matrix-portability.md](../docs/architecture/decisions/ADR-039-ci-matrix-portability.md) |
+| [docs/architecture/decisions/ADR-040-incremental-edit-index.md](../docs/architecture/decisions/ADR-040-incremental-edit-index.md) |
 | [docs/architecture/module-contracts.md](../docs/architecture/module-contracts.md) |
 | [docs/architecture/overview.md](../docs/architecture/overview.md) |
 | [docs/guides/agent-workflow.md](../docs/guides/agent-workflow.md) |
@@ -201,6 +202,7 @@
 | [docs/issues/MOANA-033.md](../docs/issues/MOANA-033.md) |
 | [docs/issues/MOANA-034.md](../docs/issues/MOANA-034.md) |
 | [docs/issues/MOANA-035.md](../docs/issues/MOANA-035.md) |
+| [docs/issues/MOANA-036.md](../docs/issues/MOANA-036.md) |
 | [docs/issues/README.md](../docs/issues/README.md) |
 | [docs/issues/catalog.json](../docs/issues/catalog.json) |
 | [docs/issues/dependency-map.md](../docs/issues/dependency-map.md) |
@@ -484,6 +486,7 @@
 | [tests/unit/editing/test_editing_commands.py](../tests/unit/editing/test_editing_commands.py) |
 | [tests/unit/editing/test_editing_dither.py](../tests/unit/editing/test_editing_dither.py) |
 | [tests/unit/editing/test_editing_history.py](../tests/unit/editing/test_editing_history.py) |
+| [tests/unit/editing/test_editing_index.py](../tests/unit/editing/test_editing_index.py) |
 | [tests/unit/editing/test_editing_material.py](../tests/unit/editing/test_editing_material.py) |
 | [tests/unit/editing/test_editing_members.py](../tests/unit/editing/test_editing_members.py) |
 | [tests/unit/editing/test_editing_shade.py](../tests/unit/editing/test_editing_shade.py) |

@@ -13,6 +13,10 @@ untouched nodes are preserved because the copy is edited in place by ID.
 What a command may read or change in an operation or mask comes from the type table
 of :mod:`moana.editing._tree` (colour, mask and geometric members), never from
 assumptions about one type.
+
+Commands find nodes through the :class:`~moana.editing._tree.WorkingIndex` of the
+batch, built once and updated by the commands that change the structure (ADR-040),
+never rebuilt per command.
 """
 
 from __future__ import annotations
@@ -42,7 +46,7 @@ from moana.editing._tree import (
     JsonObject,
     Node,
     NodeMembers,
-    index_nodes,
+    WorkingIndex,
     item_ids,
     live_references,
     node_members,
@@ -133,10 +137,17 @@ class EditResult:
 
 @dataclass(slots=True)
 class _Work:
-    """State of one batch: the working tree and the IDs removed so far (local)."""
+    """State of one batch: the working tree, its ID index and the IDs removed so far.
+
+    All three are local to the batch and discarded with it when a command fails.
+    """
 
     tree: JsonObject
     removed: set[str] = field(default_factory=set)
+    index: WorkingIndex = field(init=False)
+
+    def __post_init__(self) -> None:
+        self.index = WorkingIndex(self.tree)
 
 
 class _Wrapper(BaseModel):
@@ -210,7 +221,7 @@ def _validated(
 # --- lookup -------------------------------------------------------------------------
 
 
-def _target(index: dict[str, Node], key: str, pointer: str, kinds: tuple[str, ...]) -> Node:
+def _target(index: WorkingIndex, key: str, pointer: str, kinds: tuple[str, ...]) -> Node:
     node = index.get(key)
     if node is None:
         raise _missing(pointer, "target ID does not exist", "unknown_target")
@@ -228,16 +239,13 @@ def _unlocked(node: Node, pointer: str) -> Node:
     return node
 
 
-def _replace(node: Node, value: JsonObject) -> None:
+def _replace(work: _Work, node: Node, value: JsonObject) -> None:
     assert node.container is not None
     node.container[node.position] = value
+    work.index.replaced(node, value)
 
 
-def _color_ids(tree: JsonObject) -> set[str]:
-    return {color["id"] for color in tree["palette"]["colors"]}
-
-
-def _anchor(index: dict[str, Node], after_id: str | None, pointer: str, siblings: object) -> int:
+def _anchor(index: WorkingIndex, after_id: str | None, pointer: str, siblings: object) -> int:
     """Insertion index after ``after_id`` among ``siblings`` (``None``: the start)."""
     if after_id is None:
         return 0
@@ -295,9 +303,7 @@ def _moved(shape: Geometry, value: object, dx: int, dy: int) -> tuple[object, bo
 
 
 def _set_color(work: _Work, command: SetColor, pointer: str) -> tuple[str, ...]:
-    node = _target(
-        index_nodes(work.tree), command.target_id, f"{pointer}/target_id", ("operation",)
-    )
+    node = _target(work.index, command.target_id, f"{pointer}/target_id", ("operation",))
     _unlocked(node, pointer)
     colors = node_members(node).colors
     if len(colors) != 1:
@@ -307,7 +313,7 @@ def _set_color(work: _Work, command: SetColor, pointer: str) -> tuple[str, ...]:
             "multiple_colors",
             color_members=len(colors),
         )
-    if command.color not in _color_ids(work.tree):
+    if not work.index.is_color(command.color):
         raise _missing(f"{pointer}/color", "color does not exist in the palette", "unknown_color")
     node.value[colors[0]] = command.color
     return (command.target_id,)
@@ -319,7 +325,7 @@ def _adapter(node: Node) -> type[_Wrapper]:
 
 def _geometric(work: _Work, target_id: str, pointer: str) -> tuple[Node, NodeMembers]:
     """An unlocked operation or mask whose type has geometric members."""
-    node = _target(index_nodes(work.tree), target_id, f"{pointer}/target_id", _GEOMETRIC)
+    node = _target(work.index, target_id, f"{pointer}/target_id", _GEOMETRIC)
     members = node_members(_unlocked(node, pointer))
     if not members.geometry:
         raise _invalid(f"{pointer}/target_id", "the target type has no geometry", "not_geometric")
@@ -338,14 +344,12 @@ def _set_geometry(work: _Work, command: SetGeometry, pointer: str) -> tuple[str,
         )
     candidate = {**node.value, **command.geometry}
     prefix = f"{pointer}/geometry"
-    _replace(node, _validated(_adapter(node), candidate, "geometry is invalid", prefix))
+    _replace(work, node, _validated(_adapter(node), candidate, "geometry is invalid", prefix))
     return (command.target_id,)
 
 
 def _set_parameters(work: _Work, command: SetParameters, pointer: str) -> tuple[str, ...]:
-    node = _target(
-        index_nodes(work.tree), command.target_id, f"{pointer}/target_id", ("operation",)
-    )
+    node = _target(work.index, command.target_id, f"{pointer}/target_id", ("operation",))
     allowed = node_members(_unlocked(node, pointer)).parameters
     if not allowed:
         raise _invalid(
@@ -363,7 +367,7 @@ def _set_parameters(work: _Work, command: SetParameters, pointer: str) -> tuple[
             expected=allowed,
         )
     candidate = {**node.value, **command.parameters}
-    _replace(node, _validated(_OperationNode, candidate, "parameters are invalid", prefix))
+    _replace(work, node, _validated(_OperationNode, candidate, "parameters are invalid", prefix))
     return (command.target_id,)
 
 
@@ -382,21 +386,19 @@ def _translate(work: _Work, command: Translate, pointer: str) -> tuple[str, ...]
 
 
 def _set_visibility(work: _Work, command: SetVisibility, pointer: str) -> tuple[str, ...]:
-    node = _target(index_nodes(work.tree), command.target_id, f"{pointer}/target_id", ("layer",))
+    node = _target(work.index, command.target_id, f"{pointer}/target_id", ("layer",))
     _unlocked(node, pointer).value["visible"] = command.visible
     return (command.target_id,)
 
 
 def _replace_color(work: _Work, command: ReplacePaletteColor, pointer: str) -> tuple[str, ...]:
     # A palette colour belongs to no layer: locked layers that use it change too.
-    node = _target(index_nodes(work.tree), command.target_id, f"{pointer}/target_id", ("color",))
+    node = _target(work.index, command.target_id, f"{pointer}/target_id", ("color",))
     node.value["rgba"] = command.rgba.upper()
     return (command.target_id,)
 
 
-def _check_item_ids(
-    work: _Work, index: dict[str, Node], operation: JsonObject, prefix: str
-) -> None:
+def _check_item_ids(work: _Work, operation: JsonObject, prefix: str) -> None:
     """IDs of the items of a new operation (``shade`` bands) are new IDs too (ADR-028)."""
     seen = {operation["id"]}
     for member, _ in OPERATION_MEMBERS[operation["type"]].items:
@@ -404,13 +406,13 @@ def _check_item_ids(
             item_id, pointer = item["id"], f"{prefix}/{member}/{position}/id"
             if item_id in work.removed:
                 raise _invalid(pointer, "ID was removed earlier in this batch", "reused_id")
-            if item_id in index or item_id in seen:
+            if item_id in work.index or item_id in seen:
                 raise _invalid(pointer, "ID is already used", "duplicate_id")
             seen.add(item_id)
 
 
 def _insert(work: _Work, command: InsertOperation, pointer: str) -> tuple[str, ...]:
-    index = index_nodes(work.tree)
+    index = work.index
     layer = _unlocked(_target(index, command.layer_id, f"{pointer}/layer_id", ("layer",)), pointer)
     prefix = f"{pointer}/operation"
     operation = _validated(_OperationNode, command.operation, "operation is invalid", prefix)
@@ -418,15 +420,15 @@ def _insert(work: _Work, command: InsertOperation, pointer: str) -> tuple[str, .
         raise _invalid(f"{prefix}/id", "ID was removed earlier in this batch", "reused_id")
     if operation["id"] in index:
         raise _invalid(f"{prefix}/id", "ID is already used", "duplicate_id")
-    _check_item_ids(work, index, operation, prefix)
-    palette = _color_ids(work.tree)
+    _check_item_ids(work, operation, prefix)
     for member in OPERATION_MEMBERS[operation["type"]].colors:
-        if operation[member] not in palette:
+        if not index.is_color(operation[member]):
             raise _missing(
                 f"{prefix}/{member}", "color does not exist in the palette", "unknown_color"
             )
     siblings = layer.value["operations"]
     siblings.insert(_anchor(index, command.after_id, f"{pointer}/after_id", siblings), operation)
+    index.inserted(operation, siblings, layer.value)
     return (operation["id"], *item_ids(operation))
 
 
@@ -449,7 +451,7 @@ def _live_reference_error(pointer: str, references: list[str]) -> ReferenceError
 
 
 def _remove(work: _Work, command: Remove, pointer: str) -> tuple[str, ...]:
-    node = _target(index_nodes(work.tree), command.target_id, f"{pointer}/target_id", _REMOVABLE)
+    node = _target(work.index, command.target_id, f"{pointer}/target_id", _REMOVABLE)
     _unlocked(node, pointer)
     removed: tuple[str, ...] = (command.target_id,)
     if node.kind == "operation":
@@ -462,12 +464,13 @@ def _remove(work: _Work, command: Remove, pointer: str) -> tuple[str, ...]:
         raise _live_reference_error(pointer, references)
     assert node.container is not None
     del node.container[node.position]
+    work.index.removed(removed)
     work.removed.update(removed)
     return removed
 
 
 def _reorder(work: _Work, command: Reorder, pointer: str) -> tuple[str, ...]:
-    index = index_nodes(work.tree)
+    index = work.index
     node = _unlocked(_target(index, command.target_id, f"{pointer}/target_id", _REMOVABLE), pointer)
     if command.after_id == command.target_id:
         raise _invalid(f"{pointer}/after_id", "a node cannot follow itself", "after_self")
@@ -476,6 +479,7 @@ def _reorder(work: _Work, command: Reorder, pointer: str) -> tuple[str, ...]:
     _anchor(index, command.after_id, f"{pointer}/after_id", siblings)
     siblings.pop(node.position)
     siblings.insert(_anchor(index, command.after_id, f"{pointer}/after_id", siblings), node.value)
+    index.reordered()
     return (command.target_id,)
 
 

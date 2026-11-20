@@ -19,11 +19,15 @@ indexed as ``item`` nodes (so a new ID cannot reuse them) and whose masks are li
 references; no command targets an ``item``.
 :data:`GEOMETRY_SHAPES` stays here: how ``translate`` moves a geometric member is an
 editing rule.
+
+:class:`WorkingIndex` is the index of one batch (ADR-040): built once, at the first
+lookup, and kept equal to :func:`index_nodes` of the working tree by the commands
+that add, remove, replace or move nodes, instead of being rebuilt per command.
 """
 
 from __future__ import annotations
 
-from collections.abc import Iterator, Mapping
+from collections.abc import Iterable, Iterator, Mapping
 from dataclasses import dataclass
 from types import MappingProxyType
 from typing import Any, Final, Literal
@@ -38,6 +42,7 @@ __all__ = [
     "JsonObject",
     "Node",
     "NodeMembers",
+    "WorkingIndex",
     "index_nodes",
     "item_ids",
     "live_references",
@@ -104,6 +109,16 @@ def _mask_kind(mask: JsonObject) -> str:
     return "shape_mask" if MASK_MEMBERS[mask["type"]].geometry else "combination_mask"
 
 
+def _operation_nodes(
+    operation: JsonObject, container: list[JsonObject], layer: JsonObject
+) -> Iterator[Node]:
+    """An operation and its items (``shade`` bands...), in declaration order."""
+    yield Node("operation", operation, container, layer)
+    for member, _ in OPERATION_MEMBERS[operation["type"]].items:
+        items = operation[member]
+        yield from (Node("item", item, items, layer) for item in items)
+
+
 def _members(tree: JsonObject) -> Iterator[Node]:
     yield Node("document", tree, None)
     palette = tree["palette"]
@@ -114,10 +129,7 @@ def _members(tree: JsonObject) -> Iterator[Node]:
         yield Node("layer", layer, tree["layers"])
         operations = layer["operations"]
         for operation in operations:
-            yield Node("operation", operation, operations, layer)
-            for member, _ in OPERATION_MEMBERS[operation["type"]].items:
-                items = operation[member]
-                yield from (Node("item", item, items, layer) for item in items)
+            yield from _operation_nodes(operation, operations, layer)
     yield from (Node(_mask_kind(item), item, tree["masks"]) for item in tree["masks"])
     yield from (Node("region", item, tree["regions"]) for item in tree["regions"])
     for animation in tree["animations"]:  # IDs only: no command targets them (ADR-032)
@@ -200,3 +212,111 @@ def _inside_removed(tree: JsonObject, pointer: str, removed: frozenset[str]) -> 
         if isinstance(node, dict) and node.get("id") in removed:
             return True
     return False
+
+
+class WorkingIndex:
+    """The ID index of one batch, equal to ``index_nodes(tree)`` after every command.
+
+    It is built from the tree at the first lookup (so a malformed source fails inside
+    the command that first needs it, as a per-command rebuild did) and then updated
+    by the command that changed the structure: :meth:`inserted`, :meth:`removed`,
+    :meth:`replaced` and :meth:`reordered`, each called after the tree has changed.
+    Lookups and updates cost O(1) per ID, plus the items of an operation. What a
+    command does around the index is not covered by that bound: :attr:`Node.position`
+    scans the node's container (O(siblings)) and ``remove`` scans the whole tree for
+    live references (O(nodes)).
+
+    While every ID is unique an update is local: a node keeps its own entry wherever
+    it moves. A tree with a duplicate ID (only an unvalidated source can have one;
+    no command adds one) is rebuilt in full after each structural change instead,
+    because removing or moving the first declaration can hand the ID to another node.
+
+    An update never raises ``KeyError``: the editor reports a ``KeyError`` as a
+    malformed source (``invalid_source``), so a desynchronised index must fail as an
+    internal error instead of being masked as one.
+    """
+
+    __slots__ = ("_nodes", "_tree", "_unique")
+
+    def __init__(self, tree: JsonObject) -> None:
+        self._tree = tree
+        self._nodes: dict[str, Node] | None = None
+        self._unique = True
+
+    def _built(self) -> dict[str, Node]:
+        if self._nodes is None:
+            self._rebuild()
+        assert self._nodes is not None
+        return self._nodes
+
+    def _rebuild(self) -> None:
+        nodes: dict[str, Node] = {}
+        count = 0
+        for node in _members(self._tree):
+            nodes.setdefault(node.value["id"], node)
+            count += 1
+        self._nodes, self._unique = nodes, count == len(nodes)
+
+    def _local(self) -> dict[str, Node] | None:
+        """The entries to update in place, or ``None`` after a full rebuild."""
+        nodes = self._built()
+        if self._unique:
+            return nodes
+        self._rebuild()
+        return None
+
+    def get(self, key: str) -> Node | None:
+        """The node declaring ``key`` first, if any."""
+        return self._built().get(key)
+
+    def __contains__(self, key: str) -> bool:
+        return key in self._built()
+
+    def entries(self) -> dict[str, Node]:
+        """A copy of every entry (for equivalence checks against :func:`index_nodes`)."""
+        return dict(self._built())
+
+    def is_color(self, key: str) -> bool:
+        """Whether ``key`` is the ID of a palette colour."""
+        nodes = self._built()
+        if self._unique:
+            node = nodes.get(key)
+            return node is not None and node.kind == "color"
+        return key in {color["id"] for color in self._tree["palette"]["colors"]}
+
+    def inserted(
+        self, operation: JsonObject, container: list[JsonObject], layer: JsonObject
+    ) -> None:
+        """Index an operation, and its items, just inserted into ``container``."""
+        nodes = self._local()
+        if nodes is not None:
+            for node in _operation_nodes(operation, container, layer):
+                nodes[node.value["id"]] = node
+
+    def removed(self, keys: Iterable[str]) -> None:
+        """Forget ``keys``: a removed node and every ID it held."""
+        nodes = self._local()
+        if nodes is not None:
+            for key in keys:
+                forgotten = nodes.pop(key, None)
+                assert forgotten is not None, "removed ID was not indexed"
+
+    def replaced(self, node: Node, value: JsonObject) -> None:
+        """Index ``value``, which took the place of ``node.value``.
+
+        ``set_geometry`` and ``set_parameters`` never change an ID, so the entries of
+        the node and of its items (new objects in new lists) are overwritten in place.
+        """
+        nodes = self._local()
+        if nodes is None:
+            return
+        if node.kind != "operation":
+            nodes[value["id"]] = Node(node.kind, value, node.container, node.layer)
+            return
+        assert node.container is not None and node.layer is not None
+        for entry in _operation_nodes(value, node.container, node.layer):
+            nodes[entry.value["id"]] = entry
+
+    def reordered(self) -> None:
+        """A node moved among its siblings: its entry, which holds the list, stays."""
+        self._local()

@@ -85,8 +85,8 @@ Estado: 8/9 issues completados.
 - [MOANA-033](MOANA-033.md) — Documentar flujos IA y previews editables (done)
 - [MOANA-034](MOANA-034.md) — Añadir ejemplos de tiles y escenarios modulares (done)
 - [MOANA-035](MOANA-035.md) — Preparar release y comprobar Definition of Done (done)
-- [MOANA-036](MOANA-036.md) — Índice incremental de nodos en la edición por batches (ready)
+- [MOANA-036](MOANA-036.md) — Índice incremental de nodos en la edición por batches (review)
 
 ## Siguiente paso
 
-Implementar [MOANA-036](MOANA-036.md): Índice incremental de nodos en la edición por batches.
+No hay issues ready. Revisar bloqueos y dependencias antes de iniciar.

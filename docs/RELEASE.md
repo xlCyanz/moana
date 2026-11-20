@@ -93,7 +93,7 @@ Los codecs APNG y WebP son opcionales: su disponibilidad depende del build de Pi
 | R025 | Evaluación gráfica y diagnósticos | MOANA-014 (done), MOANA-026 (done) | implementado | — |
 | R026 | Validación y seguridad de datos | MOANA-001 (done), MOANA-002 (done), MOANA-003 (done), MOANA-020 (done), MOANA-030 (done) | implementado | — |
 | R027 | Testing y regresión visual | MOANA-004 (done), MOANA-027 (done), MOANA-028 (done), MOANA-029 (done), MOANA-030 (done) | implementado | — |
-| R028 | Rendimiento y recursos medidos | MOANA-003 (done), MOANA-031 (done), MOANA-032 (done), MOANA-036 (ready) | parcial | — |
+| R028 | Rendimiento y recursos medidos | MOANA-003 (done), MOANA-031 (done), MOANA-032 (done), MOANA-036 (review) | parcial | — |
 | R029 | Caché e incrementalidad | MOANA-032 (done) | implementado | — |
 | R030 | Arquitectura modular y documentación | MOANA-000 (done), MOANA-001 (done), MOANA-010 (done) | implementado | — |
 | R031 | Paquete instalable y artefactos | MOANA-000 (done), MOANA-035 (done) | implementado | — |
@@ -127,7 +127,7 @@ CI remoto (matriz `ubuntu/macos/windows × Python 3.12–3.14` más comparación
 
 - `develop` `714c2f6`: [run 44768996258](https://github.com/xlCyanz/moana/actions/runs/44768996258) **falló** (8 de 9 trabajos: portabilidad en Windows, Linux y Python 3.14; los digests de determinismo coincidían). Era la primera ejecución remota real de la matriz: hasta entonces sólo corría en `main`.
 - Corrección en PR #75 ([ADR-039](architecture/decisions/ADR-039-ci-matrix-portability.md)), commit `3857617`: [run 44777404728](https://github.com/xlCyanz/moana/actions/runs/44777404728) **verde**, 9/9 trabajos y determinismo entre plataformas.
-- Commit candidato de MOANA-035 `69b7ddc`: [run 44783751159](https://github.com/xlCyanz/moana/actions/runs/44783751159). Al hacer merge (por decisión del propietario, sin esperar al final) iban 5/9 trabajos verdes (macOS 3.13/3.14, ubuntu 3.13/3.14, windows 3.14) y 4 en curso; el resultado final se comprueba en esa ejecución.
+- Commit candidato de MOANA-035 `69b7ddc`: [run 44783751159](https://github.com/xlCyanz/moana/actions/runs/44783751159). Terminó **verde**: 9/9 trabajos y determinismo entre plataformas. El merge se hizo antes de que acabara, por decisión del propietario, cuando iban 5/9 trabajos verdes y 4 en curso.
 
 ## Definition of Done de la release (MOANA.md §25)
 

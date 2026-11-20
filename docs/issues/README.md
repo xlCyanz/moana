@@ -8,7 +8,7 @@ Prioridades: P0 fundamento/bloqueante; P1 funcionalidad central; P2 avanzada; P3
 
 [Roadmap](roadmap.md) · [Dependencias](dependency-map.md) · [Trazabilidad](traceability.md) · [Ciclo de vida](../guides/issue-lifecycle.md).
 
-Estados: {'done': 36, 'ready': 1}.
+Estados: {'done': 36, 'review': 1}.
 
 | Issue | Resultado | Fase | Prioridad | Estado | Dependencias directas |
 | --- | --- | --- | --- | --- | --- |
@@ -48,4 +48,4 @@ Estados: {'done': 36, 'ready': 1}.
 | [MOANA-033](MOANA-033.md) | Documentar flujos IA y previews editables | P5 | P1 | done | MOANA-012, MOANA-018, MOANA-020, MOANA-026 |
 | [MOANA-034](MOANA-034.md) | Añadir ejemplos de tiles y escenarios modulares | P5 | P2 | done | MOANA-008, MOANA-016, MOANA-020, MOANA-023 |
 | [MOANA-035](MOANA-035.md) | Preparar release y comprobar Definition of Done | P5 | P1 | done | MOANA-007, MOANA-021, MOANA-023, MOANA-024, MOANA-025, MOANA-027, MOANA-029, MOANA-030, MOANA-032, MOANA-033, MOANA-034 |
-| [MOANA-036](MOANA-036.md) | Índice incremental de nodos en la edición por batches | P5 | P2 | ready | MOANA-018, MOANA-022, MOANA-031 |
+| [MOANA-036](MOANA-036.md) | Índice incremental de nodos en la edición por batches | P5 | P2 | review | MOANA-018, MOANA-022, MOANA-031 |
