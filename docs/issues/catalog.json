@@ -2279,7 +2279,7 @@
       "id": "MOANA-033",
       "title": "Documentar flujos IA y previews editables",
       "phase": "P5",
-      "status": "review",
+      "status": "done",
       "priority": "P1",
       "dependencies": [
         "MOANA-012",
@@ -2311,7 +2311,8 @@
         "Ejemplos examples/tutorial/: potion.moana.json (16×16 strict, capas bottle/liquid, región potion_liquid, máscara liquid_shape [5,9,11,14)), potion-recolor.edit.json y potion-typo.edit.json. Oráculo a mano: liquid_fill cubre 6×5 = 30 px menos los 2 de liquid_shine dibujados encima ((6,10),(6,11)) = 28 px cambiados, todos dentro de la máscara.",
         "Fuente única: scripts/tutorial.py parsea los bloques sh de la guía en una lista ordenada de pasos (programa, argumentos, redirección, '# exit N') con parser estricto (rechaza pipes, &&, ;, $, globs, continuaciones y etiquetas de bloque fuera de sh/json/python) y los ejecuta; el test unitario los corre con moana.cli.main en proceso y python -I; scripts/check_wheel.py::check_tutorial ejecuta los mismos 18 pasos con el moana instalado del wheel y el python del venv aislado y aplica check_outputs (oráculo de 28 píxeles).",
         "AC2/limitaciones: sección «Pautas para agentes» (conservar fuente y revisión, sin generación de imágenes, sin persistencia/proyectos/historial por CLI, GIF/APNG/WebP/spritesheets sólo en Python, los informes de calidad no son aprobación humana); punteros en .agents/skills/moana-pixel-art y moana-python; enlaces en examples/README.md y agent-workflow.md. Sin cambios en src/; capabilities sin cambios (sigue exacto). mypy cubre examples/.",
-        "Revisiones de agente: documentación (comandos reales re-ejecutados, sin APIs inventadas) y Python (T1 debía ejecutar la guía y no una copia; parser estricto; pasos ordenados) con todas las correcciones aplicadas. Gate local macOS: scripts/validate.py 3686 passed con src/moana al 100 %, check_wheel OK (tutorial 18 pasos), mypy --platform win32 OK, pre-commit OK; matriz pendiente en main; variantes PowerShell no ejecutadas."
+        "Revisiones de agente: documentación (comandos reales re-ejecutados, sin APIs inventadas) y Python (T1 debía ejecutar la guía y no una copia; parser estricto; pasos ordenados) con todas las correcciones aplicadas. Gate local macOS: scripts/validate.py 3686 passed con src/moana al 100 %, check_wheel OK (tutorial 18 pasos), mypy --platform win32 OK, pre-commit OK; matriz pendiente en main; variantes PowerShell no ejecutadas.",
+        "Aprobado por el propietario el 2026-11-17 tras revisión; PR #73 hacia develop."
       ],
       "aliases": [
         "MOA-033"
@@ -2460,7 +2461,7 @@
       "risks": [
         "No declarar CI remoto de cambios locales ni licencia decidida sin evidencia del propietario."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-033, MOANA-034",
+      "blocking_reason": "Dependencias pendientes: MOANA-034",
       "acceptance_evidence": {},
       "test_evidence": {}
     }
