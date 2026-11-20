@@ -1,0 +1,68 @@
+{
+  "schema_version": "1.0",
+  "id": "prop_rock",
+  "revision": 0,
+  "seed": 3401,
+  "canvas": {"width": 16, "height": 16, "profile": "strict"},
+  "palette": {
+    "id": "palette_meadow",
+    "colors": [
+      {"id": "ink", "rgba": "#241E2AFF"},
+      {"id": "grass_0", "rgba": "#2C5536FF"},
+      {"id": "grass_1", "rgba": "#3D773EFF"},
+      {"id": "grass_2", "rgba": "#5B9845FF"},
+      {"id": "grass_3", "rgba": "#91C35EFF"},
+      {"id": "dirt_0", "rgba": "#5A3D2EFF"},
+      {"id": "dirt_1", "rgba": "#80573AFF"},
+      {"id": "dirt_2", "rgba": "#A4794DFF"},
+      {"id": "dirt_3", "rgba": "#C8A26AFF"},
+      {"id": "stone_0", "rgba": "#4A465EFF"},
+      {"id": "stone_1", "rgba": "#747086FF"},
+      {"id": "stone_2", "rgba": "#A5A2ABFF"},
+      {"id": "stone_3", "rgba": "#D8D6CFFF"},
+      {"id": "berry", "rgba": "#E8705AFF"}
+    ],
+    "ramps": [
+      {"id": "grass_ramp", "colors": ["grass_0", "grass_1", "grass_2", "grass_3"]},
+      {"id": "dirt_ramp", "colors": ["dirt_0", "dirt_1", "dirt_2", "dirt_3"]},
+      {"id": "stone_ramp", "colors": ["stone_0", "stone_1", "stone_2", "stone_3"]}
+    ]
+  },
+  "masks": [
+    {"id": "body_m", "type": "ellipse", "box": [2, 5, 13, 14]},
+    {"id": "shadow_m", "type": "rect", "box": [3, 11, 15, 15]}
+  ],
+  "regions": [
+    {"id": "rock", "mask_id": "body_m", "operation_ids": ["body", "shade_right", "shade_corner", "shade_low", "shade_base", "body_light", "light_tip", "glint", "crack"]}
+  ],
+  "layers": [
+    {
+      "id": "main",
+      "name": "Roca",
+      "operations": [
+        {"id": "shadow", "type": "ellipse", "box": [3, 11, 15, 15], "color": "grass_0"},
+        {"id": "outline", "type": "outline", "mask_id": "body_m", "width": 1, "side": "outer", "color": "ink"},
+        {"id": "body", "type": "ellipse", "box": [2, 5, 13, 14], "color": "stone_1"},
+        {"id": "shade_right", "type": "rect", "box": [12, 7, 13, 11], "color": "stone_0"},
+        {"id": "shade_corner", "type": "rect", "box": [11, 11, 12, 12], "color": "stone_0"},
+        {"id": "shade_low", "type": "rect", "box": [9, 12, 12, 13], "color": "stone_0"},
+        {"id": "shade_base", "type": "rect", "box": [5, 13, 10, 14], "color": "stone_0"},
+        {"id": "body_light", "type": "ellipse", "box": [3, 6, 9, 10], "color": "stone_2"},
+        {"id": "light_tip", "type": "pixel", "at": [3, 6], "color": "stone_2"},
+        {"id": "glint", "type": "rect", "box": [4, 7, 6, 8], "color": "stone_3"},
+        {"id": "crack", "type": "line", "start": [8, 10], "end": [9, 11], "color": "stone_0"}
+      ]
+    }
+  ],
+  "metadata": {
+    "title": "Roca (prop MOANA-034)",
+    "description": "Roca de 16 x 16 con luz noroeste, contorno de tinta y sombra de contacto; pivote (8, 15) en el suelo.",
+    "author": "Agente de IA de programación bajo la dirección del usuario del repositorio",
+    "tags": [
+      "tiles",
+      "prop",
+      "MOANA-034"
+    ],
+    "provenance": "Fuente propia creada por un agente de IA con operaciones de Moana en este repositorio (MOANA-034); sin assets externos. Licencia: PENDIENTE (la decide el propietario). Revisión artística humana: PENDIENTE."
+  }
+}

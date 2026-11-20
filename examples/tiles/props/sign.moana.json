@@ -1,0 +1,69 @@
+{
+  "schema_version": "1.0",
+  "id": "prop_sign",
+  "revision": 0,
+  "seed": 3401,
+  "canvas": {"width": 16, "height": 16, "profile": "strict"},
+  "palette": {
+    "id": "palette_meadow",
+    "colors": [
+      {"id": "ink", "rgba": "#241E2AFF"},
+      {"id": "grass_0", "rgba": "#2C5536FF"},
+      {"id": "grass_1", "rgba": "#3D773EFF"},
+      {"id": "grass_2", "rgba": "#5B9845FF"},
+      {"id": "grass_3", "rgba": "#91C35EFF"},
+      {"id": "dirt_0", "rgba": "#5A3D2EFF"},
+      {"id": "dirt_1", "rgba": "#80573AFF"},
+      {"id": "dirt_2", "rgba": "#A4794DFF"},
+      {"id": "dirt_3", "rgba": "#C8A26AFF"},
+      {"id": "stone_0", "rgba": "#4A465EFF"},
+      {"id": "stone_1", "rgba": "#747086FF"},
+      {"id": "stone_2", "rgba": "#A5A2ABFF"},
+      {"id": "stone_3", "rgba": "#D8D6CFFF"},
+      {"id": "berry", "rgba": "#E8705AFF"}
+    ],
+    "ramps": [
+      {"id": "grass_ramp", "colors": ["grass_0", "grass_1", "grass_2", "grass_3"]},
+      {"id": "dirt_ramp", "colors": ["dirt_0", "dirt_1", "dirt_2", "dirt_3"]},
+      {"id": "stone_ramp", "colors": ["stone_0", "stone_1", "stone_2", "stone_3"]}
+    ]
+  },
+  "masks": [
+    {"id": "board_m", "type": "rect", "box": [2, 3, 14, 8]},
+    {"id": "post_m", "type": "rect", "box": [7, 8, 9, 15]},
+    {"id": "body_m", "type": "union", "masks": ["board_m", "post_m"]}
+  ],
+  "regions": [
+    {"id": "board", "mask_id": "board_m", "operation_ids": ["board_face", "board_top", "board_bottom", "arrow_shaft", "arrow_head_up", "arrow_head_down"]},
+    {"id": "post", "mask_id": "post_m", "operation_ids": ["post_light", "post_dark"]}
+  ],
+  "layers": [
+    {
+      "id": "main",
+      "name": "Cartel",
+      "operations": [
+        {"id": "shadow", "type": "ellipse", "box": [6, 13, 13, 16], "color": "grass_0"},
+        {"id": "outline", "type": "outline", "mask_id": "body_m", "width": 1, "side": "outer", "color": "ink"},
+        {"id": "post_light", "type": "rect", "box": [7, 8, 8, 15], "color": "dirt_2"},
+        {"id": "post_dark", "type": "rect", "box": [8, 8, 9, 15], "color": "dirt_0"},
+        {"id": "board_face", "type": "rect", "box": [2, 3, 14, 8], "color": "dirt_2"},
+        {"id": "board_top", "type": "rect", "box": [2, 3, 13, 4], "color": "dirt_3"},
+        {"id": "board_bottom", "type": "rect", "box": [3, 7, 14, 8], "color": "dirt_1"},
+        {"id": "arrow_shaft", "type": "line", "start": [4, 5], "end": [10, 5], "color": "dirt_0"},
+        {"id": "arrow_head_up", "type": "line", "start": [8, 3], "end": [9, 4], "color": "dirt_0"},
+        {"id": "arrow_head_down", "type": "line", "start": [8, 7], "end": [9, 6], "color": "dirt_0"}
+      ]
+    }
+  ],
+  "metadata": {
+    "title": "Cartel (prop MOANA-034)",
+    "description": "Cartel de madera de 16 x 16 con flecha tallada, luz noroeste y contorno de tinta; pivote (8, 15) en el suelo.",
+    "author": "Agente de IA de programación bajo la dirección del usuario del repositorio",
+    "tags": [
+      "tiles",
+      "prop",
+      "MOANA-034"
+    ],
+    "provenance": "Fuente propia creada por un agente de IA con operaciones de Moana en este repositorio (MOANA-034); sin assets externos. Licencia: PENDIENTE (la decide el propietario). Revisión artística humana: PENDIENTE."
+  }
+}
