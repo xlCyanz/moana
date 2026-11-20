@@ -8,7 +8,7 @@
 - Aliases históricos: Ninguno
 - Phase: P5
 - Priority: P2
-- Status: review
+- Status: done
 - Complexity: M (relativa, no estimación de tiempo)
 - Dependencies: [MOANA-018](MOANA-018.md), [MOANA-022](MOANA-022.md), [MOANA-031](MOANA-031.md)
 - Related modules: editing, animation
@@ -43,13 +43,13 @@ No cambiar el formato de batch, la semántica de comandos, los códigos de error
 
 ## Acceptance criteria
 
-- [ ] AC1: Batches y timelines producen documentos, revisiones, snapshots, errores y RGBA idénticos antes y después del cambio
-- [ ] AC2: El coste de `apply_commands` deja de crecer como comandos × nodos y la animación de 16 frames del benchmark mejora de forma medida
+- [x] AC1: Batches y timelines producen documentos, revisiones, snapshots, errores y RGBA idénticos antes y después del cambio
+- [x] AC2: El coste de `apply_commands` deja de crecer como comandos × nodos y la animación de 16 frames del benchmark mejora de forma medida
 
 ## Required tests
 
-- [ ] T1: Propiedad: tras cada comando de batches aleatorios deterministas el índice incremental coincide con `index_nodes` recalculado, incluidos fallos a mitad de batch
-- [ ] T2: Recuento de operaciones (sin reloj) que fije índices O(1) por comando y benchmark antes/después de MOANA.md §22 con `compare`
+- [x] T1: Propiedad: tras cada comando de batches aleatorios deterministas el índice incremental coincide con `index_nodes` recalculado, incluidos fallos a mitad de batch
+- [x] T2: Recuento de operaciones (sin reloj) que fije índices O(1) por comando y benchmark antes/después de MOANA.md §22 con `compare`
 
 ## Expected deliverables
 
@@ -66,7 +66,7 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Guía para agentes de IA
 
-**Estado para agentes:** En revisión: sólo correcciones de la revisión; no añadir alcance.
+**Estado para agentes:** Completado; usar sólo como referencia del contrato entregado.
 
 ### 1. Preparación
 
@@ -139,6 +139,7 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 - Benchmark MOANA.md §22 (macOS arm64, 5 warmups + 30 muestras; antes sobre eb0d177 limpio, después sin otra carga; compare ok en todas las filas): animación de 16 frames 874,9 → 658,8 ms (−24,7 %), corpus adventurer-walk 72,6 → 46,4 ms (−36,2 %), render estático 30,6 → 29,9 ms (ruido), tracemalloc idéntico. La línea base versionada de tests/benchmarks/results no se regenera aquí (se mide sobre un commit integrado limpio en un cambio aparte).
 - ADR-040 (decisión, pruebas, mediciones, costes que siguen: Node.position O(hermanos), live_references de remove O(nodos), reconstrucción con IDs duplicados); ADR-024 y ADR-039 «Ampliado por ADR-040»; module-contracts (coste de apply_batch). RELEASE.md: el run 44783751159 del candidato terminó verde 9/9 más determinismo.
 - Revisiones de agente Python y arquitectura aprobadas sin hallazgos medios ni altos; correcciones bajas aplicadas. Gate local macOS: scripts/validate.py 3851 passed con src/moana al 100 %, check_wheel OK, mypy --platform win32 OK, release.py check OK, pre-commit OK; matriz pendiente en main.
+- Aprobado por el propietario el 2026-11-20 tras revisión; PR #80 hacia develop.
 - AC1: tests/unit/editing/test_editing_index.py::test_ac1_example_batches_match_the_rebuilding_editor (todos los examples/**/*.edit.json, incluido el digest de render), ::test_ac1_timelines_match_the_rebuilding_editor (bouncing-slime, adventurer-walk y animación del benchmark: documentos evaluados, RGBA y digest de cada frame) y ::test_ac1_failing_override_reports_the_same_error, contra RebuildingIndex (el algoritmo anterior conservado sólo en el test).
 - AC2: tests/unit/editing/test_editing_apply.py::test_worst_case_translate_batch_stays_linear (256 y 1024 comandos: una construcción del índice por batch, nodos indexados = objetos con id contados aparte, una consulta por comando, cero revalidaciones de nodo y una del documento) y benchmark antes/después de ADR-040 (animación −24,7 %).
 - T1: tests/unit/editing/test_editing_index.py::test_t1_index_matches_a_fresh_rebuild_after_every_command (Hypothesis derandomize, 1000 ejemplos sobre specs, corpus, tiles y tutorial; tras cada comando, éxito o fallo, el índice = index_nodes recalculado y el resultado o error completo = RebuildingIndex), ::test_t1_every_structural_command_keeps_the_index_exact, ::test_t1_structural_cases_name_existing_targets, ::test_t1_duplicate_ids_keep_first_declaration_wins, ::test_t1_duplicate_ids_are_seen_by_palette_membership, ::test_t1_the_index_is_built_lazily_once, ::test_t1_a_desynchronised_removal_is_not_a_key_error.
