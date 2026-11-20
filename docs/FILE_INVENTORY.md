@@ -1,6 +1,6 @@
 # Inventario del repositorio
 
-532 archivos actuales de fuente, documentación, configuración y pruebas al 2026-11-19. Incluye cambios locales todavía sin commit. Excluye entorno virtual, herramientas, cachés, artefactos y metadata Git.
+535 archivos actuales de fuente, documentación, configuración y pruebas al 2026-11-19. Incluye cambios locales todavía sin commit. Excluye entorno virtual, herramientas, cachés, artefactos y metadata Git.
 
 | Archivo |
 | --- |
@@ -119,6 +119,7 @@
 | [docs/architecture/decisions/ADR-035-apng-webp-lossless.md](../docs/architecture/decisions/ADR-035-apng-webp-lossless.md) |
 | [docs/architecture/decisions/ADR-036-quality-reports.md](../docs/architecture/decisions/ADR-036-quality-reports.md) |
 | [docs/architecture/decisions/ADR-037-art-corpus-rubric.md](../docs/architecture/decisions/ADR-037-art-corpus-rubric.md) |
+| [docs/architecture/decisions/ADR-038-layer-buffer-cache.md](../docs/architecture/decisions/ADR-038-layer-buffer-cache.md) |
 | [docs/architecture/module-contracts.md](../docs/architecture/module-contracts.md) |
 | [docs/architecture/overview.md](../docs/architecture/overview.md) |
 | [docs/guides/agent-workflow.md](../docs/guides/agent-workflow.md) |
@@ -349,6 +350,7 @@
 | [src/moana/quality/rubric.py](../src/moana/quality/rubric.py) |
 | [src/moana/render/__init__.py](../src/moana/render/__init__.py) |
 | [src/moana/render/budget.py](../src/moana/render/budget.py) |
+| [src/moana/render/cache.py](../src/moana/render/cache.py) |
 | [src/moana/render/pipeline.py](../src/moana/render/pipeline.py) |
 | [src/moana/render/regions.py](../src/moana/render/regions.py) |
 | [src/moana/render/result.py](../src/moana/render/result.py) |
@@ -497,6 +499,7 @@
 | [tests/unit/quality/test_quality_rules.py](../tests/unit/quality/test_quality_rules.py) |
 | [tests/unit/render/test_render_architecture.py](../tests/unit/render/test_render_architecture.py) |
 | [tests/unit/render/test_render_budget.py](../tests/unit/render/test_render_budget.py) |
+| [tests/unit/render/test_render_cache.py](../tests/unit/render/test_render_cache.py) |
 | [tests/unit/render/test_render_dither.py](../tests/unit/render/test_render_dither.py) |
 | [tests/unit/render/test_render_masks.py](../tests/unit/render/test_render_masks.py) |
 | [tests/unit/render/test_render_material.py](../tests/unit/render/test_render_material.py) |

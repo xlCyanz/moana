@@ -36,6 +36,7 @@ from moana.core.coordinates import Point
 from moana.core.errors import ReferenceError, ValidationError
 from moana.render import (
     CostEstimate,
+    RenderCache,
     RenderResult,
     admit_sequence,
     plan_frame,
@@ -87,6 +88,7 @@ class _Request:
     limits: RenderLimits | None
     parse_limits: ParseLimits
     deadline: Deadline | None
+    cache: RenderCache | None = None
 
     def frame(self, index: int) -> Document:
         return frame_document(
@@ -159,6 +161,7 @@ def _rendered(request: _Request, wanted: tuple[int, ...]) -> tuple[FrameRender, 
             estimate=estimates[index],
             limits=request.limits,
             deadline=request.deadline,
+            cache=request.cache,
         )
         renders.append(
             FrameRender(
@@ -180,11 +183,14 @@ def _request(
     limits: RenderLimits | None,
     parse_limits: ParseLimits,
     deadline: Deadline | None,
+    cache: RenderCache | None,
 ) -> _Request:
     if limits is not None and not isinstance(limits, RenderLimits):
         raise TypeError("limits must be a RenderLimits value")
+    if cache is not None and not isinstance(cache, RenderCache):
+        raise TypeError("cache must be a RenderCache or None")
     static = static_base(base, parse_limits, deadline)
-    return _Request(static, animation_index, animation, limits, parse_limits, deadline)
+    return _Request(static, animation_index, animation, limits, parse_limits, deadline, cache)
 
 
 def render_animation(
@@ -195,6 +201,7 @@ def render_animation(
     limits: RenderLimits | None = None,
     parse_limits: ParseLimits = DEFAULT_PARSE_LIMITS,
     deadline: Deadline | None = None,
+    cache: RenderCache | None = None,
 ) -> AnimationRender:
     """Render the frames of ``animation_id`` (all, or ``frame_ids`` in that order).
 
@@ -204,12 +211,14 @@ def render_animation(
     (``unknown_animation``; ``unknown_frame`` in ``frame_ids``), ``ValidationError``
     (``empty_frames``, ``duplicate_frame`` and the editor's override errors),
     ``UnsupportedOperation`` or ``BudgetExceeded`` (budgets and the ``deadline``).
+    ``cache`` (an opt-in :class:`moana.render.RenderCache`, ADR-038) lets frames reuse
+    the layer buffers of earlier frames and renders without changing any result.
     """
     parse_limits = check_options(parse_limits, deadline)
     base = validated_base(document, parse_limits, deadline)
     animation_index, animation = find_animation(base, animation_id)
     wanted = _selected(animation, frame_ids)
-    request = _request(base, animation_index, animation, limits, parse_limits, deadline)
+    request = _request(base, animation_index, animation, limits, parse_limits, deadline, cache)
     del base
     frames = _rendered(request, wanted)
     return AnimationRender(animation.id, animation.loop_count, animation.pivot_point, frames)
@@ -222,6 +231,7 @@ def render_frame(
     limits: RenderLimits | None = None,
     parse_limits: ParseLimits = DEFAULT_PARSE_LIMITS,
     deadline: Deadline | None = None,
+    cache: RenderCache | None = None,
 ) -> FrameRender:
     """Render one frame, named by its global ID, after evaluating its whole animation.
 
@@ -231,6 +241,6 @@ def render_frame(
     parse_limits = check_options(parse_limits, deadline)
     base = validated_base(document, parse_limits, deadline)
     animation_index, animation, index, _ = find_frame(base, frame_id)
-    request = _request(base, animation_index, animation, limits, parse_limits, deadline)
+    request = _request(base, animation_index, animation, limits, parse_limits, deadline, cache)
     del base
     return _rendered(request, (index,))[0]

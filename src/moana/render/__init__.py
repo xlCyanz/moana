@@ -3,8 +3,10 @@
 :func:`render` is the deterministic orchestrator (MOANA-010, ADR-018): validation,
 resolution, budget (:mod:`moana.render.budget`, MOANA-003), plan, raster and
 composition into an immutable :class:`RenderResult`. Per-cell randomness lives in
-:mod:`moana.core.procedural` so that techniques can use it. There is no cache and no
-concurrency. :func:`render_with_regions` validates once, admits the render plus the
+:mod:`moana.core.procedural` so that techniques can use it. There is no concurrency
+and no cache unless the caller passes an opt-in, byte-bounded :class:`RenderCache` of
+finished layer buffers (MOANA-032, ADR-038), which never changes a result.
+:func:`render_with_regions` validates once, admits the render plus the
 masks of named regions against one budget and returns those masks lazily, for the
 region exceptions of a cluster analysis (ADR-027). :func:`plan_frame`,
 :func:`admit_sequence` and :func:`render_admitted` admit a finite sequence of frame
@@ -20,6 +22,13 @@ from moana.render.budget import (
     OperationCost,
     estimate_cost,
     plan_budget,
+)
+from moana.render.cache import (
+    CACHE_KEY_FORMAT,
+    ENTRY_OVERHEAD_BYTES,
+    MAX_CACHE_BYTES,
+    CacheStats,
+    RenderCache,
 )
 from moana.render.pipeline import RENDERABLE_OPERATION_TYPES, render
 from moana.render.regions import render_with_regions
@@ -40,15 +49,20 @@ from moana.render.sequence import (
 )
 
 __all__ = [
+    "CACHE_KEY_FORMAT",
+    "ENTRY_OVERHEAD_BYTES",
     "ESTIMATOR_VERSION",
+    "MAX_CACHE_BYTES",
     "MAX_FRAMES",
     "RENDERABLE_OPERATION_TYPES",
     "RENDERER_BACKEND",
     "RENDERER_VERSION",
     "RESULT_OVERHEAD_BYTES",
+    "CacheStats",
     "CostEstimate",
     "OperationCost",
     "Provenance",
+    "RenderCache",
     "RenderResult",
     "RenderWarning",
     "SequenceBudget",

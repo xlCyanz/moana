@@ -111,6 +111,7 @@ from moana.render.budget import (
     plan_budget,
     shade_later,
 )
+from moana.render.cache import RenderCache, _document_prefix, _layer_key
 from moana.render.result import (
     RENDERER_BACKEND,
     RENDERER_VERSION,
@@ -548,12 +549,51 @@ def _plan_layer(
     )
 
 
+@dataclass(frozen=True, slots=True)
+class _CachedLayers:
+    """The :class:`moana.layers.LayerBuffers` store of one render: layer ID -> key."""
+
+    cache: RenderCache
+    keys: dict[str, str]
+
+    def lookup(self, layer_id: str) -> bytes | None:
+        return self.cache.get(self.keys[layer_id])
+
+    def store(self, layer_id: str, pixels: memoryview) -> None:
+        self.cache.put(self.keys[layer_id], pixels)
+
+
+def _layer_cache(
+    document: Document,
+    palette: Palette,
+    backend: PathBackend | None,
+    cache: RenderCache,
+    deadline: Deadline | None,
+) -> _CachedLayers:
+    """Keys of the visible layers of ``document`` (ADR-038), one deadline check each."""
+    context = _document_prefix(document, _backend_versions(backend))
+    keys: dict[str, str] = {}
+    for layer in document.layers:
+        if layer.visible:
+            if deadline is not None:
+                deadline.checkpoint("cache_key")
+            keys[layer.id] = _layer_key(document, layer, palette, context)
+    return _CachedLayers(cache, keys)
+
+
+def _check_cache(cache: object) -> RenderCache | None:
+    if cache is not None and not isinstance(cache, RenderCache):
+        raise TypeError("cache must be a RenderCache or None")
+    return cache
+
+
 def render(
     document: Document,
     *,
     frame_id: str | None = None,
     limits: RenderLimits | None = None,
     deadline: Deadline | None = None,
+    cache: RenderCache | None = None,
 ) -> RenderResult:
     """Render one frame of ``document`` into an immutable :class:`RenderResult`.
 
@@ -562,16 +602,19 @@ def render(
     ``frame_id``: ``unknown_frame``, or ``frame_not_evaluated`` for a frame of the
     document, which :mod:`moana.animation` evaluates; ADR-032), ``UnsupportedOperation`` or
     ``BudgetExceeded`` (budgets and the cooperative ``deadline``, checked before
-    each layer is planned and before each node and operation is drawn).
+    each layer is planned and before each node and operation is drawn). ``cache``
+    (an opt-in :class:`~moana.render.RenderCache`, ADR-038) reuses finished layer
+    buffers of earlier renders; the result is identical with or without it.
     """
     limits = _check_request(document, limits, deadline)
     if frame_id is not None and type(frame_id) is not str:
         raise TypeError("frame_id must be a str or None")
+    cache = _check_cache(cache)
     document = validate_document(normalize_document(document))
     _check_frame(document, frame_id)
     backend = _check_renderable(document)
     estimate = plan_budget(document, limits, deadline=deadline)
-    return _render_validated(document, frame_id, limits, deadline, backend, estimate)
+    return _render_validated(document, frame_id, limits, deadline, backend, estimate, cache)
 
 
 def _check_request(document: object, limits: object, deadline: object) -> RenderLimits:
@@ -594,6 +637,7 @@ def _render_validated(
     deadline: Deadline | None,
     backend: PathBackend | None,
     estimate: CostEstimate,
+    cache: RenderCache | None = None,
 ) -> RenderResult:
     """Plan, compose and describe a validated document already admitted by ``estimate``."""
     profile = document.canvas.profile
@@ -608,8 +652,8 @@ def _render_validated(
             deadline.checkpoint("plan_layer")
         layers.append(_plan_layer(layer, layer_index, plan, warnings))
     tree = LayerTree(dimensions, tuple(layers), profile=profile)
-
-    canvas = compose(tree, limits=limits, deadline=deadline)
+    buffers = None if cache is None else _layer_cache(document, palette, backend, cache, deadline)
+    canvas = compose(tree, limits=limits, deadline=deadline, buffers=buffers)
     rgba, digest = canvas.to_bytes(), canvas.visual_digest()
     del canvas
     provenance = Provenance(

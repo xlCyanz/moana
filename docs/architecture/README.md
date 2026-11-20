@@ -68,6 +68,7 @@ El paquete contiene `src/moana/__init__.py`, `py.typed` y `src/moana/core/` (MOA
 - [ADR-035: APNG y WebP lossless opcionales con capacidades comprobadas](decisions/ADR-035-apng-webp-lossless.md).
 - [ADR-036: informes de calidad gráfica: reglas duras, heurísticas configurables y métricas sin puntaje](decisions/ADR-036-quality-reports.md).
 - [ADR-037: corpus artístico y rúbrica humana: registro por ejemplo, previews como goldens y regla profesional](decisions/ADR-037-art-corpus-rubric.md).
+- [ADR-038: caché opcional de buffers de capa acotada por bytes, claves por dependencias transitivas y decisión medida](decisions/ADR-038-layer-buffer-cache.md).
 - [Modelo de amenazas](SECURITY_MODEL.md).
 
 Un ADR nuevo registra contexto, decisión, alternativas, consecuencias y evidencia. Cambiar un ADR aceptado se hace mediante otro que lo sustituya y actualizando el contrato principal.

@@ -81,7 +81,7 @@ Estado: 4/8 issues completados.
 - [MOANA-027](MOANA-027.md) — Construir corpus artístico y rúbrica humana (done)
 - [MOANA-030](MOANA-030.md) — Ejercitar amenazas y entradas adversarias (done)
 - [MOANA-031](MOANA-031.md) — Medir rendimiento y memoria de referencia (done)
-- [MOANA-032](MOANA-032.md) — Optimizar caché y render incremental acotados (ready)
+- [MOANA-032](MOANA-032.md) — Optimizar caché y render incremental acotados (review)
 - [MOANA-033](MOANA-033.md) — Documentar flujos IA y previews editables (ready)
 - [MOANA-034](MOANA-034.md) — Añadir ejemplos de tiles y escenarios modulares (ready)
 - [MOANA-035](MOANA-035.md) — Preparar release y comprobar Definition of Done (blocked)
