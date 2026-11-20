@@ -2213,7 +2213,7 @@
       "id": "MOANA-032",
       "title": "Optimizar caché y render incremental acotados",
       "phase": "P5",
-      "status": "review",
+      "status": "done",
       "priority": "P2",
       "dependencies": [
         "MOANA-018",
@@ -2242,7 +2242,8 @@
         "Medición previa (ADR-038, macOS arm64): render estático de 32 capas/500 rects ≈ 29–30 ms (relleno ≈ 17 ms, composición ≈ 7 ms); animación de 16 frames ≈ 857 ms, de los que ≈ 360 ms son la doble evaluación de cada frame (admisión y render), y la mitad de cada evaluación es editing.index_nodes reconstruido por comando (fuera de alcance, seguimiento propuesto).",
         "Decisión: caché opcional y desactivada por defecto de buffers de capa terminados `moana.render.RenderCache(max_bytes)` (1 B–256 MiB, LRU por bytes, entrada = longitud + 256 B, entradas mayores que el límite rechazadas, CacheStats). Parámetro `cache=None` en render, render_admitted, render_sequence, animation.render_animation y render_frame; protocolo `moana.layers.LayerBuffers` en compose. Ganancias medidas: re-render tras editar un rect −41 %, apply_edit + render −35 %, animación −12 %; coste en frío +5 % (motivo para dejarla desactivada). Rechazadas con números: retener frames evaluados (rompe el streaming acotado de ADR-032), dirty rects (domina la composición), caché por operación o prefijo compuesto.",
         "Clave privada versionada `moana-layer-cache/1`: SHA-256 del JSON canónico de versiones de renderer/backend/estimador/RNG, NumPy y AggDraw/Pillow si hay paths, lienzo, perfil y semilla, la capa sin name/locked/visible/opacity, el cierre transitivo de máscaras y el RGBA resuelto de cada color y rampa referenciados (bandas y segmentos incluidos); opacidad, visibilidad y orden no invalidan. Entradas `bytes` copiadas al insertar, vistas de sólo lectura en los aciertos; plan_budget, el chequeo de composición y el deadline corren antes de cualquier acierto. Sin fachada ni CLI; no thread-safe (documentado).",
-        "Revisiones de agente: gráficos (3364 renders cacheados con mutaciones encadenadas sobre los 17 ejemplos y animaciones, 0 divergencias) y arquitectura (sin imports prohibidos ni ciclos) aprobadas; correcciones aplicadas (clave privada, test de grupos a nivel de layers, memo del cierre de máscaras con clave idéntica, errores separados). Documentación: ADR-038, MOANA.md 0.1.26-draft (§14, §22), module-contracts, ADR-017/018/032 ampliados. Benchmark por defecto sin cambios (static 29,78 → 29,93 ms; animación 852,2 → 850,8 ms; compare ok). Gate local macOS: scripts/validate.py 3661 passed con src/moana al 100 %, check_wheel OK, mypy --platform win32 OK, pre-commit OK; matriz pendiente en main."
+        "Revisiones de agente: gráficos (3364 renders cacheados con mutaciones encadenadas sobre los 17 ejemplos y animaciones, 0 divergencias) y arquitectura (sin imports prohibidos ni ciclos) aprobadas; correcciones aplicadas (clave privada, test de grupos a nivel de layers, memo del cierre de máscaras con clave idéntica, errores separados). Documentación: ADR-038, MOANA.md 0.1.26-draft (§14, §22), module-contracts, ADR-017/018/032 ampliados. Benchmark por defecto sin cambios (static 29,78 → 29,93 ms; animación 852,2 → 850,8 ms; compare ok). Gate local macOS: scripts/validate.py 3661 passed con src/moana al 100 %, check_wheel OK, mypy --platform win32 OK, pre-commit OK; matriz pendiente en main.",
+        "Aprobado por el propietario el 2026-11-17 tras revisión; PR #72 hacia develop."
       ],
       "aliases": [
         "MOA-032"
@@ -2447,7 +2448,7 @@
       "risks": [
         "No declarar CI remoto de cambios locales ni licencia decidida sin evidencia del propietario."
       ],
-      "blocking_reason": "Dependencias pendientes: MOANA-032, MOANA-033, MOANA-034",
+      "blocking_reason": "Dependencias pendientes: MOANA-033, MOANA-034",
       "acceptance_evidence": {},
       "test_evidence": {}
     }
