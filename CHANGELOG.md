@@ -2,6 +2,7 @@
 
 ## Sin publicar
 
+- Línea base del benchmark `tests/benchmarks/results/macos-arm64-py312` regenerada sobre `develop` limpio (`1d54429`, `dirty: false`, `0.1.0rc1`): render estático 30,3 ms, animación de 16 frames 662,7 ms (antes 853 ms), pico de proceso 62,5 MiB; las subidas de `encode_png` bajo 1 ms que marcó `compare` se repitieron y son ruido.
 - MOANA-036: índice de nodos incremental en la edición por batches (ADR-040). apply_batch/apply_commands construyen el índice una vez por batch y cada comando estructural lo actualiza, en vez de reconstruirlo por comando; documentos, revisiones, snapshots, errores, affected_ids y RGBA idénticos (probado contra el algoritmo anterior con Hypothesis). Animación de 16 frames −24,7 % y corpus adventurer-walk −36,2 % en el benchmark de MOANA.md §22.
 
 ## 0.1.0rc1 — 2026-11-20 (release candidate, sin publicar)
