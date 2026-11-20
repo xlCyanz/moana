@@ -1,6 +1,6 @@
 # Inventario del repositorio
 
-535 archivos actuales de fuente, documentación, configuración y pruebas al 2026-11-19. Incluye cambios locales todavía sin commit. Excluye entorno virtual, herramientas, cachés, artefactos y metadata Git.
+542 archivos actuales de fuente, documentación, configuración y pruebas al 2026-11-20. Incluye cambios locales todavía sin commit. Excluye entorno virtual, herramientas, cachés, artefactos y metadata Git.
 
 | Archivo |
 | --- |
@@ -123,6 +123,7 @@
 | [docs/architecture/module-contracts.md](../docs/architecture/module-contracts.md) |
 | [docs/architecture/overview.md](../docs/architecture/overview.md) |
 | [docs/guides/agent-workflow.md](../docs/guides/agent-workflow.md) |
+| [docs/guides/ai-workflows.md](../docs/guides/ai-workflows.md) |
 | [docs/guides/development.md](../docs/guides/development.md) |
 | [docs/guides/issue-lifecycle.md](../docs/guides/issue-lifecycle.md) |
 | [docs/issues/MOA-000.md](../docs/issues/MOA-000.md) |
@@ -255,6 +256,10 @@
 | [examples/specs/path-sail.moana.json](../examples/specs/path-sail.moana.json) |
 | [examples/specs/recolor.edit.json](../examples/specs/recolor.edit.json) |
 | [examples/specs/shaded-orb.moana.json](../examples/specs/shaded-orb.moana.json) |
+| [examples/tutorial/potion-recolor.edit.json](../examples/tutorial/potion-recolor.edit.json) |
+| [examples/tutorial/potion-typo.edit.json](../examples/tutorial/potion-typo.edit.json) |
+| [examples/tutorial/potion.moana.json](../examples/tutorial/potion.moana.json) |
+| [examples/tutorial/potion_flow.py](../examples/tutorial/potion_flow.py) |
 | [pyproject.toml](../pyproject.toml) |
 | [schemas/moana-document-1.0.schema.json](../schemas/moana-document-1.0.schema.json) |
 | [scripts/__init__.py](../scripts/__init__.py) |
@@ -270,6 +275,7 @@
 | [scripts/planning.py](../scripts/planning.py) |
 | [scripts/run_hook.sh](../scripts/run_hook.sh) |
 | [scripts/templates/agent_guide.md](../scripts/templates/agent_guide.md) |
+| [scripts/tutorial.py](../scripts/tutorial.py) |
 | [scripts/uv.sh](../scripts/uv.sh) |
 | [scripts/validate.py](../scripts/validate.py) |
 | [src/moana/__init__.py](../src/moana/__init__.py) |
@@ -437,6 +443,7 @@
 | [tests/unit/api/test_api_masks.py](../tests/unit/api/test_api_masks.py) |
 | [tests/unit/api/test_api_paths.py](../tests/unit/api/test_api_paths.py) |
 | [tests/unit/api/test_api_quality.py](../tests/unit/api/test_api_quality.py) |
+| [tests/unit/api/test_tutorial.py](../tests/unit/api/test_tutorial.py) |
 | [tests/unit/cli/test_cli_edit.py](../tests/unit/cli/test_cli_edit.py) |
 | [tests/unit/cli/test_cli_main.py](../tests/unit/cli/test_cli_main.py) |
 | [tests/unit/core/test_core_architecture.py](../tests/unit/core/test_core_architecture.py) |

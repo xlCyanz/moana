@@ -20,6 +20,8 @@ El repositorio debe contener todo el contexto necesario para continuar. No depen
 
 La instrucción vigente del usuario define el trabajo autorizado. Un issue pendiente no autoriza su implementación por sí solo. En una tarea de infraestructura no se adelanta la creación de un canvas, renderer o CLI gráfico.
 
+Para usar el motor (no desarrollarlo) desde un agente —crear un documento, previsualizarlo a 1×/4× y editarlo por ID con revisión y snapshot— sigue la [guía de flujos IA](ai-workflows.md).
+
 ## Selección de skills y responsabilidades
 
 | Necesidad | Skill / resultado esperado |
