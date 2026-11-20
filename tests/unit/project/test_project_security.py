@@ -37,12 +37,24 @@ from .conftest import PngFactory
 pytestmark = pytest.mark.security
 
 
+def _raw_info(name: str) -> zipfile.ZipInfo:
+    """A ``ZipInfo`` storing ``name`` verbatim on every platform.
+
+    ``ZipInfo(name)`` turns ``os.sep`` into ``/`` (so a backslash on Windows) and cuts
+    at a NUL; assigning ``filename`` afterwards keeps the hostile bytes in the archive.
+    """
+    info = zipfile.ZipInfo("placeholder")
+    info.filename = info.orig_filename = name
+    info.compress_type = zipfile.ZIP_DEFLATED
+    return info
+
+
 def _zip(path: Path, entries: list[tuple[zipfile.ZipInfo | str, bytes]]) -> Path:
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")  # zipfile warns about duplicate names
         with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as archive:
             for info, data in entries:
-                archive.writestr(info, data)
+                archive.writestr(_raw_info(info) if isinstance(info, str) else info, data)
     return path
 
 
@@ -70,6 +82,7 @@ def _unsafe_reason(error: pytest.ExceptionInfo[ValidationError]) -> object:
         ("/etc/escape.json", "absolute_path"),
         ("C:/escape.json", "absolute_path"),
         ("assets\\escape.png", "invalid_name"),
+        ("assets/a\x00.png", "invalid_name"),
         ("assets//x.png", "invalid_name"),
         ("./project.moana.json", "invalid_name"),
         ("notes.txt", "unexpected_entry"),
@@ -475,11 +488,19 @@ def test_t2_project_pixel_budget_across_assets(
 
 
 def _noise_png() -> bytes:
-    image = Image.new("RGBA", (64, 64))
-    image.putdata([((i * 7919) % 256, (i * 104729) % 256, i % 256, 255) for i in range(4096)])
+    """An RGBA PNG whose ``IDAT`` is large under every zlib build.
+
+    The pixels are SHA-256 output, hence incompressible: a periodic pattern compressed
+    to ~240 bytes with zlib-ng on macOS and below 200 on Linux wheels, so cutting 200
+    bytes removed the ``IHDR`` and the case tested ``not_png`` instead of truncation.
+    """
+    pixels = b"".join(hashlib.sha256(i.to_bytes(2, "big")).digest() for i in range(512))
+    image = Image.frombytes("RGBA", (64, 64), pixels)
     buffer = io.BytesIO()
     image.save(buffer, "PNG")
-    return buffer.getvalue()
+    data = buffer.getvalue()
+    assert len(data) > 4 * 64 * 64  # the truncation below always keeps the IHDR
+    return data
 
 
 def _apng() -> bytes:

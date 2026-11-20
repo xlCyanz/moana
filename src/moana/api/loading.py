@@ -66,10 +66,23 @@ def source_path(path: str | os.PathLike[str]) -> Path:
     if not raw or "\x00" in raw:
         raise _invalid_name()
     try:
+        raw.encode("utf-8")  # strict: lone surrogates are rejected on every platform
         os.fsencode(raw)
     except UnicodeEncodeError:
         raise _invalid_name() from None
     return Path(raw)
+
+
+def _stat_is_directory(path: Path) -> bool:
+    """Whether ``os.stat`` reports a directory; any failure counts as not one (ADR-039).
+
+    Not ``os.path.isdir``, which bypasses ``os.stat`` on Windows. Private copy of the
+    ``export``/``project`` helpers: ``api.loading`` imports neither (it loads no Pillow).
+    """
+    try:
+        return stat.S_ISDIR(os.stat(path).st_mode)
+    except (OSError, ValueError):
+        return False
 
 
 def _open(path: Path, name: str) -> int:
@@ -80,8 +93,8 @@ def _open(path: Path, name: str) -> int:
     except IsADirectoryError as exc:
         raise _read_failure("is_directory", name, exc) from None
     except PermissionError as exc:
-        # Windows reports opening a directory as a permission error; isdir never raises.
-        reason = "is_directory" if os.path.isdir(path) else "permission_denied"
+        # Windows reports opening a directory as a permission error.
+        reason = "is_directory" if _stat_is_directory(path) else "permission_denied"
         raise _read_failure(reason, name, exc) from None
     except OSError as exc:
         raise _read_failure("io_error", name, exc) from None

@@ -113,10 +113,36 @@ warm = [  # load Pillow's plugins and libwebp before measuring
     Frame("v", 10, Point(0, 0), Raster(2, 2, bytes([1]) * 16)),
 ]
 encode_webp(warm)
-unit = 1 if sys.platform == "darwin" else 1024  # ru_maxrss: bytes on macOS, KiB on Linux
-before = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss * unit
-encode_webp(frames)
-print(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss * unit - before)
+
+
+def proc_status(key):
+    with open("/proc/self/status", encoding="utf-8") as status:
+        for line in status:
+            if line.startswith(key + ":"):
+                return int(line.split()[1]) * 1024  # kB
+    raise LookupError(key)
+
+
+if sys.platform == "linux":
+    # ru_maxrss is useless here: Linux carries the forking parent's peak into the
+    # child, and the pytest process is larger than this probe, so the delta was 0.
+    # VmHWM belongs to this image; clear_refs "5" resets it to the current RSS.
+    before = proc_status("VmRSS")
+    try:
+        with open("/proc/self/clear_refs", "w", encoding="utf-8") as refs:
+            refs.write("5")
+    except OSError:
+        # Without the reset VmHWM may keep an earlier, larger peak of this process
+        # (e.g. while the frames were generated): the measured growth can only be
+        # overestimated, so the bound stays conservative (a false failure is possible,
+        # a false pass is not).
+        pass
+    encode_webp(frames)
+    print(proc_status("VmHWM") - before)
+else:
+    before = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss  # bytes on macOS
+    encode_webp(frames)
+    print(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss - before)
 """
 
 

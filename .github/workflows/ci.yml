@@ -18,7 +18,9 @@ jobs:
   verify:
     name: ${{ matrix.os }} / Python ${{ matrix.python }}
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 15
+    # The traced test suite alone takes up to ~12.5 min on Python 3.12 runners (ubuntu
+    # and windows); 15 min cancelled jobs before the wheel and determinism steps.
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:

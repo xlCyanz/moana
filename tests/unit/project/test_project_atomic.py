@@ -30,6 +30,9 @@ from .conftest import PngFactory, make_batch
 
 _COUNTED = ("mkdir", "open", "write", "fsync", "link", "replace")
 _POSIX_ONLY = pytest.mark.skipif(os.name == "nt", reason="POSIX permissions and links")
+# ``Folder.sync`` is a no-op on Windows: directories cannot be opened for fsync there
+# and NTFS journals the entries (ADR-029, step 5).
+_DIRECTORY_FSYNC = os.name != "nt"
 
 
 def _fail(*_args: Any, **_kwargs: Any) -> Any:
@@ -160,13 +163,29 @@ def test_t1_commit_order_content_then_directories_then_manifest(
         if event[0] == "commit":
             assert events[index - 1] == ("fsync", "file")
     synced = {kind for action, kind in events[:manifest] if action == "fsync"}
-    assert folders <= synced
-    assert events[manifest + 1 :] == [("fsync", ".")]
+    if _DIRECTORY_FSYNC:
+        assert folders <= synced
+        assert events[manifest + 1 :] == [("fsync", ".")]
+    else:  # pragma: no cover - Windows: content files only, no directory to sync
+        assert synced == {"file"}
+        assert events[manifest + 1 :] == []
     written = [kind for action, kind in events[:manifest] if action == "commit"]
     assert len(written) == 3  # new snapshot, new batch and new asset
 
 
-@pytest.mark.parametrize(("code", "fails"), [(errno.EIO, True), (errno.EINVAL, False)])
+@pytest.mark.parametrize(
+    ("code", "fails"),
+    [
+        pytest.param(
+            errno.EIO,
+            True,
+            marks=pytest.mark.skipif(
+                not _DIRECTORY_FSYNC, reason="Windows has no directory fsync to fail"
+            ),
+        ),
+        (errno.EINVAL, False),
+    ],
+)
 def test_t1_directory_sync_failure_aborts_before_the_commit(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -648,6 +667,15 @@ def test_caller_paths_are_checked(tmp_path: Path, document: Document) -> None:
 class _BytesPath:
     def __fspath__(self) -> bytes:
         return b"project"
+
+
+def test_stat_is_directory_never_raises(tmp_path: Path) -> None:
+    """ADR-039: one ``os.stat`` primitive classifies directories on every platform."""
+    (tmp_path / "file").write_bytes(b"")
+    assert _fs.stat_is_directory(tmp_path)
+    assert not _fs.stat_is_directory(tmp_path / "file")
+    assert not _fs.stat_is_directory(tmp_path / "missing")
+    assert not _fs.stat_is_directory(tmp_path / "a\x00b")
 
 
 def test_bytes_path_like_is_rejected(document: Document) -> None:

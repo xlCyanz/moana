@@ -31,7 +31,7 @@ from pathlib import Path
 from typing import Literal
 
 from moana.core.errors import ExportError, MoanaError, UnsupportedVersion
-from moana.project._fs import caller_path
+from moana.project._fs import caller_path, stat_is_directory
 from moana.project._json import read_json_object
 from moana.project._load import (
     Reader,
@@ -170,7 +170,7 @@ def _resolved(path: Path) -> Path:
 
 def _check_destination(source: Path, destination: Path) -> None:
     """Refuse a destination equal to, or inside, a source directory (no path echoed)."""
-    if not source.is_dir():
+    if not stat_is_directory(source):
         return
     root, target = _resolved(source), _resolved(destination)
     if target == root or root in target.parents:

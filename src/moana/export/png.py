@@ -348,10 +348,15 @@ def encode_png(
 
 
 def _representable(raw: str) -> bool:
-    """Whether the OS can name ``raw``: no NUL and encodable with the filesystem codec."""
+    """Whether ``raw`` is a portable name: no NUL, strict UTF-8 and the filesystem codec.
+
+    Strict UTF-8 rejects lone surrogates on every platform: Windows' ``surrogatepass``
+    filesystem codec would otherwise accept them (and POSIX ``surrogateescape`` some).
+    """
     if "\x00" in raw:
         return False
     try:
+        raw.encode("utf-8")
         os.fsencode(raw)
     except UnicodeEncodeError:
         return False
