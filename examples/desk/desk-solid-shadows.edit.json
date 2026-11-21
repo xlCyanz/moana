@@ -1,0 +1,354 @@
+{
+  "schema_version": "1.0",
+  "base_revision": 0,
+  "base_snapshot": "sha256:e4b55ec2710de3aaee36d882936e2512039d602637c9a5fdc98eb4462a8729b0",
+  "commands": [
+    {
+      "type": "remove",
+      "target_id": "floor_cast_fringe"
+    },
+    {
+      "type": "remove",
+      "target_id": "leg_side_falloff"
+    },
+    {
+      "type": "remove",
+      "target_id": "cabinet_side_falloff"
+    },
+    {
+      "type": "remove",
+      "target_id": "cabinet_side_base"
+    },
+    {
+      "type": "remove",
+      "target_id": "shadow_falloff_left"
+    },
+    {
+      "type": "remove",
+      "target_id": "shadow_falloff_right"
+    },
+    {
+      "type": "remove",
+      "target_id": "shadow_left_dark"
+    },
+    {
+      "type": "remove",
+      "target_id": "shadow_left_soft"
+    },
+    {
+      "type": "remove",
+      "target_id": "shadow_right_dark"
+    },
+    {
+      "type": "remove",
+      "target_id": "shadow_right_soft"
+    },
+    {
+      "type": "remove",
+      "target_id": "mask_floor_fringe"
+    },
+    {
+      "type": "remove",
+      "target_id": "mask_floor_outer"
+    },
+    {
+      "type": "remove",
+      "target_id": "mask_floor_inner"
+    },
+    {
+      "type": "remove",
+      "target_id": "mask_shadow_falloff_left"
+    },
+    {
+      "type": "remove",
+      "target_id": "mask_shadow_falloff_right"
+    },
+    {
+      "type": "remove",
+      "target_id": "mask_shadow_band"
+    },
+    {
+      "type": "remove",
+      "target_id": "mask_shadow_band_right"
+    },
+    {
+      "type": "remove",
+      "target_id": "mask_leg_side_low"
+    },
+    {
+      "type": "remove",
+      "target_id": "mask_cabinet_side_low"
+    },
+    {
+      "type": "remove",
+      "target_id": "mask_cabinet_side_base"
+    },
+    {
+      "type": "insert_operation",
+      "layer_id": "shadows",
+      "after_id": null,
+      "operation": {
+        "id": "overhang_front_deep",
+        "type": "polygon",
+        "points": [
+          [
+            81,
+            183
+          ],
+          [
+            325,
+            305
+          ],
+          [
+            325,
+            307
+          ],
+          [
+            81,
+            185
+          ]
+        ],
+        "color": "wood_deep"
+      }
+    },
+    {
+      "type": "insert_operation",
+      "layer_id": "shadows",
+      "after_id": "overhang_front_deep",
+      "operation": {
+        "id": "overhang_front_dark",
+        "type": "polygon",
+        "points": [
+          [
+            81,
+            185
+          ],
+          [
+            325,
+            307
+          ],
+          [
+            325,
+            310
+          ],
+          [
+            81,
+            188
+          ]
+        ],
+        "color": "wood_dark"
+      }
+    },
+    {
+      "type": "insert_operation",
+      "layer_id": "shadows",
+      "after_id": "overhang_front_dark",
+      "operation": {
+        "id": "overhang_front_soft",
+        "type": "polygon",
+        "points": [
+          [
+            81,
+            188
+          ],
+          [
+            325,
+            310
+          ],
+          [
+            325,
+            314
+          ],
+          [
+            81,
+            192
+          ]
+        ],
+        "color": "wood_shadow"
+      }
+    },
+    {
+      "type": "insert_operation",
+      "layer_id": "shadows",
+      "after_id": "overhang_front_soft",
+      "operation": {
+        "id": "overhang_side_deep",
+        "type": "polygon",
+        "points": [
+          [
+            325,
+            305
+          ],
+          [
+            431,
+            252
+          ],
+          [
+            431,
+            255
+          ],
+          [
+            325,
+            308
+          ]
+        ],
+        "color": "wood_deep"
+      }
+    },
+    {
+      "type": "insert_operation",
+      "layer_id": "shadows",
+      "after_id": "overhang_side_deep",
+      "operation": {
+        "id": "overhang_side_dark",
+        "type": "polygon",
+        "points": [
+          [
+            325,
+            308
+          ],
+          [
+            431,
+            255
+          ],
+          [
+            431,
+            260
+          ],
+          [
+            325,
+            313
+          ]
+        ],
+        "color": "wood_dark"
+      }
+    },
+    {
+      "type": "insert_operation",
+      "layer_id": "leg",
+      "after_id": "leg_side",
+      "operation": {
+        "id": "leg_side_ao",
+        "type": "polygon",
+        "points": [
+          [
+            127,
+            264
+          ],
+          [
+            113,
+            271
+          ],
+          [
+            113,
+            289
+          ],
+          [
+            127,
+            282
+          ]
+        ],
+        "color": "wood_dark"
+      }
+    },
+    {
+      "type": "insert_operation",
+      "layer_id": "cabinet",
+      "after_id": "cabinet_right_face",
+      "operation": {
+        "id": "cabinet_side_ao",
+        "type": "polygon",
+        "points": [
+          [
+            421,
+            331
+          ],
+          [
+            323,
+            380
+          ],
+          [
+            323,
+            394
+          ],
+          [
+            421,
+            345
+          ]
+        ],
+        "color": "wood_dark"
+      }
+    },
+    {
+      "type": "insert_operation",
+      "layer_id": "leg",
+      "after_id": "leg_front",
+      "operation": {
+        "id": "leg_front_ao",
+        "type": "polygon",
+        "points": [
+          [
+            97,
+            275
+          ],
+          [
+            113,
+            283
+          ],
+          [
+            113,
+            289
+          ],
+          [
+            97,
+            281
+          ]
+        ],
+        "color": "wood_shadow"
+      }
+    },
+    {
+      "type": "insert_operation",
+      "layer_id": "floor",
+      "after_id": null,
+      "operation": {
+        "id": "floor_cast_soft",
+        "type": "polygon",
+        "points": [
+          [
+            211,
+            214
+          ],
+          [
+            471,
+            344
+          ],
+          [
+            361,
+            399
+          ],
+          [
+            101,
+            269
+          ]
+        ],
+        "color": "floor_shadow"
+      }
+    },
+    {
+      "type": "set_color",
+      "target_id": "floor_cast",
+      "color": "floor_shadow_deep"
+    },
+    {
+      "type": "replace_palette_color",
+      "target_id": "floor_shadow",
+      "rgba": "#D8D2CBFF"
+    },
+    {
+      "type": "replace_palette_color",
+      "target_id": "floor_shadow_deep",
+      "rgba": "#BDB3A8FF"
+    }
+  ]
+}

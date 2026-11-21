@@ -59,6 +59,7 @@ DOCUMENT_PATHS = sorted(
     [
         *(EXAMPLES / "specs").glob("*.moana.json"),
         *(EXAMPLES / "corpus").glob("*/*.moana.json"),
+        *(EXAMPLES / "desk").glob("*.moana.json"),
         EXAMPLES / "tiles" / "meadow.moana.json",
         EXAMPLES / "tutorial" / "potion.moana.json",
     ]
