@@ -2,7 +2,7 @@
 
 ## Sin publicar
 
-Sin cambios todavía.
+- Ejemplo `examples/desk/`: escritorio isométrico de 512 × 512 con historial de edición (revisión 0 con sombras tramadas y dos batches que las sustituyen por bandas sólidas escalonadas), preview a 1× y `tests/integration/test_desk_example.py`, que reproduce el historial y compara la preview con el render. Sin cambios en el motor; revisión artística humana pendiente.
 
 ## 0.1.0rc1 — 2026-11-20 (release candidate, prerelease de GitHub)
 

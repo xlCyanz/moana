@@ -1,6 +1,6 @@
 # Inventario del repositorio
 
-566 archivos actuales de fuente, documentación, configuración y pruebas al 2026-11-20. Incluye cambios locales todavía sin commit. Excluye entorno virtual, herramientas, cachés, artefactos y metadata Git.
+574 archivos actuales de fuente, documentación, configuración y pruebas al 2026-11-21. Incluye cambios locales todavía sin commit. Excluye entorno virtual, herramientas, cachés, artefactos y metadata Git.
 
 | Archivo |
 | --- |
@@ -248,6 +248,13 @@
 | [examples/corpus/stone-tile/previews/stone-tile-tiled-3x3-4x.png](../examples/corpus/stone-tile/previews/stone-tile-tiled-3x3-4x.png) |
 | [examples/corpus/stone-tile/stone-tile.corpus.json](../examples/corpus/stone-tile/stone-tile.corpus.json) |
 | [examples/corpus/stone-tile/stone-tile.moana.json](../examples/corpus/stone-tile/stone-tile.moana.json) |
+| [examples/desk/README.md](../examples/desk/README.md) |
+| [examples/desk/desk-deeper-overhang.edit.json](../examples/desk/desk-deeper-overhang.edit.json) |
+| [examples/desk/desk-r0.moana.json](../examples/desk/desk-r0.moana.json) |
+| [examples/desk/desk-r1.moana.json](../examples/desk/desk-r1.moana.json) |
+| [examples/desk/desk-solid-shadows.edit.json](../examples/desk/desk-solid-shadows.edit.json) |
+| [examples/desk/desk.moana.json](../examples/desk/desk.moana.json) |
+| [examples/desk/previews/desk-1x.png](../examples/desk/previews/desk-1x.png) |
 | [examples/specs/bouncing-slime.moana.json](../examples/specs/bouncing-slime.moana.json) |
 | [examples/specs/dither-dusk.moana.json](../examples/specs/dither-dusk.moana.json) |
 | [examples/specs/masked-eyes.moana.json](../examples/specs/masked-eyes.moana.json) |
@@ -429,6 +436,7 @@
 | [tests/integration/test_art_corpus.py](../tests/integration/test_art_corpus.py) |
 | [tests/integration/test_cli_paths.py](../tests/integration/test_cli_paths.py) |
 | [tests/integration/test_cross_platform_determinism.py](../tests/integration/test_cross_platform_determinism.py) |
+| [tests/integration/test_desk_example.py](../tests/integration/test_desk_example.py) |
 | [tests/integration/test_dither_determinism.py](../tests/integration/test_dither_determinism.py) |
 | [tests/integration/test_gif_animation.py](../tests/integration/test_gif_animation.py) |
 | [tests/integration/test_material_determinism.py](../tests/integration/test_material_determinism.py) |
