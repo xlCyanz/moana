@@ -1,61 +1,122 @@
 # MoanArt
 
-Base de un motor Python de Pixel Art programático, determinista y editable, orientado a sprites de 128 × 128. **Estado: alpha; release candidate `0.1.0rc1` publicado como prerelease de GitHub (tag `v0.1.0rc1`, wheel y sdist adjuntos) por decisión del propietario el 2026-11-20, con la revisión artística humana pendiente; no está en PyPI ([checklist](docs/RELEASE.md)). Render determinista de documentos 1.0 y exportación PNG disponibles desde Python (`moanart.api`) y desde el comando estático `moanart` (validate/inspect/render/export/edit/capabilities).** El paquete expone `moanart.__version__`, `moanart.core` (coordenadas, cajas, límites y errores de dominio) `moanart.schema` (validación estricta y normalización del documento 1.0, JSON Schema en `schemas/`) el render determinista con su plan de coste (`moanart.render.render`, `moanart.render.plan_budget`) y el lienzo RGBA con adaptadores NumPy/Pillow (`moanart.core.canvas`, `moanart.core.pillow_adapter`), paletas/rampas por ID (`moanart.palette`) y máscaras raster enteras de primitivas, flood fill y transformaciones pixel-perfect (`moanart.geometry`), paths M/L/Q/C/Z con el backend AggDraw `aggdraw-v1` y garantía limitada a versiones ensayadas (`moanart.geometry.paths`), dithering ordenado Bayer 2×2/4×4 (`moanart.techniques`, operación `dither`), contornos interiores/exteriores editables (operación `outline`) y análisis de clusters (singletons, escalones irregulares) con excepciones por región que nunca modifica el documento (`moanart.api.analyze_clusters`), sombreado por bandas (operación `shade`: luz discreta, `facing` authored por banda, índice de rampa recortado y la última banda gana), presets de materiales versionados v1 skin/cloth/metal/wood/stone con textura por celdas determinista (operación `material`, `moanart.core.materials`) y contorno selectivo por luz (operación `selective_outline`); el resto de técnicas sigue previsto y composición de capas y grupos source-over entera con máscaras semánticas y regiones por ID (`moanart.layers`, `resolve_region`) y exportación PNG RGBA o indexada con escritura atómica y manifiesto (`moanart.export.export_png`). La edición atómica por batches (`moanart.editing`, `moanart.api.apply_edit`, `moanart edit DOC BATCH`) está disponible: revisión optimista con `base_revision` + `base_snapshot`, rollback total y sin escribir archivos; el historial undo/redo en memoria (`moanart.editing.History`, ramas identificadas por digest) también; la persistencia de proyectos (`moanart.project`: manifiesto separado del documento, assets e historial en rutas inmutables por hash, ZIP inspeccionado sin extraer y escritura atómica) está disponible sin fachada ni CLI, con migraciones explícitas de formato que nunca se aplican al leer y conservan el original (`moanart.project.migrate_project`); el timeline de animación (`moanart.animation`: frames evaluados siempre contra la base con overrides de visibilidad, `translate` y color, presupuesto acumulado y render en streaming, `moanart.api.render(frame_id=…)`) está disponible sin CLI; los spritesheets en grid se exportan con un manifiesto JSON versionado que reconstruye exactamente cada frame (`moanart.export.export_spritesheet`/`slice_spritesheet`), y los GIF se exportan con paleta compartida y pérdidas sólo explícitas, verificados al decodificar (`moanart.export.export_gif`); APNG y WebP lossless son opcionales y sólo se exportan si el codec del build está disponible (`moanart.export.export_apng`/`export_webp`, `moanart capabilities`); los informes de calidad gráfica (`moanart.api.evaluate_quality`) separan errores matemáticos de advertencias artísticas configurables y suprimibles por región, sin puntuación agregada; el corpus artístico de referencia (`examples/corpus/`) reúne cinco ejemplos auditables con una rúbrica en la que sólo una revisión humana puede declarar calidad profesional (todavía pendiente).
+Motor Python de Pixel Art **determinista y editable**. Un sprite es un documento JSON con capas, paleta y operaciones con IDs estables; MoanArt lo valida, lo renderiza a RGBA entero (el mismo documento produce los mismos píxeles en cualquier proceso y plataforma) y lo modifica con batches atómicos que nombran IDs en lugar de repintar la imagen. Está pensado para que personas y agentes de IA trabajen con el mismo flujo, sin GUI, red ni credenciales.
 
-La fuente de verdad es [MOANART.md](MOANART.md). Consulta el [roadmap](docs/issues/roadmap.md), los [issues](docs/issues/README.md), las [dependencias](docs/issues/dependency-map.md) y la [trazabilidad](docs/issues/traceability.md). Pillow y NumPy son herramientas; la calidad artística requerirá algoritmos, dirección y evaluación.
+> **Estado: alpha.** La versión del código es el release candidate `0.1.0rc2` (sin publicar). El candidato anterior, `0.1.0rc1`, está publicado como [prerelease de GitHub](https://github.com/xlCyanz/moana/releases/tag/v0.1.0rc1) con el nombre del proyecto previo al renombrado ([CHANGELOG](CHANGELOG.md)). No está en PyPI. La revisión artística humana del corpus y de los ejemplos sigue pendiente: ningún ejemplo se declara de calidad profesional ([checklist de release](docs/RELEASE.md)).
 
 ## Inicio rápido
 
-Con `uv` instalado:
+Requiere Python ≥ 3.12 y [uv](https://docs.astral.sh/uv/):
 
 ```sh
-uv python install 3.12.16
 uv sync --locked
-uv run python scripts/validate.py
+uv run moanart validate examples/specs/minimal.moanart.json
+uv run moanart export examples/specs/minimal.moanart.json artifacts/minimal.png --scale 4
 ```
 
-En macOS/Linux, si no tienes uv pero sí Python >=3.9 con venv/pip:
+Sin uv global (macOS/Linux con Python ≥ 3.9), `sh scripts/bootstrap.sh` instala uv y Python dentro de `.tools/` y `.cache/` sin tocar tu PATH. A partir de ahí sustituye `uv` por `sh scripts/uv.sh`.
 
-```sh
-sh scripts/bootstrap.sh
-sh scripts/uv.sh run python -c 'import moanart; print(moanart.__version__)'
+## Un documento mínimo
+
+```json
+{
+  "schema_version": "1.0",
+  "id": "sprite_demo",
+  "revision": 0,
+  "seed": 42,
+  "canvas": {"width": 128, "height": 128, "profile": "strict"},
+  "palette": {
+    "id": "palette_main",
+    "colors": [
+      {"id": "ink", "rgba": "#182338FF"},
+      {"id": "cloth", "rgba": "#36AFA5FF"}
+    ],
+    "ramps": []
+  },
+  "layers": [
+    {
+      "id": "body", "name": "Cuerpo", "visible": true, "locked": false,
+      "opacity": 255, "blend": "normal",
+      "operations": [
+        {"id": "body_fill", "type": "rect", "box": [40, 32, 88, 104], "color": "cloth"}
+      ]
+    }
+  ]
+}
 ```
 
-El bootstrap guarda uv, Python administrado y cachés dentro de `.tools/` y `.cache/`; no cambia tu PATH ni instalación global. Para esta carpeta puede usarse siempre `sh scripts/uv.sh` en lugar de `uv`. En Windows instala uv siguiendo su documentación oficial y utiliza los comandos uv anteriores.
+Es [examples/specs/minimal.moanart.json](examples/specs/minimal.moanart.json). Coordenadas enteras con origen arriba a la izquierda, cajas semiabiertas `[x0, y0, x1, y1)` y colores referenciados por ID de paleta. El esquema completo está en [schemas/](schemas/) y el contrato en [MOANART.md](MOANART.md).
+
+## Línea de comandos
+
+Cada comando imprime un único objeto JSON en stdout (`"ok"`, `"command"` y, si falla, `"error"` con código y puntero JSON):
+
+| Comando | Qué hace |
+| --- | --- |
+| `moanart validate DOC` | valida y normaliza el documento |
+| `moanart inspect DOC` | resume capas, paleta y presupuesto de render sin dibujar |
+| `moanart render DOC` | renderiza en memoria e informa del digest (no escribe archivos) |
+| `moanart export DOC OUT.png [--scale N]` | renderiza y escribe un PNG RGBA de forma atómica |
+| `moanart edit DOC BATCH` | aplica un batch de edición y muestra la nueva revisión (no escribe archivos) |
+| `moanart capabilities` | lista operaciones, comandos y codecs disponibles y previstos |
+
+Códigos de salida: 0 éxito, 2 entrada inválida o capacidad no soportada, 3 presupuesto excedido, 4 conflicto de edición, 5 E/S, 1 error interno, 130 interrumpido.
+
+## API de Python
+
+```python
+from moanart.api import apply_edit, export_png, load_document, render
+
+document = load_document("examples/specs/minimal.moanart.json")
+result = render(document)  # RGBA uint8 + digest + procedencia
+print(result.digest)  # sha256:b080d367…
+export_png(result, "artifacts/minimal.png", scale=4)
+
+edited = apply_edit(document, "examples/specs/recolor.edit.json")
+```
+
+`moanart.api` es la fachada estable. El resto de módulos de [src/moanart/](src/moanart/) son contratos internos documentados en la [arquitectura](docs/architecture/overview.md).
+
+## Qué incluye
+
+- **Dibujo:** píxeles, rectángulos, elipses, líneas, polígonos, paths M/L/Q/C/Z (backend AggDraw `aggdraw-v1`) y transformaciones pixel-perfect.
+- **Técnicas:** dithering Bayer 2×2/4×4, contornos interiores/exteriores, sombreado por bandas con luz discreta, materiales versionados (skin, cloth, metal, wood, stone) y contorno selectivo.
+- **Estructura:** capas y grupos con composición source-over entera, máscaras y regiones semánticas por ID, paletas y rampas.
+- **Edición:** batches atómicos con revisión optimista (`base_revision` + `base_snapshot`) y rollback total, e historial undo/redo con ramas.
+- **Animación y exportación:** timeline con frames evaluados contra la base. Exporta a PNG, spritesheets con manifiesto reversible, GIF con pérdidas sólo explícitas, y APNG/WebP lossless si el build de Pillow tiene el codec.
+- **Calidad:** informes con hard checks, advertencias artísticas configurables y análisis de clusters, sin puntuación agregada.
+- **Proyectos:** persistencia confinada y atómica (directorio, ZIP `.moanart` o JSON) con migraciones explícitas que conservan el original. De momento sólo desde Python, sin CLI.
+- **Seguridad:** límites de tamaño, profundidad y presupuesto comprobados antes de reservar memoria o tocar disco. Sin `eval`, `pickle` ni red en el núcleo ([modelo de amenazas](docs/architecture/SECURITY_MODEL.md), [política de seguridad](SECURITY.md)).
+
+## Ejemplos
+
+| Carpeta | Contenido |
+| --- | --- |
+| [examples/specs/](examples/specs/) | documentos de contrato por técnica (dither, paths, materiales, sombreado, animación) |
+| [examples/tutorial/](examples/tutorial/) | poción 16 × 16 del [tutorial de flujos IA](docs/guides/ai-workflows.md), ejecutado tal cual por el gate |
+| [examples/corpus/](examples/corpus/README.md) | corpus de referencia con procedencia, digests e informes de calidad |
+| [examples/tiles/](examples/tiles/README.md) | tiles sin costuras y escena modular 128 × 128 con atlas |
+| [examples/desk/](examples/desk/README.md) | escritorio isométrico 512 × 512 con su historial de edición |
 
 ## Desarrollo
 
 ```sh
-uv run ruff check .
-uv run ruff format --check .
-uv run mypy src/
-uv run mypy
-uv run pytest
-uv run python -m scripts.check_repository
-uv run python scripts/planning.py --check
-uv build
-uv run python scripts/check_wheel.py
-uv run python scripts/release.py check
-uv run pre-commit install
-uv run pre-commit run --all-files
+uv run python scripts/validate.py      # gate completo: lock, lint, tipos, estructura, tests con cobertura y build
+uv run python scripts/check_wheel.py   # audita e instala wheel y sdist en un entorno limpio
+uv run pytest tests/unit -q            # validación por módulo
+uv run pre-commit install              # hooks por checkout
 ```
 
-`scripts/validate.py` agrupa lock, lint, formato, tipos, estructura, tests con cobertura y build con Hatchling del lock; guarda diagnósticos en `artifacts/`. Los hooks Git se instalan por checkout. CI está configurado para Python 3.12–3.14 en Linux, macOS y Windows. El [informe actual](docs/BOOTSTRAP_REPORT.md) distingue validación local de ejecuciones observadas en GitHub.
+La CI cubre Python 3.12–3.14 en Linux, macOS y Windows, más la verificación de determinismo entre plataformas. Antes de contribuir lee [CONTRIBUTING.md](CONTRIBUTING.md), [AGENTS.md](AGENTS.md) y la [guía de desarrollo](docs/guides/development.md).
 
-## Organización
+## Documentación
 
-| Ruta | Contenido real |
-| --- | --- |
-| `src/moanart/` | metadata mínima del paquete, `py.typed` |
-| `tests/` | checks de dependencias y tooling de planificación |
-| `scripts/` | bootstrap, validación y generación del backlog |
-| `docs/architecture/` | límites de módulos y decisiones |
-| `docs/issues/` | catálogo y especificaciones de trabajo |
-| `examples/specs/` | JSON de diseño; `minimal.moanart.json` se renderiza con `moanart.render.render` |
-| `.agents/skills/` | siete skills propias del proyecto |
-| `.codex/` | configuración y ocho roles de agentes locales |
-| `.github/` | CI, actualización de acciones y plantillas |
+- [MOANART.md](MOANART.md): fuente de verdad del producto y de los contratos.
+- [Arquitectura](docs/architecture/overview.md), [contratos de módulos](docs/architecture/module-contracts.md) y [ADR](docs/architecture/README.md).
+- [Roadmap](docs/issues/roadmap.md), [issues](docs/issues/README.md), [dependencias](docs/issues/dependency-map.md) y [trazabilidad](docs/issues/traceability.md).
+- [Release](docs/RELEASE.md) y [CHANGELOG](CHANGELOG.md).
+- Agentes: [CLAUDE.md](CLAUDE.md) y su [auditoría](docs/CLAUDE_CODE.md) para Claude Code. [AGENTS.md](AGENTS.md) y la [auditoría de entorno](docs/CODEX.md) para Codex.
 
-Lee [CONTRIBUTING.md](CONTRIBUTING.md) y [AGENTS.md](AGENTS.md) antes de implementar. La [guía de desarrollo](docs/guides/development.md) detalla el entorno y el flujo Git. Primer issue: [MOANA-001](docs/issues/MOANA-001.md). Con Claude Code, [CLAUDE.md](CLAUDE.md) es el punto de entrada y la [auditoría de Claude Code](docs/CLAUDE_CODE.md) describe reglas, skills, subagentes y hooks. La [auditoría de entorno](docs/CODEX.md) distingue configuraciones disponibles de integraciones activas. El [reporte de inicialización](docs/INITIALIZATION_REPORT.md) conserva evidencias históricas.
+## Licencia
 
-Licencia: [MIT](LICENSE) para código, documentación, ejemplos y corpus, decidida por el propietario del repositorio el 2026-11-20. La versión actual es el release candidate `0.1.0rc1`, publicado como prerelease de GitHub (tag `v0.1.0rc1`, wheel y sdist adjuntos) por decisión del propietario el 2026-11-20, con la revisión artística humana pendiente; no está en PyPI. Nada publica automáticamente: cada publicación (PyPI, GitHub Releases o tags) es una acción separada que exige autorización explícita del propietario. La [checklist de release](docs/RELEASE.md) recoge versiones, compatibilidad, capacidades, auditoría de requisitos, limitaciones y pendientes (entre ellos, la revisión artística humana del corpus y de los tiles).
+[MIT](LICENSE) para código, documentación, ejemplos y corpus. Ninguna herramienta publica automáticamente: cada publicación (PyPI, releases o tags) requiere autorización explícita del propietario.

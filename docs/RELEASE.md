@@ -64,7 +64,7 @@ Los codecs APNG y WebP son opcionales: su disponibilidad depende del build de Pi
 | Exportación desde Python | `png`, `gif`, `apng` (opcional), `webp` (opcional) | — |
 | Backends vectoriales | `aggdraw-v1` | — |
 
-### Auditoría de requisitos (40; implementado: 33; implementado con pendientes: 4; parcial: 3; pendiente: 0)
+### Auditoría de requisitos (40; implementado: 36; implementado con pendientes: 4; parcial: 0; pendiente: 0)
 
 | ID | Requisito | Issues (estado) | Entrega | Pendiente |
 | --- | --- | --- | --- | --- |
@@ -97,10 +97,10 @@ Los codecs APNG y WebP son opcionales: su disponibilidad depende del build de Pi
 | R027 | Testing y regresión visual | MOANA-004 (done), MOANA-027 (done), MOANA-028 (done), MOANA-029 (done), MOANA-030 (done) | implementado | — |
 | R028 | Rendimiento y recursos medidos | MOANA-003 (done), MOANA-031 (done), MOANA-032 (done), MOANA-036 (done) | implementado | — |
 | R029 | Caché e incrementalidad | MOANA-032 (done) | implementado | — |
-| R030 | Arquitectura modular y documentación | MOANA-000 (done), MOANA-001 (done), MOANA-010 (done), MOANA-037 (review) | parcial | — |
-| R031 | Paquete instalable y artefactos | MOANA-000 (done), MOANA-035 (done), MOANA-037 (review) | parcial | — |
+| R030 | Arquitectura modular y documentación | MOANA-000 (done), MOANA-001 (done), MOANA-010 (done), MOANA-037 (done) | implementado | — |
+| R031 | Paquete instalable y artefactos | MOANA-000 (done), MOANA-035 (done), MOANA-037 (done) | implementado | — |
 | R032 | Entorno Python y herramientas de calidad | MOANA-000 (done) | implementado | — |
-| R033 | Siete skills especializadas | MOANA-000 (done), MOANA-037 (review) | parcial | — |
+| R033 | Siete skills especializadas | MOANA-000 (done), MOANA-037 (done) | implementado | — |
 | R034 | Codex, roles y flujos de agentes | MOANA-000 (done), MOANA-033 (done) | implementado | — |
 | R035 | Hooks y automatización CI | MOANA-000 (done), MOANA-029 (done) | implementado con pendientes | matriz de CI remota verde (9 trabajos + determinismo) en `3857617`, run 44777404728; falta observarla sobre el commit candidato |
 | R036 | Issues, roadmap, dependencias y trazabilidad | MOANA-000 (done), MOANA-035 (done) | implementado | — |
