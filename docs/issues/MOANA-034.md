@@ -58,7 +58,7 @@ No editor de mapas, física ni sistema de juego.
 
 ## Definition of Done
 
-Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adjuntar evidencia por ID, pasar el gate y revisar el resultado. Dependencias completadas y [ciclo de vida](../guides/issue-lifecycle.md) respetado.
+Cumplir [MOANART.md §25](../../MOANART.md), todos los criterios AC y pruebas T; adjuntar evidencia por ID, pasar el gate y revisar el resultado. Dependencias completadas y [ciclo de vida](../guides/issue-lifecycle.md) respetado.
 
 ## Risks and notes
 
@@ -78,13 +78,13 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 ### 2. Lectura obligatoria (en orden)
 
 1. `CLAUDE.md` (Claude Code) o `AGENTS.md` (Codex) y [flujo de sesión](../guides/agent-workflow.md).
-2. MOANA.md: §2 Alcance funcional y no funcional; §3 Arquitectura modular; §7 Técnicas profesionales de Pixel Art; §19 Control de calidad gráfico; §25 Definition of Done. Estas secciones son el contrato normativo; ante duda, prevalecen sobre este issue.
+2. MOANART.md: §2 Alcance funcional y no funcional; §3 Arquitectura modular; §7 Técnicas profesionales de Pixel Art; §19 Control de calidad gráfico; §25 Definition of Done. Estas secciones son el contrato normativo; ante duda, prevalecen sobre este issue.
 3. [Contratos de módulos](../architecture/module-contracts.md) para: `examples`, `geometry`.
 4. Estándares: [pixel-art](../../docs/standards/pixel-art.md), [python](../../docs/standards/python.md), [architecture](../../docs/standards/architecture.md), [testing](../../docs/standards/testing.md).
 5. Issues de dependencia ([MOANA-008](MOANA-008.md), [MOANA-016](MOANA-016.md), [MOANA-020](MOANA-020.md), [MOANA-023](MOANA-023.md)): leer su sección Evidence para conocer las APIs ya entregadas; no reimplementarlas.
 6. ADR en `docs/architecture/` que mencionen los módulos afectados.
 
-### 3. Requisitos de MOANA.md cubiertos
+### 3. Requisitos de MOANART.md cubiertos
 
 | ID | Requisito | Secciones | Verificación exigida |
 | --- | --- | --- | --- |
@@ -95,12 +95,12 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 | Host | Skills a cargar | Revisión especializada |
 | --- | --- | --- |
-| Claude Code | `moana-pixel-art`, `moana-graphics`, `moana-code-review` | `moana-pixel-artist`, `moana-documentation`, `moana-graphics-engineer`, `moana-python-engineer` (sólo lectura; el agente principal integra) |
-| Codex | `$moana-pixel-art`, `$moana-graphics`, `$moana-code-review` | `moana_pixel_artist`, `moana_documentation`, `moana_graphics_engineer`, `moana_python_engineer` |
+| Claude Code | `moanart-pixel-art`, `moanart-graphics`, `moanart-code-review` | `moanart-pixel-artist`, `moanart-documentation`, `moanart-graphics-engineer`, `moanart-python-engineer` (sólo lectura; el agente principal integra) |
+| Codex | `$moanart-pixel-art`, `$moanart-graphics`, `$moanart-code-review` | `moanart_pixel_artist`, `moanart_documentation`, `moanart_graphics_engineer`, `moanart_python_engineer` |
 
 ### 5. Archivos
 
-- Código o documentos a crear/modificar: `examples/`, `src/moana/geometry/`.
+- Código o documentos a crear/modificar: `examples/`, `src/moanart/geometry/`.
 - Pruebas: `tests/integration/`, `tests/unit/geometry/`.
 - No crear módulos ni carpetas sin comportamiento real. No tocar otros módulos salvo exportaciones imprescindibles, justificadas en el PR.
 
@@ -108,16 +108,16 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 - T1: Costuras horizontal/vertical, espejos y traslación por múltiplos de tile
 - T2: Editar un prop por ID y verificar regiones; inspección de legibilidad a escala nativa
-- Oráculos independientes (cálculo a mano o fórmula de MOANA.md); nunca copiar la salida de la implementación como expected.
+- Oráculos independientes (cálculo a mano o fórmula de MOANART.md); nunca copiar la salida de la implementación como expected.
 - Incluir casos negativos con el error de dominio esperado y casos borde (vacío, mínimo, máximo, fuera de rango).
 
 ### 7. Procedimiento
 
 1. Escribir las pruebas de los criterios AC y T antes o junto con la implementación.
-2. Implementar sólo **Scope**; respetar **Out of scope** y las dependencias permitidas de MOANA.md §3.
+2. Implementar sólo **Scope**; respetar **Out of scope** y las dependencias permitidas de MOANART.md §3.
 3. Validación de módulo: `uv run pytest tests/integration/ tests/unit/geometry/ -q` y `uv run mypy src/`.
 4. Validación completa: `uv run python scripts/validate.py` y `uv run python scripts/check_wheel.py`.
-5. Revisión: subagentes listados y skill `moana-code-review`; corregir hallazgos críticos y altos.
+5. Revisión: subagentes listados y skill `moanart-code-review`; corregir hallazgos críticos y altos.
 6. Si hay salida raster: mostrar el PNG a 1x y ampliado por vecino más cercano; si cambia un golden, presentar expected/actual/diff y justificar.
 
 ### 8. Cierre
@@ -136,10 +136,10 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Evidence
 
-- examples/tiles/: fuentes 16×16 (tiles grass, grass-b, dirt, dirt-b, dirt-c, grass-dirt-edge, grass-dirt-edge-b, grass-dirt-edge-s; props rock, bush, sign con pivote (8,15) y luz NO), layout meadow.layout.json (formato local moana-tile-layout/1: fuentes, perfiles de borde, variantes con espejo, rejilla 8×8, props por pivote) y escena derivada meadow.moana.json (documento schema 1.0 ordinario: 68 capas tile_r{r}_c{c} y prop_*, 807 operaciones, 637 máscaras, 75 regiones, 14 colores). README con grid, origen de patrón, pivotes, bordes, variantes, paleta, IDs, edición por ID, atlas, procedencia; licencia y revisión humana PENDIENTES (decisión del propietario).
-- scripts/tiles.py check|build|preview: instancia la geometría existente (moana.geometry.Transform/transform_box) con IDs prefijados por instancia sin rasgos nuevos de schema; la textura pertenece al lienzo (dither con origen común, nunca reflejado; rechaza period_mismatch, dither_origin, phase_mismatch); perfiles de borde emparejados (edge_mismatch, detail_on_edge); espejos verificados contra np.flip del render de la fuente (mirror_asymmetry); rutas confinadas a la carpeta del layout y tamaños acotados (path_escape, too_large); layout validado con modelos estrictos (invalid_layout, invalid_source, duplicate_id); presupuesto de documento (budget) y props dentro del lienzo (off_canvas). La escena versionada es el build exacto de sus fuentes (check falla si está desactualizada).
+- examples/tiles/: fuentes 16×16 (tiles grass, grass-b, dirt, dirt-b, dirt-c, grass-dirt-edge, grass-dirt-edge-b, grass-dirt-edge-s; props rock, bush, sign con pivote (8,15) y luz NO), layout meadow.layout.json (formato local moanart-tile-layout/1: fuentes, perfiles de borde, variantes con espejo, rejilla 8×8, props por pivote) y escena derivada meadow.moanart.json (documento schema 1.0 ordinario: 68 capas tile_r{r}_c{c} y prop_*, 807 operaciones, 637 máscaras, 75 regiones, 14 colores). README con grid, origen de patrón, pivotes, bordes, variantes, paleta, IDs, edición por ID, atlas, procedencia; licencia y revisión humana PENDIENTES (decisión del propietario).
+- scripts/tiles.py check|build|preview: instancia la geometría existente (moanart.geometry.Transform/transform_box) con IDs prefijados por instancia sin rasgos nuevos de schema; la textura pertenece al lienzo (dither con origen común, nunca reflejado; rechaza period_mismatch, dither_origin, phase_mismatch); perfiles de borde emparejados (edge_mismatch, detail_on_edge); espejos verificados contra np.flip del render de la fuente (mirror_asymmetry); rutas confinadas a la carpeta del layout y tamaños acotados (path_escape, too_large); layout validado con modelos estrictos (invalid_layout, invalid_source, duplicate_id); presupuesto de documento (budget) y props dentro del lienzo (off_canvas). La escena versionada es el build exacto de sus fuentes (check falla si está desactualizada).
 - Revisiones de agente: pixel-artist (arbusto, periodicidad, bordes, flecha, rampa de piedra con desplazamiento de tono, labio sur iluminado, grieta de la roca) y graphics-engineer (frame del atlas en (0,0), espejo de líneas con empates, confinamiento de rutas, errores agrupados, IDs duplicados, presupuesto, oráculos no tautológicos) con todas las correcciones aplicadas. Periodicidad a 32 px medida tras corregir: hierba 81→66 %, camino 93→81 %. evaluate_quality sin hallazgos ni singletons en escena, fuentes y variantes (no es aprobación humana). Sin cambios en src/.
-- Gate local macOS: scripts/validate.py 3788 passed con src/moana al 100 %, check_wheel OK, mypy --platform win32 OK, tiles.py check OK, corpus.py check OK, pre-commit OK; matriz pendiente en main.
+- Gate local macOS: scripts/validate.py 3788 passed con src/moanart al 100 %, check_wheel OK, mypy --platform win32 OK, tiles.py check OK, corpus.py check OK, pre-commit OK; matriz pendiente en main.
 - Aprobado por el propietario el 2026-11-20 tras revisión; PR #74 hacia develop.
 - AC1: tests/integration/test_tile_scene.py::test_raw_tile_wraps_onto_itself, ::test_repeated_tile_equals_its_periodic_extension, ::test_scene_seams_keep_the_material_on_both_sides (sin costuras) y ::test_scene_keeps_the_shared_palette_and_editable_ids (paleta compartida, perfil strict, píxeles dentro de la paleta, capas tile_r{r}_c{c} y props, regiones prefijadas).
 - AC2: tests/integration/test_tile_scene.py::test_atlas_rebuilds_the_scene_pixel_for_pixel (export_spritesheet → load_spritesheet → pegado en at − pivote = render de la escena) y ::test_atlas_rebuilds_the_scene_with_another_pattern_origin[(16,0)|(2,2)|(-4,6)].

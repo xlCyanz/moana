@@ -23,12 +23,12 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-import moana.geometry.paths as paths_module
-from moana.core.coordinates import Box, Dimensions, Point
-from moana.core.errors import BudgetExceeded, MoanaError, UnsupportedOperation
-from moana.core.limits import MAX_PATH_CELLS
-from moana.core.vector_path import PATH_UNITS, FixedPath, parse_path
-from moana.geometry import (
+import moanart.geometry.paths as paths_module
+from moanart.core.coordinates import Box, Dimensions, Point
+from moanart.core.errors import BudgetExceeded, MoanArtError, UnsupportedOperation
+from moanart.core.limits import MAX_PATH_CELLS
+from moanart.core.vector_path import PATH_UNITS, FixedPath, parse_path
+from moanart.geometry import (
     AGGDRAW_BACKEND,
     COVERAGE_THRESHOLD,
     TESTED_AGGDRAW_VERSIONS,
@@ -40,7 +40,7 @@ from moana.geometry import (
     rasterize_polygon,
     rasterize_rect,
 )
-from moana.schema import SUPPORTED_PATH_BACKENDS
+from moanart.schema import SUPPORTED_PATH_BACKENDS
 
 U = PATH_UNITS
 Pixel = tuple[int, int]
@@ -234,9 +234,9 @@ def test_backend_failures_while_drawing_become_domain_errors(
         raise failure("native failure with /private/path")
 
     monkeypatch.setattr(aggdraw, "Draw", broken)
-    with pytest.raises(MoanaError) as raised:
+    with pytest.raises(MoanArtError) as raised:
         rasterize_path(closed(scaled([(0, 0), (2, 0), (2, 2)])), Dimensions(4, 4))
-    assert type(raised.value) is MoanaError
+    assert type(raised.value) is MoanArtError
     assert dict(raised.value.context) == {
         "reason": "backend_failure",
         "backend": AGGDRAW_BACKEND,
@@ -257,7 +257,7 @@ def test_type_checks() -> None:
         rasterize_path(path, (4, 4))  # type: ignore[arg-type]
 
 
-def test_result_is_a_moana_mask_without_backend_objects() -> None:
+def test_result_is_a_moanart_mask_without_backend_objects() -> None:
     mask = rasterize_path(closed(scaled([(0, 0), (3, 0), (3, 3)])), Dimensions(4, 4))
     assert type(mask) is Mask
     assert mask.to_array().flags.writeable  # a copy, never the mask's own bits

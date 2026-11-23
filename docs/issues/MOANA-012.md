@@ -25,7 +25,7 @@ Ofrecer funciones tipadas y comandos estáticos con errores/capacidades reales.
 
 ## Scope
 
-Crear moana/api y comando moana para validate/render/inspect/export estático con resultados y errores documentados.
+Crear moanart/api y comando moanart para validate/render/inspect/export estático con resultados y errores documentados.
 
 ## Out of scope
 
@@ -58,7 +58,7 @@ No editor interactivo, GUI ni integración con proveedor de IA.
 
 ## Definition of Done
 
-Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adjuntar evidencia por ID, pasar el gate y revisar el resultado. Dependencias completadas y [ciclo de vida](../guides/issue-lifecycle.md) respetado.
+Cumplir [MOANART.md §25](../../MOANART.md), todos los criterios AC y pruebas T; adjuntar evidencia por ID, pasar el gate y revisar el resultado. Dependencias completadas y [ciclo de vida](../guides/issue-lifecycle.md) respetado.
 
 ## Risks and notes
 
@@ -78,13 +78,13 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 ### 2. Lectura obligatoria (en orden)
 
 1. `CLAUDE.md` (Claude Code) o `AGENTS.md` (Codex) y [flujo de sesión](../guides/agent-workflow.md).
-2. MOANA.md: §1 Visión y objetivos; §3 Arquitectura modular; §13 API pública de Python; §15 Edición no destructiva; §25 Definition of Done. Estas secciones son el contrato normativo; ante duda, prevalecen sobre este issue.
+2. MOANART.md: §1 Visión y objetivos; §3 Arquitectura modular; §13 API pública de Python; §15 Edición no destructiva; §25 Definition of Done. Estas secciones son el contrato normativo; ante duda, prevalecen sobre este issue.
 3. [Contratos de módulos](../architecture/module-contracts.md) para: `api`, `cli`.
 4. Estándares: [python](../../docs/standards/python.md), [architecture](../../docs/standards/architecture.md), [testing](../../docs/standards/testing.md), [security](../../docs/standards/security.md).
 5. Issues de dependencia ([MOANA-010](MOANA-010.md), [MOANA-011](MOANA-011.md)): leer su sección Evidence para conocer las APIs ya entregadas; no reimplementarlas.
 6. ADR en `docs/architecture/` que mencionen los módulos afectados.
 
-### 3. Requisitos de MOANA.md cubiertos
+### 3. Requisitos de MOANART.md cubiertos
 
 | ID | Requisito | Secciones | Verificación exigida |
 | --- | --- | --- | --- |
@@ -95,12 +95,12 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 | Host | Skills a cargar | Revisión especializada |
 | --- | --- | --- |
-| Claude Code | `moana-python`, `moana-architecture`, `moana-code-review` | `moana-python-engineer`, `moana-architect` (sólo lectura; el agente principal integra) |
-| Codex | `$moana-python`, `$moana-architecture`, `$moana-code-review` | `moana_python_engineer`, `moana_architect` |
+| Claude Code | `moanart-python`, `moanart-architecture`, `moanart-code-review` | `moanart-python-engineer`, `moanart-architect` (sólo lectura; el agente principal integra) |
+| Codex | `$moanart-python`, `$moanart-architecture`, `$moanart-code-review` | `moanart_python_engineer`, `moanart_architect` |
 
 ### 5. Archivos
 
-- Código o documentos a crear/modificar: `src/moana/api/`, `src/moana/cli/`.
+- Código o documentos a crear/modificar: `src/moanart/api/`, `src/moanart/cli/`.
 - Pruebas: `tests/unit/api/`, `tests/unit/cli/`.
 - No crear módulos ni carpetas sin comportamiento real. No tocar otros módulos salvo exportaciones imprescindibles, justificadas en el PR.
 
@@ -108,16 +108,16 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 - T1: Integración CLI en directorio ajeno al repo con paths con espacios
 - T2: Tests de exit codes, no traceback por defecto, stdout parseable y error de operación futura
-- Oráculos independientes (cálculo a mano o fórmula de MOANA.md); nunca copiar la salida de la implementación como expected.
+- Oráculos independientes (cálculo a mano o fórmula de MOANART.md); nunca copiar la salida de la implementación como expected.
 - Incluir casos negativos con el error de dominio esperado y casos borde (vacío, mínimo, máximo, fuera de rango).
 
 ### 7. Procedimiento
 
 1. Escribir las pruebas de los criterios AC y T antes o junto con la implementación.
-2. Implementar sólo **Scope**; respetar **Out of scope** y las dependencias permitidas de MOANA.md §3.
+2. Implementar sólo **Scope**; respetar **Out of scope** y las dependencias permitidas de MOANART.md §3.
 3. Validación de módulo: `uv run pytest tests/unit/api/ tests/unit/cli/ -q` y `uv run mypy src/`.
 4. Validación completa: `uv run python scripts/validate.py` y `uv run python scripts/check_wheel.py`.
-5. Revisión: subagentes listados y skill `moana-code-review`; corregir hallazgos críticos y altos.
+5. Revisión: subagentes listados y skill `moanart-code-review`; corregir hallazgos críticos y altos.
 6. Si hay salida raster: mostrar el PNG a 1x y ampliado por vecino más cercano; si cambia un golden, presentar expected/actual/diff y justificar.
 
 ### 8. Cierre
@@ -136,16 +136,16 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Evidence
 
-- src/moana/api/: fachada tipada (load_document desde path autorizado, bytes o mapping con archivo regular abierto sin bloquear y lectura acotada a max_bytes+1; render; export_png RGBA; inspect_document con presupuesto informado; capabilities con lo previsto separado) que sólo compone schema, render y export; retornos congelados sin objetos NumPy/Pillow; apply_edit no se exporta (PLANNED_FUNCTIONS).
-- src/moana/cli/: comando estático moana (validate, inspect, render, export --scale/--overwrite, capabilities; edit previsto → UNSUPPORTED_OPERATION 2) con un único objeto JSON por invocación, códigos de salida del error de dominio (0/2/3/4/5/1), stdout cerrado → 5, interrupción → 130 con INTERRUPTED, errores de uso con mensaje fijo, sin abreviaturas y sin traceback salvo --debug; importa sólo moana.api, moana.core.errors y moana.__version__. Entrypoint [project.scripts] moana; uv.lock sin cambios.
-- src/moana/core/errors.py: ReadError (READ_ERROR, salida 5) para lecturas fallidas, sin rutas completas; amplía ADR-010 (nota de cabecera).
-- scripts/check_wheel.py: instala las dependencias de ejecución fijadas por hash desde el lock (primero offline, después en línea con aviso) y el wheel sin dependencias; ejecuta el moana instalado fuera del repo con paths con espacios, entorno sin PYTHONPATH/PYTHONHOME/VIRTUAL_ENV y timeout, y decodifica el PNG de 128×128.
-- ADR-020 (docs/architecture/decisions/ADR-020-public-api-cli.md); MOANA.md 0.1.8-draft (§3 distribución, §13 fachada, firmas reales, inspect_document/capabilities, READ_ERROR, CLI y códigos; ejemplo con moana.schema.snapshot_digest); contratos de módulos, índice de ADR, overview, README, guía de desarrollo, AGENTS.md, CLAUDE.md y docstring del paquete actualizados.
+- src/moanart/api/: fachada tipada (load_document desde path autorizado, bytes o mapping con archivo regular abierto sin bloquear y lectura acotada a max_bytes+1; render; export_png RGBA; inspect_document con presupuesto informado; capabilities con lo previsto separado) que sólo compone schema, render y export; retornos congelados sin objetos NumPy/Pillow; apply_edit no se exporta (PLANNED_FUNCTIONS).
+- src/moanart/cli/: comando estático moanart (validate, inspect, render, export --scale/--overwrite, capabilities; edit previsto → UNSUPPORTED_OPERATION 2) con un único objeto JSON por invocación, códigos de salida del error de dominio (0/2/3/4/5/1), stdout cerrado → 5, interrupción → 130 con INTERRUPTED, errores de uso con mensaje fijo, sin abreviaturas y sin traceback salvo --debug; importa sólo moanart.api, moanart.core.errors y moanart.__version__. Entrypoint [project.scripts] moanart; uv.lock sin cambios.
+- src/moanart/core/errors.py: ReadError (READ_ERROR, salida 5) para lecturas fallidas, sin rutas completas; amplía ADR-010 (nota de cabecera).
+- scripts/check_wheel.py: instala las dependencias de ejecución fijadas por hash desde el lock (primero offline, después en línea con aviso) y el wheel sin dependencias; ejecuta el moanart instalado fuera del repo con paths con espacios, entorno sin PYTHONPATH/PYTHONHOME/VIRTUAL_ENV y timeout, y decodifica el PNG de 128×128.
+- ADR-020 (docs/architecture/decisions/ADR-020-public-api-cli.md); MOANART.md 0.1.8-draft (§3 distribución, §13 fachada, firmas reales, inspect_document/capabilities, READ_ERROR, CLI y códigos; ejemplo con moanart.schema.snapshot_digest); contratos de módulos, índice de ADR, overview, README, guía de desarrollo, AGENTS.md, CLAUDE.md y docstring del paquete actualizados.
 - Trazabilidad: R014 cubierto; R038 cubierto en parte (render y preview desde API/CLI); la edición y el tutorial render-preview-edit quedan para MOANA-018 y MOANA-033.
-- Gate: scripts/validate.py y scripts/check_wheel.py verdes; moana.api, moana.cli y moana.core.errors al 100 % de líneas y ramas; mypy también con --platform win32. Sin ejecutar en Windows real (pruebas de FIFO, dispositivo, permisos y pipe real se omiten en win32).
-- Revisión: moana-architect (cambios requeridos, aplicados: ReadError en core.errors con ADR-010 ampliado, CLI sólo sobre api, errores de uso sin argv, TypeError en vez de assert, capacidades sin desapariciones, check_wheel offline primero, documentación del contrato) y moana-python-engineer (cambios requeridos, aplicados: BrokenPipe sin traceback, directorio sin permiso → READ_ERROR, JSON pasado como str, FIFO sin bloqueo, --scale estricto, entorno aislado en check_wheel, prueba real de lectura acotada, interrupción en todas las fases, sin abreviaturas, ayuda de edit, --debug tras el comando).
+- Gate: scripts/validate.py y scripts/check_wheel.py verdes; moanart.api, moanart.cli y moanart.core.errors al 100 % de líneas y ramas; mypy también con --platform win32. Sin ejecutar en Windows real (pruebas de FIFO, dispositivo, permisos y pipe real se omiten en win32).
+- Revisión: moanart-architect (cambios requeridos, aplicados: ReadError en core.errors con ADR-010 ampliado, CLI sólo sobre api, errores de uso sin argv, TypeError en vez de assert, capacidades sin desapariciones, check_wheel offline primero, documentación del contrato) y moanart-python-engineer (cambios requeridos, aplicados: BrokenPipe sin traceback, directorio sin permiso → READ_ERROR, JSON pasado como str, FIFO sin bloqueo, --scale estricto, entorno aislado en check_wheel, prueba real de lectura acotada, interrupción en todas las fases, sin abreviaturas, ayuda de edit, --debug tras el comando).
 - Aprobado por el propietario el 2026-11-17 tras revisión; PR #51 hacia develop.
-- AC1: scripts/check_wheel.py (check_cli: wheel limpio, moana validate y export fuera del repo, PNG 128×128 decodificado: «Installed CLI OK»); tests/unit/api/test_api_facade.py::test_export_writes_a_verified_128_png.
+- AC1: scripts/check_wheel.py (check_cli: wheel limpio, moanart validate y export fuera del repo, PNG 128×128 decodificado: «Installed CLI OK»); tests/unit/api/test_api_facade.py::test_export_writes_a_verified_128_png.
 - AC2: tests/unit/cli/test_cli_main.py::test_help_distinguishes_available_and_planned, ::test_edit_help_says_it_is_planned, ::test_capabilities_lists_available_apart_from_planned, ::test_document_errors_map_to_exit_codes, ::test_io_errors_do_not_leak_the_full_path, ::test_export_overwrite y ::test_planned_command_is_unsupported; tests/unit/api/test_api_facade.py::test_capabilities_separate_available_from_planned y ::test_schema_only_operations_are_reported_as_planned. (Nota MOANA-018: test_edit_help_says_it_is_planned, test_help_distinguishes_available_and_planned y test_planned_command_is_unsupported se sustituyeron cuando edit pasó a disponible; la evidencia vigente está en tests/unit/cli/test_cli_edit.py y tests/unit/cli/test_cli_main.py.)
 - T1: tests/integration/test_cli_paths.py::test_cli_outside_the_repository_with_spaces (script instalado y python -m, paths relativos y absolutos con espacios y ñ/í), ::test_cli_failures_in_a_fresh_process y ::test_console_script_is_installed.
 - T2: tests/unit/cli/test_cli_main.py::test_every_domain_error_maps_to_its_exit_code, ::test_document_errors_map_to_exit_codes, ::test_usage_errors_are_invalid_input, ::test_internal_error_hides_the_traceback_unless_debug, ::test_debug_is_accepted_after_the_command, ::test_interrupt_exits_130_with_an_interrupted_error, ::test_closed_stdout_exits_with_the_documented_code, ::test_closed_pipe_in_a_real_process y ::test_planned_command_is_unsupported (operación futura); la fixture run exige una sola línea JSON ASCII en stdout y ningún traceback. (Nota MOANA-018: test_edit_help_says_it_is_planned, test_help_distinguishes_available_and_planned y test_planned_command_is_unsupported se sustituyeron cuando edit pasó a disponible; la evidencia vigente está en tests/unit/cli/test_cli_edit.py y tests/unit/cli/test_cli_main.py.)

@@ -1,8 +1,8 @@
 {
-  "format": "moana-corpus-entry/1",
+  "format": "moanart-corpus-entry/1",
   "id": "frog",
   "category": "creature",
-  "document": "frog.moana.json",
+  "document": "frog.moanart.json",
   "animation_id": null,
   "brief": {
     "subject": "Rana sentada de frente con ojos saltones, manchas en el lomo y vientre claro.",
@@ -21,7 +21,7 @@
   "provenance": {
     "author": "Agente de IA de programación (Claude Code) bajo la dirección del usuario del repositorio",
     "authored_by": "ai_agent",
-    "method": "Creado por un agente de IA mediante operaciones de Moana (formas, máscaras, regiones, paleta y técnicas del motor) en un documento JSON; sin modelo de imagen y sin calcar arte externo. El archivo .moana.json es la única fuente.",
+    "method": "Creado por un agente de IA mediante operaciones de MoanArt (formas, máscaras, regiones, paleta y técnicas del motor) en un documento JSON; sin modelo de imagen y sin calcar arte externo. El archivo .moanart.json es la única fuente.",
     "date": "2026-11-19",
     "licence": "MIT (LICENSE del repositorio), decidida por el propietario el 2026-11-20. Sin assets ni derechos de terceros.",
     "third_party_assets": [],
@@ -52,7 +52,7 @@
     ]
   },
   "rubric": {
-    "format": "moana-rubric/1",
+    "format": "moanart-rubric/1",
     "categories": {
       "legibility": {
         "status": "pending_human_review",

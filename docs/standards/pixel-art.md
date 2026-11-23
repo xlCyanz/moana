@@ -1,6 +1,6 @@
 # Estándares de Pixel Art
 
-Objetivo: sprites legibles y editables a su resolución real. Las reglas matemáticas están en [MOANA.md §§5–11](../../MOANA.md); esta guía explica decisiones artísticas. Pillow y NumPy no garantizan calidad profesional.
+Objetivo: sprites legibles y editables a su resolución real. Las reglas matemáticas están en [MOANART.md §§5–11](../../MOANART.md); esta guía explica decisiones artísticas. Pillow y NumPy no garantizan calidad profesional.
 
 ## Flujo visual
 
@@ -28,7 +28,7 @@ En animación mantener pivote, volumen, contacto con suelo, paleta y fase de pat
 
 ## GIF animado
 
-GIF es un formato de intercambio con pérdidas, no el maestro (que es el PNG RGBA; MOANA.md §18, ADR-034):
+GIF es un formato de intercambio con pérdidas, no el maestro (que es el PNG RGBA; MOANART.md §18, ADR-034):
 
 - Duraciones múltiplo de 10 ms y de al menos 20 ms; mejor 30–40 ms o más, porque los navegadores alargan los retardos más cortos.
 - Sin alfa intermedio en los frames; si existe, pasar como `background` el color real del fondo de destino (otro deja halo) o resolverlo en la fuente con contorno sólido o dithering.
@@ -38,13 +38,13 @@ GIF es un formato de intercambio con pérdidas, no el maestro (que es el PNG RGB
 
 ## APNG y WebP
 
-APNG y WebP son exportaciones lossless opcionales (MOANA.md §18, ADR-035); el maestro sigue siendo el PNG RGBA:
+APNG y WebP son exportaciones lossless opcionales (MOANART.md §18, ADR-035); el maestro sigue siendo el PNG RGBA:
 
 - Conservan cada color RGBA, también el alfa intermedio (bordes suavizados a mano, sombras translúcidas), sin `background` de aplanado ni límite de 256 colores.
 - Admiten cualquier duración entera de 1 a 60 000 ms, sin redondeo a centésimas.
 - El APNG se guarda con extensión `.png` (`image/apng`): los visores sin APNG muestran el primer frame, así que conviene que el frame 0 sea una pose legible.
 - WebP fusiona frames iguales consecutivos (el tiempo total se conserva) y, si todos los frames son iguales o hay uno solo, guarda una imagen fija sin tiempo ni bucle (advertencia `still_image`).
-- Antes de exportar, `moana.export.export_capabilities()` dice si este build tiene el codec; si falta, el exportador falla sin escribir nada y no cambia de formato.
+- Antes de exportar, `moanart.export.export_capabilities()` dice si este build tiene el codec; si falta, el exportador falla sin escribir nada y no cambia de formato.
 - Igual que en GIF, el exportador no escala: para un preview grande, ampliar antes por un entero con nearest-neighbor.
 
-La rúbrica humana de MOANA.md §19 evalúa legibilidad, silueta, clusters, paleta, luz/material y continuidad. Cumplir dimensiones, paleta y hashes sólo demuestra conformidad técnica. El corpus conserva fuente, semilla, procedencia y estado real de revisión.
+La rúbrica humana de MOANART.md §19 evalúa legibilidad, silueta, clusters, paleta, luz/material y continuidad. Cumplir dimensiones, paleta y hashes sólo demuestra conformidad técnica. El corpus conserva fuente, semilla, procedencia y estado real de revisión.

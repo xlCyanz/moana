@@ -21,11 +21,11 @@ from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 from PIL import Image
 
-from moana.core.budget import RenderLimits
-from moana.core.coordinates import Point
-from moana.core.errors import BudgetExceeded, ExportError, ValidationError
-from moana.core.limits import GeometryLimits
-from moana.export import (
+from moanart.core.budget import RenderLimits
+from moanart.core.coordinates import Point
+from moanart.core.errors import BudgetExceeded, ExportError, ValidationError
+from moanart.core.limits import GeometryLimits
+from moanart.export import (
     GIF_MEDIA_TYPE,
     GifLoss,
     GifWarning,
@@ -33,9 +33,9 @@ from moana.export import (
     encode_spritesheet,
     export_gif,
 )
-from moana.export import gif as gif_module
-from moana.export._frames import equivalent_timeline
-from moana.palette import Palette, PaletteColor, Rgba
+from moanart.export import gif as gif_module
+from moanart.export._frames import equivalent_timeline
+from moanart.palette import Palette, PaletteColor, Rgba
 
 RGBA = tuple[int, int, int, int]
 CLEAR: RGBA = (0, 0, 0, 0)
@@ -375,7 +375,7 @@ APP = b"!\xff\x0bNETSCAPE2.0\x03\x01"
 @pytest.mark.parametrize(
     ("loop_count", "blocks_written", "pillow_loop"),
     [
-        # Moana counts plays (0: infinite); NETSCAPE counts repeats after the first.
+        # MoanArt counts plays (0: infinite); NETSCAPE counts repeats after the first.
         (0, [APP + b"\x00\x00\x00"], 0),
         (1, [], None),  # a single play: no block at all
         (2, [APP + b"\x01\x00\x00"], 1),
@@ -647,7 +647,7 @@ def test_budget_is_checked_before_any_pixel_is_read(
     def no_pixels(*_: object, **__: object) -> None:
         raise AssertionError("pixels read before the budget check")
 
-    monkeypatch.setattr("moana.export.gif.np.frombuffer", no_pixels)
+    monkeypatch.setattr("moanart.export.gif.np.frombuffer", no_pixels)
     frames = [solid(f"f{i}", RED, size) for i in range(count)]
     with pytest.raises(BudgetExceeded) as caught:
         encode_gif(frames, limits=limits)
@@ -768,7 +768,7 @@ def test_decoding_failures_never_return_a_gif(monkeypatch: pytest.MonkeyPatch) -
     def broken(*_: object, **__: object) -> None:
         raise OSError("truncated")
 
-    monkeypatch.setattr("moana.export.gif.Image.open", broken)
+    monkeypatch.setattr("moanart.export.gif.Image.open", broken)
     with pytest.raises(ExportError) as caught:
         encode_gif([GOOD])
     assert caught.value.context == {"reason": "unreadable_gif"}
@@ -884,7 +884,7 @@ def test_items_that_are_not_sprite_frames_are_type_errors() -> None:
 def test_gif_module_imports_only_core_palette_and_libraries() -> None:
     tree = ast.parse(Path(gif_module.__file__).read_text(encoding="utf-8"))
     modules = {node.module for node in ast.walk(tree) if isinstance(node, ast.ImportFrom)}
-    internal = {name for name in modules if name and name.startswith("moana")}
+    internal = {name for name in modules if name and name.startswith("moanart")}
     assert all(
-        name.startswith(("moana.core", "moana.palette", "moana.export")) for name in internal
+        name.startswith(("moanart.core", "moanart.palette", "moanart.export")) for name in internal
     )

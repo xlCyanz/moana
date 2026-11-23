@@ -1,6 +1,6 @@
 # ADR-037 — Corpus artístico y rúbrica humana: registro por ejemplo, previews como goldens y regla profesional
 
-Estado: aceptado · 2026-11-19 · Issue: [MOANA-027](../../issues/MOANA-027.md). Amplía [ADR-036](ADR-036-quality-reports.md) (el informe de calidad no tiene puntaje; la rúbrica humana se registra aparte) y reutiliza el harness visual de MOANA-028 ([tests/visual/README.md](../../../tests/visual/README.md)).
+Estado: aceptado · 2026-11-19 · Issue: [MOANA-027](../../issues/MOANA-027.md). Amplía [ADR-036](ADR-036-quality-reports.md) (el informe de calidad no tiene puntaje; la rúbrica humana se registra aparte) y reutiliza el harness visual de MOANA-028 ([tests/visual/README.md](../../../tests/visual/README.md)). Ampliado por [ADR-041](ADR-041-rename-moanart.md): formatos `moanart-rubric/1` y `moanart-corpus-entry/1`; `migrate_rubric` convierte una rúbrica de 0.1.0rc1.
 
 ## Contexto
 

@@ -1,9 +1,9 @@
 """T1/T2/AC2 (MOANA-017): versioned material presets and their seeded cell textures.
 
-Oracles are independent of :mod:`moana.techniques.materials`: grids at the maximum
+Oracles are independent of :mod:`moanart.techniques.materials`: grids at the maximum
 density are written by hand from the pattern rules of ADR-030 (the gate always
 passes when ``density = 64``), and seeded cells are recomputed here with
-``hashlib`` and ``json`` from the key of MOANA.md section 14. Masks come from raw
+``hashlib`` and ``json`` from the key of MOANART.md section 14. Masks come from raw
 bits, never from the operators under test.
 """
 
@@ -18,18 +18,18 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from moana.core.coordinates import Box, Point
-from moana.core.errors import ValidationError
-from moana.core.materials import (
+from moanart.core.coordinates import Box, Point
+from moanart.core.errors import ValidationError
+from moanart.core.materials import (
     MATERIAL_PATTERNS,
     MAX_MATERIAL_ORIGIN,
     MAX_MATERIAL_SCALE,
     cell_span,
     preset,
 )
-from moana.geometry import Mask
-from moana.geometry.mask import _restore
-from moana.techniques import (
+from moanart.geometry import Mask
+from moanart.geometry.mask import _restore
+from moanart.techniques import (
     DENSITY_STEPS,
     MATERIAL_PRESET_NAMES,
     MATERIAL_PRESETS,
@@ -65,7 +65,7 @@ def pixels_of(mask: Mask) -> frozenset[tuple[int, int]]:
 
 
 def oracle_choice(seed: int, op: str, x: int, y: int, channel: int, n: int) -> int:
-    """MOANA.md section 14, recomputed from scratch."""
+    """MOANART.md section 14, recomputed from scratch."""
     key = json.dumps([seed, op, x, y, channel, "cell-sha256-v1"], separators=(",", ":"))
     u = int.from_bytes(hashlib.sha256(key.encode("utf-8")).digest()[:8], "big")
     return u * n // 2**64

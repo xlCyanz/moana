@@ -1,5 +1,5 @@
 {
-  "format": "moana-determinism-corpus/1",
+  "format": "moanart-determinism-corpus/1",
   "cases": {
     "diagonals": {
       "kind": "document",

@@ -4,7 +4,7 @@
 
 40 requisitos con cobertura de planificación. Esto no implica implementación: comprobar estado y evidencia por criterio en cada issue.
 
-| Requisito | Descripción | MOANA.md § | Issues | Verificación exigida |
+| Requisito | Descripción | MOANART.md § | Issues | Verificación exigida |
 | --- | --- | --- | --- | --- |
 | R001 | Visión, alcance y especificación exhaustiva | 1, 2, 23, 24, 25 | [MOANA-000](MOANA-000.md) | Revisión de las 25 secciones y gate P0 |
 | R002 | Lienzo, coordenadas y buffers RGBA seguros | 5 | [MOANA-001](MOANA-001.md), [MOANA-004](MOANA-004.md) | Fixtures de límites, dtype e inmutabilidad |
@@ -35,10 +35,10 @@
 | R027 | Testing y regresión visual | 21 | [MOANA-004](MOANA-004.md), [MOANA-027](MOANA-027.md), [MOANA-028](MOANA-028.md), [MOANA-029](MOANA-029.md), [MOANA-030](MOANA-030.md) | Unit/property/integration y diffs exactos |
 | R028 | Rendimiento y recursos medidos | 22 | [MOANA-003](MOANA-003.md), [MOANA-031](MOANA-031.md), [MOANA-032](MOANA-032.md), [MOANA-036](MOANA-036.md) | Benchmark reproducible y memoria acotada |
 | R029 | Caché e incrementalidad | 22 | [MOANA-032](MOANA-032.md) | Equivalencia caché on/off y límites LRU |
-| R030 | Arquitectura modular y documentación | 3 | [MOANA-000](MOANA-000.md), [MOANA-001](MOANA-001.md), [MOANA-010](MOANA-010.md) | Dependencias internas y ADR revisados |
-| R031 | Paquete instalable y artefactos | 4, 25 | [MOANA-000](MOANA-000.md), [MOANA-035](MOANA-035.md) | Build y smoke de wheel/sdist aislados |
+| R030 | Arquitectura modular y documentación | 3 | [MOANA-000](MOANA-000.md), [MOANA-001](MOANA-001.md), [MOANA-010](MOANA-010.md), [MOANA-037](MOANA-037.md) | Dependencias internas y ADR revisados |
+| R031 | Paquete instalable y artefactos | 4, 25 | [MOANA-000](MOANA-000.md), [MOANA-035](MOANA-035.md), [MOANA-037](MOANA-037.md) | Build y smoke de wheel/sdist aislados |
 | R032 | Entorno Python y herramientas de calidad | 4, 21 | [MOANA-000](MOANA-000.md) | uv locked, Ruff, mypy, pytest y dependencias nativas |
-| R033 | Siete skills especializadas | 3, 25 | [MOANA-000](MOANA-000.md) | Frontmatter, UI metadata, referencias y validador de skills |
+| R033 | Siete skills especializadas | 3, 25 | [MOANA-000](MOANA-000.md), [MOANA-037](MOANA-037.md) | Frontmatter, UI metadata, referencias y validador de skills |
 | R034 | Codex, roles y flujos de agentes | 3, 13, 25 | [MOANA-000](MOANA-000.md), [MOANA-033](MOANA-033.md) | Auditoría de capacidades y configuración local válida |
 | R035 | Hooks y automatización CI | 21, 25 | [MOANA-000](MOANA-000.md), [MOANA-029](MOANA-029.md) | pre-commit y workflow en matriz sin publicación |
 | R036 | Issues, roadmap, dependencias y trazabilidad | 23, 24 | [MOANA-000](MOANA-000.md), [MOANA-035](MOANA-035.md) | Checker DAG, cobertura y documentos sincronizados |

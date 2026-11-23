@@ -1,7 +1,7 @@
 """Cost plan before raster: hand-computed oracles, exact limits and no allocation.
 
 Expected values are derived by hand from the budget-v3 formulas documented in
-``moana.render.budget`` and MOANA.md section 20, never from the implementation.
+``moanart.render.budget`` and MOANART.md section 20, never from the implementation.
 """
 
 from __future__ import annotations
@@ -15,12 +15,12 @@ import pytest
 from hypothesis import given
 from hypothesis import strategies as st
 
-from moana.core import errors
-from moana.core.budget import Deadline, RenderLimits
-from moana.core.limits import GeometryLimits
-from moana.render import budget as budget_module
-from moana.render import estimate_cost, plan_budget
-from moana.schema import Document, validate_document
+from moanart.core import errors
+from moanart.core.budget import Deadline, RenderLimits
+from moanart.core.limits import GeometryLimits
+from moanart.render import budget as budget_module
+from moanart.render import estimate_cost, plan_budget
+from moanart.schema import Document, validate_document
 
 A128 = 128 * 128
 A2048 = 2048 * 2048
@@ -284,7 +284,7 @@ def test_rejection_happens_without_allocating_raster_buffers(
 
 def test_budget_modules_do_not_load_raster_libraries() -> None:
     probe = (
-        "import sys, moana.core.budget; "
+        "import sys, moanart.core.budget; "
         "heavy = {'numpy', 'PIL', 'aggdraw'}; "
         "print(sorted(m for m in sys.modules if m.split('.')[0] in heavy))"
     )
@@ -295,7 +295,7 @@ def test_budget_modules_do_not_load_raster_libraries() -> None:
 
 
 def test_budget_module_imports_no_raster_code() -> None:
-    """``moana.render`` now loads the rasterisers; the estimator itself never does."""
+    """``moanart.render`` now loads the rasterisers; the estimator itself never does."""
     import ast
     from pathlib import Path
 
@@ -303,11 +303,18 @@ def test_budget_module_imports_no_raster_code() -> None:
     names: list[str] = []
     for node in ast.walk(tree):
         if isinstance(node, ast.ImportFrom) and node.module:
-            prefix = "moana." if node.module == "moana" else f"{node.module}."
+            prefix = "moanart." if node.module == "moanart" else f"{node.module}."
             names += [node.module, *(prefix + alias.name for alias in node.names)]
         elif isinstance(node, ast.Import):
             names += [alias.name for alias in node.names]
-    forbidden = ("numpy", "PIL", "aggdraw", "moana.geometry", "moana.layers", "moana.core.canvas")
+    forbidden = (
+        "numpy",
+        "PIL",
+        "aggdraw",
+        "moanart.geometry",
+        "moanart.layers",
+        "moanart.core.canvas",
+    )
     assert names
     assert not [name for name in names if name.startswith(forbidden)]
 
@@ -325,7 +332,7 @@ def test_collinear_diagonal_polygon_is_an_accepted_overestimate() -> None:
 
 
 def test_counts_are_rejected_before_costing_operations(monkeypatch: pytest.MonkeyPatch) -> None:
-    import moana.render.budget as budget
+    import moanart.render.budget as budget
 
     def unexpected(*args: object, **kwargs: object) -> None:
         raise AssertionError("operations costed after a count was already exceeded")

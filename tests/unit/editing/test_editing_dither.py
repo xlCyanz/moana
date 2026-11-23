@@ -2,7 +2,7 @@
 
 A ``dither`` has two colour members (``color_a``, ``color_b``), one mask reference
 (``mask_id``) and no geometry (``origin`` anchors the pattern phase only). Expected
-trees are edits of ``examples/specs/dither-dusk.moana.json`` written by hand.
+trees are edits of ``examples/specs/dither-dusk.moanart.json`` written by hand.
 """
 
 from __future__ import annotations
@@ -14,13 +14,13 @@ from typing import Any
 
 import pytest
 
-from moana.core import errors
-from moana.editing import apply_batch
-from moana.schema import normalize_document, snapshot_digest, validate_document
+from moanart.core import errors
+from moanart.editing import apply_batch
+from moanart.schema import normalize_document, snapshot_digest, validate_document
 
 type Tree = dict[str, Any]
 
-EXAMPLE = Path(__file__).resolve().parents[3] / "examples/specs/dither-dusk.moana.json"
+EXAMPLE = Path(__file__).resolve().parents[3] / "examples/specs/dither-dusk.moanart.json"
 SOURCE: Tree = json.loads(EXAMPLE.read_text(encoding="utf-8"))
 
 NEW_DITHER: Tree = {
@@ -54,7 +54,7 @@ def expected() -> Tree:
     return tree
 
 
-def failure(kind: type[errors.MoanaError], *commands: Tree) -> errors.MoanaError:
+def failure(kind: type[errors.MoanArtError], *commands: Tree) -> errors.MoanArtError:
     with pytest.raises(kind) as caught:
         edit(*commands)
     return caught.value

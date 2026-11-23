@@ -35,7 +35,7 @@ from _pytest.outcomes import Failed  # the class of pytest.fail.Exception, typed
 from hypothesis import HealthCheck, settings
 from PIL import Image
 
-from moana.core.errors import ErrorDetail, MoanaError
+from moanart.core.errors import ErrorDetail, MoanArtError
 
 __all__ = [
     "MAX_REJECTION_BYTES",
@@ -257,12 +257,12 @@ def assert_bounded(
     return rejection.error
 
 
-def pointers(error: MoanaError) -> set[str | None]:
+def pointers(error: MoanArtError) -> set[str | None]:
     """The pointer of an error and of each of its details."""
     return {error.json_pointer, *(detail.json_pointer for detail in error.details)}
 
 
-def reasons(error: MoanaError) -> set[object]:
+def reasons(error: MoanArtError) -> set[object]:
     """The ``reason`` of an error and of each of its details."""
     return {error.context.get("reason"), *(d.context.get("reason") for d in error.details)}
 
@@ -271,7 +271,7 @@ def _detail_text(detail: ErrorDetail) -> list[str]:
     return [detail.message, str(detail.json_pointer), repr(dict(detail.context))]
 
 
-def error_text(error: MoanaError) -> str:
+def error_text(error: MoanArtError) -> str:
     """Everything an error exposes: message, repr, pointer, context, details and notes."""
     parts = [str(error), repr(error), error.message, str(error.json_pointer)]
     parts.append(repr(dict(error.context)))
@@ -281,7 +281,7 @@ def error_text(error: MoanaError) -> str:
     return "\n".join(parts)
 
 
-def assert_clean_error(error: BaseException, *forbidden: str | Path) -> MoanaError:
+def assert_clean_error(error: BaseException, *forbidden: str | Path) -> MoanArtError:
     """The error is a domain error whose exposed text contains none of ``forbidden``.
 
     The message of a chained non-domain exception (a Pydantic, ``OSError`` or Pillow
@@ -289,13 +289,13 @@ def assert_clean_error(error: BaseException, *forbidden: str | Path) -> MoanaErr
     either. Context values are scalars or tuples of scalars (ADR-010), so nothing but
     the text checked here can carry untrusted input or a path.
     """
-    assert isinstance(error, MoanaError), f"not a domain error: {type(error).__name__}"
+    assert isinstance(error, MoanArtError), f"not a domain error: {type(error).__name__}"
     text = error_text(error)
     for item in forbidden:
         needle = str(item)
         assert needle not in text, "the error leaks a path or an untrusted value"
     for chained in (error.__cause__, error.__context__):
-        if chained is None or isinstance(chained, MoanaError):
+        if chained is None or isinstance(chained, MoanArtError):
             continue
         inner = str(chained)
         if len(inner) > 16:

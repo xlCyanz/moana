@@ -15,11 +15,11 @@ from typing import Any
 
 import pytest
 
-from moana.core import errors
-from moana.editing import History, apply_batch
-from moana.render import render
-from moana.render.budget import mask_estimates
-from moana.schema import Document, normalize_document, snapshot_digest, validate_document
+from moanart.core import errors
+from moanart.editing import History, apply_batch
+from moanart.render import render
+from moanart.render.budget import mask_estimates
+from moanart.schema import Document, normalize_document, snapshot_digest, validate_document
 
 type Tree = dict[str, Any]
 
@@ -28,7 +28,7 @@ EXAMPLES = ["skin", "cloth", "metal", "wood", "stone"]
 
 
 def example(name: str) -> Document:
-    path = ROOT / "examples" / "specs" / f"material-{name}.moana.json"
+    path = ROOT / "examples" / "specs" / f"material-{name}.moanart.json"
     return validate_document(json.loads(path.read_text(encoding="utf-8")))
 
 
@@ -267,7 +267,7 @@ def test_set_parameters_targets_only_unlocked_operations_with_parameters() -> No
 
 
 def test_shade_light_is_a_parameter_too() -> None:
-    path = ROOT / "examples" / "specs" / "shaded-orb.moana.json"
+    path = ROOT / "examples" / "specs" / "shaded-orb.moanart.json"
     base = validate_document(json.loads(path.read_text(encoding="utf-8")))
     light = {"direction": "se", "height": 1, "intensity": 3, "ambient": 1}
     result = apply_batch(base, batch(base, set_parameters("orb_shading", light=light)))

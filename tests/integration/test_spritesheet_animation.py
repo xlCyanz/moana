@@ -1,6 +1,6 @@
 """Animation → spritesheet → slices: the bouncing slime rebuilds exactly (MOANA-023, AC1).
 
-``moana.animation.FrameRender`` is passed to the exporter as is: it satisfies the
+``moanart.animation.FrameRender`` is passed to the exporter as is: it satisfies the
 structural ``SpriteFrame`` protocol without ``export`` importing ``animation``.
 """
 
@@ -12,17 +12,17 @@ from pathlib import Path
 import pytest
 from PIL import Image
 
-from moana.animation import render_animation
-from moana.export import (
+from moanart.animation import render_animation
+from moanart.export import (
     SheetAnimation,
     export_spritesheet,
     load_spritesheet,
     parse_spritesheet_manifest,
 )
-from moana.schema import validate_document
+from moanart.schema import validate_document
 
 ROOT = Path(__file__).resolve().parents[2]
-SLIME = ROOT / "examples/specs/bouncing-slime.moana.json"
+SLIME = ROOT / "examples/specs/bouncing-slime.moanart.json"
 
 
 @pytest.mark.parametrize(("columns", "margin", "padding"), [(1, 0, 0), (2, 1, 1), (4, 2, 3)])

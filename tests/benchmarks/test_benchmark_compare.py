@@ -18,7 +18,7 @@ pytestmark = pytest.mark.benchmark
 
 def _report(median_ns: float = 100.0, rss: int | None = 1000) -> Json:
     return {
-        "format": "moana-benchmark/1",
+        "format": "moanart-benchmark/1",
         "corpus_digest": "sha256:" + "0" * 64,
         "method": {"warmups": 5, "samples": 30},
         "environment": {
@@ -115,7 +115,7 @@ def _set(report: Json, path: tuple[str, ...], value: object) -> None:
         (("method", "warmups"), 1, "warmups differ"),
         (("method", "samples"), 3, "samples differ"),
         (("cases",), {}, "case sets differ"),
-        (("format",), "moana-benchmark/2", "report format differs"),
+        (("format",), "moanart-benchmark/2", "report format differs"),
     ],
 )
 def test_t2_non_comparable_reports_are_refused(

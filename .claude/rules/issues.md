@@ -6,7 +6,7 @@ paths:
 
 # Trabajo con issues
 
-Ciclo: [issue-lifecycle](../../docs/guides/issue-lifecycle.md). Skill: `moana-issue-planning`.
+Ciclo: [issue-lifecycle](../../docs/guides/issue-lifecycle.md). Skill: `moanart-issue-planning`.
 
 - IDs `MOANA-xxx` estables; nunca reutilizar ni renumerar. Aliases `MOA-xxx` sólo históricos.
 - Estados `todo → ready → in_progress → review → done`; `blocked` exige motivo y condición. `ready`+ exige dependencias `done`.

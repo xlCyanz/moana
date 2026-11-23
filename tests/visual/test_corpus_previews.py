@@ -1,4 +1,4 @@
-"""MOANA-027: the reviewed previews of the art corpus are exact goldens (MOANA.md §21).
+"""MOANA-027: the reviewed previews of the art corpus are exact goldens (MOANART.md §21).
 
 Every example of ``examples/corpus/`` has its previews under ``previews/``: the
 render at 1x (still image or the frames side by side), the same at 4x by
@@ -7,7 +7,7 @@ view (8-connected clusters of equal colour, singletons in magenta) at 4x, and fo
 the tile its 3x3 repetition at 4x. They are built in memory by ``scripts/corpus.py``
 and compared through the visual harness: pixels, never PNG bytes. A source change
 updates them only with the reviewed local flow of ``tests/visual/README.md``
-(``MOANA_UPDATE_GOLDENS=1``; refused in CI).
+(``MOANART_UPDATE_GOLDENS=1``; refused in CI).
 """
 
 from __future__ import annotations
@@ -15,7 +15,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from moana.api import evaluate_quality
+from moanart.api import evaluate_quality
 from scripts.corpus import cluster_labels, load_entries, preview_path, scale, sheet, views
 
 from .harness import assert_matches_golden
@@ -33,7 +33,7 @@ def test_corpus_preview_matches_its_golden(slug: str, view: str) -> None:
         views(entry)[view],
         preview_path(entry, view),
         name=f"corpus__{slug}__{view}",
-        source=f"examples/corpus/{slug}/{slug}.moana.json",
+        source=f"examples/corpus/{slug}/{slug}.moanart.json",
     )
 
 

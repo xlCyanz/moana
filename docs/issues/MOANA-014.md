@@ -58,7 +58,7 @@ No clasificar intención artística como error matemático ni borrar detalles au
 
 ## Definition of Done
 
-Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adjuntar evidencia por ID, pasar el gate y revisar el resultado. Dependencias completadas y [ciclo de vida](../guides/issue-lifecycle.md) respetado.
+Cumplir [MOANART.md §25](../../MOANART.md), todos los criterios AC y pruebas T; adjuntar evidencia por ID, pasar el gate y revisar el resultado. Dependencias completadas y [ciclo de vida](../guides/issue-lifecycle.md) respetado.
 
 ## Risks and notes
 
@@ -78,13 +78,13 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 ### 2. Lectura obligatoria (en orden)
 
 1. `CLAUDE.md` (Claude Code) o `AGENTS.md` (Codex) y [flujo de sesión](../guides/agent-workflow.md).
-2. MOANA.md: §3 Arquitectura modular; §8 Siluetas, contornos y pixel clusters; §19 Control de calidad gráfico; §25 Definition of Done. Estas secciones son el contrato normativo; ante duda, prevalecen sobre este issue.
+2. MOANART.md: §3 Arquitectura modular; §8 Siluetas, contornos y pixel clusters; §19 Control de calidad gráfico; §25 Definition of Done. Estas secciones son el contrato normativo; ante duda, prevalecen sobre este issue.
 3. [Contratos de módulos](../architecture/module-contracts.md) para: `techniques`, `quality`.
 4. Estándares: [python](../../docs/standards/python.md), [architecture](../../docs/standards/architecture.md), [testing](../../docs/standards/testing.md), [pixel-art](../../docs/standards/pixel-art.md).
 5. Issues de dependencia ([MOANA-013](MOANA-013.md), [MOANA-005](MOANA-005.md)): leer su sección Evidence para conocer las APIs ya entregadas; no reimplementarlas.
 6. ADR en `docs/architecture/` que mencionen los módulos afectados.
 
-### 3. Requisitos de MOANA.md cubiertos
+### 3. Requisitos de MOANART.md cubiertos
 
 | ID | Requisito | Secciones | Verificación exigida |
 | --- | --- | --- | --- |
@@ -95,12 +95,12 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 | Host | Skills a cargar | Revisión especializada |
 | --- | --- | --- |
-| Claude Code | `moana-graphics`, `moana-pixel-art`, `moana-testing`, `moana-code-review` | `moana-graphics-engineer`, `moana-pixel-artist`, `moana-qa-engineer` (sólo lectura; el agente principal integra) |
-| Codex | `$moana-graphics`, `$moana-pixel-art`, `$moana-testing`, `$moana-code-review` | `moana_graphics_engineer`, `moana_pixel_artist`, `moana_qa_engineer` |
+| Claude Code | `moanart-graphics`, `moanart-pixel-art`, `moanart-testing`, `moanart-code-review` | `moanart-graphics-engineer`, `moanart-pixel-artist`, `moanart-qa-engineer` (sólo lectura; el agente principal integra) |
+| Codex | `$moanart-graphics`, `$moanart-pixel-art`, `$moanart-testing`, `$moanart-code-review` | `moanart_graphics_engineer`, `moanart_pixel_artist`, `moanart_qa_engineer` |
 
 ### 5. Archivos
 
-- Código o documentos a crear/modificar: `src/moana/techniques/`, `src/moana/quality/`.
+- Código o documentos a crear/modificar: `src/moanart/techniques/`, `src/moanart/quality/`.
 - Pruebas: `tests/unit/techniques/`, `tests/unit/quality/`.
 - No crear módulos ni carpetas sin comportamiento real. No tocar otros módulos salvo exportaciones imprescindibles, justificadas en el PR.
 
@@ -108,16 +108,16 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 - T1: Máscaras con huecos, contactos de esquina, diagonal y borde de canvas
 - T2: Componentes conocidos, outline de ancho 1/2 y operación editable que reproduce la máscara
-- Oráculos independientes (cálculo a mano o fórmula de MOANA.md); nunca copiar la salida de la implementación como expected.
+- Oráculos independientes (cálculo a mano o fórmula de MOANART.md); nunca copiar la salida de la implementación como expected.
 - Incluir casos negativos con el error de dominio esperado y casos borde (vacío, mínimo, máximo, fuera de rango).
 
 ### 7. Procedimiento
 
 1. Escribir las pruebas de los criterios AC y T antes o junto con la implementación.
-2. Implementar sólo **Scope**; respetar **Out of scope** y las dependencias permitidas de MOANA.md §3.
+2. Implementar sólo **Scope**; respetar **Out of scope** y las dependencias permitidas de MOANART.md §3.
 3. Validación de módulo: `uv run pytest tests/unit/techniques/ tests/unit/quality/ -q` y `uv run mypy src/`.
 4. Validación completa: `uv run python scripts/validate.py` y `uv run python scripts/check_wheel.py`.
-5. Revisión: subagentes listados y skill `moana-code-review`; corregir hallazgos críticos y altos.
+5. Revisión: subagentes listados y skill `moanart-code-review`; corregir hallazgos críticos y altos.
 6. Si hay salida raster: mostrar el PNG a 1x y ampliado por vecino más cercano; si cambia un golden, presentar expected/actual/diff y justificar.
 
 ### 8. Cierre
@@ -137,15 +137,15 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 ## Evidence
 
 - Operación editable outline en schema 1.0 ({id, type, mask_id, width 1..16, side outer|inner, color}) bajo la excepción previa a la primera publicación (ADR-022/023/025); fila de miembros colors=(color,), masks=(mask_id,), sin geometría: set_color la recolorea, translate/set_geometry dan not_geometric; probado también con History (undo/redo).
-- Morfología Chebyshev (moana.geometry.dilate/erode, core.morphology.morphology_bytes) con sumas prefijas int32 acumuladas en el sitio, radio 1–16 (MAX_MORPHOLOGY_RADIUS), clipping antes de reservar, sin wraparound y exterior transparente; outline_mask: outer = dilate−máscara, inner = máscara−erode; pico medido ≤ 0,997 de morphology_bytes en cajas 1×1…2048² y radios 1/3/16.
+- Morfología Chebyshev (moanart.geometry.dilate/erode, core.morphology.morphology_bytes) con sumas prefijas int32 acumuladas en el sitio, radio 1–16 (MAX_MORPHOLOGY_RADIUS), clipping antes de reservar, sin wraparound y exterior transparente; outline_mask: outer = dilate−máscara, inner = máscara−erode; pico medido ≤ 0,997 de morphology_bytes en cajas 1×1…2048² y radios 1/3/16.
 - Render: cada outline es un fill diferido sobre outline_box; budget-v6 = budget-v5 + término de outline (visitas(M)+16·P; bytes(M)+área(Bm)+morphology_bytes+2·área(X)); idéntico a v5 sin outline.
 - Análisis de clusters en techniques (Python puro, sin NumPy directo): runs por fila + union-find en buffers array, conectividad 4/8, avisos singleton e irregular_steps, tope MAX_CLUSTER_RUNS=262144 (cluster_runs) y memoria acotada por cluster_bytes (CLUSTER_RUN_BYTES=512); excepciones por región (ClusterException, máx. MAX_CLUSTER_EXCEPTIONS=64) resueltas con MaskCover (una consulta vectorizada por hallazgo); deadline comprobado en cada etapa; el documento nunca cambia.
-- moana.render.render_with_regions valida una vez, resuelve regiones antes de rasterizar y admite la solicitud entera (render + regiones + cover + análisis) contra un único presupuesto; moana.api.analyze_clusters valida la configuración antes de renderizar; sin comando CLI (ADR-027).
+- moanart.render.render_with_regions valida una vez, resuelve regiones antes de rasterizar y admite la solicitud entera (render + regiones + cover + análisis) contra un único presupuesto; moanart.api.analyze_clusters valida la configuración antes de renderizar; sin comando CLI (ADR-027).
 - Limitaciones documentadas en ADR-027: esquinas gruesas Chebyshev en contornos anchos (§8), irregular_steps casi no se dispara sobre contornos cerrados ni arcos que pasan de runs a columnas y da falsos positivos en curvas de duplicación 1,1,2,4 (suprimibles por región); peor caso medido 1,1 s sin excepciones y 1,9 s con 64 en un tablero 512².
-- Ejemplo examples/specs/outlined-slime.moana.json: contorno exterior ink, contorno interior slime_dark recortado al lado en sombra (capa body_shade) y dos glints singleton conservados por la excepción eye_glints (0 avisos con ella, 2 sin ella); revisión artística de agente (no aprobación humana).
-- ADR-027 (docs/architecture/decisions/ADR-027-outlines-clusters.md) con notas de cabecera en ADR-011, ADR-015, ADR-018, ADR-020, ADR-022 y ADR-025; MOANA.md 0.1.15-draft (§8, §12, §13, §19, §20); contratos de módulos, índice de ADR, overview, README, AGENTS.md y CLAUDE.md actualizados; JSON Schema regenerado; sin módulo quality (MOANA-026).
-- Gate sobre develop 74dae10 (MOANA-019 incluido): scripts/validate.py (1932 passed, src/moana al 100 % de líneas y ramas) y scripts/check_wheel.py verdes; mypy también con --platform win32; generate_schema --check al día. Evidencia de plataforma: local macOS; matriz pendiente en main.
-- Revisión: moana-graphics-engineer (cambios requeridos, aplicados: morphology_bytes como cota real con cumsum en el sitio y término de búferes de iteración, test de pico en 42 cajas/radios), moana-architect (cambios requeridos, aplicados: deadline y cota en la supresión, presupuesto por solicitud, rebase sobre MOANA-019, comentarios y contratos), moana-qa-engineer (cambios requeridos, aplicados: MaskCover y MAX_CLUSTER_EXCEPTIONS, memoria de clusters acotada, casos límite exactos, test de escalera corregido, severity Literal) y moana-pixel-artist (cambios requeridos, aplicados: sombreado según la luz y sheen separado del ojo).
+- Ejemplo examples/specs/outlined-slime.moanart.json: contorno exterior ink, contorno interior slime_dark recortado al lado en sombra (capa body_shade) y dos glints singleton conservados por la excepción eye_glints (0 avisos con ella, 2 sin ella); revisión artística de agente (no aprobación humana).
+- ADR-027 (docs/architecture/decisions/ADR-027-outlines-clusters.md) con notas de cabecera en ADR-011, ADR-015, ADR-018, ADR-020, ADR-022 y ADR-025; MOANART.md 0.1.15-draft (§8, §12, §13, §19, §20); contratos de módulos, índice de ADR, overview, README, AGENTS.md y CLAUDE.md actualizados; JSON Schema regenerado; sin módulo quality (MOANA-026).
+- Gate sobre develop 74dae10 (MOANA-019 incluido): scripts/validate.py (1932 passed, src/moanart al 100 % de líneas y ramas) y scripts/check_wheel.py verdes; mypy también con --platform win32; generate_schema --check al día. Evidencia de plataforma: local macOS; matriz pendiente en main.
+- Revisión: moanart-graphics-engineer (cambios requeridos, aplicados: morphology_bytes como cota real con cumsum en el sitio y término de búferes de iteración, test de pico en 42 cajas/radios), moanart-architect (cambios requeridos, aplicados: deadline y cota en la supresión, presupuesto por solicitud, rebase sobre MOANA-019, comentarios y contratos), moanart-qa-engineer (cambios requeridos, aplicados: MaskCover y MAX_CLUSTER_EXCEPTIONS, memoria de clusters acotada, casos límite exactos, test de escalera corregido, severity Literal) y moanart-pixel-artist (cambios requeridos, aplicados: sombreado según la luz y sheen separado del ojo).
 - Aprobado por el propietario el 2026-11-17 tras revisión; PR #57 hacia develop.
 - AC1: tests/unit/techniques/test_techniques_outline.py::test_ac1_outer_width_1_rings_the_square_and_fills_its_hole, ::test_ac1_inner_width_1_follows_the_border_and_the_hole, ::test_ac1_width_2_doubles_the_ring_on_both_sides, ::test_ac1_inner_width_2_around_a_single_pixel_hole, ::test_ac1_clipping_at_the_canvas_corner y ::test_outline_matches_the_set_oracle (Hypothesis contra oráculo de conjuntos); tests/unit/render/test_render_outline.py::test_ac1_document_outline_at_the_canvas_edge; tests/unit/geometry/test_geometry_morphology.py::test_width_16_matches_the_set_oracle_on_explicit_masks.
 - AC2: tests/unit/api/test_api_clusters.py::test_ac2_without_exception_the_glint_warns, ::test_ac2_region_exception_keeps_the_glint_without_warning (canonical_json, snapshot_digest y normalize_document idénticos) y ::test_example_outlined_slime_keeps_its_glints_by_exception; tests/unit/techniques/test_techniques_clusters.py::test_ac2_region_exception_suppresses_and_keeps_the_finding_visible y ::test_many_exceptions_cost_one_cover_query_per_finding.

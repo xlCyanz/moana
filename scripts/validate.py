@@ -46,7 +46,7 @@ def main() -> int:
             python,
             "-m",
             "pytest",
-            "--cov=moana",
+            "--cov=moanart",
             "--cov=scripts",
             "--cov-report=term-missing",
             "--cov-report=xml:artifacts/coverage.xml",

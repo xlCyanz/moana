@@ -1,0 +1,92 @@
+{
+  "format": "moana-spritesheet",
+  "frames": [
+    {
+      "digest": "sha256:c6a64ff726496a453a37e541d01ff28ae9a79305d1e1614b0d45052d7143ff46",
+      "duration_ms": 100,
+      "frame_id": "f0",
+      "pivot": [
+        0,
+        2
+      ],
+      "rect": [
+        0,
+        0,
+        2,
+        2
+      ],
+      "source_size": [
+        2,
+        2
+      ],
+      "trim_offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "digest": "sha256:17478c6a183a315216ace2bbd7317ba658614cc8f8da0ab2400d3e924a3a3c35",
+      "duration_ms": 101,
+      "frame_id": "f1",
+      "pivot": [
+        0,
+        2
+      ],
+      "rect": [
+        3,
+        0,
+        2,
+        2
+      ],
+      "source_size": [
+        2,
+        2
+      ],
+      "trim_offset": [
+        0,
+        0
+      ]
+    },
+    {
+      "digest": "sha256:b64220d622448b9663cd170941814b67ed4266da7339a9eb993e30c769b1ef28",
+      "duration_ms": 102,
+      "frame_id": "f2",
+      "pivot": [
+        0,
+        2
+      ],
+      "rect": [
+        0,
+        3,
+        2,
+        2
+      ],
+      "source_size": [
+        2,
+        2
+      ],
+      "trim_offset": [
+        0,
+        0
+      ]
+    }
+  ],
+  "image": {
+    "digest": "sha256:286d77c9753444ce2456f1d8ec65965d2eebc77cd2cb2df59d3f659a61095fee",
+    "height": 5,
+    "media_type": "image/png",
+    "name": "sheet.png",
+    "sha256": "sha256:2d51a5d6600fb435a24f5c00ab361ca01914c4b2476d70e2f62227f0da3d17fb",
+    "width": 5
+  },
+  "layout": {
+    "columns": 2,
+    "frame_count": 3,
+    "frame_height": 2,
+    "frame_width": 2,
+    "margin": 0,
+    "padding": 1,
+    "rows": 2
+  },
+  "version": 1
+}

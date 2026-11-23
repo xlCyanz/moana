@@ -1,6 +1,6 @@
 """Material textures without flicker across processes and hash seeds (MOANA-017, T2).
 
-Every ``examples/specs/material-*.moana.json`` renders to identical RGBA bytes and
+Every ``examples/specs/material-*.moanart.json`` renders to identical RGBA bytes and
 digest in fresh interpreters with different ``PYTHONHASHSEED`` values and in repeated
 renders: the texture depends only on the document seed, the operation ID and the
 cell (``cell-sha256-v1``), never on ``hash()``, a global RNG or the clock.
@@ -18,16 +18,16 @@ from typing import Any
 
 import pytest
 
-from moana.render import render
-from moana.schema import validate_document
+from moanart.render import render
+from moanart.schema import validate_document
 
 SPECS = Path(__file__).resolve().parents[2] / "examples" / "specs"
 EXAMPLES = ["skin", "cloth", "metal", "wood", "stone"]
 
 PROBE = """
 import hashlib, json, sys
-from moana.render import render
-from moana.schema import validate_document
+from moanart.render import render
+from moanart.schema import validate_document
 result = render(validate_document(sys.stdin.buffer.read()))
 print(json.dumps({
     "digest": result.digest,
@@ -37,7 +37,7 @@ print(json.dumps({
 
 
 def _source(name: str) -> bytes:
-    return (SPECS / f"material-{name}.moana.json").read_bytes()
+    return (SPECS / f"material-{name}.moanart.json").read_bytes()
 
 
 def _in_process(source: bytes) -> dict[str, Any]:

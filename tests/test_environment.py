@@ -1,4 +1,4 @@
-"""Smoke checks for installed native dependencies, not Moana rendering."""
+"""Smoke checks for installed native dependencies, not MoanArt rendering."""
 
 import io
 from importlib.metadata import version
@@ -10,12 +10,12 @@ import pytest
 from PIL import Image
 from pydantic import BaseModel, ConfigDict, ValidationError
 
-import moana
+import moanart
 
 
 def test_installed_package_metadata_and_typing_marker() -> None:
-    assert version("moana-pixel-engine") == moana.__version__
-    assert files("moana").joinpath("py.typed").is_file()
+    assert version("moanart") == moanart.__version__
+    assert files("moanart").joinpath("py.typed").is_file()
 
 
 def test_numpy_pillow_png_roundtrip() -> None:

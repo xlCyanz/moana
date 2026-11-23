@@ -8,9 +8,9 @@ Fecha: **2026-11-16**, America/Santo_Domingo. Resultado: **P0 completada**, list
 
 | Grupo | Archivos / resultados |
 | --- | --- |
-| Especificación | [MOANA.md](../MOANA.md), 25 secciones con contratos de geometría, color, capas, JSON, edición, determinismo y seguridad |
+| Especificación | [MOANART.md](../MOANART.md), 25 secciones con contratos de geometría, color, capas, JSON, edición, determinismo y seguridad |
 | Operación | [AGENTS.md](../AGENTS.md), README, CONTRIBUTING, SECURITY, CHANGELOG y convenciones de editor/Git |
-| Python | pyproject.toml, uv.lock, .python-version, .uv-version, src/moana/__init__.py y py.typed |
+| Python | pyproject.toml, uv.lock, .python-version, .uv-version, src/moanart/__init__.py y py.typed |
 | Entorno local | .venv con Python 3.12.16; uv y Python administrado en .tools; cachés ignoradas por Git |
 | Calidad | Ruff, mypy estricto, pytest, Hypothesis disponible, coverage, build/Hatchling, pre-commit |
 | Agentes | Siete skills con SKILL.md y metadata UI; siete roles TOML y configuración de proyecto |
@@ -38,7 +38,7 @@ El [inventario completo](FILE_INVENTORY.md) enumera todos los archivos de fuente
 | Hatchling | 1.33.0 |
 | pre-commit | 4.7.0 |
 
-El lock contiene 40 paquetes resueltos contando Moana. Las versiones transitivas y hashes están en uv.lock. `uv` no estaba instalado y el Python predeterminado del shell era 3.9.6; se preparó un bootstrap local con el Python 3.14 disponible y luego se instaló el intérprete 3.12 del proyecto, sin cambiar el Python global.
+El lock contiene 40 paquetes resueltos contando MoanArt. Las versiones transitivas y hashes están en uv.lock. `uv` no estaba instalado y el Python predeterminado del shell era 3.9.6; se preparó un bootstrap local con el Python 3.14 disponible y luego se instaló el intérprete 3.12 del proyecto, sin cambiar el Python global.
 
 ## Validaciones observadas
 

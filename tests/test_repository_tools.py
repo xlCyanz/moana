@@ -14,7 +14,7 @@ import pytest
 import yaml
 from pydantic import ValidationError
 
-import moana
+import moanart
 from scripts import release
 from scripts.check_repository import check_links, check_skill
 from scripts.check_wheel import (
@@ -58,11 +58,11 @@ def test_links_detect_missing_and_escaping_targets(tmp_path: Path) -> None:
     [
         "# No metadata",
         "---\nname: wrong-name\ndescription: A valid description\n---\nInstructions",
-        "---\nname: moana-python\ndescription: ''\n---\nInstructions",
+        "---\nname: moanart-python\ndescription: ''\n---\nInstructions",
     ],
 )
 def test_invalid_skills_fail(tmp_path: Path, content: str) -> None:
-    folder = tmp_path / "moana-python"
+    folder = tmp_path / "moanart-python"
     folder.mkdir()
     entry = folder / "SKILL.md"
     entry.write_text(content, encoding="utf-8")
@@ -126,7 +126,7 @@ def test_ci_publishes_and_compares_determinism_reports() -> None:
     systems = {"ubuntu": "Linux", "macos": "Darwin", "windows": "Windows"}
     platforms = arguments[arguments.index("--expected-platforms") + 1].split(",")
     assert sorted(platforms) == sorted(systems[os.split("-")[0]] for os in matrix["os"])
-    assert "MOANA_UPDATE_GOLDENS" not in json.dumps(jobs)  # CI never rewrites baselines
+    assert "MOANART_UPDATE_GOLDENS" not in json.dumps(jobs)  # CI never rewrites baselines
     for step in compare["steps"]:  # the comparison never touches the reviewed manifest
         assert "tests/fixtures" not in json.dumps(step)
 
@@ -136,7 +136,7 @@ def test_ci_publishes_and_compares_determinism_reports() -> None:
 REPOSITORY = Path(__file__).resolve().parents[1]
 
 
-def _tar(path: Path, members: dict[str, bytes], prefix: str = "moana-0.1.0rc1") -> Path:
+def _tar(path: Path, members: dict[str, bytes], prefix: str = "moanart-0.1.0rc2") -> Path:
     with tarfile.open(path, "w:gz") as archive:
         for name, data in members.items():
             info = tarfile.TarInfo(f"{prefix}/{name}" if prefix else name)
@@ -152,7 +152,7 @@ def _complete_sdist() -> dict[str, bytes]:
 
 
 def test_t1_sdist_audit_accepts_a_clean_sdist(tmp_path: Path) -> None:
-    members = _complete_sdist() | {".env.example": b"", "src/moana/build_info.py": b""}
+    members = _complete_sdist() | {".env.example": b"", "src/moanart/build_info.py": b""}
     assert audit_sdist(_tar(tmp_path / "ok.tar.gz", members)) == []
 
 
@@ -162,7 +162,7 @@ def test_t1_sdist_audit_accepts_a_clean_sdist(tmp_path: Path) -> None:
         (".venv/bin/python", "environment, cache or output"),
         ("artifacts/coverage.xml", "environment, cache or output"),
         (".claude/worktrees/agent/README.md", "environment, cache or output"),
-        ("src/moana/__pycache__/x.cpython-312.pyc", "environment, cache or output"),
+        ("src/moanart/__pycache__/x.cpython-312.pyc", "environment, cache or output"),
         ("dist/old.whl", "environment, cache or output"),
         (".env", "environment file"),
         (".env.local", "environment file"),
@@ -192,16 +192,16 @@ def test_t1_sdist_audit_requires_licence_and_sources(tmp_path: Path) -> None:
 
 
 def test_t1_wheel_audit_requires_licence_metadata(tmp_path: Path) -> None:
-    info = "moana_pixel_engine-0.1.0rc1.dist-info"
+    info = "moanart-0.1.0rc2.dist-info"
     good = tmp_path / "good.whl"
     with zipfile.ZipFile(good, "w") as archive:
-        archive.writestr("moana/__init__.py", "")
+        archive.writestr("moanart/__init__.py", "")
         archive.writestr(f"{info}/METADATA", "Name: x\nLicense-Expression: MIT\n")
         archive.writestr(f"{info}/licenses/LICENSE", "MIT")
     assert audit_wheel(good) == []
     bad = tmp_path / "bad.whl"
     with zipfile.ZipFile(bad, "w") as archive:
-        archive.writestr("moana/__init__.py", "")
+        archive.writestr("moanart/__init__.py", "")
         archive.writestr("tests/test_x.py", "")
         archive.writestr(f"{info}/METADATA", "Name: x\n")
     errors = audit_wheel(bad)
@@ -219,7 +219,7 @@ def test_t1_built_artifacts_need_one_wheel_and_one_sdist(tmp_path: Path) -> None
 
 
 def test_t1_migration_smoke_preserves_the_original(tmp_path: Path) -> None:
-    example = REPOSITORY / "examples/specs/minimal.moana.json"
+    example = REPOSITORY / "examples/specs/minimal.moanart.json"
     before = example.read_bytes()
     summary = check_migrations(tmp_path / "first", example)
     assert "original preserved" in summary and example.read_bytes() == before
@@ -287,13 +287,15 @@ def test_t2_requirement_audit_does_not_confuse_planning_with_delivery(tmp_path: 
 
 def test_t2_release_versions_and_licence_come_from_the_code() -> None:
     versions = {name: value for name, value, _ in release.version_rows()}
-    assert versions["Paquete"] == f"`{moana.__version__}`" == "`0.1.0rc1`"
+    assert versions["Paquete"] == f"`{moanart.__version__}`" == "`0.1.0rc2`"
     assert versions["Migraciones de documento"].startswith("`1.0`; 0 migraciones")
     compatibility = {name: value for name, value, _ in release.compatibility_rows()}
     assert compatibility["Licencia"] == "`MIT` (`LICENSE`)"
     assert compatibility["Matriz CI: Python"] == "`3.12`, `3.13`, `3.14`"
     licence = (REPOSITORY / "LICENSE").read_text(encoding="utf-8")
-    assert licence.startswith("MIT License\n\nCopyright (c) 2026 xlCyanz and Moana contributors\n")
+    assert licence.startswith(
+        "MIT License\n\nCopyright (c) 2026 xlCyanz and MoanArt contributors\n"
+    )
 
 
 @pytest.mark.parametrize("kind", [tarfile.SYMTYPE, tarfile.LNKTYPE])
@@ -305,11 +307,11 @@ def test_t1_sdist_audit_rejects_links(tmp_path: Path, kind: bytes) -> None:
         with tarfile.open(linked, "w:gz") as archive:
             for member, stream in members:
                 archive.addfile(member, stream)
-            link = tarfile.TarInfo("moana-0.1.0rc1/src/moana/escape.py")
+            link = tarfile.TarInfo("moanart-0.1.0rc2/src/moanart/escape.py")
             link.type = kind
             link.linkname = "../../../../etc/passwd" if kind == tarfile.SYMTYPE else "LICENSE"
             archive.addfile(link)
-    assert audit_sdist(linked) == ["sdist member is a link: src/moana/escape.py"]
+    assert audit_sdist(linked) == ["sdist member is a link: src/moanart/escape.py"]
 
 
 def test_t1_sdist_and_wheel_audits_need_their_metadata(tmp_path: Path) -> None:
@@ -320,7 +322,7 @@ def test_t1_sdist_and_wheel_audits_need_their_metadata(tmp_path: Path) -> None:
     ]
     wheel = tmp_path / "no-metadata.whl"
     with zipfile.ZipFile(wheel, "w") as archive:
-        archive.writestr("moana/__init__.py", "")
+        archive.writestr("moanart/__init__.py", "")
     assert audit_wheel(wheel) == ["wheel has no METADATA"]
 
 

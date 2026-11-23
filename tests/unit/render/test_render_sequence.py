@@ -1,6 +1,6 @@
 """Sequence rendering under one accumulated budget (MOANA-022 T1, AC2; ADR-032).
 
-Expected totals are composed by hand from MOANA.md section 20 and ADR-032 (sum of
+Expected totals are composed by hand from MOANART.md section 20 and ADR-032 (sum of
 visits, sum of frame areas, largest working peak plus every retained RGBA), with the
 per-frame inputs taken from the single-frame estimator that ADR-018 already fixes.
 """
@@ -12,9 +12,9 @@ from typing import Any
 
 import pytest
 
-from moana.core import errors
-from moana.core.budget import Deadline, RenderLimits
-from moana.render import (
+from moanart.core import errors
+from moanart.core.budget import Deadline, RenderLimits
+from moanart.render import (
     RESULT_OVERHEAD_BYTES,
     SequenceBudget,
     admit_sequence,
@@ -24,8 +24,8 @@ from moana.render import (
     render_admitted,
     render_sequence,
 )
-from moana.render import sequence as sequence_module
-from moana.schema import Document, validate_document
+from moanart.render import sequence as sequence_module
+from moanart.schema import Document, validate_document
 
 
 def document(width: int, layers: int = 1, color: str = "#FF0000FF") -> Document:

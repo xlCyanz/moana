@@ -1,1 +1,1 @@
-"""Moana test suite."""
+"""MoanArt test suite."""

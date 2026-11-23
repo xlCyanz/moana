@@ -1,4 +1,4 @@
-"""Adverse cases: requests over the safety budgets of MOANA.md section 20 (MOANA-031 AC2).
+"""Adverse cases: requests over the safety budgets of MOANART.md section 20 (MOANA-031 AC2).
 
 They would miss every latency target if they were drawn; the engine must reject them
 with ``BudgetExceeded`` before any raster or pixel buffer. Each check records the
@@ -12,10 +12,10 @@ import time
 from collections.abc import Callable
 from typing import Final
 
-from moana import api
-from moana.animation import render_animation
-from moana.core import BudgetExceeded, RenderLimits
-from moana.schema import validate_document
+from moanart import api
+from moanart.animation import render_animation
+from moanart.core import BudgetExceeded, RenderLimits
+from moanart.schema import validate_document
 
 from .corpus import RECTS, Json, canonical_bytes, static_document
 from .measure import Counters, counting_rasterizer, traced_peak

@@ -17,8 +17,8 @@ import numpy as np
 import pytest
 from PIL import Image
 
-from moana.api import export_png, load_document, render
-from moana.project import Asset, Project, load_project, save_project
+from moanart.api import export_png, load_document, render
+from moanart.project import Asset, Project, load_project, save_project
 
 from .corpus import MINIMAL, tiny_png
 from .guards import (

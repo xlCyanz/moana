@@ -1,4 +1,4 @@
-"""T1/T2/AC2 (MOANA-014): cluster analysis of RGBA images (MOANA.md sections 8 and 19).
+"""T1/T2/AC2 (MOANA-014): cluster analysis of RGBA images (MOANART.md sections 8 and 19).
 
 Images are drawn from character grids written by hand (``.`` is transparent); the
 expected counts, boxes and areas are counted by hand, and the property test compares
@@ -16,13 +16,13 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from moana.core.budget import Deadline
-from moana.core.coordinates import Box, Dimensions, Point
-from moana.core.errors import BudgetExceeded, ReferenceError, ValidationError
-from moana.core.limits import MAX_CLUSTER_EXCEPTIONS, MAX_CLUSTER_RUNS
-from moana.geometry import Mask, MaskCover, cover_bytes, rasterize_line
-from moana.geometry.mask import _restore
-from moana.techniques import (
+from moanart.core.budget import Deadline
+from moanart.core.coordinates import Box, Dimensions, Point
+from moanart.core.errors import BudgetExceeded, ReferenceError, ValidationError
+from moanart.core.limits import MAX_CLUSTER_EXCEPTIONS, MAX_CLUSTER_RUNS
+from moanart.geometry import Mask, MaskCover, cover_bytes, rasterize_line
+from moanart.geometry.mask import _restore
+from moanart.techniques import (
     CLUSTER_FIXED_BYTES,
     CLUSTER_RULES,
     CLUSTER_RUN_BYTES,

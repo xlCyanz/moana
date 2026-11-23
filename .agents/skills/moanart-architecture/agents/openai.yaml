@@ -1,0 +1,4 @@
+interface:
+  display_name: "MoanArt · Architecture"
+  short_description: "Contratos y fronteras modulares de MoanArt"
+  default_prompt: "Usa $moanart-architecture para trabajar el issue asignado de MoanArt respetando su contrato y estado real."

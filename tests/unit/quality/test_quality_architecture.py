@@ -1,4 +1,4 @@
-"""moana.quality respects MOANA.md section 3 (ADR-036): it reads pixels, nothing more."""
+"""moanart.quality respects MOANART.md section 3 (ADR-036): it reads pixels, nothing more."""
 
 from __future__ import annotations
 
@@ -7,16 +7,22 @@ import sys
 from collections.abc import Iterator
 from pathlib import Path
 
-SRC = Path(__file__).resolve().parents[3] / "src/moana"
-ALLOWED = ("moana.core", "moana.palette", "moana.geometry", "moana.techniques", "moana.quality")
+SRC = Path(__file__).resolve().parents[3] / "src/moanart"
+ALLOWED = (
+    "moanart.core",
+    "moanart.palette",
+    "moanart.geometry",
+    "moanart.techniques",
+    "moanart.quality",
+)
 
 
 def imported_modules(path: Path) -> Iterator[str]:
-    """Every module a file imports; ``from moana import x`` yields ``moana.x``."""
+    """Every module a file imports; ``from moanart import x`` yields ``moanart.x``."""
     for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
         if isinstance(node, ast.ImportFrom) and node.module:
-            if node.module == "moana":
-                yield from (f"moana.{alias.name}" for alias in node.names)
+            if node.module == "moanart":
+                yield from (f"moanart.{alias.name}" for alias in node.names)
             else:
                 yield node.module
         elif isinstance(node, ast.Import):
@@ -40,7 +46,7 @@ def test_no_engine_module_imports_quality() -> None:
             continue
         for path in sorted(package.rglob("*.py")):
             for name in imported_modules(path):
-                assert not name.startswith("moana.quality"), f"{path} imports {name}"
+                assert not name.startswith("moanart.quality"), f"{path} imports {name}"
 
 
 def test_quality_has_no_eval_exec_or_pickle() -> None:

@@ -1,1 +1,1 @@
-"""Tests of moana.project (MOANA-020)."""
+"""Tests of moanart.project (MOANA-020)."""

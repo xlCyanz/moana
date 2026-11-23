@@ -9,10 +9,10 @@ import pytest
 from hypothesis import given
 from hypothesis import strategies as st
 
-from moana.core.coordinates import Box, Dimensions, Point
-from moana.core.errors import ValidationError
-from moana.geometry import Mask, rasterize_ellipse, rasterize_line, rasterize_rect
-from moana.geometry.mask import _restore
+from moanart.core.coordinates import Box, Dimensions, Point
+from moanart.core.errors import ValidationError
+from moanart.geometry import Mask, rasterize_ellipse, rasterize_line, rasterize_rect
+from moanart.geometry.mask import _restore
 
 DIMS = Dimensions(6, 5)
 

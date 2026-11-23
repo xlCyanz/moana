@@ -1,7 +1,13 @@
 # Changelog
 
-## Sin publicar
+## 0.1.0rc2 — sin publicar (release candidate preparado)
 
+Versiones: paquete `0.1.0rc2`, schema de documento `1.0`, proyecto `1.0`, renderer `render-v1`, estimador `budget-v8`, reglas de calidad `quality-v1`, backend vectorial `aggdraw-v1`; sin cambios de formato salvo el nombre. Detalle en [docs/RELEASE.md](docs/RELEASE.md).
+
+- **Ruptura: el proyecto se llama MoanArt** (MOANA-037, [ADR-041](docs/architecture/decisions/ADR-041-rename-moanart.md)). La distribución `moana-pixel-engine` pasa a `moanart`, el paquete `moana` a `moanart`, el comando `moana` a `moanart`, `MoanaError` a `MoanArtError`, `moana_version` a `moanart_version`, las extensiones `.moana`/`.moana.json` a `.moanart`/`.moanart.json`, los formatos `moana-*` a `moanart-*` (proyecto, spritesheet, rúbrica, ficha de corpus, layout de tiles, clave de caché, benchmark, diff visual y determinismo), el JSON Schema a `moanart-document-1.0.schema.json`, las variables `MOANA_*` a `MOANART_*`, `MOANA.md` a `MOANART.md` y las skills, subagentes y roles a `moanart-*`/`moanart_*`. No hay alias del nombre anterior. Documentos, revisiones, `snapshot_digest` y RGBA no cambian; los IDs de issue `MOANA-xxx`, el tag `v0.1.0rc1`, el repositorio remoto y la etiqueta del backlog en GitHub conservan el nombre.
+- Migración explícita de lo guardado con 0.1.0rc1: cargar un proyecto con `project.moana.json` o `kind: "moana-project"`, un manifiesto `moana-spritesheet` o una rúbrica `moana-rubric/1` falla con `UnsupportedVersion` `legacy_name`, que indica el reemplazo y la función de migración. `migrate_project` renombra sólo el sobre en un destino nuevo (registro `member: "kind"`, paso `rename-to-moanart`), conserva historial y assets y guarda el manifiesto original; `migrate_spritesheet_manifest` y `migrate_rubric` son puras. Un documento no contiene el nombre: basta con renombrar el archivo.
+- `scripts/legacy_name.py` (en `check_repository`) y `scripts/check_wheel.py` (wheel y sdist) impiden reintroducir el nombre anterior fuera de una lista de excepciones auditada.
+- Línea base del benchmark regenerada con el formato `moanart-benchmark/1` (render estático 29,7 ms, animación de 16 frames 652,7 ms, pico 61,0 MiB).
 - Ejemplo `examples/desk/`: escritorio isométrico de 512 × 512 con historial de edición (revisión 0 con sombras tramadas y dos batches que las sustituyen por bandas sólidas escalonadas), preview a 1× y `tests/integration/test_desk_example.py`, que reproduce el historial y compara la preview con el render. Sin cambios en el motor; revisión artística humana pendiente.
 
 ## 0.1.0rc1 — 2026-11-20 (release candidate, prerelease de GitHub)

@@ -6,7 +6,7 @@ from typing import cast
 
 import pytest
 
-from moana.core import errors
+from moanart.core import errors
 
 PUBLIC = {
     errors.ValidationError: ("VALIDATION_ERROR", 2),
@@ -22,19 +22,19 @@ PUBLIC = {
 
 
 @pytest.mark.parametrize(("error_type", "expected"), PUBLIC.items())
-def test_codes_and_exit_codes_follow_moana_spec(
-    error_type: type[errors.MoanaError], expected: tuple[str, int]
+def test_codes_and_exit_codes_follow_moanart_spec(
+    error_type: type[errors.MoanArtError], expected: tuple[str, int]
 ) -> None:
     error = error_type("message")
     assert (error.code, error.exit_code) == expected
-    assert isinstance(error, errors.MoanaError)
+    assert isinstance(error, errors.MoanArtError)
     assert str(error) == "message"
 
 
 def test_codes_are_unique_and_base_is_internal_failure() -> None:
     codes = [error_type.code for error_type in PUBLIC]
     assert len(set(codes)) == len(codes)
-    assert errors.MoanaError("boom").exit_code == 1
+    assert errors.MoanArtError("boom").exit_code == 1
 
 
 def test_bounds_error_is_a_validation_error() -> None:
@@ -54,8 +54,8 @@ def test_reference_error_does_not_shadow_builtin_for_callers() -> None:
     assert not issubclass(errors.ReferenceError, ReferenceError)
 
 
-@pytest.mark.parametrize("error_type", [errors.MoanaError, *PUBLIC])
-def test_errors_survive_pickle_and_deepcopy(error_type: type[errors.MoanaError]) -> None:
+@pytest.mark.parametrize("error_type", [errors.MoanArtError, *PUBLIC])
+def test_errors_survive_pickle_and_deepcopy(error_type: type[errors.MoanArtError]) -> None:
     original = error_type("bad", json_pointer="/canvas/width", context={"field": "width"})
     for clone in (pickle.loads(pickle.dumps(original)), copy.deepcopy(original)):
         assert type(clone) is error_type
@@ -99,7 +99,7 @@ def test_details_aggregate_located_problems_and_survive_pickle() -> None:
     for clone in (pickle.loads(pickle.dumps(error)), copy.deepcopy(error)):
         assert clone.details == details
         assert clone.details[0].context == {"n": 1}
-    assert errors.MoanaError("single").details == ()
+    assert errors.MoanArtError("single").details == ()
 
 
 def test_error_detail_is_immutable_hashable_and_validated() -> None:

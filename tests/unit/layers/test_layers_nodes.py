@@ -9,12 +9,12 @@ from pathlib import Path
 
 import pytest
 
-from moana.core.coordinates import Box, Dimensions
-from moana.core.errors import ValidationError
-from moana.core.limits import MAX_GROUP_DEPTH, MAX_LAYERS, MAX_OPERATIONS
-from moana.geometry import rasterize_rect
-from moana.layers import MAX_NAME_BYTES, Fill, Group, Layer, LayerTree
-from moana.palette import Rgba
+from moanart.core.coordinates import Box, Dimensions
+from moanart.core.errors import ValidationError
+from moanart.core.limits import MAX_GROUP_DEPTH, MAX_LAYERS, MAX_OPERATIONS
+from moanart.geometry import rasterize_rect
+from moanart.layers import MAX_NAME_BYTES, Fill, Group, Layer, LayerTree
+from moanart.palette import Rgba
 
 DIMS = Dimensions(4, 4)
 SOLID = Fill(rasterize_rect(Box(0, 0, 2, 2), DIMS), Rgba(1, 2, 3, 255))
@@ -186,7 +186,7 @@ def test_nodes_are_immutable_values() -> None:
 
 # --- Architecture -------------------------------------------------------------------
 
-LAYERS = Path(__file__).resolve().parents[3] / "src/moana/layers"
+LAYERS = Path(__file__).resolve().parents[3] / "src/moanart/layers"
 
 
 def test_layers_imports_only_core_palette_geometry_numpy_and_stdlib() -> None:
@@ -204,15 +204,15 @@ def test_layers_imports_only_core_palette_geometry_numpy_and_stdlib() -> None:
                 assert (
                     name.split(".")[0] in sys.stdlib_module_names
                     or name.split(".")[0] == "numpy"
-                    or name.startswith(("moana.core", "moana.palette", "moana.geometry"))
-                    or name.startswith("moana.layers")
+                    or name.startswith(("moanart.core", "moanart.palette", "moanart.geometry"))
+                    or name.startswith("moanart.layers")
                 ), f"{path.name} imports {name}"
-                assert name != "moana.core.pillow_adapter"
+                assert name != "moanart.core.pillow_adapter"
 
 
 def test_importing_layers_loads_neither_pillow_nor_pydantic() -> None:
     probe = (
-        "import sys, moana.layers; "
+        "import sys, moanart.layers; "
         "heavy = {'PIL', 'aggdraw', 'pydantic'}; "
         "print(sorted(m for m in sys.modules if m.split('.')[0] in heavy))"
     )

@@ -13,11 +13,11 @@ from typing import Any
 import pytest
 from pydantic_core import ValidationError as PydanticValidationError
 
-import moana.schema.models as models_module
-from moana.core import errors
-from moana.core.limits import MAX_PATH_COMMANDS, MAX_PATH_SEGMENTS
-from moana.core.vector_path import MAX_PATH_COORDINATE, FixedPath, parse_path
-from moana.schema import (
+import moanart.schema.models as models_module
+from moanart.core import errors
+from moanart.core.limits import MAX_PATH_COMMANDS, MAX_PATH_SEGMENTS
+from moanart.core.vector_path import MAX_PATH_COORDINATE, FixedPath, parse_path
+from moanart.schema import (
     PLANNED_MASK_TYPES,
     PLANNED_OPERATION_TYPES,
     SUPPORTED_MASK_TYPES,
@@ -45,7 +45,7 @@ def with_path(minimal: dict[str, Any], **fields: Any) -> dict[str, Any]:
 
 
 def problems(source: dict[str, Any]) -> list[tuple[str, str | None, object]]:
-    with pytest.raises(errors.MoanaError) as raised:
+    with pytest.raises(errors.MoanArtError) as raised:
         validate_document(source)
     return [(d.code, d.json_pointer, d.context.get("reason")) for d in raised.value.details]
 

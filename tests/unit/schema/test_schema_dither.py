@@ -1,4 +1,4 @@
-"""Schema 1.0 payload of ``dither`` (MOANA-016, MOANA.md sections 10 and 12, ADR-025)."""
+"""Schema 1.0 payload of ``dither`` (MOANA-016, MOANART.md sections 10 and 12, ADR-025)."""
 
 from __future__ import annotations
 
@@ -7,10 +7,10 @@ from typing import Any
 
 import pytest
 
-from moana.core import errors
-from moana.core.coordinates import Point
-from moana.core.dither import DITHER_SIZES
-from moana.schema import (
+from moanart.core import errors
+from moanart.core.coordinates import Point
+from moanart.core.dither import DITHER_SIZES
+from moanart.schema import (
     PLANNED_OPERATION_TYPES,
     SUPPORTED_OPERATION_TYPES,
     DitherOperation,
@@ -20,7 +20,7 @@ from moana.schema import (
     snapshot_digest,
     validate_document,
 )
-from moana.techniques import DITHER_SIZES as TECHNIQUE_SIZES
+from moanart.techniques import DITHER_SIZES as TECHNIQUE_SIZES
 
 POINTER = "/layers/0/operations/1"
 

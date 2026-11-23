@@ -13,7 +13,7 @@ from hypothesis import given
 from hypothesis import strategies as st
 from PIL import Image
 
-from moana.core import (
+from moanart.core import (
     BudgetExceeded,
     Dimensions,
     GeometryLimits,
@@ -22,9 +22,9 @@ from moana.core import (
     RenderLimits,
     ValidationError,
 )
-from moana.core.canvas import Canvas, check_canvas_budget
-from moana.core.coordinates import MAX_DIMENSION
-from moana.core.pillow_adapter import canvas_from_pillow, canvas_to_pillow
+from moanart.core.canvas import Canvas, check_canvas_budget
+from moanart.core.coordinates import MAX_DIMENSION
+from moanart.core.pillow_adapter import canvas_from_pillow, canvas_to_pillow
 
 REFERENCE = Dimensions(128, 128)
 LIMITS = RenderLimits()

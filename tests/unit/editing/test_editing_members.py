@@ -8,9 +8,9 @@ are not live.
 
 from __future__ import annotations
 
-from moana.editing import _tree
-from moana.editing._tree import GEOMETRY_SHAPES, live_references
-from moana.schema import MASK_MEMBERS, OPERATION_MEMBERS
+from moanart.editing import _tree
+from moanart.editing._tree import GEOMETRY_SHAPES, live_references
+from moanart.schema import MASK_MEMBERS, OPERATION_MEMBERS
 
 
 def test_editing_reads_the_schema_table() -> None:

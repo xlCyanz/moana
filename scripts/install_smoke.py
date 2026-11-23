@@ -1,14 +1,14 @@
-"""Migration and corpus smoke run against an *installed* Moana (MOANA-035 T1).
+"""Migration and corpus smoke run against an *installed* MoanArt (MOANA-035 T1).
 
 ``scripts/check_wheel.py`` runs this file with the interpreter of a clean virtual
 environment in isolated mode (``python -I``), once for the wheel and once for the
-sdist, so it imports only the standard library and the installed ``moana``:
+sdist, so it imports only the standard library and the installed ``moanart``:
 
 ``migrations WORK DOCUMENT``
     Copies the current ``DOCUMENT`` into ``WORK`` as a smoke-only legacy 0.9 file
     (an extra ``smoke_only_format`` member that the single step removes; never a
-    published format) and migrates it with :func:`moana.schema.migrate_document` and
-    :func:`moana.project.migrate_project` into a new project. The legacy source must
+    published format) and migrates it with :func:`moanart.schema.migrate_document` and
+    :func:`moanart.project.migrate_project` into a new project. The legacy source must
     keep its exact bytes, the migrated project must render exactly like the current
     document and keep the original in its migration record; the production registry
     must treat the current document as already migrated and write nothing.
@@ -29,9 +29,9 @@ from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any, Final
 
-from moana.api import evaluate_quality, load_document, render
-from moana.project import load_project, migrate_project
-from moana.schema import (
+from moanart.api import evaluate_quality, load_document, render
+from moanart.project import load_project, migrate_project
+from moanart.schema import (
     SCHEMA_VERSION,
     Migration,
     MigrationRegistry,
@@ -94,7 +94,7 @@ def check_migrations(work: Path, document: Path) -> str:
     )
     require(migrate_document(current).steps == (), "a current document was migrated")
 
-    source = work / "legacy" / "legacy sprite.moana.json"
+    source = work / "legacy" / "legacy sprite.moanart.json"
     source.parent.mkdir(parents=True)
     source.write_text(json.dumps(legacy, indent=2), encoding="utf-8")
     original = source.read_bytes()
@@ -131,7 +131,7 @@ def check_corpus(folder: Path) -> int:
     require(bool(examples), f"no corpus examples under {folder}")
     for example in examples:
         record = json.loads((example / f"{example.name}.corpus.json").read_text(encoding="utf-8"))
-        document = load_document(example / f"{example.name}.moana.json")
+        document = load_document(example / f"{example.name}.moanart.json")
         pinned = record["render"]
         require(render(document).digest == pinned["digest"], example.name)
         animation_id = record.get("animation_id")

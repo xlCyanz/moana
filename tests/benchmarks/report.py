@@ -1,9 +1,9 @@
 """Benchmark report: environment, fresh-process runs, targets, privacy and summary.
 
-The report (``moana-benchmark/1``) is canonical JSON (sorted keys, two-space indent,
+The report (``moanart-benchmark/1``) is canonical JSON (sorted keys, two-space indent,
 UTF-8, final newline). It records where it was produced (CPU, OS, Python, library
 versions, lock digest, commit) without hostname, user name, absolute paths or
-timestamps, and states every MOANA.md section 22 target as met (``true``), missed
+timestamps, and states every MOANART.md section 22 target as met (``true``), missed
 (``false``) or unknown (``null``). Targets are informational until there is a stable
 runner; nothing here is a gate. The Markdown summary is a pure function of the
 canonical JSON, so it can be regenerated from a committed report.
@@ -30,7 +30,7 @@ from .adversarial import budget_cases
 from .corpus import ANIMATION, ROOT, STATIC, Json, case_names, corpus_digest
 from .measure import DEFAULT_SAMPLES, DEFAULT_WARMUPS, P95_METHOD, require_count
 
-REPORT_FORMAT: Final = "moana-benchmark/1"
+REPORT_FORMAT: Final = "moanart-benchmark/1"
 LOCK_PATH: Final = ROOT / "uv.lock"
 MIB: Final = 1024 * 1024
 TARGETS: Final = {
@@ -39,7 +39,7 @@ TARGETS: Final = {
     "process_peak_rss_mib": 256,
 }
 NOTE: Final = (
-    "Informational targets of MOANA.md section 22: not a gate until a stable runner exists. "
+    "Informational targets of MOANART.md section 22: not a gate until a stable runner exists. "
     "Safety budgets of section 20 apply regardless of these results."
 )
 WORKER_BASE_TIMEOUT_S: Final = 60
@@ -118,8 +118,8 @@ def git_state() -> Json:
 
 def environment() -> Json:
     """Facts that identify the measuring machine and build; no paths, names or times."""
-    import moana
-    from moana.render import ESTIMATOR_VERSION, RENDERER_BACKEND, RENDERER_VERSION
+    import moanart
+    from moanart.render import ESTIMATOR_VERSION, RENDERER_BACKEND, RENDERER_VERSION
 
     lock = hashlib.sha256(LOCK_PATH.read_bytes()).hexdigest() if LOCK_PATH.is_file() else None
     return {
@@ -131,7 +131,7 @@ def environment() -> Json:
         "macos_version": platform.mac_ver()[0] or None,
         "python_implementation": platform.python_implementation(),
         "python_version": platform.python_version(),
-        "moana": moana.__version__,
+        "moanart": moanart.__version__,
         "numpy": _version("numpy"),
         "pillow": _version("pillow"),
         "aggdraw": _version("aggdraw"),
@@ -207,7 +207,7 @@ def evaluate_targets(cases: Mapping[str, Mapping[str, Any]]) -> Json:
 def build_report(
     cases: Sequence[Json], env: Json, warmups: int, samples: int, budgets: Json
 ) -> Json:
-    """Assemble the ``moana-benchmark/1`` report from measured cases and context."""
+    """Assemble the ``moanart-benchmark/1`` report from measured cases and context."""
     names = tuple(case["case"] for case in cases)
     by_name = {case["case"]: case for case in cases}
     return {
@@ -356,13 +356,13 @@ def _header(report: Mapping[str, Any]) -> list[str]:
     env, method = report["environment"], report["method"]
     macos = f" (macOS {env['macos_version']})" if env.get("macos_version") else ""
     return [
-        "# Benchmark de Moana (informativo)",
+        "# Benchmark de MoanArt (informativo)",
         "",
         f"Formato `{report['format']}`; corpus `{report['corpus_digest']}`.",
         f"{method['warmups']} warmups y {method['samples']} muestras por fase; p95 por rango "
         "más cercano; un proceso nuevo por caso.",
         "",
-        "Objetivos de MOANA.md §22: informativos hasta disponer de un runner estable. "
+        "Objetivos de MOANART.md §22: informativos hasta disponer de un runner estable. "
         "Los presupuestos de seguridad (§20) siguen vigentes aunque no se cumplan.",
         "",
         "## Máquina",
@@ -372,7 +372,7 @@ def _header(report: Mapping[str, Any]) -> list[str]:
         f"- Python: {env['python_implementation']} {env['python_version']}; numpy "
         f"{env['numpy']}, Pillow {env['pillow']}, aggdraw {env['aggdraw']}, "
         f"pydantic {env['pydantic']}",
-        f"- Moana {env['moana']}, {env['renderer_version']} ({env['renderer_backend']}), "
+        f"- MoanArt {env['moanart']}, {env['renderer_version']} ({env['renderer_backend']}), "
         f"{env['estimator_version']}; commit `{env['git']['commit']}` "
         f"(dirty: {env['git']['dirty']}); uv.lock `{env['lock_sha256']}`",
     ]

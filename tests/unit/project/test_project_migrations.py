@@ -18,15 +18,15 @@ from typing import Any
 
 import pytest
 
-from moana.core.errors import (
+from moanart.core.errors import (
     BudgetExceeded,
     ExportError,
-    MoanaError,
+    MoanArtError,
     UnsupportedVersion,
     ValidationError,
 )
-from moana.core.limits import MAX_PROJECT_MIGRATIONS
-from moana.project import (
+from moanart.core.limits import MAX_PROJECT_MIGRATIONS
+from moanart.project import (
     MANIFEST_NAME,
     PROJECT_MIGRATIONS,
     Asset,
@@ -41,9 +41,9 @@ from moana.project import (
     save_project,
     save_project_archive,
 )
-from moana.project.archive import build_archive
-from moana.render import render
-from moana.schema import MigrationRegistry, canonical_json, validate_document
+from moanart.project.archive import build_archive
+from moanart.render import render
+from moanart.schema import MigrationRegistry, canonical_json, validate_document
 from tests.fixtures.migration.formats import EXPECTED, OLDEST, PREVIOUS, TEST_ONLY_MIGRATIONS
 
 from .conftest import PngFactory
@@ -88,16 +88,16 @@ def _legacy_project(tmp_path: Path, png: PngFactory) -> tuple[Path, Asset]:
 
 
 def _legacy_archive(tmp_path: Path, png: PngFactory) -> tuple[Path, Asset, bytes]:
-    """A ``.moana`` ZIP whose manifest embeds the test-only 0.9 document."""
+    """A ``.moanart`` ZIP whose manifest embeds the test-only 0.9 document."""
     asset = Asset.from_png("sheet", png(3, 2, (1, 2, 3, 255)))
-    current = tmp_path / "current.moana"
+    current = tmp_path / "current.moanart"
     save_project_archive(Project(_expected(), (asset,)), current)
     with zipfile.ZipFile(current) as archive:
         files = {name: archive.read(name) for name in archive.namelist()}
     manifest = json.loads(files[MANIFEST_NAME])
     manifest["document"] = json.loads(PREVIOUS.read_text(encoding="utf-8"))
     files[MANIFEST_NAME] = json.dumps(manifest).encode("utf-8")
-    source = tmp_path / "legacy.moana"
+    source = tmp_path / "legacy.moanart"
     source.write_bytes(build_archive(files, ProjectLimits()))
     current.unlink()
     return source, asset, files[MANIFEST_NAME]
@@ -188,8 +188,8 @@ def test_ac1_migration_records_survive_saving_again(tmp_path: Path) -> None:
     project = load_project(destination)
     save_project(project, tmp_path / "copy")
     assert load_project(tmp_path / "copy") == project
-    save_project_archive(project, tmp_path / "copy.moana")
-    assert load_project(tmp_path / "copy.moana") == project
+    save_project_archive(project, tmp_path / "copy.moanart")
+    assert load_project(tmp_path / "copy.moanart") == project
     # Explicit empty migrations load like an omitted member; saving omits it again.
     plain = tmp_path / "plain"
     save_project(Project(project.document), plain)
@@ -301,7 +301,7 @@ def test_t1_migrating_the_destination_again_writes_nothing(tmp_path: Path) -> No
     assert _state(tmp_path) == before
     assert not (tmp_path / "again").exists()
     # A current plain document is verified and left alone too.
-    current = tmp_path / "current.moana.json"
+    current = tmp_path / "current.moanart.json"
     current.write_bytes(EXPECTED.read_bytes())
     assert migrate_project(current, tmp_path / "unused").save is None
 
@@ -310,7 +310,7 @@ def test_t1_migrating_the_destination_again_writes_nothing(tmp_path: Path) -> No
 def test_t1_unknown_document_versions_are_rejected_before_writing(
     tmp_path: Path, png: PngFactory, version: str, relation: str
 ) -> None:
-    source = tmp_path / "doc.moana.json"
+    source = tmp_path / "doc.moanart.json"
     tree = json.loads(PREVIOUS.read_text(encoding="utf-8"))
     tree["schema_version"] = version
     source.write_text(json.dumps(tree), encoding="utf-8")
@@ -356,7 +356,7 @@ def test_t1_envelope_errors_keep_their_pointers(tmp_path: Path, png: PngFactory)
     with pytest.raises(ValidationError) as caught:
         migrate_project(root, tmp_path / "out", registry=TEST_ONLY_MIGRATIONS)
     assert caught.value.context["reason"] == "invalid_manifest"
-    _rewrite(root, lambda manifest: manifest.update(kind="moana-project", document=[]))
+    _rewrite(root, lambda manifest: manifest.update(kind="moanart-project", document=[]))
     with pytest.raises(ValidationError) as caught:
         migrate_project(root, tmp_path / "out", registry=TEST_ONLY_MIGRATIONS)
     assert caught.value.json_pointer == "/document"
@@ -370,7 +370,7 @@ def test_t1_envelope_errors_keep_their_pointers(tmp_path: Path, png: PngFactory)
         migrate_project(root, tmp_path / "out", registry=TEST_ONLY_MIGRATIONS)
     assert caught.value.context["reason"] == "invalid_manifest"
     assert caught.value.details[0].json_pointer == "/history"
-    not_object = tmp_path / "list.moana.json"
+    not_object = tmp_path / "list.moanart.json"
     not_object.write_text("[]", encoding="utf-8")
     with pytest.raises(ValidationError):
         migrate_project(not_object, tmp_path / "out", registry=TEST_ONLY_MIGRATIONS)
@@ -587,8 +587,8 @@ def test_t2_failure_at_every_step_keeps_the_original_intact(
             counter = _Counter(patch, step)
             try:
                 migrate_project(source, destination, registry=TEST_ONLY_MIGRATIONS)
-            except MoanaError as exc:
-                failed: MoanaError | None = exc
+            except MoanArtError as exc:
+                failed: MoanArtError | None = exc
             else:
                 failed = None
         step += 1
@@ -612,7 +612,7 @@ def test_t2_failure_at_every_step_keeps_the_original_intact(
 def test_t2_a_failing_second_step_writes_nothing(tmp_path: Path) -> None:
     tree = json.loads(OLDEST.read_text(encoding="utf-8"))
     del tree["test_only_format"]  # the 0.8 -> 0.9 step succeeds, 0.9 -> 1.0 fails
-    source = tmp_path / "legacy" / "doc.moana.json"
+    source = tmp_path / "legacy" / "doc.moanart.json"
     source.parent.mkdir()
     source.write_text(json.dumps(tree), encoding="utf-8")
     before = _state(tmp_path)

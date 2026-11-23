@@ -11,11 +11,11 @@ from typing import Any
 
 import pytest
 
-from moana.core import errors
-from moana.core.budget import Deadline, RenderLimits
-from moana.render import plan_budget, render, render_with_regions
-from moana.render.budget import mask_estimates
-from moana.schema import Document, validate_document
+from moanart.core import errors
+from moanart.core.budget import Deadline, RenderLimits
+from moanart.render import plan_budget, render, render_with_regions
+from moanart.render.budget import mask_estimates
+from moanart.schema import Document, validate_document
 
 
 def square(x0: int, y0: int, x1: int, y1: int) -> set[tuple[int, int]]:

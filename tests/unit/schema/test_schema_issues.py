@@ -6,10 +6,10 @@ from typing import Any
 
 import pytest
 
-from moana.core import errors
-from moana.schema import EllipseOperation, validate_document
-from moana.schema._issues import pointer_for, pydantic_details
-from moana.schema._pointers import detail_sort_key
+from moanart.core import errors
+from moanart.schema import EllipseOperation, validate_document
+from moanart.schema._issues import pointer_for, pydantic_details
+from moanart.schema._pointers import detail_sort_key
 
 
 def detail(pointer: str | None, code: str = "VALIDATION_ERROR") -> errors.ErrorDetail:

@@ -23,13 +23,13 @@ import numpy as np
 import pytest
 from PIL import Image
 
-from moana.core.budget import RenderLimits
-from moana.core.digest import visual_digest
-from moana.core.errors import BudgetExceeded, ExportError, ValidationError
-from moana.core.limits import GeometryLimits
-from moana.export import ExportManifest, encode_png, export_png
-from moana.export import png as png_module
-from moana.palette import Palette, PaletteColor, Rgba
+from moanart.core.budget import RenderLimits
+from moanart.core.digest import visual_digest
+from moanart.core.errors import BudgetExceeded, ExportError, ValidationError
+from moanart.core.limits import GeometryLimits
+from moanart.export import ExportManifest, encode_png, export_png
+from moanart.export import png as png_module
+from moanart.palette import Palette, PaletteColor, Rgba
 
 RGBA = tuple[int, int, int, int]
 
@@ -104,11 +104,11 @@ def test_ac1_rgba_png_decodes_exactly_to_the_frame(tmp_path: Path) -> None:
 
 
 def test_ac1_rendered_document_round_trips(tmp_path: Path) -> None:
-    from moana.render import render
-    from moana.schema import validate_document
+    from moanart.render import render
+    from moanart.schema import validate_document
 
     root = Path(__file__).resolve().parents[3]
-    result = render(validate_document((root / "examples/specs/minimal.moana.json").read_bytes()))
+    result = render(validate_document((root / "examples/specs/minimal.moanart.json").read_bytes()))
     manifest = export_png(result, tmp_path / "minimal.png")
     _, width, height, pixels = decode(tmp_path / "minimal.png")
     assert bytes(c for p in pixels for c in p) == result.rgba
@@ -195,8 +195,8 @@ def test_encoding_is_stable_and_has_no_volatile_chunks() -> None:
 _ENCODE_IN_CHILD = """
 import hashlib
 from dataclasses import dataclass
-from moana.export import encode_png
-from moana.palette import Palette, PaletteColor, Rgba
+from moanart.export import encode_png
+from moanart.palette import Palette, PaletteColor, Rgba
 
 @dataclass(frozen=True)
 class F:
@@ -270,7 +270,7 @@ def test_options_are_validated(kwargs: dict[str, Any], error: type[Exception], r
     with pytest.raises(error) as excinfo:
         encode_png(SAMPLE, **kwargs)
     if reason is not None:
-        assert excinfo.value.context["reason"] == reason  # type: ignore[attr-defined]  # MoanaError
+        assert excinfo.value.context["reason"] == reason  # type: ignore[attr-defined]  # MoanArtError
 
 
 @pytest.mark.parametrize(
@@ -444,7 +444,7 @@ def test_unrepresentable_names_are_rejected_before_writing(tmp_path: Path, name:
 
 
 def test_atomic_commit_rejects_unrepresentable_names(tmp_path: Path) -> None:
-    from moana.export.atomic import commit_bytes
+    from moanart.export.atomic import commit_bytes
 
     with pytest.raises(ExportError) as excinfo:
         commit_bytes(b"x", tmp_path / "a\x00b.png", overwrite=False)
@@ -498,7 +498,7 @@ def test_link_loops_fail_closed_as_io_error(tmp_path: Path, where: str, overwrit
 
 
 def test_stat_is_directory_never_raises(tmp_path: Path) -> None:
-    from moana.export.atomic import stat_is_directory
+    from moanart.export.atomic import stat_is_directory
 
     (tmp_path / "file").write_bytes(b"")
     assert stat_is_directory(tmp_path)
@@ -645,8 +645,8 @@ def test_t3_two_threads_one_wins_the_other_fails_without_replacing(tmp_path: Pat
 RACER = """
 import sys, time
 from dataclasses import dataclass
-from moana.core.errors import ExportError
-from moana.export import export_png
+from moanart.core.errors import ExportError
+from moanart.export import export_png
 
 @dataclass(frozen=True)
 class Frame:
@@ -688,7 +688,7 @@ def test_t3_two_processes_race_for_the_same_name(tmp_path: Path) -> None:
 
 # --- Architecture ---------------------------------------------------------------------
 
-EXPORT = Path(__file__).resolve().parents[3] / "src/moana/export"
+EXPORT = Path(__file__).resolve().parents[3] / "src/moanart/export"
 
 
 def test_export_imports_only_core_palette_numpy_pillow_and_stdlib() -> None:
@@ -707,7 +707,7 @@ def test_export_imports_only_core_palette_numpy_pillow_and_stdlib() -> None:
                 assert (
                     root in sys.stdlib_module_names
                     or root in ("numpy", "PIL")
-                    or name.startswith(("moana.core", "moana.palette", "moana.export"))
+                    or name.startswith(("moanart.core", "moanart.palette", "moanart.export"))
                 ), f"{path.name} imports {name}"
 
 

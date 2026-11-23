@@ -1,4 +1,4 @@
-"""Exact visual regression harness for tests (MOANA.md section 21, MOANA-028).
+"""Exact visual regression harness for tests (MOANART.md section 21, MOANA-028).
 
 Goldens are compared on decoded pixels, never on compressed PNG bytes: dimensions and
 straight RGBA must match exactly, after normalising every zero-alpha pixel to
@@ -7,11 +7,11 @@ straight RGBA must match exactly, after normalising every zero-alpha pixel to
 On a mismatch :func:`assert_matches_golden` writes ``expected.png``, ``actual.png``,
 ``diff.png`` and ``manifest.json`` into ``<artifacts>/<name>/`` and raises
 :class:`VisualMismatch`. The baseline is only rewritten when an update is requested
-explicitly (``MOANA_UPDATE_GOLDENS=1`` or ``update=True``), and never while ``CI`` is
+explicitly (``MOANART_UPDATE_GOLDENS=1`` or ``update=True``), and never while ``CI`` is
 set: the CI guard runs immediately before every baseline write. See
 ``tests/visual/README.md`` for the review procedure.
 
-This is test tooling, not part of the ``moana`` package.
+This is test tooling, not part of the ``moanart`` package.
 """
 
 from __future__ import annotations
@@ -32,9 +32,9 @@ import numpy.typing as npt
 import PIL
 from PIL import Image
 
-from moana.core import Dimensions, RenderLimits
-from moana.core.canvas import Canvas, check_canvas_budget
-from moana.core.pillow_adapter import canvas_from_pillow
+from moanart.core import Dimensions, RenderLimits
+from moanart.core.canvas import Canvas, check_canvas_budget
+from moanart.core.pillow_adapter import canvas_from_pillow
 
 __all__ = [
     "ARTIFACTS_ENV",
@@ -64,9 +64,9 @@ __all__ = [
 
 ROOT: Final = Path(__file__).resolve().parents[2]
 GOLDENS_DIR: Final = Path(__file__).resolve().parent / "goldens"
-UPDATE_ENV: Final = "MOANA_UPDATE_GOLDENS"
-ARTIFACTS_ENV: Final = "MOANA_VISUAL_ARTIFACTS"
-MANIFEST_FORMAT: Final = "moana-visual-diff/1"
+UPDATE_ENV: Final = "MOANART_UPDATE_GOLDENS"
+ARTIFACTS_ENV: Final = "MOANART_VISUAL_ARTIFACTS"
+MANIFEST_FORMAT: Final = "moanart-visual-diff/1"
 
 DIFF_CHANGED: Final = (255, 0, 255, 255)
 """Opaque magenta: pixel present in both images with different RGBA."""
@@ -383,7 +383,7 @@ def _refuse_in_ci() -> None:
 
 
 def update_requested() -> bool:
-    """``True`` only for exactly ``MOANA_UPDATE_GOLDENS=1``; refused when ``CI`` is set."""
+    """``True`` only for exactly ``MOANART_UPDATE_GOLDENS=1``; refused when ``CI`` is set."""
     requested = os.environ.get(UPDATE_ENV, "") == "1"
     if requested:
         _refuse_in_ci()
@@ -406,7 +406,7 @@ def default_name(golden: Path) -> str:
 
 
 def default_artifacts_dir() -> Path:
-    """``$MOANA_VISUAL_ARTIFACTS`` or ``<repo>/artifacts/visual`` (ignored by Git)."""
+    """``$MOANART_VISUAL_ARTIFACTS`` or ``<repo>/artifacts/visual`` (ignored by Git)."""
     configured = os.environ.get(ARTIFACTS_ENV, "")
     return Path(configured) if configured else ROOT / "artifacts" / "visual"
 

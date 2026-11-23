@@ -14,16 +14,16 @@ import PIL
 import pytest
 from PIL import features
 
-from moana.api import capabilities
-from moana.core.errors import UnsupportedOperation, ValidationError
-from moana.export import (
+from moanart.api import capabilities
+from moanart.core.errors import UnsupportedOperation, ValidationError
+from moanart.export import (
     EXPORT_FORMATS,
     CodecStatus,
     codec_status,
     export_capabilities,
 )
-from moana.export import codecs as codecs_module
-from moana.export.codecs import require_codec
+from moanart.export import codecs as codecs_module
+from moanart.export.codecs import require_codec
 
 
 def test_capability_matrix_reports_every_format_of_this_build() -> None:
@@ -88,7 +88,7 @@ def test_unknown_formats_are_rejected() -> None:
 def test_a_missing_webp_module_is_reported_and_refused(monkeypatch: pytest.MonkeyPatch) -> None:
     original = features.check_module
     monkeypatch.setattr(
-        "moana.export.codecs.features.check_module",
+        "moanart.export.codecs.features.check_module",
         lambda name: False if name == "webp" else original(name),
     )
     status = codec_status("webp")
@@ -107,7 +107,7 @@ def test_a_missing_webp_module_is_reported_and_refused(monkeypatch: pytest.Monke
 
 
 def test_missing_zlib_disables_png_and_apng(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr("moana.export.codecs.features.check_codec", lambda name: False)
+    monkeypatch.setattr("moanart.export.codecs.features.check_codec", lambda name: False)
     matrix = export_capabilities()
     assert [entry.format for entry in matrix.formats if not entry.available] == ["png", "apng"]
     assert matrix.status("gif").available
@@ -151,8 +151,8 @@ def test_status_is_a_frozen_value() -> None:
 def test_codecs_module_imports_only_core_and_libraries() -> None:
     tree = ast.parse(Path(codecs_module.__file__).read_text(encoding="utf-8"))
     modules = {node.module for node in ast.walk(tree) if isinstance(node, ast.ImportFrom)}
-    internal = {name for name in modules if name and name.startswith("moana")}
-    assert internal == {"moana.core.errors"}
+    internal = {name for name in modules if name and name.startswith("moanart")}
+    assert internal == {"moanart.core.errors"}
 
 
 @pytest.mark.parametrize("error", [RuntimeError("codec crashed"), TypeError("bad argument")])
@@ -173,7 +173,7 @@ def test_a_feature_query_that_raises_is_a_missing_codec(monkeypatch: pytest.Monk
     def broken(name: str) -> bool:
         raise ImportError("cannot import _webp")
 
-    monkeypatch.setattr("moana.export.codecs.features.check_module", broken)
+    monkeypatch.setattr("moanart.export.codecs.features.check_module", broken)
     status = codec_status("webp")
     assert (status.available, status.reason, status.codec_version) == (False, "missing", None)
     assert capabilities().export_codecs[3].reason == "missing"
@@ -183,7 +183,7 @@ def test_an_unreadable_codec_version_is_none(monkeypatch: pytest.MonkeyPatch) ->
     def broken(name: str) -> str:
         raise ValueError("unknown feature")
 
-    monkeypatch.setattr("moana.export.codecs.features.version_codec", broken)
+    monkeypatch.setattr("moanart.export.codecs.features.version_codec", broken)
     status = codec_status("png")
     assert status.available and status.codec_version is None
 

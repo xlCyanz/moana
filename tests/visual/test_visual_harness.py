@@ -1,4 +1,4 @@
-"""Exact visual regression harness (MOANA-028, MOANA.md section 21).
+"""Exact visual regression harness (MOANA-028, MOANART.md section 21).
 
 Oracles are hand-written literals and hand-computed bboxes/counts; the harness is never
 its own oracle and no renderer is involved.
@@ -16,8 +16,8 @@ import numpy as np
 import pytest
 from PIL import Image, PngImagePlugin
 
-from moana.core import BudgetExceeded, RenderLimits, ValidationError
-from moana.core.canvas import Canvas
+from moanart.core import BudgetExceeded, RenderLimits, ValidationError
+from moanart.core.canvas import Canvas
 
 from .harness import (
     ARTIFACTS_ENV,

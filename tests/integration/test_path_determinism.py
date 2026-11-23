@@ -20,8 +20,8 @@ from typing import Any
 
 import pytest
 
-from moana.render import render
-from moana.schema import validate_document
+from moanart.render import render
+from moanart.schema import validate_document
 
 U = 256
 
@@ -92,8 +92,8 @@ CURVES = scene(
 
 PROBE = """
 import json, platform, sys
-from moana.render import render
-from moana.schema import validate_document
+from moanart.render import render
+from moanart.schema import validate_document
 result = render(validate_document(sys.stdin.buffer.read()))
 print(json.dumps({
     "digest": result.digest,

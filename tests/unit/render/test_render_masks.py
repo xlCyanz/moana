@@ -2,8 +2,8 @@
 
 AC1: a masked layer modifies no pixel outside its mask. AC2/T2: cycles and broken
 references are rejected before any rasteriser runs; masks outside the canvas are
-clipped. Expected pixels come from MOANA.md sections 6 and 11 by hand; ``budget-v3``
-figures are computed by hand from the formulas in ``moana.render.budget``.
+clipped. Expected pixels come from MOANART.md sections 6 and 11 by hand; ``budget-v3``
+figures are computed by hand from the formulas in ``moanart.render.budget``.
 """
 
 from __future__ import annotations
@@ -18,19 +18,19 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from moana.core.budget import RenderLimits
-from moana.core.errors import BudgetExceeded, ReferenceError
-from moana.core.limits import MAX_MASK_DEPTH, MAX_MASK_OPERANDS, MAX_MASKS, GeometryLimits
-from moana.layers import MASK_NODE_VISITS as LAYERS_MASK_NODE_VISITS
-from moana.layers import mask_cost
-from moana.render import ESTIMATOR_VERSION, estimate_cost, plan_budget, render
-from moana.render import budget as budget_module
-from moana.render import pipeline as pipeline_module
-from moana.render.budget import MASK_NODE_VISITS
-from moana.schema import Document, validate_document
+from moanart.core.budget import RenderLimits
+from moanart.core.errors import BudgetExceeded, ReferenceError
+from moanart.core.limits import MAX_MASK_DEPTH, MAX_MASK_OPERANDS, MAX_MASKS, GeometryLimits
+from moanart.layers import MASK_NODE_VISITS as LAYERS_MASK_NODE_VISITS
+from moanart.layers import mask_cost
+from moanart.render import ESTIMATOR_VERSION, estimate_cost, plan_budget, render
+from moanart.render import budget as budget_module
+from moanart.render import pipeline as pipeline_module
+from moanart.render.budget import MASK_NODE_VISITS
+from moanart.schema import Document, validate_document
 
 ROOT = Path(__file__).resolve().parents[3]
-EXAMPLE = ROOT / "examples" / "specs" / "masked-eyes.moana.json"
+EXAMPLE = ROOT / "examples" / "specs" / "masked-eyes.moanart.json"
 RGBA = tuple[int, int, int, int]
 CLEAR: RGBA = (0, 0, 0, 0)
 INK: RGBA = (16, 32, 48, 255)

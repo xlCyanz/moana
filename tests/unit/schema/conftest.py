@@ -1,4 +1,4 @@
-"""Shared fixtures: the normative minimal document of MOANA.md section 12."""
+"""Shared fixtures: the normative minimal document of MOANART.md section 12."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ from typing import Any
 import pytest
 
 ROOT = Path(__file__).resolve().parents[3]
-MINIMAL_PATH = ROOT / "examples" / "specs" / "minimal.moana.json"
+MINIMAL_PATH = ROOT / "examples" / "specs" / "minimal.moanart.json"
 MINIMAL: dict[str, Any] = json.loads(MINIMAL_PATH.read_text(encoding="utf-8"))
 
 

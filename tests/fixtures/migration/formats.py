@@ -1,7 +1,7 @@
 """Test-only document formats 0.8 and 0.9 and their migration registry (MOANA-021).
 
-These versions were **never published**: schema 1.0 is the only Moana format that has
-ever existed, and the production registry ``moana.schema.DOCUMENT_MIGRATIONS``
+These versions were **never published**: schema 1.0 is the only MoanArt format that has
+ever existed, and the production registry ``moanart.schema.DOCUMENT_MIGRATIONS``
 registers no migration. The formats exist only to exercise the migration engine
 (ADR-031); every fixture carries a ``test_only_format`` member that the last step
 requires and removes, so a real document can never be mistaken for one.
@@ -17,12 +17,12 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import Any, Final
 
-from moana.schema import SCHEMA_VERSION, Migration, MigrationRegistry
+from moanart.schema import SCHEMA_VERSION, Migration, MigrationRegistry
 
 FIXTURES: Final = Path(__file__).resolve().parent
-OLDEST: Final = FIXTURES / "test-only-0.8.moana.json"
-PREVIOUS: Final = FIXTURES / "test-only-0.9.moana.json"
-EXPECTED: Final = FIXTURES / "expected-1.0.moana.json"
+OLDEST: Final = FIXTURES / "test-only-0.8.moanart.json"
+PREVIOUS: Final = FIXTURES / "test-only-0.9.moanart.json"
+EXPECTED: Final = FIXTURES / "expected-1.0.moanart.json"
 MARKER: Final = "test_only_format"
 
 

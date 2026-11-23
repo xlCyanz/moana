@@ -13,13 +13,13 @@ from collections.abc import Callable
 
 import pytest
 
-from moana.core.budget import Deadline, RenderLimits
-from moana.core.coordinates import Box, Dimensions
-from moana.core.digest import visual_digest
-from moana.core.errors import BudgetExceeded, ReferenceError, ValidationError
-from moana.geometry import Mask, rasterize_rect
-from moana.palette import Palette
-from moana.quality import (
+from moanart.core.budget import Deadline, RenderLimits
+from moanart.core.coordinates import Box, Dimensions
+from moanart.core.digest import visual_digest
+from moanart.core.errors import BudgetExceeded, ReferenceError, ValidationError
+from moanart.geometry import Mask, rasterize_rect
+from moanart.palette import Palette
+from moanart.quality import (
     EXPLANATIONS,
     MAX_QUALITY_FINDINGS,
     MIN_LISTED_PER_RULE,

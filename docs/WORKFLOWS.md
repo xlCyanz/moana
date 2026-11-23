@@ -4,7 +4,7 @@ Entrada operativa: [flujo de sesión](guides/agent-workflow.md), [desarrollo](gu
 
 ## Implementar un issue
 
-Leer MOANA.md y el archivo MOANA correspondiente. Verificar dependencias en catálogo; seleccionar la skill pertinente. Diseñar el contrato mínimo, añadir pruebas de comportamiento, implementar y pasar `scripts/validate.py`. Una dependencia pendiente impide declarar el issue listo; puede implementarse en secuencia dentro de una solicitud que lo autorice. Registrar evidencia en el catálogo y regenerar derivados.
+Leer MOANART.md y el archivo MOANA-xxx correspondiente. Verificar dependencias en catálogo; seleccionar la skill pertinente. Diseñar el contrato mínimo, añadir pruebas de comportamiento, implementar y pasar `scripts/validate.py`. Una dependencia pendiente impide declarar el issue listo; puede implementarse en secuencia dentro de una solicitud que lo autorice. Registrar evidencia en el catálogo y regenerar derivados.
 
 ## Diseñar y revisar Pixel Art (cuando exista renderer)
 
@@ -16,11 +16,11 @@ Resolver la región/ID y mostrar qué elementos se afectan. Crear batch con base
 
 ## Revisar un cambio
 
-`moana-code-review` examina contrato, casos límite, propiedad de buffers, determinismo y pruebas. Priorizar fallos reproducibles sobre estilo cubierto por Ruff. Para raster, inspeccionar diff y fuente de fixture; para tooling, ejecutar gate y un caso de fallo del validador. La revisión no implica permiso para publicar.
+`moanart-code-review` examina contrato, casos límite, propiedad de buffers, determinismo y pruebas. Priorizar fallos reproducibles sobre estilo cubierto por Ruff. Para raster, inspeccionar diff y fuente de fixture; para tooling, ejecutar gate y un caso de fallo del validador. La revisión no implica permiso para publicar.
 
 ## Planificar y mantener la fuente de verdad
 
-`docs/issues/catalog.json` contiene alcance, dependencias y criterios; `docs/requirements.json` contiene requisitos y sección de MOANA.md. `scripts/planning.py` regenera issues, índice, mapa, roadmap y matriz; `--check` detecta divergencia sin escribir. Los estados son todo, ready, in_progress, blocked, review y done. Los estados activos exigen dependencias done; blocked necesita motivo. Done exige evidencia general y por cada criterio/prueba (AC/T).
+`docs/issues/catalog.json` contiene alcance, dependencias y criterios; `docs/requirements.json` contiene requisitos y sección de MOANART.md. `scripts/planning.py` regenera issues, índice, mapa, roadmap y matriz; `--check` detecta divergencia sin escribir. Los estados son todo, ready, in_progress, blocked, review y done. Los estados activos exigen dependencias done; blocked necesita motivo. Done exige evidencia general y por cada criterio/prueba (AC/T).
 
 ## Automatización e integraciones
 

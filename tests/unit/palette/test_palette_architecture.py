@@ -1,4 +1,4 @@
-"""moana.palette depends only on core and agrees with the document schema (MOANA-005)."""
+"""moanart.palette depends only on core and agrees with the document schema (MOANA-005)."""
 
 from __future__ import annotations
 
@@ -11,12 +11,12 @@ from typing import Any
 
 import pytest
 
-from moana.core import errors as core_errors
-from moana.palette import ColorProfile, Palette
-from moana.schema import normalize_document, validate_document
+from moanart.core import errors as core_errors
+from moanart.palette import ColorProfile, Palette
+from moanart.schema import normalize_document, validate_document
 
 ROOT = Path(__file__).resolve().parents[3]
-PALETTE = ROOT / "src/moana/palette"
+PALETTE = ROOT / "src/moanart/palette"
 
 
 def test_palette_imports_only_stdlib_core_and_itself() -> None:
@@ -31,14 +31,14 @@ def test_palette_imports_only_stdlib_core_and_itself() -> None:
             for name in names:
                 root = name.split(".")[0]
                 assert root in sys.stdlib_module_names or name.startswith(
-                    ("moana.core", "moana.palette")
+                    ("moanart.core", "moanart.palette")
                 ), f"{path.name} imports {name}"
-                assert name not in {"moana.core.canvas", "moana.core.pillow_adapter"}
+                assert name not in {"moanart.core.canvas", "moanart.core.pillow_adapter"}
 
 
 def test_importing_palette_loads_no_heavy_library() -> None:
     probe = (
-        "import sys, moana.palette; "
+        "import sys, moanart.palette; "
         "heavy = {'numpy', 'PIL', 'aggdraw', 'pydantic'}; "
         "print(sorted(m for m in sys.modules if m.split('.')[0] in heavy))"
     )
@@ -108,16 +108,16 @@ SEMANTIC: dict[str, tuple[dict[str, Any], ColorProfile]] = {
 }
 
 
-def _issues(error: core_errors.MoanaError, prefix: str = "") -> set[tuple[str, str]]:
+def _issues(error: core_errors.MoanArtError, prefix: str = "") -> set[tuple[str, str]]:
     return {(prefix + str(d.json_pointer), str(d.context["reason"])) for d in error.details}
 
 
 @pytest.mark.parametrize("case", sorted(SEMANTIC))
 def test_schema_and_palette_report_the_same_semantic_problems(case: str) -> None:
     palette, profile = SEMANTIC[case]
-    with pytest.raises(core_errors.MoanaError) as schema_error:
+    with pytest.raises(core_errors.MoanArtError) as schema_error:
         validate_document(_document(copy.deepcopy(palette), profile))
-    with pytest.raises(core_errors.MoanaError) as palette_error:
+    with pytest.raises(core_errors.MoanArtError) as palette_error:
         Palette.from_mapping(copy.deepcopy(palette), profile=profile)
     assert type(schema_error.value) is type(palette_error.value)
     assert _issues(palette_error.value, "/palette") == _issues(schema_error.value)

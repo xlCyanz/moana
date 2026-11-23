@@ -23,10 +23,10 @@ from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 from PIL import Image
 
-from moana.core.budget import RenderLimits
-from moana.core.coordinates import Point
-from moana.core.digest import visual_digest
-from moana.core.errors import (
+from moanart.core.budget import RenderLimits
+from moanart.core.coordinates import Point
+from moanart.core.digest import visual_digest
+from moanart.core.errors import (
     BudgetExceeded,
     ErrorDetail,
     ExportError,
@@ -34,8 +34,8 @@ from moana.core.errors import (
     UnsupportedVersion,
     ValidationError,
 )
-from moana.core.limits import GeometryLimits
-from moana.export import (
+from moanart.core.limits import GeometryLimits
+from moanart.export import (
     MAX_SPRITESHEET_IMAGE_BYTES,
     MAX_SPRITESHEET_MANIFEST_BYTES,
     FramePixels,
@@ -44,12 +44,13 @@ from moana.export import (
     encode_spritesheet,
     export_spritesheet,
     load_spritesheet,
+    migrate_spritesheet_manifest,
     parse_spritesheet_manifest,
     slice_spritesheet,
     spritesheet_layout,
 )
-from moana.export import spritesheet as sheet_module
-from moana.export.atomic import commit_bytes
+from moanart.export import spritesheet as sheet_module
+from moanart.export.atomic import commit_bytes
 
 RGBA = tuple[int, int, int, int]
 CLEAR: RGBA = (0, 0, 0, 0)
@@ -160,7 +161,7 @@ def test_manifest_records_every_frame_value() -> None:
     source = frames(2, 3, 2)
     encoded = encode_spritesheet(source, columns=2, padding=1, image_name="hero.png")
     manifest = json.loads(encoded.manifest_json)
-    assert manifest["format"] == "moana-spritesheet" and manifest["version"] == 1
+    assert manifest["format"] == "moanart-spritesheet" and manifest["version"] == 1
     assert manifest["image"]["name"] == "hero.png"
     assert manifest["image"]["media_type"] == "image/png"
     assert manifest["layout"] == {
@@ -335,7 +336,7 @@ def test_excessive_sheet_is_rejected_before_the_atlas_exists(
     def no_atlas(*_: object, **__: object) -> None:
         raise AssertionError("atlas allocated before the budget check")
 
-    monkeypatch.setattr("moana.export.spritesheet.np.zeros", no_atlas)
+    monkeypatch.setattr("moanart.export.spritesheet.np.zeros", no_atlas)
     with pytest.raises(BudgetExceeded) as caught:
         encode_spritesheet(shared_frames(count, size), columns=columns, limits=limits)
     assert resource in {detail.context["resource"] for detail in caught.value.details}
@@ -382,7 +383,7 @@ def test_unnormalized_frame_is_rejected_before_the_atlas_exists(
     def no_atlas(*_: object, **__: object) -> None:
         raise AssertionError("atlas allocated before the frame check")
 
-    monkeypatch.setattr("moana.export.spritesheet.np.zeros", no_atlas)
+    monkeypatch.setattr("moanart.export.spritesheet.np.zeros", no_atlas)
     bad = replace(GOOD, frame_id="g", result=Raster(2, 2, bytes([0, 9, 0, 0]) + bytes(12)))
     with pytest.raises(ValidationError) as caught:
         encode_spritesheet([GOOD, bad], columns=1)
@@ -395,7 +396,7 @@ def test_slicing_checks_its_budget_before_decoding(monkeypatch: pytest.MonkeyPat
     def no_decode(*_: object, **__: object) -> None:
         raise AssertionError("decoded before the budget check")
 
-    monkeypatch.setattr("moana.export.spritesheet.Image.open", no_decode)
+    monkeypatch.setattr("moanart.export.spritesheet.Image.open", no_decode)
     # 12 bytes per atlas pixel (6 x 4 sheet) plus the encoded PNG bytes.
     estimate = len(encoded.image) + 12 * 24
     with pytest.raises(BudgetExceeded) as caught:
@@ -690,7 +691,7 @@ def test_corrupt_manifest_is_located(
         pytest.param(b'{"a": 1, "a": 2}', "duplicate_member", id="duplicate-key"),
         pytest.param(b"[]", "wrong_type", id="array"),
         pytest.param(b'{"version": 1}', "missing_member", id="empty"),
-        pytest.param(b'{"format": "moana-spritesheet"}', "missing_member", id="no-version"),
+        pytest.param(b'{"format": "moanart-spritesheet"}', "missing_member", id="no-version"),
     ],
 )
 def test_unreadable_manifest_bytes(data: bytes, reason: str) -> None:
@@ -865,7 +866,7 @@ def test_manifest_failure_reports_the_committed_atlas(
             )
         original(data, destination, overwrite=overwrite)
 
-    monkeypatch.setattr("moana.export.spritesheet.commit_bytes", flaky)
+    monkeypatch.setattr("moanart.export.spritesheet.commit_bytes", flaky)
     with pytest.raises(ExportError) as caught:
         export_spritesheet(frames(2, 2, 2), tmp_path / "s.png", tmp_path / "s.json", columns=1)
     assert calls == ["s.png", "s.json"]  # atlas first, manifest last
@@ -954,7 +955,7 @@ def test_load_reports_unreadable_files(tmp_path: Path, monkeypatch: pytest.Monke
         def refuse(*_: object, error: type[OSError] = error) -> int:
             raise error("refused")
 
-        monkeypatch.setattr("moana.export.spritesheet.os.open", refuse)
+        monkeypatch.setattr("moanart.export.spritesheet.os.open", refuse)
         with pytest.raises(ReadError) as caught:
             load_spritesheet(tmp_path / "s.png", tmp_path / "s.json")
         assert caught.value.context["reason"] == reason
@@ -979,8 +980,8 @@ def test_bytes_path_likes_are_rejected(tmp_path: Path) -> None:
 # --- architecture ----------------------------------------------------------------------
 
 EXPORT = Path(sheet_module.__file__).parent
-FORBIDDEN = ("moana.render", "moana.animation", "moana.editing", "moana.api", "moana.cli")
-ALLOWED_ROOTS = {"moana", "numpy", "PIL"}
+FORBIDDEN = ("moanart.render", "moanart.animation", "moanart.editing", "moanart.api", "moanart.cli")
+ALLOWED_ROOTS = {"moanart", "numpy", "PIL"}
 
 
 def test_export_imports_only_core_palette_and_libraries() -> None:
@@ -997,5 +998,79 @@ def test_export_imports_only_core_palette_and_libraries() -> None:
                 root = name.split(".")[0]
                 assert root in sys.stdlib_module_names or root in ALLOWED_ROOTS, name
                 assert not name.startswith(FORBIDDEN), f"{path.name} imports {name}"
-                if root == "moana":
-                    assert name.startswith(("moana.core", "moana.palette", "moana.export")), name
+                if root == "moanart":
+                    assert name.startswith(("moanart.core", "moanart.palette", "moanart.export")), (
+                        name
+                    )
+
+
+# MOANA-037 T3: manifests written by 0.1.0rc1, before the rename (ADR-041). The legacy
+# bytes are the current ones with the published 0.1.0rc1 format name put back.
+LEGACY_FORMAT = '"format": "moana-spritesheet"'
+
+
+def _legacy_sheet() -> tuple[bytes, bytes, bytes]:
+    encoded = encode_spritesheet(frames(3, 2, 2), columns=2, padding=1)
+    current = encoded.manifest_json
+    assert current.count(b'"format": "moanart-spritesheet"') == 1
+    legacy = current.replace(b'"format": "moanart-spritesheet"', LEGACY_FORMAT.encode())
+    return encoded.image, current, legacy
+
+
+def test_t3_legacy_spritesheet_manifest_is_rejected_with_its_migration(tmp_path: Path) -> None:
+    image, _, legacy = _legacy_sheet()
+    with pytest.raises(UnsupportedVersion) as error:
+        parse_spritesheet_manifest(legacy)
+    assert error.value.json_pointer == "/format"
+    assert error.value.context["reason"] == "legacy_name"
+    assert error.value.context["replacement"] == "moanart-spritesheet"
+    assert "migrate_spritesheet_manifest" in error.value.message
+    with pytest.raises(UnsupportedVersion):
+        slice_spritesheet(image, legacy)
+    (tmp_path / "sheet.png").write_bytes(image)
+    (tmp_path / "sheet.json").write_bytes(legacy)
+    with pytest.raises(UnsupportedVersion):
+        load_spritesheet(tmp_path / "sheet.png", tmp_path / "sheet.json")
+
+
+def test_t3_legacy_spritesheet_manifest_migrates_to_the_current_bytes() -> None:
+    image, current, legacy = _legacy_sheet()
+    original = bytes(legacy)
+    migrated = migrate_spritesheet_manifest(legacy)
+    assert migrated == current  # exactly what export_spritesheet writes today
+    assert legacy == original
+    assert [f.frame_id for f in slice_spritesheet(image, migrated)] == ["f0", "f1", "f2"]
+
+
+@pytest.mark.parametrize(
+    "data",
+    [
+        pytest.param(_legacy_sheet()[1], id="current"),
+        pytest.param(b'{"format": "other"}', id="other"),
+        pytest.param(b"[]", id="array"),
+    ],
+)
+def test_t3_only_legacy_spritesheet_manifests_migrate(data: bytes) -> None:
+    with pytest.raises(ValidationError) as error:
+        migrate_spritesheet_manifest(data)
+    assert error.value.context["reason"] == "not_legacy"
+
+
+RC1 = Path(__file__).resolve().parents[2] / "fixtures" / "rename" / "rc1"
+
+
+def test_t3_real_rc1_spritesheet_migrates_to_what_export_writes_today() -> None:
+    """``sheet.json``/``sheet.png`` were written by v0.1.0rc1 from these three frames."""
+    legacy = (RC1 / "sheet.json").read_bytes()
+    image = (RC1 / "sheet.png").read_bytes()
+    with pytest.raises(UnsupportedVersion):
+        parse_spritesheet_manifest(legacy)
+    source = [
+        Frame(f"f{i}", 100 + i, Point(0, 2), Raster(2, 2, bytes([10 * i + 1, 1, 1, 255] * 4)))
+        for i in range(3)
+    ]
+    today = encode_spritesheet(source, columns=2, padding=1, image_name="sheet.png")
+    assert migrate_spritesheet_manifest(legacy) == today.manifest_json
+    assert today.image == image  # the atlas bytes did not change either
+    rebuilt = slice_spritesheet(image, migrate_spritesheet_manifest(legacy))
+    assert [bytes(frame.result.rgba) for frame in rebuilt] == [f.result.rgba for f in source]

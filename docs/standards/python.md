@@ -1,6 +1,6 @@
 # Estándares Python
 
-Norma operativa: [AGENTS.md](../../AGENTS.md). Contratos del producto: [MOANA.md](../../MOANA.md). Python >=3.12, layout `src/`, distribución `moana-pixel-engine` e import `moana`.
+Norma operativa: [AGENTS.md](../../AGENTS.md). Contratos del producto: [MOANART.md](../../MOANART.md). Python >=3.12, layout `src/`, distribución `moanart` e import `moanart`.
 
 ## Tipos y API
 
@@ -12,11 +12,11 @@ Preferir un tipo específico o una unión discriminada frente a diccionarios abi
 
 Validar enteros sin aceptar `bool`, strings numéricos o floats implícitos. Un buffer tiene propietario, shape, dtype y política de copias documentados. Elevar dtype antes de productos o sumas que puedan desbordar `uint8`. No entregar una vista supuestamente de sólo lectura si el consumidor puede recuperar su base escribible.
 
-Resolver coordenadas/clipping según el contrato de Moana, no según índices negativos de NumPy o defaults de Pillow. El núcleo no abre archivos ni accede a red. La semilla no utiliza `hash()`, reloj o RNG global. Los resultados no dependen del cwd ni de locale.
+Resolver coordenadas/clipping según el contrato de MoanArt, no según índices negativos de NumPy o defaults de Pillow. El núcleo no abre archivos ni accede a red. La semilla no utiliza `hash()`, reloj o RNG global. Los resultados no dependen del cwd ni de locale.
 
 ## Paquete y dependencias
 
-`uv.lock` se modifica mediante uv. Añadir una dependencia exige un uso del issue, revisar origen/licencia y probar instalación en las plataformas declaradas. Mantener imports ligeros: importar `moana` no ejecuta rasterización ni crea directorios. No registrar un entrypoint de dibujo antes de que su comportamiento esté implementado.
+`uv.lock` se modifica mediante uv. Añadir una dependencia exige un uso del issue, revisar origen/licencia y probar instalación en las plataformas declaradas. Mantener imports ligeros: importar `moanart` no ejecuta rasterización ni crea directorios. No registrar un entrypoint de dibujo antes de que su comportamiento esté implementado.
 
 Los tests deben distinguir el import desde el wheel instalado del import accidental desde el checkout. Los archivos incluidos en wheel/sdist se verifican; venv, cachés, credenciales y artefactos transitorios se excluyen. La licencia de publicación sigue siendo una decisión del propietario.
 

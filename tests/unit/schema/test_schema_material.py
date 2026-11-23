@@ -7,8 +7,8 @@ from typing import Any
 
 import pytest
 
-from moana.core import errors
-from moana.schema import (
+from moanart.core import errors
+from moanart.schema import (
     OPERATION_MEMBERS,
     PLANNED_OPERATION_TYPES,
     SUPPORTED_OPERATION_TYPES,

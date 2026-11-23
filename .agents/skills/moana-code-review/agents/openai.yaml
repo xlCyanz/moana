@@ -1,4 +1,0 @@
-interface:
-  display_name: "Moana · Code Review"
-  short_description: "Revisión de tipos, algoritmos y regresiones"
-  default_prompt: "Usa $moana-code-review para trabajar el issue asignado de Moana con contratos y verificaciones observables."

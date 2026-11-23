@@ -4,28 +4,28 @@ The runner starts a fresh interpreter per case (``python -m tests.benchmarks wor
 so that the process peak RSS belongs to that case alone. Inside it, phases are timed
 separately with :func:`time.perf_counter_ns`:
 
-* ``parse``: canonical JSON bytes to a validated :class:`moana.schema.Document`;
-* ``render``: the in-memory render (``moana.api.render`` for a static case,
-  ``moana.animation.render_animation`` for the whole timeline of an animated one); no
+* ``parse``: canonical JSON bytes to a validated :class:`moanart.schema.Document`;
+* ``render``: the in-memory render (``moanart.api.render`` for a static case,
+  ``moanart.animation.render_animation`` for the whole timeline of an animated one); no
   file is read or written in this section;
 * ``render_frame``: animated cases only, every frame document (evaluated and admitted
-  outside the timed section) rendered alone with ``moana.render.render_admitted``;
+  outside the timed section) rendered alone with ``moanart.render.render_admitted``;
 * ``encode_png`` and ``write_png``: static cases only, the in-memory PNG encode and the
   atomic file export of the rendered result, timed apart from the render.
 
 Every render sample carries proof that it did real work:
 
-* the calls of the pipeline's rasteriser registry (``moana.render.pipeline._rasterize``),
+* the calls of the pipeline's rasteriser registry (``moanart.render.pipeline._rasterize``),
   counted by a temporary wrapper. That registry rasterises every primitive operation
   and every mask leaf; ``outline``, ``dither``, ``shade`` and ``material`` build
   further derived masks themselves from those leaves, so the count is a lower bound of
   mask work in general and exactly one call per rect for the rect-only section 22
   corpus. The wrapper replaces a module attribute: it is process-global and assumes
   no concurrent render (no threads, no pytest-xdist workers sharing the process);
-* the checkpoints of a :class:`moana.core.budget.Deadline` whose clock counts its
+* the checkpoints of a :class:`moanart.core.budget.Deadline` whose clock counts its
   calls and never expires (public API);
 * the digest of the output, compared with a reference rendered once with
-  ``moana.api.render`` before the warmups.
+  ``moanart.api.render`` before the warmups.
 """
 
 from __future__ import annotations
@@ -46,15 +46,15 @@ from functools import partial
 from pathlib import Path
 from typing import Final
 
-import moana.render.pipeline as pipeline
-from moana import api
-from moana.animation import evaluate_animation, render_animation
-from moana.core.budget import Deadline
-from moana.core.coordinates import Dimensions
-from moana.export import encode_png
-from moana.geometry import Mask
-from moana.render import RenderResult, plan_budget, plan_frame, render_admitted
-from moana.schema import Document, ShapeMask, ShapeOperation, validate_document
+import moanart.render.pipeline as pipeline
+from moanart import api
+from moanart.animation import evaluate_animation, render_animation
+from moanart.core.budget import Deadline
+from moanart.core.coordinates import Dimensions
+from moanart.export import encode_png
+from moanart.geometry import Mask
+from moanart.render import RenderResult, plan_budget, plan_frame, render_admitted
+from moanart.schema import Document, ShapeMask, ShapeOperation, validate_document
 
 from .corpus import Json, canonical_bytes, case_animation, case_document
 
@@ -281,7 +281,7 @@ def render_once(document: Document, animation: str | None) -> Callable[[Deadline
 
 
 def reference_digest(document: Document, animation: str | None) -> str:
-    """Independent reference: ``moana.api.render`` once (per frame for an animation).
+    """Independent reference: ``moanart.api.render`` once (per frame for an animation).
 
     An animation frame is rendered as the static document its evaluation produces;
     the visual digest depends on pixels only, so it equals the frame's digest.
@@ -369,7 +369,7 @@ def _render_phase(samples: list[Sample], reference: str) -> Json:
 def _io_phases(document: Document, warmups: int, samples: int) -> Json:
     result = api.render(document)
     encode = measure_phase(lambda: encode_png(result), warmups, samples)
-    with tempfile.TemporaryDirectory(prefix="moana-bench-") as folder:
+    with tempfile.TemporaryDirectory(prefix="moanart-bench-") as folder:
         target = Path(folder) / "frame.png"
         write = measure_phase(
             lambda: api.export_png(result, target, overwrite=True), warmups, samples

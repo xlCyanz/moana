@@ -58,7 +58,7 @@ No prometer compatibilidad con formatos que no tengan contrato de migración reg
 
 ## Definition of Done
 
-Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adjuntar evidencia por ID, pasar el gate y revisar el resultado. Dependencias completadas y [ciclo de vida](../guides/issue-lifecycle.md) respetado.
+Cumplir [MOANART.md §25](../../MOANART.md), todos los criterios AC y pruebas T; adjuntar evidencia por ID, pasar el gate y revisar el resultado. Dependencias completadas y [ciclo de vida](../guides/issue-lifecycle.md) respetado.
 
 ## Risks and notes
 
@@ -78,13 +78,13 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 ### 2. Lectura obligatoria (en orden)
 
 1. `CLAUDE.md` (Claude Code) o `AGENTS.md` (Codex) y [flujo de sesión](../guides/agent-workflow.md).
-2. MOANA.md: §3 Arquitectura modular; §16 Formato de proyectos; §25 Definition of Done. Estas secciones son el contrato normativo; ante duda, prevalecen sobre este issue.
+2. MOANART.md: §3 Arquitectura modular; §16 Formato de proyectos; §25 Definition of Done. Estas secciones son el contrato normativo; ante duda, prevalecen sobre este issue.
 3. [Contratos de módulos](../architecture/module-contracts.md) para: `project`, `schema`.
 4. Estándares: [python](../../docs/standards/python.md), [architecture](../../docs/standards/architecture.md), [testing](../../docs/standards/testing.md), [security](../../docs/standards/security.md).
 5. Issues de dependencia ([MOANA-020](MOANA-020.md)): leer su sección Evidence para conocer las APIs ya entregadas; no reimplementarlas.
 6. ADR en `docs/architecture/` que mencionen los módulos afectados.
 
-### 3. Requisitos de MOANA.md cubiertos
+### 3. Requisitos de MOANART.md cubiertos
 
 | ID | Requisito | Secciones | Verificación exigida |
 | --- | --- | --- | --- |
@@ -94,12 +94,12 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 | Host | Skills a cargar | Revisión especializada |
 | --- | --- | --- |
-| Claude Code | `moana-python`, `moana-architecture`, `moana-code-review` | `moana-python-engineer`, `moana-architect` (sólo lectura; el agente principal integra) |
-| Codex | `$moana-python`, `$moana-architecture`, `$moana-code-review` | `moana_python_engineer`, `moana_architect` |
+| Claude Code | `moanart-python`, `moanart-architecture`, `moanart-code-review` | `moanart-python-engineer`, `moanart-architect` (sólo lectura; el agente principal integra) |
+| Codex | `$moanart-python`, `$moanart-architecture`, `$moanart-code-review` | `moanart_python_engineer`, `moanart_architect` |
 
 ### 5. Archivos
 
-- Código o documentos a crear/modificar: `src/moana/project/`, `src/moana/schema/`.
+- Código o documentos a crear/modificar: `src/moanart/project/`, `src/moanart/schema/`.
 - Pruebas: `tests/unit/project/`, `tests/unit/schema/`.
 - No crear módulos ni carpetas sin comportamiento real. No tocar otros módulos salvo exportaciones imprescindibles, justificadas en el PR.
 
@@ -107,44 +107,44 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 - T1: Fixtures de migración, migración repetida/idempotencia del destino y versión futura
 - T2: Simular fallo intermedio y comprobar que el original permanece intacto
-- Oráculos independientes (cálculo a mano o fórmula de MOANA.md); nunca copiar la salida de la implementación como expected.
+- Oráculos independientes (cálculo a mano o fórmula de MOANART.md); nunca copiar la salida de la implementación como expected.
 - Incluir casos negativos con el error de dominio esperado y casos borde (vacío, mínimo, máximo, fuera de rango).
 
 ### 7. Procedimiento
 
 1. Escribir las pruebas de los criterios AC y T antes o junto con la implementación.
-2. Implementar sólo **Scope**; respetar **Out of scope** y las dependencias permitidas de MOANA.md §3.
+2. Implementar sólo **Scope**; respetar **Out of scope** y las dependencias permitidas de MOANART.md §3.
 3. Validación de módulo: `uv run pytest tests/unit/project/ tests/unit/schema/ -q` y `uv run mypy src/`.
 4. Validación completa: `uv run python scripts/validate.py` y `uv run python scripts/check_wheel.py`.
-5. Revisión: subagentes listados y skill `moana-code-review`; corregir hallazgos críticos y altos.
+5. Revisión: subagentes listados y skill `moanart-code-review`; corregir hallazgos críticos y altos.
 6. Si hay salida raster: mostrar el PNG a 1x y ampliado por vecino más cercano; si cambia un golden, presentar expected/actual/diff y justificar.
 
 ### 8. Cierre
 
 1. En `docs/issues/catalog.json`, para este issue: `status` → `review` (o `done` tras aprobación); completar `acceptance_evidence` (AC1, AC2), `test_evidence` (T1, T2) y `evidence` con rutas concretas de tests y archivos.
-2. Issues que desbloquea ([MOANA-030](MOANA-030.md), [MOANA-035](MOANA-035.md)): si todas sus dependencias quedan `done`, pasarlos a `ready` con `blocking_reason: null`.
+2. Issues que desbloquea ([MOANA-030](MOANA-030.md), [MOANA-035](MOANA-035.md), [MOANA-037](MOANA-037.md)): si todas sus dependencias quedan `done`, pasarlos a `ready` con `blocking_reason: null`.
 3. Ejecutar `uv run python scripts/planning.py` y `uv run python -m scripts.check_repository`.
 4. Abrir PR hacia `develop` enlazando este issue de GitHub (`Closes #<número>`), con comandos ejecutados y evidencia por AC/T. El CI completo corre al integrar `develop` en `main`.
 5. Commit y push sólo con autorización del usuario. No declarar CI remoto ni aprobación artística humana sin evidencia.
 
 ### 9. Prohibido en este issue
 
-- Implementar alcance de otros issues, incluidos los que desbloquea ([MOANA-030](MOANA-030.md), [MOANA-035](MOANA-035.md)).
+- Implementar alcance de otros issues, incluidos los que desbloquea ([MOANA-030](MOANA-030.md), [MOANA-035](MOANA-035.md), [MOANA-037](MOANA-037.md)).
 - Actualizar goldens automáticamente, desactivar checks, editar `uv.lock` a mano o añadir dependencias sin motivo técnico registrado.
 - `eval`/`exec`/`pickle`, red o estado global mutable en el núcleo; lecturas de texto sin `encoding="utf-8"`.
 
 ## Evidence
 
-- Versiones de formato separadas: sólo schema_version y project_version (MAJOR.MINOR, comparadas como enteros) seleccionan migraciones; moana.__version__, RENDERER_VERSION y ESTIMATOR_VERSION nunca (test).
-- Registro inmutable moana.schema.versions (MigrationRegistry, Migration) validado al construirse (origen < destino ≤ actual, un paso por origen e ID, cadenas ≤ MAX_MIGRATION_STEPS=16); DOCUMENT_MIGRATIONS y PROJECT_MIGRATIONS de producción sólo conocen 1.0 y no registran migraciones; SUPPORTED_SCHEMA_VERSIONS fijado a la misma fuente por test; los batches conservan su contrato de versión anterior.
+- Versiones de formato separadas: sólo schema_version y project_version (MAJOR.MINOR, comparadas como enteros) seleccionan migraciones; moanart.__version__, RENDERER_VERSION y ESTIMATOR_VERSION nunca (test).
+- Registro inmutable moanart.schema.versions (MigrationRegistry, Migration) validado al construirse (origen < destino ≤ actual, un paso por origen e ID, cadenas ≤ MAX_MIGRATION_STEPS=16); DOCUMENT_MIGRATIONS y PROJECT_MIGRATIONS de producción sólo conocen 1.0 y no registran migraciones; SUPPORTED_SCHEMA_VERSIONS fijado a la misma fuente por test; los batches conservan su contrato de versión anterior.
 - Sin formatos históricos inventados: 0.8 y 0.9 existen sólo en tests/fixtures/migration (registro TEST_ONLY_MIGRATIONS y miembro test_only_format exigido y retirado por el último paso); src/ no menciona esas versiones.
-- Leer nunca migra: validate_document y parse_manifest comprueban la versión antes del modelo y lanzan UnsupportedVersion (relation future/past/unknown o migration_required, con field y supported) sin repetir la versión no confiable; load_project no escribe (bytes, inodo y mtime intactos en .moana.json, directorio y ZIP).
-- Migración pura moana.schema.migrate_document: sin E/S, rechaza hojas no JSON antes del primer paso (invalid_value), copia acotada antes y después de cada paso, cualquier excepción de un paso es migration_failed con el ID del paso y sin datos del documento, salida cíclica o no JSON también; el resultado se valida y un documento actual es la identidad.
-- moana.project.migrate_project: lee la fuente con el mismo despacho de sólo lectura que load_project (project/_load.py), migra en memoria, conserva assets, guarda en un destino nuevo sin sobrescribir (exists) y rechaza un destino igual o dentro de la fuente (destination_inside_source); una fuente actual no escribe nada; un proyecto antiguo con historial es history_not_migratable.
+- Leer nunca migra: validate_document y parse_manifest comprueban la versión antes del modelo y lanzan UnsupportedVersion (relation future/past/unknown o migration_required, con field y supported) sin repetir la versión no confiable; load_project no escribe (bytes, inodo y mtime intactos en .moanart.json, directorio y ZIP).
+- Migración pura moanart.schema.migrate_document: sin E/S, rechaza hojas no JSON antes del primer paso (invalid_value), copia acotada antes y después de cada paso, cualquier excepción de un paso es migration_failed con el ID del paso y sin datos del documento, salida cíclica o no JSON también; el resultado se valida y un documento actual es la identidad.
+- moanart.project.migrate_project: lee la fuente con el mismo despacho de sólo lectura que load_project (project/_load.py), migra en memoria, conserva assets, guarda en un destino nuevo sin sobrescribir (exists) y rechaza un destino igual o dentro de la fuente (destination_inside_source); una fuente actual no escribe nada; un proyecto antiguo con historial es history_not_migratable.
 - Procedencia y copia original: miembro opcional migrations del sobre (MigrationRecord: source_kind, member, source/target_version con origen < destino, steps 1–16, path, byte_length, sha256 único), omitido si vacío (hashes de manifiestos existentes intactos); JSON original exacto en migrations/<sha256>.json (lista blanca en ZIP), verificado al cargar; límites MAX_PROJECT_MIGRATIONS=8 y copia ≤ max_manifest_bytes.
-- Sin CLI ni fachada (MOANA.md §13 no prevé migrate). ADR-031 (docs/architecture/decisions/ADR-031-format-versions-migrations.md) con notas de cabecera en ADR-011 y ADR-029; MOANA.md 0.1.18-draft (§16); contratos de módulos, índice de ADR, overview, README, AGENTS.md y CLAUDE.md actualizados; tests/__init__.py añadido (descubrimiento y tests/visual sin cambios).
-- Gate sobre 55e564e: scripts/validate.py (2419 passed, src/moana al 100 % de líneas y ramas) y scripts/check_wheel.py verdes; mypy también con --platform win32; generate_schema --check al día. Evidencia de plataforma: local macOS; matriz pendiente en main.
-- Revisión: moana-architect (aprobado; medios aplicados: member en MigrationRecord, módulo interno _load sin importar privados, fuente única de versiones), moana-python-engineer con foco en seguridad (cambios requeridos, aplicados: cualquier excepción de un paso como migration_failed sin filtrar datos, hojas no JSON rechazadas, registros estrictos y únicos, destino dentro de la fuente rechazado) y moana-qa-engineer (cambios menores, aplicados: origen ZIP en AC1/AC2, estado de directorios en las comprobaciones, bordes de versión y presupuesto, fallo en el segundo paso, Hypothesis contra 1.0 construido a mano).
+- Sin CLI ni fachada (MOANART.md §13 no prevé migrate). ADR-031 (docs/architecture/decisions/ADR-031-format-versions-migrations.md) con notas de cabecera en ADR-011 y ADR-029; MOANART.md 0.1.18-draft (§16); contratos de módulos, índice de ADR, overview, README, AGENTS.md y CLAUDE.md actualizados; tests/__init__.py añadido (descubrimiento y tests/visual sin cambios).
+- Gate sobre 55e564e: scripts/validate.py (2419 passed, src/moanart al 100 % de líneas y ramas) y scripts/check_wheel.py verdes; mypy también con --platform win32; generate_schema --check al día. Evidencia de plataforma: local macOS; matriz pendiente en main.
+- Revisión: moanart-architect (aprobado; medios aplicados: member en MigrationRecord, módulo interno _load sin importar privados, fuente única de versiones), moanart-python-engineer con foco en seguridad (cambios requeridos, aplicados: cualquier excepción de un paso como migration_failed sin filtrar datos, hojas no JSON rechazadas, registros estrictos y únicos, destino dentro de la fuente rechazado) y moanart-qa-engineer (cambios menores, aplicados: origen ZIP en AC1/AC2, estado de directorios en las comprobaciones, bordes de versión y presupuesto, fallo en el segundo paso, Hypothesis contra 1.0 construido a mano).
 - Aprobado por el propietario el 2026-11-17 tras revisión; PR #60 hacia develop.
 - AC1: tests/unit/schema/test_schema_migrations.py::test_ac1_test_only_fixture_migrates_to_v1_keeping_semantics_and_render; tests/unit/project/test_project_migrations.py::test_ac1_document_fixture_migrates_into_a_new_project, ::test_ac1_project_fixture_keeps_assets_and_render, ::test_ac1_migration_records_survive_saving_again, ::test_ac1_a_migrated_project_can_be_migrated_again, ::test_ac1_archive_fixture_migrates_and_stays_intact.
 - AC2: tests/unit/project/test_project_migrations.py::test_ac2_opening_an_old_file_neither_writes_nor_migrates, ::test_ac2_migration_never_replaces_an_existing_project, ::test_ac2_destination_inside_the_source_is_refused, ::test_ac2_a_document_migrated_beside_itself_stays_intact, ::test_ac2_unresolvable_paths_are_compared_as_absolute.

@@ -2,7 +2,7 @@
 
 import pytest
 
-from moana.core import (
+from moanart.core import (
     DEFAULT_GEOMETRY_LIMITS,
     MAX_AREA,
     MAX_COORDINATE,
@@ -16,7 +16,7 @@ from moana.core import (
 )
 
 
-def test_contract_constants_match_moana_section_5() -> None:
+def test_contract_constants_match_moanart_section_5() -> None:
     assert (MAX_DIMENSION, MAX_AREA, MAX_COORDINATE) == (2048, 4_194_304, 1_048_576)
     assert GeometryLimits(2048, 4_194_304, 1_048_576) == DEFAULT_GEOMETRY_LIMITS
 

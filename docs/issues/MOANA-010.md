@@ -25,7 +25,7 @@ Producir RenderResult sin modificar documentos ni acceder a disco.
 
 ## Scope
 
-Implementar moana/render como orquestador validación-resolución-coste-raster-composición y RenderResult inmutable.
+Implementar moanart/render como orquestador validación-resolución-coste-raster-composición y RenderResult inmutable.
 
 ## Out of scope
 
@@ -58,7 +58,7 @@ No caché, concurrencia ni optimizaciones sin benchmark.
 
 ## Definition of Done
 
-Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adjuntar evidencia por ID, pasar el gate y revisar el resultado. Dependencias completadas y [ciclo de vida](../guides/issue-lifecycle.md) respetado.
+Cumplir [MOANART.md §25](../../MOANART.md), todos los criterios AC y pruebas T; adjuntar evidencia por ID, pasar el gate y revisar el resultado. Dependencias completadas y [ciclo de vida](../guides/issue-lifecycle.md) respetado.
 
 ## Risks and notes
 
@@ -78,13 +78,13 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 ### 2. Lectura obligatoria (en orden)
 
 1. `CLAUDE.md` (Claude Code) o `AGENTS.md` (Codex) y [flujo de sesión](../guides/agent-workflow.md).
-2. MOANA.md: §3 Arquitectura modular; §14 Renderizado y determinismo; §25 Definition of Done. Estas secciones son el contrato normativo; ante duda, prevalecen sobre este issue.
+2. MOANART.md: §3 Arquitectura modular; §14 Renderizado y determinismo; §25 Definition of Done. Estas secciones son el contrato normativo; ante duda, prevalecen sobre este issue.
 3. [Contratos de módulos](../architecture/module-contracts.md) para: `render`.
 4. Estándares: [python](../../docs/standards/python.md), [architecture](../../docs/standards/architecture.md), [testing](../../docs/standards/testing.md).
 5. Issues de dependencia ([MOANA-002](MOANA-002.md), [MOANA-003](MOANA-003.md), [MOANA-006](MOANA-006.md), [MOANA-009](MOANA-009.md)): leer su sección Evidence para conocer las APIs ya entregadas; no reimplementarlas.
 6. ADR en `docs/architecture/` que mencionen los módulos afectados.
 
-### 3. Requisitos de MOANA.md cubiertos
+### 3. Requisitos de MOANART.md cubiertos
 
 | ID | Requisito | Secciones | Verificación exigida |
 | --- | --- | --- | --- |
@@ -95,12 +95,12 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 | Host | Skills a cargar | Revisión especializada |
 | --- | --- | --- |
-| Claude Code | `moana-graphics`, `moana-architecture`, `moana-code-review` | `moana-graphics-engineer`, `moana-architect` (sólo lectura; el agente principal integra) |
-| Codex | `$moana-graphics`, `$moana-architecture`, `$moana-code-review` | `moana_graphics_engineer`, `moana_architect` |
+| Claude Code | `moanart-graphics`, `moanart-architecture`, `moanart-code-review` | `moanart-graphics-engineer`, `moanart-architect` (sólo lectura; el agente principal integra) |
+| Codex | `$moanart-graphics`, `$moanart-architecture`, `$moanart-code-review` | `moanart_graphics_engineer`, `moanart_architect` |
 
 ### 5. Archivos
 
-- Código o documentos a crear/modificar: `src/moana/render/`.
+- Código o documentos a crear/modificar: `src/moanart/render/`.
 - Pruebas: `tests/unit/render/`.
 - No crear módulos ni carpetas sin comportamiento real. No tocar otros módulos salvo exportaciones imprescindibles, justificadas en el PR.
 
@@ -108,16 +108,16 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 - T1: Variar PYTHONHASHSEED, orden de claves de objeto y repetir en subprocesos
 - T2: Entradas no soportadas, references inválidas, cancelación entre operaciones y límites previos al render
-- Oráculos independientes (cálculo a mano o fórmula de MOANA.md); nunca copiar la salida de la implementación como expected.
+- Oráculos independientes (cálculo a mano o fórmula de MOANART.md); nunca copiar la salida de la implementación como expected.
 - Incluir casos negativos con el error de dominio esperado y casos borde (vacío, mínimo, máximo, fuera de rango).
 
 ### 7. Procedimiento
 
 1. Escribir las pruebas de los criterios AC y T antes o junto con la implementación.
-2. Implementar sólo **Scope**; respetar **Out of scope** y las dependencias permitidas de MOANA.md §3.
+2. Implementar sólo **Scope**; respetar **Out of scope** y las dependencias permitidas de MOANART.md §3.
 3. Validación de módulo: `uv run pytest tests/unit/render/ -q` y `uv run mypy src/`.
 4. Validación completa: `uv run python scripts/validate.py` y `uv run python scripts/check_wheel.py`.
-5. Revisión: subagentes listados y skill `moana-code-review`; corregir hallazgos críticos y altos.
+5. Revisión: subagentes listados y skill `moanart-code-review`; corregir hallazgos críticos y altos.
 6. Si hay salida raster: mostrar el PNG a 1x y ampliado por vecino más cercano; si cambia un golden, presentar expected/actual/diff y justificar.
 
 ### 8. Cierre
@@ -136,13 +136,13 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Evidence
 
-- src/moana/render/pipeline.py: render(document, *, frame_id, limits, deadline) ejecuta validación (revalida el árbol canónico) → frame (sólo None en schema 1.0) → registro explícito de rasterizadores (RENDERABLE_OPERATION_TYPES) → paleta resuelta → plan_budget → LayerTree con máscaras diferidas → compose; sin disco, caché, concurrencia, reloj ni hash().
-- src/moana/render/result.py: RenderResult inmutable (width, height, rgba bytes, digest §14 recalculado, warnings empty_bounds con puntero, renderer_version, provenance) y Provenance como manifiesto de reproducción (snapshot, seed, frame, render-v1, backend integer, budget-v2, RNG, moana_version).
-- src/moana/layers: DeferredMask para construir una máscara a la vez dentro de compose; src/moana/render/budget.py: estimador budget-v2 (raster + pasada de pintado sobre mask_box; bytes max(40A, 14A + 80·tile) + máscara).
-- src/moana/core/procedural.py: RNG por celda de §14 (SHA-256 del JSON canónico [seed, operation_id, x, y, channel, version], u = 8 bytes big-endian, u·n//2^64); src/moana/core/digest.py: digest visual único para Canvas y RenderResult.
-- ADR-018 (docs/architecture/decisions/ADR-018-render-pipeline.md); notas de cabecera en ADR-012, ADR-015 y ADR-017; MOANA.md 0.1.7-draft (§13 render disponible con deadline, §20 budget-v2); contratos de módulos, overview, README, guía de desarrollo, AGENTS.md y CLAUDE.md actualizados; probe de check_wheel ampliado.
+- src/moanart/render/pipeline.py: render(document, *, frame_id, limits, deadline) ejecuta validación (revalida el árbol canónico) → frame (sólo None en schema 1.0) → registro explícito de rasterizadores (RENDERABLE_OPERATION_TYPES) → paleta resuelta → plan_budget → LayerTree con máscaras diferidas → compose; sin disco, caché, concurrencia, reloj ni hash().
+- src/moanart/render/result.py: RenderResult inmutable (width, height, rgba bytes, digest §14 recalculado, warnings empty_bounds con puntero, renderer_version, provenance) y Provenance como manifiesto de reproducción (snapshot, seed, frame, render-v1, backend integer, budget-v2, RNG, moanart_version).
+- src/moanart/layers: DeferredMask para construir una máscara a la vez dentro de compose; src/moanart/render/budget.py: estimador budget-v2 (raster + pasada de pintado sobre mask_box; bytes max(40A, 14A + 80·tile) + máscara).
+- src/moanart/core/procedural.py: RNG por celda de §14 (SHA-256 del JSON canónico [seed, operation_id, x, y, channel, version], u = 8 bytes big-endian, u·n//2^64); src/moanart/core/digest.py: digest visual único para Canvas y RenderResult.
+- ADR-018 (docs/architecture/decisions/ADR-018-render-pipeline.md); notas de cabecera en ADR-012, ADR-015 y ADR-017; MOANART.md 0.1.7-draft (§13 render disponible con deadline, §20 budget-v2); contratos de módulos, overview, README, guía de desarrollo, AGENTS.md y CLAUDE.md actualizados; probe de check_wheel ampliado.
 - Gate: scripts/validate.py y scripts/check_wheel.py verdes; render, layers, core.procedural y core.digest al 100 % de líneas y ramas.
-- Revisión: moana-graphics-engineer y moana-architect (cambios requeridos, aplicados): cota de bytes en lienzos de 1–3 píxeles, RNG movido a core, digest único, moana_version, frame_id tras validar y sin puntero, aviso empty_bounds, RuntimeError para cajas diferidas incorrectas, bytes de máscara diferida en composition_cost, colisión de nombres budget-v2 resuelta y pruebas de 1×1, coordenadas negativas, documento vacío y propiedad plan ⇒ render.
+- Revisión: moanart-graphics-engineer y moanart-architect (cambios requeridos, aplicados): cota de bytes en lienzos de 1–3 píxeles, RNG movido a core, digest único, moanart_version, frame_id tras validar y sin puntero, aviso empty_bounds, RuntimeError para cajas diferidas incorrectas, bytes de máscara diferida en composition_cost, colisión de nombres budget-v2 resuelta y pruebas de 1×1, coordenadas negativas, documento vacío y propiedad plan ⇒ render.
 - Aprobado por el propietario el 2026-11-17 tras revisión; PR #48 hacia develop.
 - AC1: tests/integration/test_render_determinism.py::test_ac1_t1_fresh_processes_with_any_hash_seed_agree (subprocesos nuevos) y ::test_t1_repeated_renders_in_one_process_agree; digests recalculados a mano con hashlib en tests/unit/render/test_render_pipeline.py::test_semitransparent_scene_matches_hand_computation, ::test_every_primitive_in_a_strict_scene y ::test_minimal_example_document.
 - AC2: tests/unit/core/test_core_procedural.py::test_ac2_an_operation_sequence_depends_only_on_its_own_identity; tests/unit/render/test_render_pipeline.py::test_ac2_adding_an_operation_only_changes_its_own_pixels, ::test_ac2_render_does_not_modify_the_document y ::test_ac2_render_writes_and_reads_no_file.

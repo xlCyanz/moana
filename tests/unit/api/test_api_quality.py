@@ -1,4 +1,4 @@
-"""MOANA-026: ``moana.api.evaluate_quality`` composes render, regions, animation and quality."""
+"""MOANA-026: ``moanart.api.evaluate_quality`` composes render, regions, animation and quality."""
 
 from __future__ import annotations
 
@@ -11,10 +11,10 @@ from pathlib import Path
 
 import pytest
 
-import moana.api.quality as quality_facade
-import moana.render.regions as render_regions
-from moana.animation import evaluate_animation, render_animation
-from moana.api import (
+import moanart.api.quality as quality_facade
+import moanart.render.regions as render_regions
+from moanart.animation import evaluate_animation, render_animation
+from moanart.api import (
     AVAILABLE_FUNCTIONS,
     QualityConfig,
     QualityReport,
@@ -25,15 +25,15 @@ from moana.api import (
     load_document,
     snapshot_digest,
 )
-from moana.core.budget import RenderLimits
-from moana.core.coordinates import Box
-from moana.core.errors import BudgetExceeded, ReferenceError
-from moana.quality import QUALITY_RULES, quality_cost
-from moana.render import admit_sequence, plan_frame, render
+from moanart.core.budget import RenderLimits
+from moanart.core.coordinates import Box
+from moanart.core.errors import BudgetExceeded, ReferenceError
+from moanart.quality import QUALITY_RULES, quality_cost
+from moanart.render import admit_sequence, plan_frame, render
 
 ROOT = Path(__file__).resolve().parents[3]
-SLIME = ROOT / "examples/specs/bouncing-slime.moana.json"
-EYES = ROOT / "examples/specs/masked-eyes.moana.json"
+SLIME = ROOT / "examples/specs/bouncing-slime.moanart.json"
+EYES = ROOT / "examples/specs/masked-eyes.moanart.json"
 
 
 def text(report: QualityReport) -> str:
@@ -205,7 +205,7 @@ def test_listed_as_available() -> None:
 
 SCRIPT = """
 import json, sys
-from moana.api import evaluate_quality, load_document
+from moanart.api import evaluate_quality, load_document
 report = evaluate_quality(load_document(sys.argv[1]), animation_id="bounce")
 print(json.dumps(report.to_mapping(), sort_keys=True, separators=(",", ":")))
 """

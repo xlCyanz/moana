@@ -1,4 +1,4 @@
-"""Public facade moana.api: loading, render, export and reports (MOANA-012).
+"""Public facade moanart.api: loading, render, export and reports (MOANA-012).
 
 Pixel oracles come from the minimal example by hand: ``body_fill`` is the half-open
 rect ``[40, 32, 88, 104)`` in ``cloth`` (#36AFA5FF) on a transparent 128 x 128 canvas,
@@ -21,8 +21,8 @@ import numpy as np
 import pytest
 from PIL import Image
 
-import moana.api
-from moana.api import (
+import moanart.api
+from moanart.api import (
     AVAILABLE_FUNCTIONS,
     PLANNED_FUNCTIONS,
     ParseLimits,
@@ -35,15 +35,15 @@ from moana.api import (
     load_document,
     render,
 )
-from moana.api import inspection as inspection_module
-from moana.api.loading import MAX_REPORTED_NAME
-from moana.core import errors
-from moana.export import export_capabilities
-from moana.render import RENDERABLE_OPERATION_TYPES
-from moana.schema import PLANNED_OPERATION_TYPES, SUPPORTED_OPERATION_TYPES, snapshot_digest
+from moanart.api import inspection as inspection_module
+from moanart.api.loading import MAX_REPORTED_NAME
+from moanart.core import errors
+from moanart.export import export_capabilities
+from moanart.render import RENDERABLE_OPERATION_TYPES
+from moanart.schema import PLANNED_OPERATION_TYPES, SUPPORTED_OPERATION_TYPES, snapshot_digest
 
 ROOT = Path(__file__).resolve().parents[3]
-EXAMPLE = ROOT / "examples" / "specs" / "minimal.moana.json"
+EXAMPLE = ROOT / "examples" / "specs" / "minimal.moanart.json"
 MINIMAL: dict[str, Any] = json.loads(EXAMPLE.read_text(encoding="utf-8"))
 CLOTH = (0x36, 0xAF, 0xA5, 0xFF)
 CLEAR = (0, 0, 0, 0)
@@ -74,7 +74,7 @@ def expected_pixel(x: int, y: int) -> tuple[int, int, int, int]:
 
 
 def test_every_source_kind_gives_the_same_document(tmp_path: Path) -> None:
-    path = tmp_path / "a dir with spaces" / "mini sprite ñ.moana.json"
+    path = tmp_path / "a dir with spaces" / "mini sprite ñ.moanart.json"
     path.parent.mkdir()
     path.write_bytes(EXAMPLE.read_bytes())
     documents = [
@@ -90,18 +90,18 @@ def test_every_source_kind_gives_the_same_document(tmp_path: Path) -> None:
 
 
 def test_missing_file_is_a_read_error_without_the_full_path(tmp_path: Path) -> None:
-    missing = tmp_path / "secret parent" / "absent.moana.json"
+    missing = tmp_path / "secret parent" / "absent.moanart.json"
     with pytest.raises(ReadError) as caught:
         load_document(missing)
     error = caught.value
     assert (error.code, error.exit_code) == ("READ_ERROR", 5)
     assert dict(error.context) == {
         "reason": "not_found",
-        "file_name": "absent.moana.json",
+        "file_name": "absent.moanart.json",
         "errno": "ENOENT",
     }
     assert "secret parent" not in repr(error.context) + error.message
-    assert isinstance(error, errors.MoanaError)
+    assert isinstance(error, errors.MoanArtError)
 
 
 def test_directory_is_a_read_error(tmp_path: Path) -> None:
@@ -128,20 +128,20 @@ def failing_open(error: OSError) -> Callable[..., int]:
 def test_open_failures_are_read_errors(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, raised: OSError, expected: dict[str, str]
 ) -> None:
-    target = tmp_path / "x.moana.json"
+    target = tmp_path / "x.moanart.json"
     target.write_bytes(b"{}")
     monkeypatch.setattr(os, "open", failing_open(raised))
     with pytest.raises(ReadError) as caught:
         load_document(target)
     name = errno.errorcode[raised.errno or 0]
-    assert dict(caught.value.context) == {**expected, "file_name": "x.moana.json", "errno": name}
+    assert dict(caught.value.context) == {**expected, "file_name": "x.moanart.json", "errno": name}
 
 
 def test_os_error_without_errno(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(os, "open", failing_open(OSError("no errno")))
     with pytest.raises(ReadError) as caught:
-        load_document(tmp_path / "x.moana.json")
-    assert dict(caught.value.context) == {"reason": "io_error", "file_name": "x.moana.json"}
+        load_document(tmp_path / "x.moanart.json")
+    assert dict(caught.value.context) == {"reason": "io_error", "file_name": "x.moanart.json"}
 
 
 def test_permission_error_on_a_directory_reports_a_directory(
@@ -158,11 +158,11 @@ def test_permission_error_on_an_unstatable_path_is_permission_denied(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """ADR-039: the reason comes from ``os.stat`` on every platform; a failure is no directory."""
-    from moana.api.loading import _stat_is_directory
+    from moanart.api.loading import _stat_is_directory
 
     monkeypatch.setattr(os, "open", failing_open(PermissionError(errno.EACCES, "denied")))
     with pytest.raises(ReadError) as caught:
-        load_document(tmp_path / "missing.moana.json")
+        load_document(tmp_path / "missing.moanart.json")
     assert caught.value.context["reason"] == "permission_denied"
     assert _stat_is_directory(tmp_path)
     assert not _stat_is_directory(tmp_path / "a\x00b")
@@ -177,7 +177,7 @@ def posix_non_root() -> bool:
 
 @pytest.mark.skipif(not posix_non_root(), reason="POSIX permissions, non-root")
 def test_real_unreadable_file(tmp_path: Path) -> None:
-    target = tmp_path / "unreadable.moana.json"
+    target = tmp_path / "unreadable.moanart.json"
     target.write_bytes(EXAMPLE.read_bytes())
     target.chmod(0)
     try:
@@ -192,22 +192,22 @@ def test_real_unreadable_file(tmp_path: Path) -> None:
 def test_unsearchable_parent_is_permission_denied(tmp_path: Path) -> None:
     parent = tmp_path / "locked parent"
     parent.mkdir()
-    (parent / "doc.moana.json").write_bytes(EXAMPLE.read_bytes())
+    (parent / "doc.moanart.json").write_bytes(EXAMPLE.read_bytes())
     parent.chmod(0)
     try:
         with pytest.raises(ReadError) as caught:
-            load_document(parent / "doc.moana.json")
+            load_document(parent / "doc.moanart.json")
     finally:
         parent.chmod(0o700)
     assert dict(caught.value.context) == {
         "reason": "permission_denied",
-        "file_name": "doc.moana.json",
+        "file_name": "doc.moanart.json",
         "errno": "EACCES",
     }
 
 
 def test_fifo_is_rejected_without_blocking(tmp_path: Path) -> None:
-    fifo = tmp_path / "pipe.moana.json"
+    fifo = tmp_path / "pipe.moanart.json"
     if sys.platform == "win32":
         pytest.skip("POSIX FIFOs")
     os.mkfifo(fifo)  # no writer: a blocking open would hang here
@@ -224,7 +224,7 @@ def test_device_is_not_a_file() -> None:
 
 
 def test_fstat_failure_is_an_io_error(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    target = tmp_path / "x.moana.json"
+    target = tmp_path / "x.moanart.json"
     target.write_bytes(EXAMPLE.read_bytes())
 
     opened: list[int] = []
@@ -280,7 +280,7 @@ def spy_fdopen(monkeypatch: pytest.MonkeyPatch, *, fail: bool = False) -> list[i
 def test_bounded_read_asks_for_one_byte_over_the_limit(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    path = tmp_path / "big.moana.json"
+    path = tmp_path / "big.moanart.json"
     path.write_bytes(b" " * 10_000 + EXAMPLE.read_bytes())
     sizes = spy_fdopen(monkeypatch)
     with pytest.raises(errors.ValidationError) as caught:
@@ -290,20 +290,20 @@ def test_bounded_read_asks_for_one_byte_over_the_limit(
 
 
 def test_read_failure_is_an_io_error(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    target = tmp_path / "x.moana.json"
+    target = tmp_path / "x.moanart.json"
     target.write_bytes(EXAMPLE.read_bytes())
     spy_fdopen(monkeypatch, fail=True)
     with pytest.raises(ReadError) as caught:
         load_document(target)
     assert dict(caught.value.context) == {
         "reason": "io_error",
-        "file_name": "x.moana.json",
+        "file_name": "x.moanart.json",
         "errno": "EIO",
     }
 
 
 def test_long_file_names_are_truncated_in_errors(tmp_path: Path) -> None:
-    name = "n" * 300 + ".moana.json"
+    name = "n" * 300 + ".moanart.json"
     with pytest.raises(ReadError) as caught:
         load_document(tmp_path / name)
     reported = caught.value.context["file_name"]
@@ -319,7 +319,7 @@ def test_json_text_is_not_taken_as_a_path(text: str) -> None:
     assert caught.value.context["reason"] == "json_text"
 
 
-@pytest.mark.parametrize("raw", ["", "bad\x00name.moana.json"])
+@pytest.mark.parametrize("raw", ["", "bad\x00name.moanart.json"])
 def test_unrepresentable_paths_are_validation_errors(raw: str) -> None:
     with pytest.raises(errors.ValidationError) as caught:
         load_document(raw)
@@ -332,7 +332,7 @@ def test_unencodable_path_is_a_validation_error(monkeypatch: pytest.MonkeyPatch)
 
     monkeypatch.setattr(os, "fsencode", unencodable)
     with pytest.raises(errors.ValidationError) as caught:
-        load_document("x.moana.json")
+        load_document("x.moanart.json")
     assert caught.value.context["reason"] == "invalid_name"
 
 
@@ -345,7 +345,7 @@ def test_limits_apply_to_bytes_and_mappings() -> None:
 
 class BytesPath:
     def __fspath__(self) -> bytes:
-        return b"x.moana.json"
+        return b"x.moanart.json"
 
 
 @pytest.mark.parametrize(
@@ -376,7 +376,7 @@ def test_wrong_limits_type() -> None:
         ),
     ],
 )
-def test_schema_errors_pass_through(mutate: Any, error: type[errors.MoanaError]) -> None:
+def test_schema_errors_pass_through(mutate: Any, error: type[errors.MoanArtError]) -> None:
     document = minimal()
     mutate(document)
     with pytest.raises(error):
@@ -576,13 +576,13 @@ def test_capabilities_separate_available_from_planned() -> None:
     )
     assert listing.functions == AVAILABLE_FUNCTIONS
     for name in AVAILABLE_FUNCTIONS:
-        assert callable(getattr(moana.api, name))
+        assert callable(getattr(moanart.api, name))
     for name in PLANNED_FUNCTIONS:
-        assert not hasattr(moana.api, name)
-        assert name not in moana.api.__all__
+        assert not hasattr(moanart.api, name)
+        assert name not in moanart.api.__all__
     mapping = listing.to_mapping()
     assert mapping["export_formats"] == ["png"]
-    # MOANA-025: the runtime codec matrix of moana.export, probed on each call (ADR-035).
+    # MOANA-025: the runtime codec matrix of moanart.export, probed on each call (ADR-035).
     codecs = mapping["export_codecs"]
     assert isinstance(codecs, list)
     assert [row["format"] for row in codecs] == ["png", "gif", "apng", "webp"]
@@ -614,6 +614,6 @@ def test_malformed_budget_detail_is_a_type_error(monkeypatch: pytest.MonkeyPatch
 
 
 def test_facade_reexports_what_the_cli_needs() -> None:
-    assert moana.api.MAX_SCALE == 64
-    assert moana.api.snapshot_digest is snapshot_digest
-    assert moana.api.ReadError is errors.ReadError
+    assert moanart.api.MAX_SCALE == 64
+    assert moanart.api.snapshot_digest is snapshot_digest
+    assert moanart.api.ReadError is errors.ReadError

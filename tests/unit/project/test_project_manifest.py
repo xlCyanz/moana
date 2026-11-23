@@ -9,15 +9,15 @@ from typing import Any
 
 import pytest
 
-from moana.core.errors import (
+from moanart.core.errors import (
     BudgetExceeded,
     EditConflict,
-    MoanaError,
+    MoanArtError,
     UnsupportedVersion,
     ValidationError,
 )
-from moana.editing import History, HistoryLimits
-from moana.project import (
+from moanart.editing import History, HistoryLimits
+from moanart.project import (
     MANIFEST_NAME,
     Project,
     ProjectLimits,
@@ -27,12 +27,12 @@ from moana.project import (
     save_project,
     snapshot_path,
 )
-from moana.project.manifest import parse_manifest
-from moana.schema import DEFAULT_PARSE_LIMITS, Document, ParseLimits, document_json_schema
+from moanart.project.manifest import parse_manifest
+from moanart.schema import DEFAULT_PARSE_LIMITS, Document, ParseLimits, document_json_schema
 
 from .conftest import BatchFactory
 
-SCHEMA = Path(__file__).resolve().parents[3] / "schemas/moana-document-1.0.schema.json"
+SCHEMA = Path(__file__).resolve().parents[3] / "schemas/moanart-document-1.0.schema.json"
 
 
 def _saved(tmp_path: Path, project: Project) -> tuple[Path, dict[str, Any]]:
@@ -46,7 +46,7 @@ def _rewrite(root: Path, tree: dict[str, Any]) -> None:
     (root / MANIFEST_NAME).write_text(json.dumps(tree), encoding="utf-8")
 
 
-def _load_error(root: Path, error: type[MoanaError] = ValidationError) -> MoanaError:
+def _load_error(root: Path, error: type[MoanArtError] = ValidationError) -> MoanArtError:
     with pytest.raises(error) as caught:
         load_project(root)
     return caught.value
@@ -104,7 +104,7 @@ def test_t3_extra_document_member_keeps_its_document_error(
 @pytest.mark.parametrize(
     ("change", "pointer", "reason"),
     [
-        ({"kind": "moana-document"}, "/kind", None),
+        ({"kind": "moanart-document"}, "/kind", None),
         ({"project_version": 2}, "/project_version", "literal_error"),
         ({"assets": None}, "/assets", "tuple_type"),
         ({"document": []}, "/document", "model_type"),
@@ -176,7 +176,7 @@ def test_t3_manifest_byte_limit(tmp_path: Path, project: Project) -> None:
 
 
 def test_t3_plain_json_files_are_documents_or_envelopes(tmp_path: Path) -> None:
-    target = tmp_path / "x.moana.json"
+    target = tmp_path / "x.moanart.json"
     target.write_bytes(b"[1]")
     with pytest.raises(ValidationError) as caught:
         load_project(target)

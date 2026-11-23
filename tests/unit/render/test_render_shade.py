@@ -1,4 +1,4 @@
-"""Render and budget of ``shade`` operations (MOANA-015, MOANA.md sections 9-10, ADR-028).
+"""Render and budget of ``shade`` operations (MOANA-015, MOANART.md sections 9-10, ADR-028).
 
 AC1: overlaps take the last listed band and every painted colour is a ramp colour.
 T1: empty bands, overlaps, clamp and orientation changes at document level. T2: hand
@@ -17,13 +17,13 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from moana.api import inspect_document
-from moana.core import errors
-from moana.core.budget import RenderLimits
-from moana.core.coordinates import Box, Dimensions
-from moana.palette import RAMP_LUMINANCE_NOT_INCREASING, RAMP_TRANSPARENT_STEP
-from moana.render import ESTIMATOR_VERSION, estimate_cost, plan_budget, render
-from moana.render.budget import (
+from moanart.api import inspect_document
+from moanart.core import errors
+from moanart.core.budget import RenderLimits
+from moanart.core.coordinates import Box, Dimensions
+from moanart.palette import RAMP_LUMINANCE_NOT_INCREASING, RAMP_TRANSPARENT_STEP
+from moanart.render import ESTIMATOR_VERSION, estimate_cost, plan_budget, render
+from moanart.render.budget import (
     SHADE_FIXED_BYTES,
     SHADE_FOLD_BYTES,
     SHADE_PASSES,
@@ -33,9 +33,9 @@ from moana.render.budget import (
     shade_cost,
     shade_later,
 )
-from moana.render.pipeline import _plan_masks, _shade_band
-from moana.schema import Document, validate_document
-from moana.techniques import ShadeLight, analyze_clusters, band_index
+from moanart.render.pipeline import _plan_masks, _shade_band
+from moanart.schema import Document, validate_document
+from moanart.techniques import ShadeLight, analyze_clusters, band_index
 
 ROOT = Path(__file__).resolve().parents[3]
 RGBA = tuple[int, int, int, int]
@@ -605,7 +605,7 @@ def test_plan_budget_admission_means_render_succeeds_with_shade(
 
 
 def test_shaded_orb_example_uses_only_ramp_ink_and_transparency() -> None:
-    path = ROOT / "examples" / "specs" / "shaded-orb.moana.json"
+    path = ROOT / "examples" / "specs" / "shaded-orb.moanart.json"
     document = validate_document(json.loads(path.read_text(encoding="utf-8")))
     result = render(document)
     assert result.warnings == ()
@@ -623,7 +623,7 @@ def test_shaded_orb_example_uses_only_ramp_ink_and_transparency() -> None:
     assert result.pixel(8, 8) == palette["orb_4"]  # inside the highlight
     assert result.pixel(11, 11) == palette["orb_2"]  # the body, front facing
     # the bounce is clipped to the lower right and the terminators soften the 2 -> 0
-    # jump on the ring: no stray one-pixel cluster is left (MOANA.md section 19)
+    # jump on the ring: no stray one-pixel cluster is left (MOANART.md section 19)
     clusters = analyze_clusters(result.rgba, Dimensions(24, 24))
     assert clusters.singletons == 0
     assert clusters.warnings == ()

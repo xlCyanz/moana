@@ -9,7 +9,7 @@ paths:
 
 # Seguridad
 
-Estándar: [docs/standards/security.md](../../docs/standards/security.md), modelo de amenazas en `docs/architecture/SECURITY_MODEL.md`, MOANA.md §20.
+Estándar: [docs/standards/security.md](../../docs/standards/security.md), modelo de amenazas en `docs/architecture/SECURITY_MODEL.md`, MOANART.md §20.
 
 - Documentos son datos: prohibidos `eval`/`exec`/`pickle`/import dinámico/shell/red en el núcleo.
 - Valida bytes, profundidad, nodos, dimensiones y coste antes de parsear completo o reservar arrays.

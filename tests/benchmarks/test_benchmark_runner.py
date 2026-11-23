@@ -2,7 +2,7 @@
 
 No test here asserts a latency: timings are only checked for shape (MOANA-031,
 docs/standards/testing.md). Oracles: hand-computed statistics, operation counts read
-from the corpus JSON and digests rendered independently with ``moana.api.render``.
+from the corpus JSON and digests rendered independently with ``moanart.api.render``.
 """
 
 from __future__ import annotations
@@ -17,9 +17,9 @@ from typing import Any
 
 import pytest
 
-from moana import api
-from moana.animation import evaluate_animation
-from moana.schema import Document, validate_document
+from moanart import api
+from moanart.animation import evaluate_animation
+from moanart.schema import Document, validate_document
 
 from . import corpus, measure, report
 from .conftest import SMOKE_SAMPLES, SMOKE_WARMUPS
@@ -39,7 +39,7 @@ ENV_KEYS = {
     "macos_version",
     "python_implementation",
     "python_version",
-    "moana",
+    "moanart",
     "numpy",
     "pillow",
     "aggdraw",
@@ -65,7 +65,7 @@ def _document(name: str) -> Document:
 
 
 def test_t1_smoke_report_is_well_formed(smoke_report: Json) -> None:
-    assert smoke_report["format"] == "moana-benchmark/1"
+    assert smoke_report["format"] == "moanart-benchmark/1"
     assert "Informational" in smoke_report["note"]
     method = smoke_report["method"]
     assert (method["warmups"], method["samples"]) == (SMOKE_WARMUPS, SMOKE_SAMPLES)
@@ -162,7 +162,7 @@ def test_t2_a_changed_rect_is_drawn_again_with_the_same_work() -> None:
 
 
 def test_t2_counting_wrapper_is_removed_after_a_sample() -> None:
-    import moana.render.pipeline as pipeline
+    import moanart.render.pipeline as pipeline
 
     original = pipeline._rasterize
     measure.sample_render(measure.render_once(_document("corpus/stone-tile"), None))
@@ -170,7 +170,7 @@ def test_t2_counting_wrapper_is_removed_after_a_sample() -> None:
 
 
 def test_t2_the_engine_has_no_memoisation() -> None:
-    source = Path(__file__).resolve().parents[2] / "src" / "moana"
+    source = Path(__file__).resolve().parents[2] / "src" / "moanart"
     pattern = re.compile(r"lru_cache|functools\.cache\b|@cache\b|cached_property")
     hits = [
         path.relative_to(source).as_posix()
@@ -433,8 +433,8 @@ def test_privacy_findings_detect_leaks_in_the_environment() -> None:
         "C:/Users/x",
         "C:\\Users\\x",
         "see (D:\\data)",
-        "~/moana",
-        "at ~\\moana",
+        "~/moanart",
+        "at ~\\moanart",
         "\\\\server\\share",
         "cwd:/srv/x",
     ],

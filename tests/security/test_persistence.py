@@ -19,9 +19,9 @@ import pytest
 from hypothesis import given
 from hypothesis import strategies as st
 
-from moana.api import export_png, load_document, render
-from moana.core.errors import BudgetExceeded, ExportError
-from moana.project import (
+from moanart.api import export_png, load_document, render
+from moanart.core.errors import BudgetExceeded, ExportError
+from moanart.project import (
     Asset,
     Project,
     ProjectLimits,
@@ -31,7 +31,7 @@ from moana.project import (
     save_project,
     save_project_archive,
 )
-from moana.schema import Document
+from moanart.schema import Document
 from tests.fixtures.migration.formats import OLDEST, TEST_ONLY_MIGRATIONS
 
 from .corpus import MINIMAL, SECRET, tiny_png
@@ -82,8 +82,8 @@ def _savers() -> dict[str, tuple[str, Save]]:
 
     return {
         "directory": ("project", directory),
-        "archive": ("project.moana", archive),
-        "document": ("doc.moana.json", document),
+        "archive": ("project.moanart", archive),
+        "document": ("doc.moanart.json", document),
         "png": ("sprite.png", png),
     }
 

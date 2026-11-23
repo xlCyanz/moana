@@ -4,7 +4,7 @@ AC1: the RGBA result holds only the palette colour or transparency (no AA colour
 and nothing outside the path box. AC2: invalid payloads, unvalidated models and a
 missing or untested backend fail with domain errors before the adapter runs.
 ``budget-v4`` figures are computed by hand from the formulas of
-``moana.render.budget``; the property "admitted by ``plan_budget`` => rendered" and
+``moanart.render.budget``; the property "admitted by ``plan_budget`` => rendered" and
 peak memory are checked as for the other primitives.
 """
 
@@ -21,17 +21,17 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-import moana.geometry.paths as paths_module
-from moana.api import inspect_document
-from moana.core.budget import RenderLimits
-from moana.core.coordinates import Dimensions
-from moana.core.errors import BudgetExceeded, UnsupportedOperation, ValidationError
-from moana.core.limits import MAX_PATH_CELLS, GeometryLimits
-from moana.core.vector_path import PATH_UNITS, parse_path
-from moana.geometry import rasterize_path
-from moana.render import ESTIMATOR_VERSION, estimate_cost, plan_budget, render
-from moana.render import pipeline as pipeline_module
-from moana.schema import Document, canonical_json, validate_document
+import moanart.geometry.paths as paths_module
+from moanart.api import inspect_document
+from moanart.core.budget import RenderLimits
+from moanart.core.coordinates import Dimensions
+from moanart.core.errors import BudgetExceeded, UnsupportedOperation, ValidationError
+from moanart.core.limits import MAX_PATH_CELLS, GeometryLimits
+from moanart.core.vector_path import PATH_UNITS, parse_path
+from moanart.geometry import rasterize_path
+from moanart.render import ESTIMATOR_VERSION, estimate_cost, plan_budget, render
+from moanart.render import pipeline as pipeline_module
+from moanart.schema import Document, canonical_json, validate_document
 
 U = PATH_UNITS
 RGBA = tuple[int, int, int, int]
@@ -412,11 +412,11 @@ def test_plan_budget_admission_means_render_succeeds_with_paths(
 
 
 def test_planning_a_path_document_loads_neither_aggdraw_nor_pillow() -> None:
-    """``import moana.render`` and the cost plan of a path stay free of AggDraw."""
+    """``import moanart.render`` and the cost plan of a path stay free of AggDraw."""
     probe = (
-        "import sys, moana.render, moana.schema; "
-        "doc = moana.schema.validate_document(sys.stdin.buffer.read()); "
-        "moana.render.plan_budget(doc); "
+        "import sys, moanart.render, moanart.schema; "
+        "doc = moanart.schema.validate_document(sys.stdin.buffer.read()); "
+        "moanart.render.plan_budget(doc); "
         "heavy = {'PIL', 'aggdraw'}; "
         "print(sorted(m for m in sys.modules if m.split('.')[0] in heavy))"
     )
