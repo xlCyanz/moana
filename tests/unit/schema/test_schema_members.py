@@ -8,7 +8,7 @@ from typing import get_args
 import pytest
 from pydantic import BaseModel
 
-from moana.schema import (
+from moanart.schema import (
     MASK_MEMBERS,
     OPERATION_MEMBERS,
     SUPPORTED_MASK_TYPES,

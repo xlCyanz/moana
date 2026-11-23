@@ -25,7 +25,7 @@ Mantener colores y rampas con IDs estables y perfiles explícitos.
 
 ## Scope
 
-Crear moana/palette con IDs de color, canonicalización RGBA, ramps y validación de perfiles strict/rgba.
+Crear moanart/palette con IDs de color, canonicalización RGBA, ramps y validación de perfiles strict/rgba.
 
 ## Out of scope
 
@@ -58,7 +58,7 @@ No cuantización automática ni iluminación.
 
 ## Definition of Done
 
-Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adjuntar evidencia por ID, pasar el gate y revisar el resultado. Dependencias completadas y [ciclo de vida](../guides/issue-lifecycle.md) respetado.
+Cumplir [MOANART.md §25](../../MOANART.md), todos los criterios AC y pruebas T; adjuntar evidencia por ID, pasar el gate y revisar el resultado. Dependencias completadas y [ciclo de vida](../guides/issue-lifecycle.md) respetado.
 
 ## Risks and notes
 
@@ -78,13 +78,13 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 ### 2. Lectura obligatoria (en orden)
 
 1. `CLAUDE.md` (Claude Code) o `AGENTS.md` (Codex) y [flujo de sesión](../guides/agent-workflow.md).
-2. MOANA.md: §3 Arquitectura modular; §9 Paletas, color e iluminación; §25 Definition of Done. Estas secciones son el contrato normativo; ante duda, prevalecen sobre este issue.
+2. MOANART.md: §3 Arquitectura modular; §9 Paletas, color e iluminación; §25 Definition of Done. Estas secciones son el contrato normativo; ante duda, prevalecen sobre este issue.
 3. [Contratos de módulos](../architecture/module-contracts.md) para: `palette`, `schema`.
 4. Estándares: [python](../../docs/standards/python.md), [architecture](../../docs/standards/architecture.md), [testing](../../docs/standards/testing.md), [pixel-art](../../docs/standards/pixel-art.md), [security](../../docs/standards/security.md).
 5. Issues de dependencia ([MOANA-001](MOANA-001.md), [MOANA-002](MOANA-002.md)): leer su sección Evidence para conocer las APIs ya entregadas; no reimplementarlas.
 6. ADR en `docs/architecture/` que mencionen los módulos afectados.
 
-### 3. Requisitos de MOANA.md cubiertos
+### 3. Requisitos de MOANART.md cubiertos
 
 | ID | Requisito | Secciones | Verificación exigida |
 | --- | --- | --- | --- |
@@ -94,12 +94,12 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 | Host | Skills a cargar | Revisión especializada |
 | --- | --- | --- |
-| Claude Code | `moana-python`, `moana-pixel-art`, `moana-architecture`, `moana-code-review` | `moana-python-engineer`, `moana-pixel-artist`, `moana-architect` (sólo lectura; el agente principal integra) |
-| Codex | `$moana-python`, `$moana-pixel-art`, `$moana-architecture`, `$moana-code-review` | `moana_python_engineer`, `moana_pixel_artist`, `moana_architect` |
+| Claude Code | `moanart-python`, `moanart-pixel-art`, `moanart-architecture`, `moanart-code-review` | `moanart-python-engineer`, `moanart-pixel-artist`, `moanart-architect` (sólo lectura; el agente principal integra) |
+| Codex | `$moanart-python`, `$moanart-pixel-art`, `$moanart-architecture`, `$moanart-code-review` | `moanart_python_engineer`, `moanart_pixel_artist`, `moanart_architect` |
 
 ### 5. Archivos
 
-- Código o documentos a crear/modificar: `src/moana/palette/`, `src/moana/schema/`.
+- Código o documentos a crear/modificar: `src/moanart/palette/`, `src/moanart/schema/`.
 - Pruebas: `tests/unit/palette/`, `tests/unit/schema/`.
 - No crear módulos ni carpetas sin comportamiento real. No tocar otros módulos salvo exportaciones imprescindibles, justificadas en el PR.
 
@@ -107,16 +107,16 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 - T1: Casos de colores duplicados por valor pero IDs diferentes y IDs duplicados inválidos
 - T2: Pruebas de límites 256/4096, transparencia y remapeo explícito sin colores ocultos
-- Oráculos independientes (cálculo a mano o fórmula de MOANA.md); nunca copiar la salida de la implementación como expected.
+- Oráculos independientes (cálculo a mano o fórmula de MOANART.md); nunca copiar la salida de la implementación como expected.
 - Incluir casos negativos con el error de dominio esperado y casos borde (vacío, mínimo, máximo, fuera de rango).
 
 ### 7. Procedimiento
 
 1. Escribir las pruebas de los criterios AC y T antes o junto con la implementación.
-2. Implementar sólo **Scope**; respetar **Out of scope** y las dependencias permitidas de MOANA.md §3.
+2. Implementar sólo **Scope**; respetar **Out of scope** y las dependencias permitidas de MOANART.md §3.
 3. Validación de módulo: `uv run pytest tests/unit/palette/ tests/unit/schema/ -q` y `uv run mypy src/`.
 4. Validación completa: `uv run python scripts/validate.py` y `uv run python scripts/check_wheel.py`.
-5. Revisión: subagentes listados y skill `moana-code-review`; corregir hallazgos críticos y altos.
+5. Revisión: subagentes listados y skill `moanart-code-review`; corregir hallazgos críticos y altos.
 6. Si hay salida raster: mostrar el PNG a 1x y ampliado por vecino más cercano; si cambia un golden, presentar expected/actual/diff y justificar.
 
 ### 8. Cierre
@@ -135,11 +135,11 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Evidence
 
-- src/moana/palette/{__init__,colors,table}.py: Rgba canónico #RRGGBBAA y luminancia lineal entera, Palette inmutable por IDs con perfiles strict/rgba, edición sin renumerar, ColorRemap explícito, advertencias de rampa no bloqueantes.
-- src/moana/core/ids.py: dueño único de los lenguajes de ID y color (schema publica los mismos patrones; generate_schema --check sin cambios); detail_sort_key movido a core.errors; MAX_RAMP_ENTRIES en core.limits.
-- ADR-014 (docs/architecture/decisions/ADR-014-palette.md); MOANA.md 0.1.6-draft (§9 luminancia verificable); contratos de módulos y overview actualizados.
-- Gate: scripts/validate.py y scripts/check_wheel.py verdes; cobertura 100 % de moana.palette y moana.core.ids.
-- Revisión: moana-python-engineer, moana-pixel-artist y moana-architect; corregidos luminancia sobre sRGB codificado, pasos transparentes/semitransparentes, IDs en advertencias, patrones duplicados, unicidad con el ID de paleta, formato de errores distinto del esquema, coste sin cota de from_mapping/ColorRemap, hash de ColorRemap y subclases hostiles de str/dict/list.
+- src/moanart/palette/{__init__,colors,table}.py: Rgba canónico #RRGGBBAA y luminancia lineal entera, Palette inmutable por IDs con perfiles strict/rgba, edición sin renumerar, ColorRemap explícito, advertencias de rampa no bloqueantes.
+- src/moanart/core/ids.py: dueño único de los lenguajes de ID y color (schema publica los mismos patrones; generate_schema --check sin cambios); detail_sort_key movido a core.errors; MAX_RAMP_ENTRIES en core.limits.
+- ADR-014 (docs/architecture/decisions/ADR-014-palette.md); MOANART.md 0.1.6-draft (§9 luminancia verificable); contratos de módulos y overview actualizados.
+- Gate: scripts/validate.py y scripts/check_wheel.py verdes; cobertura 100 % de moanart.palette y moanart.core.ids.
+- Revisión: moanart-python-engineer, moanart-pixel-artist y moanart-architect; corregidos luminancia sobre sRGB codificado, pasos transparentes/semitransparentes, IDs en advertencias, patrones duplicados, unicidad con el ID de paleta, formato de errores distinto del esquema, coste sin cota de from_mapping/ColorRemap, hash de ColorRemap y subclases hostiles de str/dict/list.
 - Aprobado por el propietario el 2026-11-17 tras revisión; PR #43 hacia develop.
 - AC1: tests/unit/palette/test_palette_table.py::test_strict_rejects_intermediate_alpha, ::test_missing_ramp_reference_is_a_reference_error, ::test_validation_problems_take_precedence_and_are_sorted; paridad con el esquema en tests/unit/palette/test_palette_architecture.py::test_schema_and_palette_report_the_same_semantic_problems.
 - AC2: tests/unit/palette/test_palette_table.py::test_mapping_roundtrip_preserves_order_values_and_identity (strict y rgba), tests/unit/palette/test_palette_architecture.py::test_normalized_document_palette_loads_identically; advertencias no bloqueantes en tests/unit/palette/test_palette_table.py::test_luminance_warning_does_not_block_stylised_ramp, ::test_hue_shifted_ramp_ordered_by_linear_luminance y ::test_transparent_steps_are_reported_and_skipped_for_ordering.

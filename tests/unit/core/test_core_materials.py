@@ -1,6 +1,6 @@
-"""Grid hashing of material textures (MOANA.md section 14, ADR-030).
+"""Grid hashing of material textures (MOANART.md section 14, ADR-030).
 
-:func:`moana.core.procedural.cell_choices` must equal :func:`cell_choice` cell by cell;
+:func:`moanart.core.procedural.cell_choices` must equal :func:`cell_choice` cell by cell;
 the oracle here is ``hashlib`` over the canonical JSON key, independent of both.
 """
 
@@ -13,10 +13,10 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from moana.core.budget import Deadline
-from moana.core.coordinates import MAX_COORDINATE, Box
-from moana.core.errors import BudgetExceeded, ValidationError
-from moana.core.procedural import MAX_GRID_CHOICES, cell_choice, cell_choices
+from moanart.core.budget import Deadline
+from moanart.core.coordinates import MAX_COORDINATE, Box
+from moanart.core.errors import BudgetExceeded, ValidationError
+from moanart.core.procedural import MAX_GRID_CHOICES, cell_choice, cell_choices
 
 
 def oracle(seed: int, op: str, x: int, y: int, channel: int, n: int) -> int:

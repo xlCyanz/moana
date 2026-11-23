@@ -1,4 +1,4 @@
-"""Write or check the versioned JSON Schema generated from moana.schema (MOANA-002).
+"""Write or check the versioned JSON Schema generated from moanart.schema (MOANA-002).
 
 The file in ``schemas/`` is a reviewed artifact: regenerate it only for an intended
 contract change, review the diff for compatibility and bump the schema version when
@@ -16,10 +16,10 @@ from pathlib import Path
 if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from moana.schema import SCHEMA_VERSION, document_json_schema
+from moanart.schema import SCHEMA_VERSION, document_json_schema
 from scripts.validate import ROOT
 
-SCHEMA_PATH = ROOT / "schemas" / f"moana-document-{SCHEMA_VERSION}.schema.json"
+SCHEMA_PATH = ROOT / "schemas" / f"moanart-document-{SCHEMA_VERSION}.schema.json"
 
 
 def render_schema() -> str:

@@ -9,8 +9,8 @@ import pytest
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
-from moana.core import errors
-from moana.schema import (
+from moanart.core import errors
+from moanart.schema import (
     Document,
     ParseLimits,
     canonical_json,
@@ -136,13 +136,13 @@ def depth_of(value: object) -> int:
 @pytest.mark.security
 @settings(max_examples=200)
 @given(json_values(60), st.integers(1, 12))
-def test_depth_fuzz_fails_only_with_moana_errors(value: object, max_depth: int) -> None:
-    """Arbitrary JSON either validates or raises a Moana error; depth is never exceeded."""
+def test_depth_fuzz_fails_only_with_moanart_errors(value: object, max_depth: int) -> None:
+    """Arbitrary JSON either validates or raises a MoanArt error; depth is never exceeded."""
     limits = ParseLimits(max_depth=max_depth)
     root = {"schema_version": "1.0", "payload": value}
     data = json.dumps(root).encode()
     for source in (root, data):
-        with pytest.raises(errors.MoanaError) as raised:
+        with pytest.raises(errors.MoanArtError) as raised:
             validate_document(source, limits=limits)
         too_deep = raised.value.context.get("reason") == "too_deep"
         assert too_deep == (1 + depth_of(value) > max_depth)
@@ -160,7 +160,7 @@ def test_generated_schema_matches_reviewed_golden() -> None:
 def test_schema_is_reproducible_and_versioned() -> None:
     first, second = document_json_schema(), document_json_schema()
     assert first == second
-    assert first["$id"] == "moana-document-1.0.schema.json"
+    assert first["$id"] == "moanart-document-1.0.schema.json"
     assert first["$schema"] == "https://json-schema.org/draft/2020-12/schema"
     properties = first["properties"]
     assert isinstance(properties, dict)

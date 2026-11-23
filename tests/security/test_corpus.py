@@ -7,7 +7,7 @@ Pillow's header parsing (``header_only``) may open the PNG but never decode a pi
 The rejection is timed and its Python-traced peak measured against
 :data:`~tests.security.guards.MAX_REJECTION_SECONDS` and
 :data:`~tests.security.guards.MAX_REJECTION_BYTES`. The expected error and ``reason``
-come from the threat model and MOANA.md section 20, not from running the engine; the
+come from the threat model and MOANART.md section 20, not from running the engine; the
 directory is byte-identical afterwards and the error never echoes the path, the
 planted secret or the hostile entry names.
 """
@@ -22,9 +22,9 @@ from pathlib import Path
 import pytest
 from PIL import Image
 
-from moana.api import load_document, load_edit_batch
-from moana.export import load_spritesheet
-from moana.project import Asset, load_project
+from moanart.api import load_document, load_edit_batch
+from moanart.export import load_spritesheet
+from moanart.project import Asset, load_project
 
 from .corpus import CORPUS, SECRET, HostileCase
 from .guards import (
@@ -41,9 +41,9 @@ from .guards import (
 pytestmark = pytest.mark.security
 
 _SUFFIX = {
-    "document": ".moana.json",
+    "document": ".moanart.json",
     "batch": ".edit.json",
-    "project": ".moana",
+    "project": ".moanart",
     "asset": ".png",
     "spritesheet": ".sheet.json",
 }

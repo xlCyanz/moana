@@ -12,10 +12,10 @@ import pytest
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
-from moana.core.errors import BudgetExceeded, EditConflict, MoanaError
-from moana.core.limits import MAX_ASSET_BYTES, MAX_HISTORY_SNAPSHOTS, MAX_PROJECT_ASSETS
-from moana.editing import History, HistoryLimits
-from moana.project import (
+from moanart.core.errors import BudgetExceeded, EditConflict, MoanArtError
+from moanart.core.limits import MAX_ASSET_BYTES, MAX_HISTORY_SNAPSHOTS, MAX_PROJECT_ASSETS
+from moanart.editing import History, HistoryLimits
+from moanart.project import (
     MANIFEST_NAME,
     Asset,
     Project,
@@ -26,10 +26,10 @@ from moana.project import (
     save_project,
     save_project_archive,
 )
-from moana.project._json import measure_shape, read_json_object
-from moana.project.archive import _check_entries
-from moana.schema import DEFAULT_PARSE_LIMITS, Document, ParseLimits, canonical_json
-from moana.schema import validate_document as parse_document
+from moanart.project._json import measure_shape, read_json_object
+from moanart.project.archive import _check_entries
+from moanart.schema import DEFAULT_PARSE_LIMITS, Document, ParseLimits, canonical_json
+from moanart.schema import validate_document as parse_document
 
 from .conftest import encode_png, make_batch
 
@@ -71,8 +71,8 @@ def test_t1_canonical_form_over_the_node_limit_is_refused_before_writing(
     project = Project(document, (), History.start(document))
     saves: dict[str, Callable[[], object]] = {
         "directory": lambda: save_project(project, tmp_path / "p"),
-        "archive": lambda: save_project_archive(project, tmp_path / "p.moana"),
-        "document": lambda: save_document(document, tmp_path / "d.moana.json"),
+        "archive": lambda: save_project_archive(project, tmp_path / "p.moanart"),
+        "document": lambda: save_document(document, tmp_path / "d.moanart.json"),
     }
     for name, save in saves.items():
         with pytest.raises(BudgetExceeded) as caught:
@@ -97,9 +97,9 @@ def test_t1_one_operation_less_saves_and_loads_in_every_format(tmp_path: Path) -
     limits = ProjectLimits(max_manifest_nodes=32_768)
     project = Project(document)
     save_project(project, tmp_path / "p", limits=limits)
-    save_project_archive(project, tmp_path / "p.moana", limits=limits)
-    save_document(document, tmp_path / "d.moana.json")
-    for name in ("p", "p.moana", "d.moana.json"):
+    save_project_archive(project, tmp_path / "p.moanart", limits=limits)
+    save_document(document, tmp_path / "d.moanart.json")
+    for name in ("p", "p.moanart", "d.moanart.json"):
         assert load_project(tmp_path / name, limits=limits) == project
 
 
@@ -136,14 +136,14 @@ def test_t1_every_stored_part_is_checked_with_the_reader_bounds(document: Docume
     )
     assert encode_project(project, limits=exact) == (manifest, files)
     with pytest.raises(BudgetExceeded) as caught:
-        save_document(document, "unused.moana.json", limits=ParseLimits(max_bytes=10))
+        save_document(document, "unused.moanart.json", limits=ParseLimits(max_bytes=10))
     assert caught.value.context["resource"] == "document_bytes"
 
 
 def test_t3_finite_floats_are_read_and_overflowing_ones_rejected() -> None:
     bounds = {"max_bytes": 100, "max_depth": 4, "max_nodes": 10}
     assert read_json_object(b'{"a": 1.5e3}', **bounds) == {"a": 1500.0}
-    with pytest.raises(MoanaError) as caught:
+    with pytest.raises(MoanArtError) as caught:
         read_json_object(b'{"a": 1e999}', **bounds)
     assert caught.value.context["reason"] == "non_finite_number"
 
@@ -231,15 +231,15 @@ def _linear(document: Document, snapshots: int) -> Project:
 def test_t1_an_archive_holds_128_snapshots_but_not_129(tmp_path: Path, document: Document) -> None:
     """Manifest + n snapshots + (n - 1) batches must fit in 256 entries (ADR-029 §5)."""
     fits = _linear(document, 128)
-    save_project_archive(fits, tmp_path / "fits.moana")
-    with zipfile.ZipFile(tmp_path / "fits.moana") as archive:
+    save_project_archive(fits, tmp_path / "fits.moanart")
+    with zipfile.ZipFile(tmp_path / "fits.moanart") as archive:
         assert len(archive.infolist()) == 256
-    assert load_project(tmp_path / "fits.moana") == fits
+    assert load_project(tmp_path / "fits.moanart") == fits
     too_many = _linear(document, 129)
     with pytest.raises(BudgetExceeded) as caught:
-        save_project_archive(too_many, tmp_path / "over.moana")
+        save_project_archive(too_many, tmp_path / "over.moanart")
     assert caught.value.context["resource"] == "archive_entries"
-    assert not (tmp_path / "over.moana").exists()
+    assert not (tmp_path / "over.moanart").exists()
     save_project(too_many, tmp_path / "directory")  # a directory has no entry limit
     assert load_project(tmp_path / "directory") == too_many
 
@@ -260,7 +260,7 @@ def test_t2_expansion_ratio_border_is_exactly_100_to_1(size: int, allowed: bool)
     if allowed:
         _check_entries(infos, ProjectLimits())
         return
-    with pytest.raises(MoanaError) as caught:
+    with pytest.raises(MoanArtError) as caught:
         _check_entries(infos, ProjectLimits())
     assert caught.value.context["reason"] == "unsafe_archive"
     assert caught.value.context["entry_reason"] == "expansion_ratio"
@@ -302,7 +302,7 @@ def _play(document: Document, operations: list[str], seed: int) -> History:
                 history = history.edit(make_batch(history.document, commands[operation]))
             except EditConflict:
                 continue  # the same document under another parent (ADR-026 section 4)
-            except MoanaError:
+            except MoanArtError:
                 continue  # e.g. recoloring with the color it already has
     return history
 
@@ -330,8 +330,8 @@ def test_t1_property_any_saved_project_loads_back_identically(
     assert encode_project(project) == first
     folder = tmp_path_factory.mktemp("property")
     save_project(project, folder / "p")
-    save_project_archive(project, folder / "p.moana")
-    for name in ("p", "p.moana"):
+    save_project_archive(project, folder / "p.moanart")
+    for name in ("p", "p.moanart"):
         loaded = load_project(folder / name)
         assert loaded == project
         assert encode_project(loaded) == first

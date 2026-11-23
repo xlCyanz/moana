@@ -1,4 +1,4 @@
-"""Schema 1.0 payload of ``shade`` (MOANA-015, MOANA.md sections 9, 10 and 12, ADR-028)."""
+"""Schema 1.0 payload of ``shade`` (MOANA-015, MOANART.md sections 9, 10 and 12, ADR-028)."""
 
 from __future__ import annotations
 
@@ -7,8 +7,8 @@ from typing import Any
 
 import pytest
 
-from moana.core import errors
-from moana.schema import (
+from moanart.core import errors
+from moanart.schema import (
     OPERATION_MEMBERS,
     PLANNED_OPERATION_TYPES,
     SUPPORTED_OPERATION_TYPES,

@@ -58,7 +58,7 @@ No dibujar primitivas ni componer capas.
 
 ## Definition of Done
 
-Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adjuntar evidencia por ID, pasar el gate y revisar el resultado. Dependencias completadas y [ciclo de vida](../guides/issue-lifecycle.md) respetado.
+Cumplir [MOANART.md §25](../../MOANART.md), todos los criterios AC y pruebas T; adjuntar evidencia por ID, pasar el gate y revisar el resultado. Dependencias completadas y [ciclo de vida](../guides/issue-lifecycle.md) respetado.
 
 ## Risks and notes
 
@@ -78,13 +78,13 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 ### 2. Lectura obligatoria (en orden)
 
 1. `CLAUDE.md` (Claude Code) o `AGENTS.md` (Codex) y [flujo de sesión](../guides/agent-workflow.md).
-2. MOANA.md: §3 Arquitectura modular; §5 Motor de lienzo y píxeles; §21 Testing y regresiones visuales; §25 Definition of Done. Estas secciones son el contrato normativo; ante duda, prevalecen sobre este issue.
+2. MOANART.md: §3 Arquitectura modular; §5 Motor de lienzo y píxeles; §21 Testing y regresiones visuales; §25 Definition of Done. Estas secciones son el contrato normativo; ante duda, prevalecen sobre este issue.
 3. [Contratos de módulos](../architecture/module-contracts.md) para: `core`.
 4. Estándares: [python](../../docs/standards/python.md), [architecture](../../docs/standards/architecture.md), [testing](../../docs/standards/testing.md).
 5. Issues de dependencia ([MOANA-001](MOANA-001.md), [MOANA-003](MOANA-003.md)): leer su sección Evidence para conocer las APIs ya entregadas; no reimplementarlas.
 6. ADR en `docs/architecture/` que mencionen los módulos afectados.
 
-### 3. Requisitos de MOANA.md cubiertos
+### 3. Requisitos de MOANART.md cubiertos
 
 | ID | Requisito | Secciones | Verificación exigida |
 | --- | --- | --- | --- |
@@ -95,12 +95,12 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 | Host | Skills a cargar | Revisión especializada |
 | --- | --- | --- |
-| Claude Code | `moana-python`, `moana-graphics`, `moana-code-review` | `moana-python-engineer`, `moana-architect` (sólo lectura; el agente principal integra) |
-| Codex | `$moana-python`, `$moana-graphics`, `$moana-code-review` | `moana_python_engineer`, `moana_architect` |
+| Claude Code | `moanart-python`, `moanart-graphics`, `moanart-code-review` | `moanart-python-engineer`, `moanart-architect` (sólo lectura; el agente principal integra) |
+| Codex | `$moanart-python`, `$moanart-graphics`, `$moanart-code-review` | `moanart_python_engineer`, `moanart_architect` |
 
 ### 5. Archivos
 
-- Código o documentos a crear/modificar: `src/moana/core/`.
+- Código o documentos a crear/modificar: `src/moanart/core/`.
 - Pruebas: `tests/unit/core/`.
 - No crear módulos ni carpetas sin comportamiento real. No tocar otros módulos salvo exportaciones imprescindibles, justificadas en el PR.
 
@@ -108,16 +108,16 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 - T1: Fixtures 1×1 y 128×128, transparentes con RGB residual y roundtrip NumPy/Pillow
 - T2: Pruebas de aliasing, dtype/shape inválidos, límite de memoria y acceso fuera de rango
-- Oráculos independientes (cálculo a mano o fórmula de MOANA.md); nunca copiar la salida de la implementación como expected.
+- Oráculos independientes (cálculo a mano o fórmula de MOANART.md); nunca copiar la salida de la implementación como expected.
 - Incluir casos negativos con el error de dominio esperado y casos borde (vacío, mínimo, máximo, fuera de rango).
 
 ### 7. Procedimiento
 
 1. Escribir las pruebas de los criterios AC y T antes o junto con la implementación.
-2. Implementar sólo **Scope**; respetar **Out of scope** y las dependencias permitidas de MOANA.md §3.
+2. Implementar sólo **Scope**; respetar **Out of scope** y las dependencias permitidas de MOANART.md §3.
 3. Validación de módulo: `uv run pytest tests/unit/core/ -q` y `uv run mypy src/`.
 4. Validación completa: `uv run python scripts/validate.py` y `uv run python scripts/check_wheel.py`.
-5. Revisión: subagentes listados y skill `moana-code-review`; corregir hallazgos críticos y altos.
+5. Revisión: subagentes listados y skill `moanart-code-review`; corregir hallazgos críticos y altos.
 6. Si hay salida raster: mostrar el PNG a 1x y ampliado por vecino más cercano; si cambia un golden, presentar expected/actual/diff y justificar.
 
 ### 8. Cierre
@@ -136,12 +136,12 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Evidence
 
-- src/moana/core/canvas.py: Canvas propietario del buffer uint8 C-contiguo (h, w, 4), construcción cerrada, copias en ambos sentidos, alfa cero normalizado, check_canvas_budget antes de reservar.
-- src/moana/core/pillow_adapter.py: canvas_to_pillow/canvas_from_pillow sólo RGBA de un frame, sin conversión implícita, errores de Pillow envueltos.
-- ADR-013 (docs/architecture/decisions/ADR-013-canvas-buffer.md): adaptadores como submódulos de core no importados por moana.core; sustituye parcialmente ADR-012 §3. MOANA.md 0.1.5-draft.
-- tests/unit/core/test_core_architecture.py: NumPy sólo en canvas.py, Pillow sólo en pillow_adapter.py, ningún otro módulo de core importa los adaptadores e import moana.core no carga numpy/PIL/pydantic.
+- src/moanart/core/canvas.py: Canvas propietario del buffer uint8 C-contiguo (h, w, 4), construcción cerrada, copias en ambos sentidos, alfa cero normalizado, check_canvas_budget antes de reservar.
+- src/moanart/core/pillow_adapter.py: canvas_to_pillow/canvas_from_pillow sólo RGBA de un frame, sin conversión implícita, errores de Pillow envueltos.
+- ADR-013 (docs/architecture/decisions/ADR-013-canvas-buffer.md): adaptadores como submódulos de core no importados por moanart.core; sustituye parcialmente ADR-012 §3. MOANART.md 0.1.5-draft.
+- tests/unit/core/test_core_architecture.py: NumPy sólo en canvas.py, Pillow sólo en pillow_adapter.py, ningún otro módulo de core importa los adaptadores e import moanart.core no carga numpy/PIL/pydantic.
 - Gate: scripts/validate.py y scripts/check_wheel.py verdes; cobertura 100 % de canvas.py y pillow_adapter.py.
-- Revisión: moana-python-engineer y moana-architect; hallazgos (copy.copy con alias, constructor público, pico de memoria de normalización, errores de Pillow, MaskedArray, limits obligatorio, redacción ADR-012/013) corregidos con pruebas.
+- Revisión: moanart-python-engineer y moanart-architect; hallazgos (copy.copy con alias, constructor público, pico de memoria de normalización, errores de Pillow, MaskedArray, limits obligatorio, redacción ADR-012/013) corregidos con pruebas.
 - Aprobado por el propietario el 2026-11-17 tras revisión; PR #42 hacia develop.
 - AC1: tests/unit/core/test_core_canvas.py::test_set_get_preserves_rgba_or_normalizes_alpha_zero (Hypothesis 128×128, sin escrituras colaterales) y ::test_out_of_range_access_raises_without_wrap (x/y = -1 y 128 lanzan OutOfBoundsError sin modificar el lienzo).
 - AC2: tests/unit/core/test_core_canvas.py::test_exported_array_does_not_alias_canvas, ::test_imported_array_is_copied_and_never_modified, ::test_shallow_and_deep_copy_do_not_share_the_buffer, ::test_direct_construction_is_closed y ::test_pillow_export_and_import_do_not_alias.

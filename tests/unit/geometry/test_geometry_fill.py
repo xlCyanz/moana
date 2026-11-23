@@ -7,11 +7,11 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from moana.core.budget import RenderLimits
-from moana.core.canvas import Canvas
-from moana.core.coordinates import Box, Point
-from moana.core.errors import BudgetExceeded
-from moana.geometry import FLOOD_FILL_BYTES_PER_PIXEL, Mask, flood_fill, flood_fill_cost
+from moanart.core.budget import RenderLimits
+from moanart.core.canvas import Canvas
+from moanart.core.coordinates import Box, Point
+from moanart.core.errors import BudgetExceeded
+from moanart.geometry import FLOOD_FILL_BYTES_PER_PIXEL, Mask, flood_fill, flood_fill_cost
 
 LIMITS = RenderLimits()
 PALETTE = {

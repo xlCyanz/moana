@@ -1,6 +1,6 @@
 # ADR-004 — Configuración local y roles especializados
 
-Estado: aceptado · 2026-11-16.
+Estado: aceptado · 2026-11-16. Ampliado por [ADR-041](decisions/ADR-041-rename-moanart.md): skills `moanart-*` y roles Codex `moanart_*`.
 
 ## Contexto
 

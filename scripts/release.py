@@ -7,7 +7,7 @@
   rules, vector backend) and the production migration registries;
 * the compatibility matrix from ``pyproject.toml`` and the CI matrix of
   ``.github/workflows/ci.yml``;
-* the capability matrix from :func:`moana.api.capabilities` (implemented and planned
+* the capability matrix from :func:`moanart.api.capabilities` (implemented and planned
   stay apart; codec *availability* is a runtime fact of each install, so only the
   formats and their optional status are listed);
 * the requirement audit from ``docs/requirements.json`` and the issue statuses of
@@ -67,40 +67,40 @@ def _code(values: Sequence[str]) -> str:
 
 def version_rows() -> list[tuple[str, str, str]]:
     """Name, value and source of every version a release candidate declares."""
-    import moana
-    from moana.geometry.paths import TESTED_AGGDRAW_VERSIONS
-    from moana.project import PROJECT_MIGRATIONS
-    from moana.project.manifest import PROJECT_VERSION
-    from moana.quality.config import RULE_SET_VERSION
-    from moana.render.budget import ESTIMATOR_VERSION
-    from moana.render.result import RENDERER_VERSION
-    from moana.schema import DOCUMENT_MIGRATIONS
-    from moana.schema.capabilities import SCHEMA_VERSION
+    import moanart
+    from moanart.geometry.paths import TESTED_AGGDRAW_VERSIONS
+    from moanart.project import PROJECT_MIGRATIONS
+    from moanart.project.manifest import PROJECT_VERSION
+    from moanart.quality.config import RULE_SET_VERSION
+    from moanart.render.budget import ESTIMATOR_VERSION
+    from moanart.render.result import RENDERER_VERSION
+    from moanart.schema import DOCUMENT_MIGRATIONS
+    from moanart.schema.capabilities import SCHEMA_VERSION
 
     def registry(versions: frozenset[str], steps: int) -> str:
         return f"{_code(sorted(versions))}; {steps} migraciones registradas"
 
     return [
-        ("Paquete", f"`{moana.__version__}`", "`moana.__version__`"),
-        ("Schema de documento", f"`{SCHEMA_VERSION}`", "`moana.schema.capabilities`"),
-        ("Formato de proyecto", f"`{PROJECT_VERSION}`", "`moana.project.manifest`"),
-        ("Renderer", f"`{RENDERER_VERSION}`", "`moana.render.result`"),
-        ("Estimador de presupuesto", f"`{ESTIMATOR_VERSION}`", "`moana.render.budget`"),
-        ("Reglas de calidad", f"`{RULE_SET_VERSION}`", "`moana.quality.config`"),
+        ("Paquete", f"`{moanart.__version__}`", "`moanart.__version__`"),
+        ("Schema de documento", f"`{SCHEMA_VERSION}`", "`moanart.schema.capabilities`"),
+        ("Formato de proyecto", f"`{PROJECT_VERSION}`", "`moanart.project.manifest`"),
+        ("Renderer", f"`{RENDERER_VERSION}`", "`moanart.render.result`"),
+        ("Estimador de presupuesto", f"`{ESTIMATOR_VERSION}`", "`moanart.render.budget`"),
+        ("Reglas de calidad", f"`{RULE_SET_VERSION}`", "`moanart.quality.config`"),
         (
             "Backend vectorial",
             f"`aggdraw-v1` (AggDraw ensayado: {_code(TESTED_AGGDRAW_VERSIONS)})",
-            "`moana.geometry.paths`",
+            "`moanart.geometry.paths`",
         ),
         (
             "Migraciones de documento",
             registry(DOCUMENT_MIGRATIONS.versions, len(DOCUMENT_MIGRATIONS.migrations)),
-            "`moana.schema.DOCUMENT_MIGRATIONS`",
+            "`moanart.schema.DOCUMENT_MIGRATIONS`",
         ),
         (
             "Migraciones de proyecto",
             registry(PROJECT_MIGRATIONS.versions, len(PROJECT_MIGRATIONS.migrations)),
-            "`moana.project.PROJECT_MIGRATIONS`",
+            "`moanart.project.PROJECT_MIGRATIONS`",
         ),
     ]
 
@@ -163,7 +163,7 @@ def compatibility_rows(root: Path = ROOT) -> list[tuple[str, str, str]]:
 
 def capability_rows() -> list[tuple[str, str, str]]:
     """Implemented and planned surface of the installed engine, side by side."""
-    from moana.api import capabilities
+    from moanart.api import capabilities
 
     found = capabilities()
     codecs = [
@@ -179,7 +179,7 @@ def capability_rows() -> list[tuple[str, str, str]]:
         ("Colecciones", _code(found.collections), _code(found.planned_collections)),
         ("Modos de fusión", _code(found.blend_modes), _code(found.planned_blend_modes)),
         ("Campos de capa", "—", _code(found.planned_layer_fields)),
-        ("Funciones de `moana.api`", _code(found.functions), _code(found.planned_functions)),
+        ("Funciones de `moanart.api`", _code(found.functions), _code(found.planned_functions)),
         ("Comandos de edición", _code(found.edit_commands), "—"),
         ("Exportación desde el CLI", _code(found.export_formats), "—"),
         ("Exportación desde Python", ", ".join(codecs), "—"),
@@ -231,7 +231,7 @@ def report(root: Path = ROOT) -> str:
     lines += _table(("Elemento", "Versión", "Fuente"), version_rows())
     lines += ["", "### Compatibilidad declarada", ""]
     lines += _table(("Elemento", "Valor", "Fuente"), compatibility_rows(root))
-    lines += ["", "### Capacidades (`moana.api.capabilities()`)", ""]
+    lines += ["", "### Capacidades (`moanart.api.capabilities()`)", ""]
     lines += _table(("Superficie", "Implementado", "Previsto (no ejecutable)"), capability_rows())
     lines += ["", f"### Auditoría de requisitos ({len(requirements)}; {summary})", ""]
     lines += _table(("ID", "Requisito", "Issues (estado)", "Entrega", "Pendiente"), requirements)

@@ -15,11 +15,11 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-import moana
-from moana.core.errors import UnsupportedVersion, ValidationError
-from moana.core.limits import MAX_MIGRATION_STEPS
-from moana.render import ESTIMATOR_VERSION, RENDERER_VERSION, render
-from moana.schema import (
+import moanart
+from moanart.core.errors import UnsupportedVersion, ValidationError
+from moanart.core.limits import MAX_MIGRATION_STEPS
+from moanart.render import ESTIMATOR_VERSION, RENDERER_VERSION, render
+from moanart.schema import (
     DOCUMENT_MIGRATIONS,
     SCHEMA_VERSION,
     SUPPORTED_SCHEMA_VERSIONS,
@@ -70,10 +70,10 @@ def test_t1_production_registry_claims_no_unpublished_format() -> None:
 
 def test_t1_format_versions_are_distinct_from_package_and_renderer() -> None:
     # Package, renderer and estimator versions never select a migration.
-    assert moana.__version__ == "0.1.0rc1"
+    assert moanart.__version__ == "0.1.0rc2"
     assert RENDERER_VERSION == "render-v1"
     assert ESTIMATOR_VERSION.startswith("budget-v")
-    for other in (moana.__version__, RENDERER_VERSION, ESTIMATOR_VERSION):
+    for other in (moanart.__version__, RENDERER_VERSION, ESTIMATOR_VERSION):
         assert parse_version(other) is None
         assert other not in DOCUMENT_MIGRATIONS.versions
 
@@ -386,7 +386,7 @@ def test_t1_step_exceptions_never_leak_document_data() -> None:
         if expected is ValidationError:
             assert error.__suppress_context__
         else:
-            assert error.context == {"reason": "own"}  # a MoanaError keeps its own code
+            assert error.context == {"reason": "own"}  # a MoanArtError keeps its own code
 
 
 def test_t1_non_json_input_is_rejected_before_any_step() -> None:

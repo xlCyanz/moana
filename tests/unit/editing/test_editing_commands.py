@@ -14,9 +14,9 @@ from typing import Any
 
 import pytest
 
-from moana.core import errors
-from moana.core.limits import MAX_EDIT_COMMANDS
-from moana.editing import (
+from moanart.core import errors
+from moanart.core.limits import MAX_EDIT_COMMANDS
+from moanart.editing import (
     InsertOperation,
     Remove,
     Reorder,
@@ -28,8 +28,8 @@ from moana.editing import (
     Translate,
     apply_commands,
 )
-from moana.schema import canonical_json, validate_document
-from moana.schema.models import MAX_REVISION
+from moanart.schema import canonical_json, validate_document
+from moanart.schema.models import MAX_REVISION
 
 TREE: dict[str, Any] = {
     "schema_version": "1.0",

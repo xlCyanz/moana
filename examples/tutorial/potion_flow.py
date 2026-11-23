@@ -1,4 +1,4 @@
-"""Create, preview, recolor by ID and verify the tutorial potion with ``moana.api``.
+"""Create, preview, recolor by ID and verify the tutorial potion with ``moanart.api``.
 
 Python version of the CLI flow in ``docs/guides/ai-workflows.md`` (MOANA-033). Run it
 from the repository root with an output directory of your choice::
@@ -6,9 +6,9 @@ from the repository root with an output directory of your choice::
     python examples/tutorial/potion_flow.py artifacts/tutorial
 
 It writes the 1x master and 4x nearest-neighbour previews before and after the edit
-plus the new revision as ``potion-r1-api.moana.json``, and prints one JSON summary.
+plus the new revision as ``potion-r1-api.moanart.json``, and prints one JSON summary.
 It exits with status 1 if a pixel outside the edited region changed, and with the
-CLI exit code of a Moana error (printed as ``{"error": CODE, ...}``).
+CLI exit code of a MoanArt error (printed as ``{"error": CODE, ...}``).
 """
 
 from __future__ import annotations
@@ -17,12 +17,12 @@ import json
 import sys
 from pathlib import Path
 
-from moana import api
-from moana.core.errors import MoanaError
-from moana.project import save_document
+from moanart import api
+from moanart.core.errors import MoanArtError
+from moanart.project import save_document
 
 TUTORIAL = Path(__file__).parent
-SOURCE = TUTORIAL / "potion.moana.json"
+SOURCE = TUTORIAL / "potion.moanart.json"
 REGION_ID = "potion_liquid"
 
 
@@ -54,7 +54,7 @@ def run(output: Path) -> int:
     output.mkdir(parents=True, exist_ok=True)
 
     # 1. Load (validates and normalises) and inspect without drawing.
-    document = api.load_document(TUTORIAL / "potion.moana.json")
+    document = api.load_document(TUTORIAL / "potion.moanart.json")
     report = api.inspect_document(document)
 
     # 2. Preview: the 1x master and a 4x nearest-neighbour enlargement.
@@ -68,7 +68,7 @@ def run(output: Path) -> int:
     api.export_png(after, output / "potion-api-r1-4x.png", scale=4, overwrite=True)
 
     # 4. Keep the editable source: the document is the artefact, the PNG is derived.
-    save_document(result.document, output / "potion-r1-api.moana.json", overwrite=True)
+    save_document(result.document, output / "potion-r1-api.moanart.json", overwrite=True)
 
     # 5. Verify that only the region of the edited operation changed.
     x0, y0, x1, y1 = region_box(result.document, REGION_ID)
@@ -89,11 +89,11 @@ def run(output: Path) -> int:
 def main(arguments: list[str]) -> int:
     """Run the flow into ``arguments[0]`` (default ``artifacts/tutorial``).
 
-    A Moana error is printed as one JSON object and its CLI exit code is returned.
+    A MoanArt error is printed as one JSON object and its CLI exit code is returned.
     """
     try:
         return run(Path(arguments[0] if arguments else "artifacts/tutorial"))
-    except MoanaError as error:
+    except MoanArtError as error:
         failure = {"error": error.code, "context": dict(error.context), "message": error.message}
         print(json.dumps(failure, sort_keys=True, default=str))
         return error.exit_code

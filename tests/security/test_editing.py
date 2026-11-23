@@ -1,6 +1,6 @@
 """batch → documento: stale or partially invalid batches leave no trace (T2, AC1).
 
-A batch is all or nothing (MOANA.md section 15, ADR-024): if any command fails, the
+A batch is all or nothing (MOANART.md section 15, ADR-024): if any command fails, the
 document, its canonical JSON and the history (cursor, snapshots, redo) are exactly
 what they were. The failing command's position is drawn by Hypothesis, so a batch
 that already applied valid commands to its working copy is exercised every time.
@@ -15,10 +15,10 @@ import pytest
 from hypothesis import given
 from hypothesis import strategies as st
 
-from moana.api import apply_edit, load_document, render
-from moana.core.errors import BudgetExceeded, EditConflict, MoanaError
-from moana.editing import History, HistoryLimits
-from moana.schema import Document, canonical_json, snapshot_digest
+from moanart.api import apply_edit, load_document, render
+from moanart.core.errors import BudgetExceeded, EditConflict, MoanArtError
+from moanart.editing import History, HistoryLimits
+from moanart.schema import Document, canonical_json, snapshot_digest
 
 from .corpus import MINIMAL, ROOT, SECRET
 from .guards import assert_clean_error, bounded_settings, forbid_allocation, forbid_effects
@@ -80,14 +80,14 @@ def test_t2_property_failing_command_anywhere_mutates_nothing(
     commands = [*valid[:position], failing, *valid[position:]]
     history = History.start(document)
     state = _history_state(history)
-    with forbid_effects(), pytest.raises(MoanaError) as caught:
+    with forbid_effects(), pytest.raises(MoanArtError) as caught:
         history.edit(_batch(document, commands))
     error = assert_clean_error(caught.value, SECRET)
     pointers = {error.json_pointer, *(detail.json_pointer for detail in error.details)}
     assert any(p is not None and p.startswith(f"/commands/{position}") for p in pointers)
     assert _history_state(history) == state
     assert canonical_json(history.document) == canonical == canonical_json(document)
-    with forbid_effects(), pytest.raises(MoanaError):
+    with forbid_effects(), pytest.raises(MoanArtError):
         apply_edit(document, _batch(document, commands))
     assert canonical_json(document) == canonical
 
@@ -118,11 +118,11 @@ def test_t2_history_budget_rejects_before_adding() -> None:
 
 
 def test_t2_hostile_frame_override_fails_before_any_frame_buffer() -> None:
-    tree = json.loads((ROOT / "examples/specs/bouncing-slime.moana.json").read_bytes())
+    tree = json.loads((ROOT / "examples/specs/bouncing-slime.moanart.json").read_bytes())
     frame = tree["animations"][0]["frames"][1]
     frame["overrides"].append({"type": "translate", "target_id": "eye_l", "dx": 2_000_000, "dy": 0})
     document = load_document(tree)  # overrides are evaluated, like batches, per frame
-    with forbid_allocation(), pytest.raises(MoanaError) as caught:
+    with forbid_allocation(), pytest.raises(MoanArtError) as caught:
         render(document, frame_id=frame["id"])
     assert_clean_error(caught.value, SECRET)
     pointer = caught.value.json_pointer or ""

@@ -58,7 +58,7 @@ No interpolación suave, deformación ni rotación libre.
 
 ## Definition of Done
 
-Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adjuntar evidencia por ID, pasar el gate y revisar el resultado. Dependencias completadas y [ciclo de vida](../guides/issue-lifecycle.md) respetado.
+Cumplir [MOANART.md §25](../../MOANART.md), todos los criterios AC y pruebas T; adjuntar evidencia por ID, pasar el gate y revisar el resultado. Dependencias completadas y [ciclo de vida](../guides/issue-lifecycle.md) respetado.
 
 ## Risks and notes
 
@@ -78,13 +78,13 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 ### 2. Lectura obligatoria (en orden)
 
 1. `CLAUDE.md` (Claude Code) o `AGENTS.md` (Codex) y [flujo de sesión](../guides/agent-workflow.md).
-2. MOANA.md: §3 Arquitectura modular; §6 Geometría y primitivas; §25 Definition of Done. Estas secciones son el contrato normativo; ante duda, prevalecen sobre este issue.
+2. MOANART.md: §3 Arquitectura modular; §6 Geometría y primitivas; §25 Definition of Done. Estas secciones son el contrato normativo; ante duda, prevalecen sobre este issue.
 3. [Contratos de módulos](../architecture/module-contracts.md) para: `geometry`.
 4. Estándares: [python](../../docs/standards/python.md), [architecture](../../docs/standards/architecture.md), [testing](../../docs/standards/testing.md).
 5. Issues de dependencia ([MOANA-006](MOANA-006.md)): leer su sección Evidence para conocer las APIs ya entregadas; no reimplementarlas.
 6. ADR en `docs/architecture/` que mencionen los módulos afectados.
 
-### 3. Requisitos de MOANA.md cubiertos
+### 3. Requisitos de MOANART.md cubiertos
 
 | ID | Requisito | Secciones | Verificación exigida |
 | --- | --- | --- | --- |
@@ -94,12 +94,12 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 | Host | Skills a cargar | Revisión especializada |
 | --- | --- | --- |
-| Claude Code | `moana-graphics`, `moana-code-review` | `moana-graphics-engineer`, `moana-python-engineer` (sólo lectura; el agente principal integra) |
-| Codex | `$moana-graphics`, `$moana-code-review` | `moana_graphics_engineer`, `moana_python_engineer` |
+| Claude Code | `moanart-graphics`, `moanart-code-review` | `moanart-graphics-engineer`, `moanart-python-engineer` (sólo lectura; el agente principal integra) |
+| Codex | `$moanart-graphics`, `$moanart-code-review` | `moanart_graphics_engineer`, `moanart_python_engineer` |
 
 ### 5. Archivos
 
-- Código o documentos a crear/modificar: `src/moana/geometry/`.
+- Código o documentos a crear/modificar: `src/moanart/geometry/`.
 - Pruebas: `tests/unit/geometry/`.
 - No crear módulos ni carpetas sin comportamiento real. No tocar otros módulos salvo exportaciones imprescindibles, justificadas en el PR.
 
@@ -107,16 +107,16 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 - T1: Propiedades de composición/inversas sobre máscaras no cuadradas y pivotes negativos
 - T2: Clipping de objetos parcialmente fuera y rechazo de escala no entera o rotación arbitraria en strict
-- Oráculos independientes (cálculo a mano o fórmula de MOANA.md); nunca copiar la salida de la implementación como expected.
+- Oráculos independientes (cálculo a mano o fórmula de MOANART.md); nunca copiar la salida de la implementación como expected.
 - Incluir casos negativos con el error de dominio esperado y casos borde (vacío, mínimo, máximo, fuera de rango).
 
 ### 7. Procedimiento
 
 1. Escribir las pruebas de los criterios AC y T antes o junto con la implementación.
-2. Implementar sólo **Scope**; respetar **Out of scope** y las dependencias permitidas de MOANA.md §3.
+2. Implementar sólo **Scope**; respetar **Out of scope** y las dependencias permitidas de MOANART.md §3.
 3. Validación de módulo: `uv run pytest tests/unit/geometry/ -q` y `uv run mypy src/`.
 4. Validación completa: `uv run python scripts/validate.py` y `uv run python scripts/check_wheel.py`.
-5. Revisión: subagentes listados y skill `moana-code-review`; corregir hallazgos críticos y altos.
+5. Revisión: subagentes listados y skill `moanart-code-review`; corregir hallazgos críticos y altos.
 6. Si hay salida raster: mostrar el PNG a 1x y ampliado por vecino más cercano; si cambia un golden, presentar expected/actual/diff y justificar.
 
 ### 8. Cierre
@@ -135,11 +135,11 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Evidence
 
-- src/moana/geometry/transform.py: Transform congelado (pivot, mirror, rotation 0/90/180/270, scale 1..2048, offset) sobre índices de píxel con orden fijo espejo → cuartos de vuelta horarios (x, y) → (−y, x) → escala nearest-neighbor por bloques k×k → traslación; transform_mask por recolección inversa recortada al lienzo sin wraparound (memoria: salida recortada + una copia con relleno del origen); transform_box como conjunto de píxeles; inverse() sin escala.
+- src/moanart/geometry/transform.py: Transform congelado (pivot, mirror, rotation 0/90/180/270, scale 1..2048, offset) sobre índices de píxel con orden fijo espejo → cuartos de vuelta horarios (x, y) → (−y, x) → escala nearest-neighbor por bloques k×k → traslación; transform_mask por recolección inversa recortada al lienzo sin wraparound (memoria: salida recortada + una copia con relleno del origen); transform_box como conjunto de píxeles; inverse() sin escala.
 - Rechazo con ValidationError de rotación arbitraria (arbitrary_rotation), rotación fuera de {0,90,180,270} (out_of_range, allowed), escala no entera o fuera de rango (not_integer/out_of_range) y mirror no booleano (not_boolean).
 - ADR-016 (docs/architecture/decisions/ADR-016-pixel-transforms.md); contratos de módulos, overview, índice de arquitectura y README actualizados.
 - Gate: scripts/validate.py y scripts/check_wheel.py verdes; transform.py al 100 % de líneas y ramas.
-- Revisión: moana-graphics-engineer (aprobado; oráculo directo independiente en 6000 casos, 8 elementos diedros, escala 1–5, pivotes/offsets negativos, sin discrepancias) y moana-python-engineer (aprobado); corregidos doble copia del origen, máscara vacía con almacenamiento, matriz privada, contextos de error, pivote inverso fuera de rango y pruebas de inversa vacuas.
+- Revisión: moanart-graphics-engineer (aprobado; oráculo directo independiente en 6000 casos, 8 elementos diedros, escala 1–5, pivotes/offsets negativos, sin discrepancias) y moanart-python-engineer (aprobado); corregidos doble copia del origen, máscara vacía con almacenamiento, matriz privada, contextos de error, pivote inverso fuera de rango y pruebas de inversa vacuas.
 - Aprobado por el propietario el 2026-11-17 tras revisión; PR #46 hacia develop.
 - AC1: tests/unit/geometry/test_geometry_transform.py::test_ac1_four_quarter_turns_reconstruct_the_mask; fixtures a mano ::test_quarter_turn_clockwise_about_pivot_by_hand y ::test_rotation_180_and_270_by_hand.
 - AC2: tests/unit/geometry/test_geometry_transform.py::test_ac2_double_mirror_is_identity, ::test_ac2_scale_two_replicates_each_pixel_in_a_2x2_block, ::test_mirror_about_pivot_column_by_hand y ::test_vertical_mirror_is_mirror_plus_half_turn.

@@ -59,7 +59,7 @@ No GIF ni publicar archivos en servicios externos.
 
 ## Definition of Done
 
-Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adjuntar evidencia por ID, pasar el gate y revisar el resultado. Dependencias completadas y [ciclo de vida](../guides/issue-lifecycle.md) respetado.
+Cumplir [MOANART.md §25](../../MOANART.md), todos los criterios AC y pruebas T; adjuntar evidencia por ID, pasar el gate y revisar el resultado. Dependencias completadas y [ciclo de vida](../guides/issue-lifecycle.md) respetado.
 
 ## Risks and notes
 
@@ -79,13 +79,13 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 ### 2. Lectura obligatoria (en orden)
 
 1. `CLAUDE.md` (Claude Code) o `AGENTS.md` (Codex) y [flujo de sesión](../guides/agent-workflow.md).
-2. MOANA.md: §3 Arquitectura modular; §18 Exportación PNG, GIF y formatos adicionales; §25 Definition of Done. Estas secciones son el contrato normativo; ante duda, prevalecen sobre este issue.
+2. MOANART.md: §3 Arquitectura modular; §18 Exportación PNG, GIF y formatos adicionales; §25 Definition of Done. Estas secciones son el contrato normativo; ante duda, prevalecen sobre este issue.
 3. [Contratos de módulos](../architecture/module-contracts.md) para: `export`.
 4. Estándares: [python](../../docs/standards/python.md), [architecture](../../docs/standards/architecture.md), [testing](../../docs/standards/testing.md).
 5. Issues de dependencia ([MOANA-010](MOANA-010.md)): leer su sección Evidence para conocer las APIs ya entregadas; no reimplementarlas.
 6. ADR en `docs/architecture/` que mencionen los módulos afectados.
 
-### 3. Requisitos de MOANA.md cubiertos
+### 3. Requisitos de MOANART.md cubiertos
 
 | ID | Requisito | Secciones | Verificación exigida |
 | --- | --- | --- | --- |
@@ -95,12 +95,12 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 | Host | Skills a cargar | Revisión especializada |
 | --- | --- | --- |
-| Claude Code | `moana-graphics`, `moana-python`, `moana-code-review` | `moana-graphics-engineer`, `moana-python-engineer` (sólo lectura; el agente principal integra) |
-| Codex | `$moana-graphics`, `$moana-python`, `$moana-code-review` | `moana_graphics_engineer`, `moana_python_engineer` |
+| Claude Code | `moanart-graphics`, `moanart-python`, `moanart-code-review` | `moanart-graphics-engineer`, `moanart-python-engineer` (sólo lectura; el agente principal integra) |
+| Codex | `$moanart-graphics`, `$moanart-python`, `$moanart-code-review` | `moanart_graphics_engineer`, `moanart_python_engineer` |
 
 ### 5. Archivos
 
-- Código o documentos a crear/modificar: `src/moana/export/`.
+- Código o documentos a crear/modificar: `src/moanart/export/`.
 - Pruebas: `tests/unit/export/`.
 - No crear módulos ni carpetas sin comportamiento real. No tocar otros módulos salvo exportaciones imprescindibles, justificadas en el PR.
 
@@ -109,16 +109,16 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 - T1: Roundtrip RGBA e indexado, transparencia y escala nearest 1/2/4
 - T2: Paleta 256/257, destino existente, permiso denegado y fallo simulado durante escritura
 - T3: Carrera de dos escritores con overwrite=false: uno gana y el otro falla sin reemplazar; no usar exists+replace como exclusión.
-- Oráculos independientes (cálculo a mano o fórmula de MOANA.md); nunca copiar la salida de la implementación como expected.
+- Oráculos independientes (cálculo a mano o fórmula de MOANART.md); nunca copiar la salida de la implementación como expected.
 - Incluir casos negativos con el error de dominio esperado y casos borde (vacío, mínimo, máximo, fuera de rango).
 
 ### 7. Procedimiento
 
 1. Escribir las pruebas de los criterios AC y T antes o junto con la implementación.
-2. Implementar sólo **Scope**; respetar **Out of scope** y las dependencias permitidas de MOANA.md §3.
+2. Implementar sólo **Scope**; respetar **Out of scope** y las dependencias permitidas de MOANART.md §3.
 3. Validación de módulo: `uv run pytest tests/unit/export/ -q` y `uv run mypy src/`.
 4. Validación completa: `uv run python scripts/validate.py` y `uv run python scripts/check_wheel.py`.
-5. Revisión: subagentes listados y skill `moana-code-review`; corregir hallazgos críticos y altos.
+5. Revisión: subagentes listados y skill `moanart-code-review`; corregir hallazgos críticos y altos.
 6. Si hay salida raster: mostrar el PNG a 1x y ampliado por vecino más cercano; si cambia un golden, presentar expected/actual/diff y justificar.
 
 ### 8. Cierre
@@ -137,14 +137,14 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Evidence
 
-- src/moana/export/png.py: encode_png/export_png reciben cualquier RasterFrame (width, height, rgba bytes; RenderResult lo cumple sin que export importe render), validan marco, opciones y presupuesto (export_dimension, export_area, buffer_bytes 24 B/px) antes de reservar, codifican RGBA maestro o indexado (paleta declarada en orden, ≤256 entradas, tRNS explícito, sin cuantización) con compress_level 9 sin chunks volátiles, escalan nearest 1..64 como preview y verifican en memoria la ida y vuelta de píxeles y los chunks PLTE/tRNS antes de escribir.
-- src/moana/export/atomic.py: commit_bytes escribe un temporal hermano O_EXCL con fsync y hace commit con os.link (overwrite=False, nunca reemplaza; sin enlaces duros falla con no_replace_unavailable, también por winerror en Windows) u os.replace (overwrite=True); el temporal se borra siempre; errores ExportError con reason, nombre de archivo y errno, sin ruta completa; nombres no representables son invalid_name.
+- src/moanart/export/png.py: encode_png/export_png reciben cualquier RasterFrame (width, height, rgba bytes; RenderResult lo cumple sin que export importe render), validan marco, opciones y presupuesto (export_dimension, export_area, buffer_bytes 24 B/px) antes de reservar, codifican RGBA maestro o indexado (paleta declarada en orden, ≤256 entradas, tRNS explícito, sin cuantización) con compress_level 9 sin chunks volátiles, escalan nearest 1..64 como preview y verifican en memoria la ida y vuelta de píxeles y los chunks PLTE/tRNS antes de escribir.
+- src/moanart/export/atomic.py: commit_bytes escribe un temporal hermano O_EXCL con fsync y hace commit con os.link (overwrite=False, nunca reemplaza; sin enlaces duros falla con no_replace_unavailable, también por winerror en Windows) u os.replace (overwrite=True); el temporal se borra siempre; errores ExportError con reason, nombre de archivo y errno, sin ruta completa; nombres no representables son invalid_name.
 - ExportManifest con path, media_type, mode, dimensiones, frames, scale, master, dimensiones y digest de origen, pixel_digest, file_sha256, byte_size y warnings (scaled_preview); to_mapping ordenado.
-- ADR-019 (docs/architecture/decisions/ADR-019-png-export.md); MOANA.md §13 indica que export_png ya existe; contratos de módulos, índice de ADR, overview, README, guía de desarrollo, AGENTS.md y CLAUDE.md actualizados; probe de check_wheel ampliado con export/.
-- Gate: scripts/validate.py y scripts/check_wheel.py verdes; moana.export al 100 % de líneas y ramas; mypy también con --platform win32.
-- Revisión: moana-python-engineer (cambios requeridos, aplicados: geteuid en win32, OSError de inspección envueltos sin rutas, nombres con NUL o no codificables, temporal con prefijo truncado para nombres largos, carrera determinista que tumba exists+replace, winerror sin enlaces duros, EEXIST tras link propio, rgba leído una vez) y moana-graphics-engineer (aprobado con cambios menores, aplicados: planos de índice sin int64 duplicado y desglose de memoria documentado, verificación de PLTE/tRNS, tests de chunks exactos, escala 64 sobre 1×1 indexado, bytes iguales entre procesos y presupuesto antes de cualquier temporal).
+- ADR-019 (docs/architecture/decisions/ADR-019-png-export.md); MOANART.md §13 indica que export_png ya existe; contratos de módulos, índice de ADR, overview, README, guía de desarrollo, AGENTS.md y CLAUDE.md actualizados; probe de check_wheel ampliado con export/.
+- Gate: scripts/validate.py y scripts/check_wheel.py verdes; moanart.export al 100 % de líneas y ramas; mypy también con --platform win32.
+- Revisión: moanart-python-engineer (cambios requeridos, aplicados: geteuid en win32, OSError de inspección envueltos sin rutas, nombres con NUL o no codificables, temporal con prefijo truncado para nombres largos, carrera determinista que tumba exists+replace, winerror sin enlaces duros, EEXIST tras link propio, rgba leído una vez) y moanart-graphics-engineer (aprobado con cambios menores, aplicados: planos de índice sin int64 duplicado y desglose de memoria documentado, verificación de PLTE/tRNS, tests de chunks exactos, escala 64 sobre 1×1 indexado, bytes iguales entre procesos y presupuesto antes de cualquier temporal).
 - Aprobado por el propietario el 2026-11-17 tras revisión; PR #49 hacia develop.
-- AC1: tests/unit/export/test_export_png.py::test_ac1_rgba_png_decodes_exactly_to_the_frame y ::test_ac1_rendered_document_round_trips (render de examples minimal.moana.json exportado y decodificado igual a RenderResult.rgba, source_digest == digest).
+- AC1: tests/unit/export/test_export_png.py::test_ac1_rgba_png_decodes_exactly_to_the_frame y ::test_ac1_rendered_document_round_trips (render de examples minimal.moanart.json exportado y decodificado igual a RenderResult.rgba, source_digest == digest).
 - AC2: tests/unit/export/test_export_png.py::test_ac2_t2_failure_during_write_keeps_previous_content (fallos simulados en write, fsync, link y replace, con y sin overwrite: destino anterior intacto, sin temporales ni manifiesto), ::test_roundtrip_mismatch_writes_nothing y ::test_palette_chunks_are_verified.
 - T1: tests/unit/export/test_export_png.py::test_t1_nearest_scale_replicates_blocks[1,2,4], ::test_t1_indexed_round_trip_keeps_declared_order_and_transparency[1,2,4] (PLTE/tRNS exactos), ::test_t1_transparent_frame_round_trips_in_both_modes, ::test_maximum_scale_on_a_single_indexed_pixel, ::test_encoding_is_stable_and_has_no_volatile_chunks y ::test_encoded_bytes_agree_across_fresh_processes_and_hash_seeds.
 - T2: tests/unit/export/test_export_png.py::test_t2_palette_of_256_is_accepted_and_257_rejected, ::test_indexed_export_never_quantises, ::test_t2_existing_destination_is_kept_unless_overwrite, ::test_t2_permission_denied_leaves_nothing, ::test_unsearchable_parent_is_permission_denied, ::test_ac2_t2_failure_during_write_keeps_previous_content, ::test_budget_is_checked_before_scaling, ::test_unrepresentable_names_are_rejected_before_writing y ::test_errors_do_not_echo_full_paths.

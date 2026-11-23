@@ -1,0 +1,4 @@
+interface:
+  display_name: "MoanArt · Testing"
+  short_description: "Pruebas de contratos y regresión visual"
+  default_prompt: "Usa $moanart-testing para trabajar el issue asignado de MoanArt respetando su contrato y estado real."

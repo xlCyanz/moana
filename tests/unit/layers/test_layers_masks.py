@@ -2,7 +2,7 @@
 
 AC1: a masked layer changes no pixel outside its mask. T2: mask nodes outside the
 canvas and groups whose content is transformed (masks stay in canvas coordinates).
-The scalar oracle is written from MOANA.md section 11 and works on Python sets.
+The scalar oracle is written from MOANART.md section 11 and works on Python sets.
 """
 
 from __future__ import annotations
@@ -14,11 +14,11 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from moana.core.budget import DEFAULT_RENDER_LIMITS, Deadline, RenderLimits
-from moana.core.coordinates import Box, Dimensions, Point
-from moana.core.errors import BudgetExceeded, ValidationError
-from moana.core.limits import MAX_MASK_DEPTH, MAX_MASK_OPERANDS
-from moana.geometry import (
+from moanart.core.budget import DEFAULT_RENDER_LIMITS, Deadline, RenderLimits
+from moanart.core.coordinates import Box, Dimensions, Point
+from moanart.core.errors import BudgetExceeded, ValidationError
+from moanart.core.limits import MAX_MASK_DEPTH, MAX_MASK_OPERANDS
+from moanart.geometry import (
     Mask,
     MaskOperator,
     Transform,
@@ -26,7 +26,7 @@ from moana.geometry import (
     rasterize_rect,
     transform_mask,
 )
-from moana.layers import (
+from moanart.layers import (
     DeferredMask,
     Fill,
     Group,
@@ -39,8 +39,8 @@ from moana.layers import (
     mask_cost,
     mask_leaves,
 )
-from moana.layers.composite import MASK_NODE_VISITS, MaskCost
-from moana.palette import Rgba
+from moanart.layers.composite import MASK_NODE_VISITS, MaskCost
+from moanart.palette import Rgba
 
 LIMITS = DEFAULT_RENDER_LIMITS
 RGBA = tuple[int, int, int, int]

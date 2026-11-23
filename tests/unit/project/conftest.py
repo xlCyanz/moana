@@ -9,13 +9,13 @@ from pathlib import Path
 import pytest
 from PIL import Image
 
-from moana.api import load_document
-from moana.editing import History
-from moana.project import Asset, Project, _fs
-from moana.schema import Document, snapshot_digest
+from moanart.api import load_document
+from moanart.editing import History
+from moanart.project import Asset, Project, _fs
+from moanart.schema import Document, snapshot_digest
 
 ROOT = Path(__file__).resolve().parents[3]
-MINIMAL = ROOT / "examples/specs/minimal.moana.json"
+MINIMAL = ROOT / "examples/specs/minimal.moanart.json"
 
 type PngFactory = Callable[..., bytes]
 type BatchFactory = Callable[..., dict[str, object]]
@@ -100,7 +100,7 @@ def project(document: Document) -> Project:
     return Project(history.document, assets, history)
 
 
-SHADED_ORB = ROOT / "examples/specs/shaded-orb.moana.json"
+SHADED_ORB = ROOT / "examples/specs/shaded-orb.moanart.json"
 BAND_IDS = (
     "band_body",
     "band_shadow",

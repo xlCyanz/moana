@@ -240,7 +240,7 @@ def issue_document(issue: Issue, note: str, guide: str) -> str:
         ("Expected deliverables", bullets(issue.deliverables)),
         (
             "Definition of Done",
-            "Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC "
+            "Cumplir [MOANART.md §25](../../MOANART.md), todos los criterios AC "
             "y pruebas T; adjuntar evidencia por ID, pasar el gate y revisar el resultado. "
             "Dependencias completadas y [ciclo de vida](../guides/issue-lifecycle.md) respetado.",
         ),
@@ -284,7 +284,7 @@ def generated_documents(issues: list[Issue], requirements: list[Requirement]) ->
     priorities: Counter[str] = Counter(issue.priority for issue in issues)
     states = Counter(issue.status for issue in issues)
     result["docs/issues/README.md"] = (
-        f"# Backlog de Moana\n\n{note}{len(issues)} issues únicos; "
+        f"# Backlog de MoanArt\n\n{note}{len(issues)} issues únicos; "
         "los aliases MOA-xxx conservan enlaces previos y no incrementan el total. "
         "Los IDs no son números de issues GitHub.\n\n"
         "Prioridades: P0 fundamento/bloqueante; P1 funcionalidad central; P2 avanzada; "
@@ -348,12 +348,12 @@ def generated_documents(issues: list[Issue], requirements: list[Requirement]) ->
         f"{len(requirements)} requisitos con cobertura de planificación. "
         "Esto no implica implementación: comprobar estado y evidencia por criterio "
         "en cada issue.\n\n"
-        "| Requisito | Descripción | MOANA.md § | Issues | Verificación exigida |\n"
+        "| Requisito | Descripción | MOANART.md § | Issues | Verificación exigida |\n"
         "| --- | --- | --- | --- | --- |\n" + "\n".join(trace_rows) + "\n"
     )
     gates = PHASE_GATES
     roadmap = (
-        f"# Roadmap\n\n{note}Se conservan las seis fases de MOANA.md para respetar "
+        f"# Roadmap\n\n{note}Se conservan las seis fases de MOANART.md para respetar "
         "las dependencias del contrato existente. Las ocho áreas temáticas de la solicitud "
         "se distribuyen entre estas fases; no se crean carpetas vacías ni se pospone schema "
         "hasta después del renderer.\n\n"

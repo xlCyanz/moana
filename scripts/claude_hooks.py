@@ -101,7 +101,7 @@ def pre_edit(event: dict[str, Any]) -> int:
     path = tool_file(event)
     reason = protected_file_reason(path) if path else None
     if reason:
-        print(f"Moana hook blocked edit: {reason}", file=sys.stderr)
+        print(f"MoanArt hook blocked edit: {reason}", file=sys.stderr)
         return 2
     return 0
 
@@ -113,7 +113,7 @@ def pre_bash(event: dict[str, Any]) -> int:
     reason = dangerous_command_reason(command) if isinstance(command, str) else None
     if reason:
         print(
-            f"Moana hook blocked command: {reason}. Ask the user explicitly if it is intended.",
+            f"MoanArt hook blocked command: {reason}. Ask the user explicitly if it is intended.",
             file=sys.stderr,
         )
         return 2

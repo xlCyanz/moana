@@ -1,6 +1,6 @@
 """modelo → plan and plan → raster: budgets reject before any buffer (T1, T2, AC2).
 
-Every oracle is a lower bound computed by hand from MOANA.md sections 5, 6 and 20,
+Every oracle is a lower bound computed by hand from MOANART.md sections 5, 6 and 20,
 never the estimator's output: a W x H RGBA canvas needs at least ``4·W·H`` bytes and
 ``W·H`` visits to be cleared; a Bresenham line visits ``max(|dx|, |dy|) + 1`` pixels
 before clipping; an animation of ``n`` frames accumulates ``n·W·H`` frame pixels; an
@@ -18,11 +18,11 @@ import pytest
 from hypothesis import assume, given
 from hypothesis import strategies as st
 
-from moana.animation import render_animation
-from moana.api import Deadline, RenderLimits, export_png, load_document, render
-from moana.core.errors import BudgetExceeded, ValidationError
-from moana.core.limits import GeometryLimits
-from moana.schema import Document
+from moanart.animation import render_animation
+from moanart.api import Deadline, RenderLimits, export_png, load_document, render
+from moanart.core.errors import BudgetExceeded, ValidationError
+from moanart.core.limits import GeometryLimits
+from moanart.schema import Document
 
 from .corpus import ROOT, minimal_tree
 from .guards import (
@@ -41,7 +41,7 @@ from .guards import (
 pytestmark = pytest.mark.security
 
 BOUNDED = bounded_settings(30)
-MAX_COORDINATE = 1_048_576  # MOANA.md section 5
+MAX_COORDINATE = 1_048_576  # MOANART.md section 5
 
 
 def _tree(width: int = 128, height: int = 128) -> dict[str, Any]:
@@ -109,7 +109,7 @@ def test_t1_coordinates_beyond_the_contract_are_rejected_by_the_model() -> None:
 
 def test_t1_canvas_area_beyond_the_contract_is_rejected_by_the_model() -> None:
     tree = _tree(16, 16)
-    tree["canvas"]["width"] = 2049  # MOANA.md section 5: 2048 per axis
+    tree["canvas"]["width"] = 2049  # MOANART.md section 5: 2048 per axis
     with forbid_effects(), pytest.raises(ValidationError) as caught:
         load_document(tree)
     assert_clean_error(caught.value)
@@ -179,7 +179,7 @@ def test_t2_hostile_canvas_is_rejected_within_bounded_memory() -> None:
 
 
 def _slime() -> Document:
-    return load_document(ROOT / "examples/specs/bouncing-slime.moana.json")
+    return load_document(ROOT / "examples/specs/bouncing-slime.moanart.json")
 
 
 def test_t2_animation_over_the_frame_budget_renders_no_frame() -> None:

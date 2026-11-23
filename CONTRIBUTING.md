@@ -1,6 +1,6 @@
-# Contribuir a Moana
+# Contribuir a MoanArt
 
-1. Leer MOANA.md, escoger un issue cuyas dependencias estén completadas y acordar su alcance con la solicitud vigente.
+1. Leer MOANART.md, escoger un issue cuyas dependencias estén completadas y acordar su alcance con la solicitud vigente.
 2. Instalar `uv sync --locked` y usar una rama de trabajo. Los IDs de issues locales no son números de GitHub.
 3. Añadir el módulo cuando tenga implementación real. No crear funciones vacías ni APIs que fallen con NotImplementedError como si estuvieran entregadas.
 4. Documentar contratos y agregar tests con oráculos independientes. Un cambio de raster necesita fixture exacta y diff visual; un cambio sólo editorial no necesita tests nuevos.

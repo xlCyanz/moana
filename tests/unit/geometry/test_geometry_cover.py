@@ -14,12 +14,12 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from moana.core.budget import Deadline
-from moana.core.coordinates import Box, Dimensions
-from moana.core.errors import BudgetExceeded, ValidationError
-from moana.core.limits import MAX_CLUSTER_EXCEPTIONS
-from moana.geometry import MAX_COVER_MASKS, Mask, MaskCover, cover_bytes
-from moana.geometry.mask import _restore
+from moanart.core.budget import Deadline
+from moanart.core.coordinates import Box, Dimensions
+from moanart.core.errors import BudgetExceeded, ValidationError
+from moanart.core.limits import MAX_CLUSTER_EXCEPTIONS
+from moanart.geometry import MAX_COVER_MASKS, Mask, MaskCover, cover_bytes
+from moanart.geometry.mask import _restore
 
 Pixels = frozenset[tuple[int, int]]
 

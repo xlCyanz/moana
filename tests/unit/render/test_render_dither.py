@@ -1,10 +1,10 @@
-"""Render of ``dither`` operations (MOANA-016, MOANA.md section 10, ADR-025).
+"""Render of ``dither`` operations (MOANA-016, MOANART.md section 10, ADR-025).
 
 AC1: coverage 0 paints only colour A and coverage N^2 only colour B inside the mask,
 and nothing outside it. AC2: negative origins and translations by the period give
 identical bytes. T1/T2 at document level: every coverage against the literal Bayer
 matrices, non-rectangular masks, seams between tiles and repeated renders.
-Expected pixels are computed here from MOANA.md sections 6 and 10 (ellipse inclusion
+Expected pixels are computed here from MOANART.md sections 6 and 10 (ellipse inclusion
 formula, literal matrices, floor modulo); ``budget-v5`` figures by hand.
 """
 
@@ -18,22 +18,22 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from moana.api import capabilities, inspect_document
-from moana.core.budget import RenderLimits
-from moana.core.coordinates import Box, Dimensions
-from moana.core.errors import BudgetExceeded, ReferenceError
-from moana.core.limits import MAX_OPERATIONS, GeometryLimits
-from moana.geometry import rasterize_rect
-from moana.layers import MaskShape, evaluate_mask
-from moana.render import ESTIMATOR_VERSION, estimate_cost, plan_budget, render
-from moana.render import pipeline as pipeline_module
-from moana.render.budget import (
+from moanart.api import capabilities, inspect_document
+from moanart.core.budget import RenderLimits
+from moanart.core.coordinates import Box, Dimensions
+from moanart.core.errors import BudgetExceeded, ReferenceError
+from moanart.core.limits import MAX_OPERATIONS, GeometryLimits
+from moanart.geometry import rasterize_rect
+from moanart.layers import MaskShape, evaluate_mask
+from moanart.render import ESTIMATOR_VERSION, estimate_cost, plan_budget, render
+from moanart.render import pipeline as pipeline_module
+from moanart.render.budget import (
     DITHER_FIXED_BYTES,
     dither_cost,
     fill_count,
     mask_estimates,
 )
-from moana.schema import Document, validate_document
+from moanart.schema import Document, validate_document
 
 RGBA = tuple[int, int, int, int]
 CLEAR: RGBA = (0, 0, 0, 0)
@@ -97,7 +97,7 @@ def grid(document: Document) -> dict[tuple[int, int], RGBA]:
 
 
 def ellipse_pixels(box: tuple[int, int, int, int], w: int, h: int) -> set[tuple[int, int]]:
-    """MOANA.md section 6: include (x, y) when A^2 h^2 + B^2 w^2 <= w^2 h^2."""
+    """MOANART.md section 6: include (x, y) when A^2 h^2 + B^2 w^2 <= w^2 h^2."""
     x0, y0, x1, y1 = box
     bw, bh = x1 - x0, y1 - y0
     found = set()
@@ -419,7 +419,7 @@ def test_plan_budget_admission_means_render_succeeds_with_dither(
 
 def test_report_separates_operations_from_fills_on_the_example() -> None:
     """dither-dusk: 8 operations (5 sky, 3 dune), 4 of them dithers, so 12 fills."""
-    source = Path(__file__).resolve().parents[3] / "examples/specs/dither-dusk.moana.json"
+    source = Path(__file__).resolve().parents[3] / "examples/specs/dither-dusk.moanart.json"
     document = validate_document(source.read_bytes())
     estimate = estimate_cost(document)
     assert (estimate.operations, estimate.fills) == (8, 12)

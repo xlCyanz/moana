@@ -6,8 +6,8 @@ import pytest
 from hypothesis import given
 from hypothesis import strategies as st
 
-from moana.core import ValidationError
-from moana.palette import (
+from moanart.core import ValidationError
+from moanart.palette import (
     LINEAR_SCALE,
     LUMINANCE_SCALE,
     PROFILE_MAX_COLORS,

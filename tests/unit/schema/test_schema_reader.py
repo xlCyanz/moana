@@ -8,9 +8,9 @@ from typing import Any
 
 import pytest
 
-from moana.core import errors
-from moana.schema._pointers import MAX_POINTER_TOKEN, ROOT, child_pointer
-from moana.schema._reader import (
+from moanart.core import errors
+from moanart.schema._pointers import MAX_POINTER_TOKEN, ROOT, child_pointer
+from moanart.schema._reader import (
     DEFAULT_PARSE_LIMITS,
     MAX_DOCUMENT_BYTES,
     MAX_DOCUMENT_DEPTH,

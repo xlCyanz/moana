@@ -11,9 +11,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from moana.core.coordinates import Dimensions
-from moana.palette import Palette, PaletteColor, Rgba
-from moana.quality import QUALITY_RULES
+from moanart.core.coordinates import Dimensions
+from moanart.palette import Palette, PaletteColor, Rgba
+from moanart.quality import QUALITY_RULES
 
 RGBA = tuple[int, int, int, int]
 COLORS: dict[str, RGBA] = {

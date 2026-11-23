@@ -7,9 +7,9 @@ from typing import Any
 
 import pytest
 
-from moana.core.coordinates import Box, Dimensions, Point
-from moana.core.errors import ValidationError
-from moana.geometry import (
+from moanart.core.coordinates import Box, Dimensions, Point
+from moanart.core.errors import ValidationError
+from moanart.geometry import (
     MAX_PATTERN_SIZE,
     PATTERN_INDEX_BYTES,
     rasterize_ellipse,

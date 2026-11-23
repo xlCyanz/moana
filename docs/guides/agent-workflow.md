@@ -5,7 +5,7 @@ El repositorio debe contener todo el contexto necesario para continuar. No depen
 ## Recorrido de implementación
 
 1. Leer [AGENTS.md](../../AGENTS.md) (Claude Code lo recibe importado desde [CLAUDE.md](../../CLAUDE.md)) y comprobar estado de Git, rama y cambios existentes.
-2. Leer las secciones relevantes de [MOANA.md](../../MOANA.md) y los ADR aplicables.
+2. Leer las secciones relevantes de [MOANART.md](../../MOANART.md) y los ADR aplicables.
 3. Consultar [roadmap](../issues/roadmap.md), [dependencias](../issues/dependency-map.md) y [trazabilidad](../issues/traceability.md).
 4. Elegir el siguiente issue cuyas dependencias estén `done`; respetar el alcance solicitado aunque otros issues estén disponibles.
 5. Leer el issue completo: contexto, objetivo, límites, propuesta, pruebas, riesgos y DoD.
@@ -26,13 +26,13 @@ Para usar el motor (no desarrollarlo) desde un agente —crear un documento, pre
 
 | Necesidad | Skill / resultado esperado |
 | --- | --- |
-| Contratos y dependencias de módulos | `moana-architecture`: decisión, fronteras y ADR si aplica |
-| Implementación Python | `moana-python`: tipos, código mantenible y pruebas de fronteras |
-| Raster, máscaras y composición | `moana-graphics`: algoritmo, costes y fixtures exactas |
-| Lectura visual y materiales | `moana-pixel-art`: propuesta editable, inspección 1×/4× y límites artísticos |
-| Calidad y regresión | `moana-testing`: oráculos, casos negativos y resultados reproducibles |
-| Backlog y trazabilidad | `moana-issue-planning`: issue acotado, DAG y criterios comprobables |
-| Revisión | `moana-code-review`: defectos accionables con escenario, ubicación y consecuencia |
+| Contratos y dependencias de módulos | `moanart-architecture`: decisión, fronteras y ADR si aplica |
+| Implementación Python | `moanart-python`: tipos, código mantenible y pruebas de fronteras |
+| Raster, máscaras y composición | `moanart-graphics`: algoritmo, costes y fixtures exactas |
+| Lectura visual y materiales | `moanart-pixel-art`: propuesta editable, inspección 1×/4× y límites artísticos |
+| Calidad y regresión | `moanart-testing`: oráculos, casos negativos y resultados reproducibles |
+| Backlog y trazabilidad | `moanart-issue-planning`: issue acotado, DAG y criterios comprobables |
+| Revisión | `moanart-code-review`: defectos accionables con escenario, ubicación y consecuencia |
 
 El trabajo de documentación transforma contratos y evidencia en guías consistentes; no inventa resultados ni cambia la semántica del producto para resolver una contradicción editorial. Los roles configurados heredan permisos y modelo del host. Que un archivo exista no prueba que una UI o sesión concreta lo haya cargado; registrar la evidencia de descubrimiento disponible.
 
@@ -45,7 +45,7 @@ El trabajo de documentación transforma contratos y evidencia en guías consiste
 | Roles | `.codex/agents/*.toml` | `.claude/agents/*.md` (revisores de sólo lectura + documentación) |
 | Automatización | pre-commit y CI | lo mismo, más hooks ligeros de `.claude/settings.json` |
 
-En Claude Code, delega revisiones en paralelo a `moana-architect`, `moana-python-engineer`, `moana-graphics-engineer`, `moana-pixel-artist` o `moana-qa-engineer` cuando el cambio lo justifique; integra tú sus hallazgos. Usa `moana-documentation` para regenerar catálogos y documentar decisiones. Validación: rápida (hook), módulo, completa y pre-commit según [CLAUDE.md](../../CLAUDE.md).
+En Claude Code, delega revisiones en paralelo a `moanart-architect`, `moanart-python-engineer`, `moanart-graphics-engineer`, `moanart-pixel-artist` o `moanart-qa-engineer` cuando el cambio lo justifique; integra tú sus hallazgos. Usa `moanart-documentation` para regenerar catálogos y documentar decisiones. Validación: rápida (hook), módulo, completa y pre-commit según [CLAUDE.md](../../CLAUDE.md).
 
 ## Coordinación independiente
 

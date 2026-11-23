@@ -9,9 +9,9 @@ import pytest
 from hypothesis import given
 from hypothesis import strategies as st
 
-from moana.core.coordinates import MAX_COORDINATE, Box, Dimensions, Point
-from moana.core.errors import ValidationError
-from moana.geometry import (
+from moanart.core.coordinates import MAX_COORDINATE, Box, Dimensions, Point
+from moanart.core.errors import ValidationError
+from moanart.geometry import (
     MAX_SCALE,
     Mask,
     Transform,
@@ -65,7 +65,7 @@ def _grid(mask: Mask, dims: Dimensions) -> list[str]:
 
 
 def _forward(points: set[tuple[int, int]], transform: Transform) -> set[tuple[int, int]]:
-    """Forward map written from MOANA.md section 6, independently of the module.
+    """Forward map written from MOANART.md section 6, independently of the module.
 
     Mirror ``x -> -x``, then ``rotation / 90`` clockwise quarter turns ``(x, y) ->
     (-y, x)`` about the pivot, then each index becomes a ``k x k`` block, then the

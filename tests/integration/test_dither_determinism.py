@@ -1,8 +1,8 @@
 """Dithering without flicker across processes and hash seeds (MOANA-016, T2).
 
-The example ``examples/specs/dither-dusk.moana.json`` renders to identical RGBA bytes
+The example ``examples/specs/dither-dusk.moanart.json`` renders to identical RGBA bytes
 and digest in fresh interpreters with different ``PYTHONHASHSEED`` values and in
-repeated renders; its sky rows match the literal Bayer 4 x 4 matrix of MOANA.md
+repeated renders; its sky rows match the literal Bayer 4 x 4 matrix of MOANART.md
 section 10 and its dune pixels the Bayer 2 x 2 phase of origin (0, -1), computed
 here by hand.
 """
@@ -19,10 +19,10 @@ from typing import Any
 
 import pytest
 
-from moana.render import render
-from moana.schema import validate_document
+from moanart.render import render
+from moanart.schema import validate_document
 
-EXAMPLE = Path(__file__).resolve().parents[2] / "examples" / "specs" / "dither-dusk.moana.json"
+EXAMPLE = Path(__file__).resolve().parents[2] / "examples" / "specs" / "dither-dusk.moanart.json"
 BAYER_2 = [[0, 2], [3, 1]]
 BAYER_4 = [[0, 8, 2, 10], [12, 4, 14, 6], [3, 11, 1, 9], [15, 7, 13, 5]]
 NIGHT, DUSK = (0x1B, 0x1A, 0x3A, 255), (0x5A, 0x2F, 0x5E, 255)
@@ -34,8 +34,8 @@ BANDS = [(4, 8, NIGHT, DUSK, 6), (8, 12, DUSK, EMBER, 8), (12, 16, EMBER, GLOW, 
 
 PROBE = """
 import hashlib, json, sys
-from moana.render import render
-from moana.schema import validate_document
+from moanart.render import render
+from moanart.schema import validate_document
 result = render(validate_document(sys.stdin.buffer.read()))
 print(json.dumps({
     "digest": result.digest,
@@ -74,7 +74,7 @@ def test_example_sky_matches_the_hand_computed_bayer_bands() -> None:
 
 
 def test_example_dune_matches_hand_computed_pixels() -> None:
-    """Dune pixels by hand (MOANA.md sections 6 and 10).
+    """Dune pixels by hand (MOANART.md sections 6 and 10).
 
     ``dune_dither`` is Bayer 2 x 2, coverage 2, origin (0, -1): B (shadow) where
     ``[[0, 2], [3, 1]][(y + 1) mod 2][x mod 2] < 2``, i.e. where ``x + y`` is odd.

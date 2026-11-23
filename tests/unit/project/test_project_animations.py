@@ -11,11 +11,11 @@ from pathlib import Path
 
 import pytest
 
-from moana.animation import render_animation
-from moana.api import load_document
-from moana.core import errors
-from moana.editing import History
-from moana.project import (
+from moanart.animation import render_animation
+from moanart.api import load_document
+from moanart.core import errors
+from moanart.editing import History
+from moanart.project import (
     Project,
     load_project,
     migrate_project,
@@ -23,11 +23,11 @@ from moana.project import (
     save_project,
     save_project_archive,
 )
-from moana.schema import Document, canonical_json
+from moanart.schema import Document, canonical_json
 
 from .conftest import ROOT, make_batch
 
-SLIME = ROOT / "examples/specs/bouncing-slime.moana.json"
+SLIME = ROOT / "examples/specs/bouncing-slime.moanart.json"
 
 
 @pytest.fixture
@@ -45,10 +45,10 @@ def save(kind: str, project: Project, directory: Path) -> Path:
         save_project(project, directory / "slime")
         return directory / "slime"
     if kind == "archive":
-        save_project_archive(project, directory / "slime.moana")
-        return directory / "slime.moana"
-    save_document(project.document, directory / "slime.moana.json")
-    return directory / "slime.moana.json"
+        save_project_archive(project, directory / "slime.moanart")
+        return directory / "slime.moanart"
+    save_document(project.document, directory / "slime.moanart.json")
+    return directory / "slime.moanart.json"
 
 
 @pytest.mark.parametrize("kind", ["directory", "archive", "json"])
@@ -67,7 +67,7 @@ def test_t2_an_animated_document_survives_every_format(
 def test_t2_migrating_a_current_animated_document_changes_nothing(
     slime: Document, tmp_path: Path
 ) -> None:
-    source = tmp_path / "slime.moana.json"
+    source = tmp_path / "slime.moanart.json"
     save_document(slime, source)
     original = source.read_bytes()
     report = migrate_project(source, tmp_path / "migrated")

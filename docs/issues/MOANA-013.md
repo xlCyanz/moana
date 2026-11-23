@@ -58,7 +58,7 @@ No inferencia automática de regiones desde un PNG.
 
 ## Definition of Done
 
-Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adjuntar evidencia por ID, pasar el gate y revisar el resultado. Dependencias completadas y [ciclo de vida](../guides/issue-lifecycle.md) respetado.
+Cumplir [MOANART.md §25](../../MOANART.md), todos los criterios AC y pruebas T; adjuntar evidencia por ID, pasar el gate y revisar el resultado. Dependencias completadas y [ciclo de vida](../guides/issue-lifecycle.md) respetado.
 
 ## Risks and notes
 
@@ -78,13 +78,13 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 ### 2. Lectura obligatoria (en orden)
 
 1. `CLAUDE.md` (Claude Code) o `AGENTS.md` (Codex) y [flujo de sesión](../guides/agent-workflow.md).
-2. MOANA.md: §3 Arquitectura modular; §11 Capas, máscaras y regiones; §25 Definition of Done. Estas secciones son el contrato normativo; ante duda, prevalecen sobre este issue.
+2. MOANART.md: §3 Arquitectura modular; §11 Capas, máscaras y regiones; §25 Definition of Done. Estas secciones son el contrato normativo; ante duda, prevalecen sobre este issue.
 3. [Contratos de módulos](../architecture/module-contracts.md) para: `layers`, `schema`.
 4. Estándares: [python](../../docs/standards/python.md), [architecture](../../docs/standards/architecture.md), [testing](../../docs/standards/testing.md), [security](../../docs/standards/security.md).
 5. Issues de dependencia ([MOANA-009](MOANA-009.md), [MOANA-010](MOANA-010.md)): leer su sección Evidence para conocer las APIs ya entregadas; no reimplementarlas.
 6. ADR en `docs/architecture/` que mencionen los módulos afectados.
 
-### 3. Requisitos de MOANA.md cubiertos
+### 3. Requisitos de MOANART.md cubiertos
 
 | ID | Requisito | Secciones | Verificación exigida |
 | --- | --- | --- | --- |
@@ -94,12 +94,12 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 | Host | Skills a cargar | Revisión especializada |
 | --- | --- | --- |
-| Claude Code | `moana-graphics`, `moana-python`, `moana-architecture`, `moana-code-review` | `moana-graphics-engineer`, `moana-architect`, `moana-python-engineer` (sólo lectura; el agente principal integra) |
-| Codex | `$moana-graphics`, `$moana-python`, `$moana-architecture`, `$moana-code-review` | `moana_graphics_engineer`, `moana_architect`, `moana_python_engineer` |
+| Claude Code | `moanart-graphics`, `moanart-python`, `moanart-architecture`, `moanart-code-review` | `moanart-graphics-engineer`, `moanart-architect`, `moanart-python-engineer` (sólo lectura; el agente principal integra) |
+| Codex | `$moanart-graphics`, `$moanart-python`, `$moanart-architecture`, `$moanart-code-review` | `moanart_graphics_engineer`, `moanart_architect`, `moanart_python_engineer` |
 
 ### 5. Archivos
 
-- Código o documentos a crear/modificar: `src/moana/layers/`, `src/moana/schema/`.
+- Código o documentos a crear/modificar: `src/moanart/layers/`, `src/moanart/schema/`.
 - Pruebas: `tests/unit/layers/`, `tests/unit/schema/`.
 - No crear módulos ni carpetas sin comportamiento real. No tocar otros módulos salvo exportaciones imprescindibles, justificadas en el PR.
 
@@ -107,16 +107,16 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 - T1: Álgebra de conjuntos en fixtures 1/8/128 píxeles y máscaras vacías
 - T2: Ciclos directos/indirectos, máscara fuera del canvas y grupos transformados
-- Oráculos independientes (cálculo a mano o fórmula de MOANA.md); nunca copiar la salida de la implementación como expected.
+- Oráculos independientes (cálculo a mano o fórmula de MOANART.md); nunca copiar la salida de la implementación como expected.
 - Incluir casos negativos con el error de dominio esperado y casos borde (vacío, mínimo, máximo, fuera de rango).
 
 ### 7. Procedimiento
 
 1. Escribir las pruebas de los criterios AC y T antes o junto con la implementación.
-2. Implementar sólo **Scope**; respetar **Out of scope** y las dependencias permitidas de MOANA.md §3.
+2. Implementar sólo **Scope**; respetar **Out of scope** y las dependencias permitidas de MOANART.md §3.
 3. Validación de módulo: `uv run pytest tests/unit/layers/ tests/unit/schema/ -q` y `uv run mypy src/`.
 4. Validación completa: `uv run python scripts/validate.py` y `uv run python scripts/check_wheel.py`.
-5. Revisión: subagentes listados y skill `moana-code-review`; corregir hallazgos críticos y altos.
+5. Revisión: subagentes listados y skill `moanart-code-review`; corregir hallazgos críticos y altos.
 6. Si hay salida raster: mostrar el PNG a 1x y ampliado por vecino más cercano; si cambia un golden, presentar expected/actual/diff y justificar.
 
 ### 8. Cierre
@@ -135,16 +135,16 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Evidence
 
-- src/moana/geometry/algebra.py: álgebra de máscaras (union, intersect, subtract como pliegue por la izquierda, xor) con MaskBuilder y combined_box; resultados recortados al lienzo; Mask inmutable sin NumPy en contratos públicos.
-- src/moana/schema/: masks (hojas rect/ellipse/polygon y combinaciones por ID) y regions (operaciones agrupadas con mask_id) en el documento 1.0, Layer.mask_id; references.py resuelve el DAG con Tarjan iterativo, rechaza ciclos (mask_cycle) y referencias rotas antes de render, y protege documentos sin validar con ReferenceError en vez de bucles o KeyError; resolve_region y mask_dependencies públicos; JSON Schema regenerado.
-- src/moana/layers/: MaskShape/MaskCombination (igualdad por identidad) y Layer.mask; la capa se recorta a su máscara antes de la opacidad (aplicada una vez); los nodos de caja vacía no evalúan operandos.
-- src/moana/render/budget.py: budget-v3 con coste de máscaras por referencia expandida y suelo de 1 visita por nodo evaluado, idéntico al compositor; un DAG ancho y profundo de hojas llenas se rechaza con BudgetExceeded antes del raster y uno de hojas vacías cuesta el suelo y termina en milisegundos (32×8 ≈ 3,5e10 referencias: 0,011 s).
-- src/moana/core/coordinates.py: combined_box puro compartido por geometry.algebra y render.budget; límites MAX_MASKS, MAX_MASK_OPERANDS, MAX_MASK_DEPTH y MAX_REGIONS en core.limits.
-- moana.api: resolve_region reexportado; inspect_document informa masks, regions y mask_id por capa; capabilities con mask_types y planned_mask_types [path].
-- ADR-022 (docs/architecture/decisions/ADR-022-masks-regions.md), con notas de cabecera en ADR-011, ADR-017, ADR-018 y ADR-020; MOANA.md 0.1.9-draft (§11, §12, §13, §16, §20): schema 1.0 ampliado como excepción previa a la primera publicación, después toda ampliación sube el minor; ejemplo examples/specs/masked-eyes.moana.json; contratos de módulos, índice de ADR, overview, README, guía de desarrollo, AGENTS.md y CLAUDE.md actualizados.
+- src/moanart/geometry/algebra.py: álgebra de máscaras (union, intersect, subtract como pliegue por la izquierda, xor) con MaskBuilder y combined_box; resultados recortados al lienzo; Mask inmutable sin NumPy en contratos públicos.
+- src/moanart/schema/: masks (hojas rect/ellipse/polygon y combinaciones por ID) y regions (operaciones agrupadas con mask_id) en el documento 1.0, Layer.mask_id; references.py resuelve el DAG con Tarjan iterativo, rechaza ciclos (mask_cycle) y referencias rotas antes de render, y protege documentos sin validar con ReferenceError en vez de bucles o KeyError; resolve_region y mask_dependencies públicos; JSON Schema regenerado.
+- src/moanart/layers/: MaskShape/MaskCombination (igualdad por identidad) y Layer.mask; la capa se recorta a su máscara antes de la opacidad (aplicada una vez); los nodos de caja vacía no evalúan operandos.
+- src/moanart/render/budget.py: budget-v3 con coste de máscaras por referencia expandida y suelo de 1 visita por nodo evaluado, idéntico al compositor; un DAG ancho y profundo de hojas llenas se rechaza con BudgetExceeded antes del raster y uno de hojas vacías cuesta el suelo y termina en milisegundos (32×8 ≈ 3,5e10 referencias: 0,011 s).
+- src/moanart/core/coordinates.py: combined_box puro compartido por geometry.algebra y render.budget; límites MAX_MASKS, MAX_MASK_OPERANDS, MAX_MASK_DEPTH y MAX_REGIONS en core.limits.
+- moanart.api: resolve_region reexportado; inspect_document informa masks, regions y mask_id por capa; capabilities con mask_types y planned_mask_types [path].
+- ADR-022 (docs/architecture/decisions/ADR-022-masks-regions.md), con notas de cabecera en ADR-011, ADR-017, ADR-018 y ADR-020; MOANART.md 0.1.9-draft (§11, §12, §13, §16, §20): schema 1.0 ampliado como excepción previa a la primera publicación, después toda ampliación sube el minor; ejemplo examples/specs/masked-eyes.moanart.json; contratos de módulos, índice de ADR, overview, README, guía de desarrollo, AGENTS.md y CLAUDE.md actualizados.
 - Trazabilidad: R012 cubierto. La hoja path queda prevista para MOANA-007.
-- Gate: scripts/validate.py (1223 passed, src/moana al 100 % de líneas y ramas) y scripts/check_wheel.py verdes; mypy también con --platform win32; generate_schema --check al día. Sin ejecución en Windows real (matriz pendiente en main).
-- Revisión: moana-graphics-engineer (cambios requeridos, aplicados: coste exponencial de DAG con hojas vacías, trabajo no contado en _clear_outside, oráculo de caja independiente) y moana-architect (cambios requeridos, aplicados: el mismo riesgo exponencial, excepción de versión del schema documentada frente a §16, ciclos en documentos sin validar, aritmética de cajas extraída a core, MaskNode homónimos aclarados, MaskCombination con eq=False, regla de grupos transformados como norma futura).
+- Gate: scripts/validate.py (1223 passed, src/moanart al 100 % de líneas y ramas) y scripts/check_wheel.py verdes; mypy también con --platform win32; generate_schema --check al día. Sin ejecución en Windows real (matriz pendiente en main).
+- Revisión: moanart-graphics-engineer (cambios requeridos, aplicados: coste exponencial de DAG con hojas vacías, trabajo no contado en _clear_outside, oráculo de caja independiente) y moanart-architect (cambios requeridos, aplicados: el mismo riesgo exponencial, excepción de versión del schema documentada frente a §16, ciclos en documentos sin validar, aritmética de cajas extraída a core, MaskNode homónimos aclarados, MaskCombination con eq=False, regla de grupos transformados como norma futura).
 - Aprobado por el propietario el 2026-11-17 tras revisión; PR #52 hacia develop.
 - AC1: tests/unit/layers/test_layers_masks.py::test_ac1_masked_layer_changes_no_pixel_outside_its_mask, ::test_ac1_layer_opacity_is_applied_once_inside_the_mask, ::test_ac1_random_masks_match_the_scalar_oracle, ::test_each_operator_clips_the_layer_to_its_set; tests/unit/render/test_render_masks.py::test_ac1_masked_operation_changes_no_pixel_outside_its_mask, ::test_ac1_mask_reaching_outside_the_canvas_is_clipped y ::test_example_renders_to_the_hand_computed_face.
 - AC2: tests/unit/schema/test_schema_masks.py::test_ac2_left_eye_resolves_by_id, ::test_ac2_region_resolution_does_not_depend_on_array_order, ::test_ac2_unknown_region_or_mask_is_a_reference_error, ::test_unvalidated_cycles_and_broken_references_fail_fast; tests/unit/api/test_api_masks.py::test_ac2_resolve_region_through_the_facade y ::test_inspect_of_an_unvalidated_cycle_fails_fast; tests/unit/render/test_render_masks.py::test_ac2_cycles_and_broken_references_fail_before_any_raster.

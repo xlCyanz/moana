@@ -16,6 +16,7 @@ from pydantic import Field
 if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+from scripts.legacy_name import legacy_name_errors, repository_files
 from scripts.planning import (
     ROOT,
     StrictModel,
@@ -25,13 +26,13 @@ from scripts.planning import (
 )
 
 EXPECTED_SKILLS = {
-    "moana-python",
-    "moana-graphics",
-    "moana-pixel-art",
-    "moana-architecture",
-    "moana-testing",
-    "moana-code-review",
-    "moana-issue-planning",
+    "moanart-python",
+    "moanart-graphics",
+    "moanart-pixel-art",
+    "moanart-architecture",
+    "moanart-testing",
+    "moanart-code-review",
+    "moanart-issue-planning",
 }
 
 
@@ -51,12 +52,12 @@ class SkillUI(StrictModel):
 
 
 CLAUDE_AGENTS = {
-    "moana-architect",
-    "moana-python-engineer",
-    "moana-graphics-engineer",
-    "moana-pixel-artist",
-    "moana-qa-engineer",
-    "moana-documentation",
+    "moanart-architect",
+    "moanart-python-engineer",
+    "moanart-graphics-engineer",
+    "moanart-pixel-artist",
+    "moanart-qa-engineer",
+    "moanart-documentation",
 }
 CLAUDE_RULES = {
     "python",
@@ -74,7 +75,7 @@ FRONTMATTER = re.compile(r"\A---\n(.*?)\n---\n(.+)\Z", re.DOTALL)
 
 
 class ClaudeAgent(StrictModel):
-    name: str = Field(pattern=r"^moana-[a-z-]+$")
+    name: str = Field(pattern=r"^moanart-[a-z-]+$")
     description: str = Field(min_length=40, max_length=1024)
     tools: str = Field(min_length=1)
 
@@ -84,7 +85,7 @@ class ClaudeRule(StrictModel):
 
 
 class AgentRole(StrictModel):
-    name: str = Field(pattern=r"^moana_[a-z_]+$")
+    name: str = Field(pattern=r"^moanart_[a-z_]+$")
     description: str = Field(min_length=1)
     developer_instructions: str = Field(min_length=1)
 
@@ -138,7 +139,7 @@ def check_claude_config(root: Path) -> list[str]:
         tools = {tool.strip() for tool in agent.tools.split(",")}
         if agent.name != path.stem or not tools <= CLAUDE_TOOLS:
             errors.append(f"Invalid Claude agent name or tools: {path.name}")
-        if tools & WRITE_TOOLS and agent.name != "moana-documentation":
+        if tools & WRITE_TOOLS and agent.name != "moanart-documentation":
             errors.append(f"Only the documentation agent may edit files: {path.name}")
         agents[agent.name] = agent
     if set(agents) != CLAUDE_AGENTS:
@@ -189,24 +190,26 @@ def check_repository(root: Path = ROOT) -> list[str]:
     issues, requirements = load_catalog(root)
     errors = check_generated(root, generated_documents(issues, requirements))
     errors.extend(check_links(root))
+    if (root / ".git").exists():  # an unpacked sdist is checked by scripts/check_wheel.py
+        errors.extend(legacy_name_errors(repository_files(root)))
     sections = re.findall(
-        r"^## (\d+)\. ", (root / "MOANA.md").read_text(encoding="utf-8"), re.MULTILINE
+        r"^## (\d+)\. ", (root / "MOANART.md").read_text(encoding="utf-8"), re.MULTILINE
     )
     if sections != [str(i) for i in range(1, 26)]:
-        errors.append("MOANA.md must contain the 25 numbered sections in order")
+        errors.append("MOANART.md must contain the 25 numbered sections in order")
     covered_sections = {section for requirement in requirements for section in requirement.sections}
     if covered_sections != set(range(1, 26)):
         errors.append("Requirement catalog does not cover all specification sections")
     skills = list((root / ".agents/skills").glob("*/SKILL.md"))
     if {path.parent.name for path in skills} != EXPECTED_SKILLS:
-        errors.append("Expected seven named Moana skills")
+        errors.append("Expected seven named MoanArt skills")
     for skill in skills:
         check_skill(skill)
     names = []
     for path in (root / ".codex/agents").glob("*.toml"):
         role = AgentRole.model_validate(tomllib.loads(path.read_text(encoding="utf-8")))
         names.append(role.name)
-    if len(names) != 8 or len(set(names)) != 8 or "moana_documentation_writer" not in names:
+    if len(names) != 8 or len(set(names)) != 8 or "moanart_documentation_writer" not in names:
         errors.append("Expected eight distinct Codex roles including documentation")
     errors.extend(check_claude_config(root))
     config = tomllib.loads((root / ".codex/config.toml").read_text(encoding="utf-8"))

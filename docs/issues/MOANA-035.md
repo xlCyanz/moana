@@ -58,7 +58,7 @@ No publicar en PyPI/GitHub ni declarar CI remoto verde sin ejecutarlo y sin auto
 
 ## Definition of Done
 
-Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adjuntar evidencia por ID, pasar el gate y revisar el resultado. Dependencias completadas y [ciclo de vida](../guides/issue-lifecycle.md) respetado.
+Cumplir [MOANART.md §25](../../MOANART.md), todos los criterios AC y pruebas T; adjuntar evidencia por ID, pasar el gate y revisar el resultado. Dependencias completadas y [ciclo de vida](../guides/issue-lifecycle.md) respetado.
 
 ## Risks and notes
 
@@ -78,13 +78,13 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 ### 2. Lectura obligatoria (en orden)
 
 1. `CLAUDE.md` (Claude Code) o `AGENTS.md` (Codex) y [flujo de sesión](../guides/agent-workflow.md).
-2. MOANA.md: §3 Arquitectura modular; §4 Stack tecnológico; §23 Roadmap por fases; §24 Criterios de aceptación; §25 Definition of Done. Estas secciones son el contrato normativo; ante duda, prevalecen sobre este issue.
+2. MOANART.md: §3 Arquitectura modular; §4 Stack tecnológico; §23 Roadmap por fases; §24 Criterios de aceptación; §25 Definition of Done. Estas secciones son el contrato normativo; ante duda, prevalecen sobre este issue.
 3. [Contratos de módulos](../architecture/module-contracts.md) para: `release`, `docs`.
 4. Estándares: [python](../../docs/standards/python.md), [security](../../docs/standards/security.md), [architecture](../../docs/standards/architecture.md).
 5. Issues de dependencia ([MOANA-007](MOANA-007.md), [MOANA-021](MOANA-021.md), [MOANA-023](MOANA-023.md), [MOANA-024](MOANA-024.md), [MOANA-025](MOANA-025.md), [MOANA-027](MOANA-027.md), [MOANA-029](MOANA-029.md), [MOANA-030](MOANA-030.md), [MOANA-032](MOANA-032.md), [MOANA-033](MOANA-033.md), [MOANA-034](MOANA-034.md)): leer su sección Evidence para conocer las APIs ya entregadas; no reimplementarlas.
 6. ADR en `docs/architecture/` que mencionen los módulos afectados.
 
-### 3. Requisitos de MOANA.md cubiertos
+### 3. Requisitos de MOANART.md cubiertos
 
 | ID | Requisito | Secciones | Verificación exigida |
 | --- | --- | --- | --- |
@@ -96,8 +96,8 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 | Host | Skills a cargar | Revisión especializada |
 | --- | --- | --- |
-| Claude Code | `moana-code-review`, `moana-testing`, `moana-issue-planning` | `moana-qa-engineer`, `moana-documentation` (sólo lectura; el agente principal integra) |
-| Codex | `$moana-code-review`, `$moana-testing`, `$moana-issue-planning` | `moana_qa_engineer`, `moana_documentation` |
+| Claude Code | `moanart-code-review`, `moanart-testing`, `moanart-issue-planning` | `moanart-qa-engineer`, `moanart-documentation` (sólo lectura; el agente principal integra) |
+| Codex | `$moanart-code-review`, `$moanart-testing`, `$moanart-issue-planning` | `moanart_qa_engineer`, `moanart_documentation` |
 
 ### 5. Archivos
 
@@ -109,39 +109,39 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 - T1: Instalación desde ambos artefactos, smoke CLI y migraciones en entorno limpio
 - T2: Revisión final de traceability, CI remoto real, corpus, seguridad y benchmark archivados
-- Oráculos independientes (cálculo a mano o fórmula de MOANA.md); nunca copiar la salida de la implementación como expected.
+- Oráculos independientes (cálculo a mano o fórmula de MOANART.md); nunca copiar la salida de la implementación como expected.
 - Incluir casos negativos con el error de dominio esperado y casos borde (vacío, mínimo, máximo, fuera de rango).
 
 ### 7. Procedimiento
 
 1. Escribir las pruebas de los criterios AC y T antes o junto con la implementación.
-2. Implementar sólo **Scope**; respetar **Out of scope** y las dependencias permitidas de MOANA.md §3.
+2. Implementar sólo **Scope**; respetar **Out of scope** y las dependencias permitidas de MOANART.md §3.
 3. Validación de módulo: `uv run pytest scripts/check_wheel.py tests/test_repository_tools.py -q` y `uv run mypy src/`.
 4. Validación completa: `uv run python scripts/validate.py` y `uv run python scripts/check_wheel.py`.
-5. Revisión: subagentes listados y skill `moana-code-review`; corregir hallazgos críticos y altos.
+5. Revisión: subagentes listados y skill `moanart-code-review`; corregir hallazgos críticos y altos.
 6. Si hay salida raster: mostrar el PNG a 1x y ampliado por vecino más cercano; si cambia un golden, presentar expected/actual/diff y justificar.
 
 ### 8. Cierre
 
 1. En `docs/issues/catalog.json`, para este issue: `status` → `review` (o `done` tras aprobación); completar `acceptance_evidence` (AC1, AC2), `test_evidence` (T1, T2) y `evidence` con rutas concretas de tests y archivos.
-2. Issues que desbloquea (ninguno): si todas sus dependencias quedan `done`, pasarlos a `ready` con `blocking_reason: null`.
+2. Issues que desbloquea ([MOANA-037](MOANA-037.md)): si todas sus dependencias quedan `done`, pasarlos a `ready` con `blocking_reason: null`.
 3. Ejecutar `uv run python scripts/planning.py` y `uv run python -m scripts.check_repository`.
 4. Abrir PR hacia `develop` enlazando este issue de GitHub (`Closes #<número>`), con comandos ejecutados y evidencia por AC/T. El CI completo corre al integrar `develop` en `main`.
 5. Commit y push sólo con autorización del usuario. No declarar CI remoto ni aprobación artística humana sin evidencia.
 
 ### 9. Prohibido en este issue
 
-- Implementar alcance de otros issues, incluidos los que desbloquea (ninguno).
+- Implementar alcance de otros issues, incluidos los que desbloquea ([MOANA-037](MOANA-037.md)).
 - Actualizar goldens automáticamente, desactivar checks, editar `uv.lock` a mano o añadir dependencias sin motivo técnico registrado.
 - `eval`/`exec`/`pickle`, red o estado global mutable en el núcleo; lecturas de texto sin `encoding="utf-8"`.
 
 ## Evidence
 
-- Decisiones del propietario en la sesión de trabajo del 2026-11-20: licencia MIT para código, documentación, ejemplos y corpus (LICENSE «Copyright (c) 2026 xlCyanz and Moana contributors»; pyproject license = "MIT" y license-files según PEP 639, sin clasificador License) y versión 0.1.0rc1 (Development Status 3 - Alpha). Textos de licencia pendiente actualizados (README, CONTRIBUTING, MOANA.md §19/§25 y 0.1.27-draft, materials._LICENSE, corpus y tiles, ADR-030/037 con nota de actualización); la revisión artística humana sigue pendiente.
-- docs/RELEASE.md: versiones (paquete, schema 1.0, proyecto, render-v1, budget-v8, quality-v1, aggdraw-v1, registro de migraciones sólo 1.0), matriz de compatibilidad (Python 3.12–3.14 × ubuntu/macos/windows, rangos de Pillow/NumPy/AggDraw, APNG/WebP opcionales), capacidades implementadas frente a previstas desde moana.api.capabilities y auditoría R001–R040 (entregado sólo si todos los issues que lo cubren están done) generadas y comprobadas por scripts/release.py report|write|check; checklist DoD, evidencia archivada, limitaciones y pasos de publicación como acción separada no ejecutada. CHANGELOG con sección 0.1.0rc1.
+- Decisiones del propietario en la sesión de trabajo del 2026-11-20: licencia MIT para código, documentación, ejemplos y corpus (LICENSE «Copyright (c) 2026 xlCyanz and MoanArt contributors»; pyproject license = "MIT" y license-files según PEP 639, sin clasificador License) y versión 0.1.0rc1 (Development Status 3 - Alpha). Textos de licencia pendiente actualizados (README, CONTRIBUTING, MOANART.md §19/§25 y 0.1.27-draft, materials._LICENSE, corpus y tiles, ADR-030/037 con nota de actualización); la revisión artística humana sigue pendiente.
+- docs/RELEASE.md: versiones (paquete, schema 1.0, proyecto, render-v1, budget-v8, quality-v1, aggdraw-v1, registro de migraciones sólo 1.0), matriz de compatibilidad (Python 3.12–3.14 × ubuntu/macos/windows, rangos de Pillow/NumPy/AggDraw, APNG/WebP opcionales), capacidades implementadas frente a previstas desde moanart.api.capabilities y auditoría R001–R040 (entregado sólo si todos los issues que lo cubren están done) generadas y comprobadas por scripts/release.py report|write|check; checklist DoD, evidencia archivada, limitaciones y pasos de publicación como acción separada no ejecutada. CHANGELOG con sección 0.1.0rc1.
 - scripts/check_wheel.py construye wheel y sdist una vez, audita ambos (sin entornos, cachés, artefactos, secretos ni enlaces; LICENSE y License-Expression: MIT) e instala cada uno en un venv limpio: sonda de importación, smoke CLI, tutorial de 18 pasos, migración con el original intacto y corpus contra sus digests (scripts/install_smoke.py); en la pasada sdist las entradas salen del sdist extraído.
 - CI remoto real: develop 714c2f6 falló (run 44768996258, primera ejecución remota de la matriz); corregido en PR #75 (ADR-039) con la matriz verde 9/9 más determinismo en 3857617 (run 44777404728). La ejecución sobre el commit candidato se registra al aprobar.
-- Revisiones de agente QA y documentación con todas las correcciones aplicadas. Gate local macOS: scripts/validate.py con src/moana al 100 %, check_wheel OK (wheel y sdist), mypy --platform win32 OK, release.py/corpus.py/tiles.py check OK, pre-commit OK. Sin publicación: ni PyPI, ni tag, ni GitHub Release.
+- Revisiones de agente QA y documentación con todas las correcciones aplicadas. Gate local macOS: scripts/validate.py con src/moanart al 100 %, check_wheel OK (wheel y sdist), mypy --platform win32 OK, release.py/corpus.py/tiles.py check OK, pre-commit OK. Sin publicación: ni PyPI, ni tag, ni GitHub Release.
 - Aprobado por el propietario el 2026-11-20 tras revisión; PR #76 hacia develop.
 - AC1: scripts/check_wheel.py: «Artifact audit OK» y, para wheel y sdist, «Installed CLI OK», «Installed tutorial OK: 18 documented steps», «Installed migrations OK … original preserved» e «Installed corpus OK: 5 examples match their pinned digests»; tests/test_repository_tools.py::test_t1_sdist_ships_every_input_of_the_installed_checks.
 - AC2: docs/RELEASE.md (licencia MIT decidida por el propietario el 2026-11-20, checklist DoD, limitaciones, revisión humana pendiente explícita, publicación separada no ejecutada), LICENSE, README.md, CHANGELOG.md; tests/test_repository_tools.py::test_t2_release_versions_and_licence_come_from_the_code.

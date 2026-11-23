@@ -2,11 +2,11 @@
 
 > Generado por `scripts/planning.py`; editar los catálogos JSON y regenerar.
 
-Se conservan las seis fases de MOANA.md para respetar las dependencias del contrato existente. Las ocho áreas temáticas de la solicitud se distribuyen entre estas fases; no se crean carpetas vacías ni se pospone schema hasta después del renderer.
+Se conservan las seis fases de MOANART.md para respetar las dependencias del contrato existente. Las ocho áreas temáticas de la solicitud se distribuyen entre estas fases; no se crean carpetas vacías ni se pospone schema hasta después del renderer.
 
-Total: 37 issues; fases: {'P0': 1, 'P1': 8, 'P2': 5, 'P3': 8, 'P4': 6, 'P5': 9}.
+Total: 38 issues; fases: {'P0': 1, 'P1': 8, 'P2': 5, 'P3': 8, 'P4': 6, 'P5': 10}.
 
-Prioridades: P0=7, P1=25, P2=5, P3=0. Complejidad S/M/L/XL es relativa, sin promesas de calendario.
+Prioridades: P0=7, P1=26, P2=5, P3=0. Complejidad S/M/L/XL es relativa, sin promesas de calendario.
 
 ## P0 — Inicialización
 
@@ -75,7 +75,7 @@ Estado: 6/6 issues completados.
 
 Puerta de salida: Corpus revisado, seguridad, benchmarks y wheel limpio.
 
-Estado: 9/9 issues completados.
+Estado: 9/10 issues completados.
 
 - [MOANA-026](MOANA-026.md) — Crear informes de calidad gráfica (done)
 - [MOANA-027](MOANA-027.md) — Construir corpus artístico y rúbrica humana (done)
@@ -86,6 +86,7 @@ Estado: 9/9 issues completados.
 - [MOANA-034](MOANA-034.md) — Añadir ejemplos de tiles y escenarios modulares (done)
 - [MOANA-035](MOANA-035.md) — Preparar release y comprobar Definition of Done (done)
 - [MOANA-036](MOANA-036.md) — Índice incremental de nodos en la edición por batches (done)
+- [MOANA-037](MOANA-037.md) — Renombrado completo del proyecto a MoanArt (review)
 
 ## Siguiente paso
 

@@ -1,6 +1,6 @@
 # Estándares de seguridad
 
-Referencia normativa: [MOANA.md §20](../../MOANA.md). Fronteras y amenazas: [SECURITY_MODEL.md](../architecture/SECURITY_MODEL.md). Los controles de producto descritos siguen pendientes de implementación en sus issues; los controles de desarrollo se aplican desde la infraestructura.
+Referencia normativa: [MOANART.md §20](../../MOANART.md). Fronteras y amenazas: [SECURITY_MODEL.md](../architecture/SECURITY_MODEL.md). Los controles de producto descritos siguen pendientes de implementación en sus issues; los controles de desarrollo se aplican desde la infraestructura.
 
 ## Datos de producto
 

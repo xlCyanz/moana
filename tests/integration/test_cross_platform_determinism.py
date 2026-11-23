@@ -3,7 +3,7 @@
 The reviewed RGBA manifest ``tests/fixtures/determinism/expected.json`` is the contract
 checked on every OS/Python of the CI matrix. It is *not* a copy of a render: every
 expected pixel comes from :data:`SCENES` below, where each mask is listed by hand from
-the raster rules of MOANA.md section 6 (ADR-015) and colours are composited with an
+the raster rules of MOANART.md section 6 (ADR-015) and colours are composited with an
 independent scalar implementation of the section 11 formula. The manifest digests are
 recomputed here with ``hashlib`` (section 14).
 
@@ -38,7 +38,7 @@ CLEAR: RGBA = (0, 0, 0, 0)
 
 
 def round_half_up(numerator: int, denominator: int) -> int:
-    """MOANA.md section 11: ``round_half_up(n/d) = (2n + d) // 2d``."""
+    """MOANART.md section 11: ``round_half_up(n/d) = (2n + d) // 2d``."""
     return (2 * numerator + denominator) // (2 * denominator)
 
 
@@ -690,8 +690,8 @@ def test_diagnostics_with_different_dimensions_have_no_diff(tmp_path: Path) -> N
 
 def test_decode_requires_the_promised_png_mode() -> None:
     frame, _ = determinism.render_case(CORPUS["cases"]["diagonals"])
-    from moana.export import encode_png
-    from moana.palette import Palette
+    from moanart.export import encode_png
+    from moanart.palette import Palette
 
     rgba = encode_png(frame).data
     palette = Palette.from_mapping(

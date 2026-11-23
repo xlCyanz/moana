@@ -1,6 +1,6 @@
 {
-  "format": "moana-determinism-expected/1",
-  "provenance": "P\u00edxeles calculados con el or\u00e1culo independiente de tests/integration/test_cross_platform_determinism.py (m\u00e1scaras a mano seg\u00fan MOANA.md \u00a76 y f\u00f3rmula escalar de \u00a711), sin ejecutar el renderer; digest \u00a714 con hashlib. Revisado a mano; nunca se regenera desde un render ni en CI.",
+  "format": "moanart-determinism-expected/1",
+  "provenance": "P\u00edxeles calculados con el or\u00e1culo independiente de tests/integration/test_cross_platform_determinism.py (m\u00e1scaras a mano seg\u00fan MOANART.md \u00a76 y f\u00f3rmula escalar de \u00a711), sin ejecutar el renderer; digest \u00a714 con hashlib. Revisado a mano; nunca se regenera desde un render ni en CI.",
   "cases": {
     "alpha": {
       "width": 4,

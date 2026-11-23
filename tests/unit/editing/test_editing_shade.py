@@ -16,10 +16,10 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from moana.core import errors
-from moana.editing import History, apply_batch
-from moana.render import render
-from moana.schema import Document, normalize_document, snapshot_digest, validate_document
+from moanart.core import errors
+from moanart.editing import History, apply_batch
+from moanart.render import render
+from moanart.schema import Document, normalize_document, snapshot_digest, validate_document
 
 type Tree = dict[str, Any]
 
@@ -152,7 +152,7 @@ def test_history_undoes_and_redoes_a_shadow_edit() -> None:
     assert pixels(undone.redo().document) == pixels(edited.document)
 
 
-def failure(kind: type[errors.MoanaError], *commands: Tree) -> errors.MoanaError:
+def failure(kind: type[errors.MoanArtError], *commands: Tree) -> errors.MoanArtError:
     base = document()
     with pytest.raises(kind) as caught:
         apply_batch(base, batch(base, *commands))

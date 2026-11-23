@@ -1,6 +1,6 @@
 # Estándares de arquitectura
 
-Estado de módulos e imports: [overview](../architecture/overview.md), [contratos](../architecture/module-contracts.md) y [MOANA.md §3](../../MOANA.md). Los módulos futuros se crean al implementar un issue, no como carpetas vacías para simular progreso.
+Estado de módulos e imports: [overview](../architecture/overview.md), [contratos](../architecture/module-contracts.md) y [MOANART.md §3](../../MOANART.md). Los módulos futuros se crean al implementar un issue, no como carpetas vacías para simular progreso.
 
 ## Decisiones y fronteras
 
@@ -14,7 +14,7 @@ Un dato persistido es declarativo, versionado y validable. Una capacidad nueva e
 
 Crear un ADR cuando cambie un contrato observable, dirección de dependencias, formato persistente, estrategia de backend, garantía de determinismo o política de compatibilidad. Un ajuste interno sin efecto arquitectónico puede explicarse en el issue o revisión.
 
-Cada ADR registra contexto, alternativas, decisión, consecuencias y evidencia pendiente/observada. Los ADR existentes se conservan; una decisión nueva indica cuál sustituye. No repetir íntegramente las fórmulas de MOANA.md: enlazarlas y actualizar la fuente normativa si cambian.
+Cada ADR registra contexto, alternativas, decisión, consecuencias y evidencia pendiente/observada. Los ADR existentes se conservan; una decisión nueva indica cuál sustituye. No repetir íntegramente las fórmulas de MOANART.md: enlazarlas y actualizar la fuente normativa si cambian.
 
 ## Revisión de una propuesta
 

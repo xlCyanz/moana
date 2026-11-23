@@ -1,7 +1,7 @@
 """Document validation: T1 table of valid/invalid inputs, mapping/bytes equivalence, AC1/AC2.
 
 Each invalid case states the expected (code, pointer, reason) independently of the
-implementation, from MOANA.md sections 9, 11, 12 and 20.
+implementation, from MOANART.md sections 9, 11, 12 and 20.
 """
 
 from __future__ import annotations
@@ -12,9 +12,9 @@ from typing import Any
 
 import pytest
 
-from moana.core import errors
-from moana.core.coordinates import Box, Point
-from moana.schema import (
+from moanart.core import errors
+from moanart.core.coordinates import Box, Point
+from moanart.schema import (
     PLANNED_OPERATION_TYPES,
     SUPPORTED_OPERATION_TYPES,
     Document,
@@ -26,7 +26,7 @@ from moana.schema import (
     snapshot_digest,
     validate_document,
 )
-from moana.schema.document import _semantic_details
+from moanart.schema.document import _semantic_details
 
 Mutation = Callable[[dict[str, Any]], None]
 
@@ -384,7 +384,7 @@ INVALID: dict[str, tuple[Mutation, str, str, str]] = {
         "/palette/ramps/0/colors/1",
         "duplicate_ramp_color",
     ),
-    # Strict profile (MOANA.md section 9).
+    # Strict profile (MOANART.md section 9).
     "strict_partial_alpha": (
         setter(("palette", "colors", 1, "rgba"), "#36AFA580"),
         "VALIDATION_ERROR",
@@ -407,7 +407,7 @@ INVALID: dict[str, tuple[Mutation, str, str, str]] = {
         "/palette/colors",
         "too_many",
     ),
-    # Planned capabilities: recognised, never ignored (MOANA.md section 12).
+    # Planned capabilities: recognised, never ignored (MOANART.md section 12).
     "planned_flood_fill": (
         add_op(type="flood_fill", at=[0, 0]),
         "UNSUPPORTED_OPERATION",
@@ -473,7 +473,7 @@ def test_invalid_table_reports_code_pointer_and_reason(name: str, minimal: dict[
     document = build(minimal, mutation)
     outcomes = []
     for source in (document, as_bytes(document)):
-        with pytest.raises(errors.MoanaError) as raised:
+        with pytest.raises(errors.MoanArtError) as raised:
             validate_document(source)
         error = raised.value
         assert type(error) is ERROR_TYPES[code]

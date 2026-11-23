@@ -14,7 +14,7 @@ from typing import Any
 
 import pytest
 
-from moana.api import (
+from moanart.api import (
     AVAILABLE_FUNCTIONS,
     CLUSTER_RULES,
     ClusterException,
@@ -22,15 +22,15 @@ from moana.api import (
     capabilities,
     snapshot_digest,
 )
-from moana.core import errors
-from moana.core.budget import Deadline, RenderLimits
-from moana.core.coordinates import Box, Point
-from moana.core.limits import MAX_CLUSTER_EXCEPTIONS
-from moana.geometry import cover_bytes
-from moana.render import plan_budget
-from moana.render.budget import mask_estimates
-from moana.schema import canonical_json, normalize_document, validate_document
-from moana.techniques import cluster_bytes
+from moanart.core import errors
+from moanart.core.budget import Deadline, RenderLimits
+from moanart.core.coordinates import Box, Point
+from moanart.core.limits import MAX_CLUSTER_EXCEPTIONS
+from moanart.geometry import cover_bytes
+from moanart.render import plan_budget
+from moanart.render.budget import mask_estimates
+from moanart.schema import canonical_json, normalize_document, validate_document
+from moanart.techniques import cluster_bytes
 
 SPRITE: dict[str, Any] = {
     "schema_version": "1.0",
@@ -114,12 +114,12 @@ def test_facade_lists_the_analysis_and_the_outline() -> None:
 
 
 def test_example_outlined_slime_keeps_its_glints_by_exception() -> None:
-    """examples/specs/outlined-slime.moana.json: two glints, both in ``eye_glints``."""
+    """examples/specs/outlined-slime.moanart.json: two glints, both in ``eye_glints``."""
     from pathlib import Path
 
-    from moana.api import load_document
+    from moanart.api import load_document
 
-    example = Path(__file__).resolve().parents[3] / "examples/specs/outlined-slime.moana.json"
+    example = Path(__file__).resolve().parents[3] / "examples/specs/outlined-slime.moanart.json"
     slime = load_document(example)
     glints = [Box(8, 13, 9, 14), Box(14, 13, 15, 14)]
     assert [f.box for f in analyze_clusters(slime).warnings] == glints

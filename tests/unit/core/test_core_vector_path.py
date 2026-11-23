@@ -1,6 +1,6 @@
 """Fixed-point path grammar, flattening and bounds (MOANA-007, ADR-023).
 
-Expected values are computed by hand from the rules in the ``moana.core.vector_path``
+Expected values are computed by hand from the rules in the ``moanart.core.vector_path``
 docstring: Bernstein points, the ``64 n^2 >= k D`` step rule and round-half-even.
 """
 
@@ -14,10 +14,10 @@ import pytest
 from hypothesis import given
 from hypothesis import strategies as st
 
-from moana.core.coordinates import Box
-from moana.core.errors import ValidationError
-from moana.core.limits import MAX_PATH_COMMANDS, MAX_PATH_CURVE_SEGMENTS, MAX_PATH_SEGMENTS
-from moana.core.vector_path import (
+from moanart.core.coordinates import Box
+from moanart.core.errors import ValidationError
+from moanart.core.limits import MAX_PATH_COMMANDS, MAX_PATH_CURVE_SEGMENTS, MAX_PATH_SEGMENTS
+from moanart.core.vector_path import (
     FLATNESS_UNITS,
     MAX_PATH_COORDINATE,
     PATH_BACKEND_FIXED_BYTES,

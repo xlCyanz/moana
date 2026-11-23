@@ -1,6 +1,6 @@
 """Animation → APNG / WebP → decode: the slime keeps every pixel and time (MOANA-025, AC1).
 
-``moana.animation.FrameRender`` is passed to the exporters as is (structural
+``moanart.animation.FrameRender`` is passed to the exporters as is (structural
 ``SpriteFrame``); each file is decoded with Pillow directly, frame by frame. A format
 whose codec this build lacks is skipped with the build report as reason.
 """
@@ -16,17 +16,17 @@ from pathlib import Path
 import pytest
 from PIL import Image
 
-from moana.animation import render_animation
-from moana.export import AnimatedFormat, export_apng, export_capabilities, export_webp
-from moana.export.animated import (
+from moanart.animation import render_animation
+from moanart.export import AnimatedFormat, export_apng, export_capabilities, export_webp
+from moanart.export.animated import (
     WEBP_FIXED_BYTES,
     WEBP_FRAME_BYTES_PER_PIXEL,
     WEBP_OUTPUT_BYTES_PER_PIXEL,
 )
-from moana.schema import validate_document
+from moanart.schema import validate_document
 
 ROOT = Path(__file__).resolve().parents[2]
-SLIME = ROOT / "examples/specs/bouncing-slime.moana.json"
+SLIME = ROOT / "examples/specs/bouncing-slime.moanart.json"
 CAPS = export_capabilities()
 REPORT = f"Pillow {CAPS.pillow_version}: " + ", ".join(
     f"{entry.format} {entry.codec} {entry.codec_version} {entry.reason}" for entry in CAPS.formats
@@ -80,8 +80,8 @@ RSS_PROBE = r"""
 import resource, sys
 from dataclasses import dataclass
 import numpy as np
-from moana.core.coordinates import Point
-from moana.export import encode_webp
+from moanart.core.coordinates import Point
+from moanart.export import encode_webp
 
 count, side = int(sys.argv[1]), int(sys.argv[2])
 

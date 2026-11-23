@@ -1,4 +1,4 @@
-"""Atomic edit batches of MOANA.md section 15 (MOANA-018 AC1, AC2, T1, T2, T3).
+"""Atomic edit batches of MOANART.md section 15 (MOANA-018 AC1, AC2, T1, T2, T3).
 
 Expected trees are edits of the hand-written ``FIXTURE`` below (or of the published
 examples), never the editor's own output.
@@ -17,9 +17,9 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from moana.core import errors
-from moana.core.limits import MAX_EDIT_COMMANDS
-from moana.editing import (
+from moanart.core import errors
+from moanart.core.limits import MAX_EDIT_COMMANDS
+from moanart.editing import (
     MAX_TRANSLATION,
     EditBatch,
     EditResult,
@@ -28,9 +28,9 @@ from moana.editing import (
     apply,
     apply_batch,
 )
-from moana.editing._tree import Node, WorkingIndex
-from moana.render import render
-from moana.schema import (
+from moanart.editing._tree import Node, WorkingIndex
+from moanart.render import render
+from moanart.schema import (
     Document,
     ParseLimits,
     canonical_json,
@@ -38,7 +38,7 @@ from moana.schema import (
     snapshot_digest,
     validate_document,
 )
-from moana.schema.models import MAX_REVISION
+from moanart.schema.models import MAX_REVISION
 
 type Tree = dict[str, Any]
 
@@ -124,7 +124,7 @@ def tree() -> Tree:
 
 
 def apply_edit(document: Document, source: Tree) -> Document:
-    """The new document only (the facade signature of MOANA.md section 13)."""
+    """The new document only (the facade signature of MOANART.md section 13)."""
     return apply_batch(document, source).document
 
 
@@ -182,7 +182,7 @@ def expect_tree(result: EditResult, expected: Tree) -> None:
     assert normalize_document(result.document) == normalize_document(validate_document(expected))
 
 
-def failure(kind: type[errors.MoanaError], *commands: Tree) -> errors.MoanaError:
+def failure(kind: type[errors.MoanArtError], *commands: Tree) -> errors.MoanArtError:
     document = fixture_document()
     before = canonical_json(document)
     with pytest.raises(kind) as caught:
@@ -200,7 +200,7 @@ def op(layer: int, index: int, source: Tree) -> Tree:
 
 
 def test_ac1_recolor_changes_only_its_reference_and_the_revision() -> None:
-    document = validate_document(load("minimal.moana.json"))
+    document = validate_document(load("minimal.moanart.json"))
     edit = load("recolor.edit.json")
     result = apply_batch(document, edit)
     before, after = normalize_document(document), normalize_document(result.document)
@@ -278,7 +278,7 @@ def test_t3_branches_with_the_same_revision_reject_each_other() -> None:
 
 
 def test_t2_source_document_is_byte_identical_after_success_and_failure() -> None:
-    path = SPECS / "minimal.moana.json"
+    path = SPECS / "minimal.moanart.json"
     raw = path.read_bytes()
     document = validate_document(raw)
     canonical = canonical_json(document)
@@ -300,7 +300,7 @@ def rgba_at(result: Any, x: int, y: int) -> bytes:
 
 
 def test_t2_render_before_and_after_a_recolor() -> None:
-    document = validate_document(load("minimal.moana.json"))
+    document = validate_document(load("minimal.moanart.json"))
     edited_document = apply_edit(document, load("recolor.edit.json"))
     before, after = render(document), render(edited_document)
     assert rgba_at(before, 40, 32) == bytes.fromhex("36AFA5FF")  # cloth
@@ -323,7 +323,7 @@ def test_t2_render_before_and_after_a_recolor() -> None:
     ],
 )
 def test_t2_batch_without_visual_change_keeps_the_visual_digest(commands: list[Tree]) -> None:
-    document = validate_document(load("masked-eyes.moana.json"))
+    document = validate_document(load("masked-eyes.moanart.json"))
     result = apply_batch(document, batch(document, *commands))
     assert render(result.document).digest == render(document).digest
     assert result.revision == document.revision + 1
@@ -480,7 +480,7 @@ def test_t1_set_visibility() -> None:
 
 
 def test_t1_replace_palette_color_changes_every_consumer() -> None:
-    document = validate_document(load("minimal.moana.json"))
+    document = validate_document(load("minimal.moanart.json"))
     command = {"type": "replace_palette_color", "target_id": "cloth", "rgba": "#ff0000ff"}
     result = apply_batch(document, batch(document, command))
     assert result.document.palette.colors[1].rgba == "#FF0000FF"
@@ -562,7 +562,7 @@ def test_t1_insert_operation_at_the_start_and_after_a_sibling() -> None:
     ],
 )
 def test_t1_insert_operation_negative_cases(
-    command: Tree, kind: type[errors.MoanaError], pointer: str, reason: str
+    command: Tree, kind: type[errors.MoanArtError], pointer: str, reason: str
 ) -> None:
     error = failure(kind, command)
     assert type(error) is kind
@@ -706,14 +706,14 @@ def test_t1_reorder_layers_masks_colors_and_regions() -> None:
     ],
 )
 def test_t1_reorder_negative_cases(
-    command: Tree, kind: type[errors.MoanaError], pointer: str, reason: str
+    command: Tree, kind: type[errors.MoanArtError], pointer: str, reason: str
 ) -> None:
     error = failure(kind, command)
     assert (error.json_pointer, error.context["reason"]) == (f"/commands/0{pointer}", reason)
 
 
 def test_t1_reorder_keeps_references_alive() -> None:
-    document = validate_document(load("masked-eyes.moana.json"))
+    document = validate_document(load("masked-eyes.moanart.json"))
     commands = [reorder("lid", None), reorder("eyes", "face_shape"), reorder("iris_right", None)]
     result = apply_batch(document, batch(document, *commands))
     assert {m.id for m in result.document.masks} == {m.id for m in document.masks}
@@ -749,7 +749,7 @@ def test_revision_overflow_is_rejected_before_any_command() -> None:
 
 
 def test_result_over_the_parse_limits_is_an_invalid_result() -> None:
-    document = validate_document(load("minimal.moana.json"))
+    document = validate_document(load("minimal.moanart.json"))
     edit = load("recolor.edit.json")
     with pytest.raises(errors.ValidationError) as caught:
         apply_batch(document, edit, limits=ParseLimits(max_nodes=20))
@@ -812,7 +812,7 @@ INVALID_COMMANDS = st.sampled_from(
 def test_property_failing_batch_is_all_or_nothing(prefix: list[Tree], last: Tree) -> None:
     document = fixture_document()
     before = canonical_json(document)
-    with pytest.raises(errors.MoanaError):
+    with pytest.raises(errors.MoanArtError):
         apply_batch(document, batch(document, *prefix, last))
     assert canonical_json(document) == before
     if prefix:
@@ -941,7 +941,7 @@ def test_a_failure_in_the_final_validation_rolls_everything_back() -> None:
 
 
 def minimal_document() -> Document:
-    return validate_document(load("minimal.moana.json"))
+    return validate_document(load("minimal.moanart.json"))
 
 
 NO_OPS: list[tuple[Any, list[Tree], set[str]]] = [
@@ -1082,7 +1082,7 @@ def test_worst_case_translate_batch_stays_linear(monkeypatch: pytest.MonkeyPatch
     monkeypatch.setattr(
         apply, "validate_document", counting("document_validation", validate_document)
     )
-    source = load("minimal.moana.json")
+    source = load("minimal.moanart.json")
     commands: list[list[object]] = [["M", 0, 0]]
     commands += [["L", (i % 50) * 256, (i // 50) * 256] for i in range(2999)]
     commands.append(["Z"])

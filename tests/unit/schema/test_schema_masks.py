@@ -14,9 +14,9 @@ from typing import Any
 
 import pytest
 
-from moana.core import errors
-from moana.core.limits import MAX_MASK_DEPTH, MAX_MASK_OPERANDS
-from moana.schema import (
+from moanart.core import errors
+from moanart.core.limits import MAX_MASK_DEPTH, MAX_MASK_OPERANDS
+from moanart.schema import (
     SUPPORTED_COLLECTIONS,
     SUPPORTED_MASK_TYPES,
     CombinationMask,
@@ -33,7 +33,7 @@ from moana.schema import (
 )
 
 ROOT = Path(__file__).resolve().parents[3]
-EXAMPLE = ROOT / "examples" / "specs" / "masked-eyes.moana.json"
+EXAMPLE = ROOT / "examples" / "specs" / "masked-eyes.moanart.json"
 
 
 def example() -> dict[str, Any]:
@@ -55,7 +55,7 @@ def combo(name: str, kind: str, *operands: str) -> dict[str, Any]:
 
 
 def problems(source: dict[str, Any]) -> list[tuple[str, str | None, object]]:
-    with pytest.raises(errors.MoanaError) as raised:
+    with pytest.raises(errors.MoanArtError) as raised:
         validate_document(source)
     return [(d.code, d.json_pointer, d.context.get("reason")) for d in raised.value.details]
 

@@ -2,8 +2,8 @@
 
 The working directory is a temporary directory (never the checkout) and the document
 and PNG names contain spaces and non-ASCII letters, passed both relative to that
-directory and absolute. The installed ``moana`` console script and ``python -m
-moana.cli`` must behave the same. The PNG is decoded with Pillow independently and
+directory and absolute. The installed ``moanart`` console script and ``python -m
+moanart.cli`` must behave the same. The PNG is decoded with Pillow independently and
 compared with the hand oracle of the minimal example (``[40, 32, 88, 104)`` in
 #36AFA5FF on transparent).
 """
@@ -23,12 +23,12 @@ import pytest
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[2]
-EXAMPLE = ROOT / "examples" / "specs" / "minimal.moana.json"
-SCRIPT = Path(sysconfig.get_path("scripts")) / ("moana.exe" if os.name == "nt" else "moana")
+EXAMPLE = ROOT / "examples" / "specs" / "minimal.moanart.json"
+SCRIPT = Path(sysconfig.get_path("scripts")) / ("moanart.exe" if os.name == "nt" else "moanart")
 
 
 def launchers() -> list[list[str]]:
-    found = [[sys.executable, "-m", "moana.cli"]]
+    found = [[sys.executable, "-m", "moanart.cli"]]
     if SCRIPT.is_file():
         found.append([str(SCRIPT)])
     return found
@@ -55,18 +55,18 @@ def workspace(tmp_path: Path) -> Path:
     work = tmp_path / "carpeta de trabajo"
     (work / "mis documentos").mkdir(parents=True)
     (work / "salida png").mkdir()
-    shutil.copyfile(EXAMPLE, work / "mis documentos" / "sprite mínimo.moana.json")
+    shutil.copyfile(EXAMPLE, work / "mis documentos" / "sprite mínimo.moanart.json")
     assert ROOT not in work.resolve().parents
     return work
 
 
 def test_console_script_is_installed() -> None:
-    assert SCRIPT.is_file(), "run uv sync so the moana entry point exists"
+    assert SCRIPT.is_file(), "run uv sync so the moanart entry point exists"
 
 
 @pytest.mark.parametrize("launcher", launchers(), ids=lambda launcher: Path(launcher[-1]).name)
 def test_cli_outside_the_repository_with_spaces(launcher: list[str], workspace: Path) -> None:
-    relative = os.path.join("mis documentos", "sprite mínimo.moana.json")
+    relative = os.path.join("mis documentos", "sprite mínimo.moanart.json")
     absolute = str(workspace / relative)
     for document in (relative, absolute):
         status, payload, _ = run(launcher, workspace, "validate", document)
@@ -104,10 +104,10 @@ def test_cli_outside_the_repository_with_spaces(launcher: list[str], workspace: 
 
 @pytest.mark.parametrize("launcher", launchers(), ids=lambda launcher: Path(launcher[-1]).name)
 def test_cli_failures_in_a_fresh_process(launcher: list[str], workspace: Path) -> None:
-    status, payload, stderr = run(launcher, workspace, "validate", "no existe.moana.json")
+    status, payload, stderr = run(launcher, workspace, "validate", "no existe.moanart.json")
     assert (status, payload["error"]["code"]) == (5, "READ_ERROR")
-    assert payload["error"]["context"]["file_name"] == "no existe.moana.json"
-    assert stderr.startswith("moana: error: READ_ERROR")
+    assert payload["error"]["context"]["file_name"] == "no existe.moanart.json"
+    assert stderr.startswith("moanart: error: READ_ERROR")
     status, payload, _ = run(launcher, workspace, "edit", "a b.json")
     assert (status, payload["error"]["context"]) == (2, {"reason": "usage"})
     status, payload, _ = run(launcher, workspace, "edit", "a b.json", "c d.json")
@@ -121,7 +121,7 @@ def test_cli_failures_in_a_fresh_process(launcher: list[str], workspace: Path) -
 def test_cli_edit_in_a_fresh_process(launcher: list[str], workspace: Path) -> None:
     batch = ROOT / "examples" / "specs" / "recolor.edit.json"
     shutil.copyfile(batch, workspace / "mis documentos" / "lote de edición.edit.json")
-    document = os.path.join("mis documentos", "sprite mínimo.moana.json")
+    document = os.path.join("mis documentos", "sprite mínimo.moanart.json")
     edit = os.path.join("mis documentos", "lote de edición.edit.json")
     before = sorted(p.name for p in (workspace / "mis documentos").iterdir())
     status, payload, stderr = run(launcher, workspace, "edit", document, edit)

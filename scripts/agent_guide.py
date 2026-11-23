@@ -1,6 +1,6 @@
 """Render the per-issue execution guide that lets an AI agent work an issue unaided.
 
-The guide is derived only from the catalogs, MOANA.md headings and fixed module
+The guide is derived only from the catalogs, MOANART.md headings and fixed module
 conventions, so it stays reproducible and is regenerated with the rest of the backlog.
 """
 
@@ -45,7 +45,7 @@ SEC: Final = "docs/standards/security.md"
 def _source(module: str, *skills: str, agents: tuple[str, ...], extra: str = "") -> ModuleGuide:
     standards = tuple(dict.fromkeys((PY, ARCH, TEST, *([extra] if extra else []))))
     return ModuleGuide(
-        paths=(f"src/moana/{module}/",),
+        paths=(f"src/moanart/{module}/",),
         tests=(f"tests/unit/{module}/",),
         skills=skills,
         agents=agents,
@@ -55,125 +55,132 @@ def _source(module: str, *skills: str, agents: tuple[str, ...], extra: str = "")
 
 MODULES: Final[Mapping[str, ModuleGuide]] = {
     "core": _source(
-        "core", "moana-python", "moana-graphics", agents=("python-engineer", "architect")
+        "core", "moanart-python", "moanart-graphics", agents=("python-engineer", "architect")
     ),
     "schema": _source(
         "schema",
-        "moana-python",
-        "moana-architecture",
+        "moanart-python",
+        "moanart-architecture",
         agents=("python-engineer", "architect"),
         extra=SEC,
     ),
     "palette": _source(
         "palette",
-        "moana-python",
-        "moana-pixel-art",
+        "moanart-python",
+        "moanart-pixel-art",
         agents=("python-engineer", "pixel-artist"),
         extra=ART,
     ),
     "geometry": _source(
-        "geometry", "moana-graphics", agents=("graphics-engineer", "python-engineer")
+        "geometry", "moanart-graphics", agents=("graphics-engineer", "python-engineer")
     ),
-    "layers": _source("layers", "moana-graphics", agents=("graphics-engineer", "architect")),
+    "layers": _source("layers", "moanart-graphics", agents=("graphics-engineer", "architect")),
     "techniques": _source(
         "techniques",
-        "moana-graphics",
-        "moana-pixel-art",
+        "moanart-graphics",
+        "moanart-pixel-art",
         agents=("graphics-engineer", "pixel-artist"),
         extra=ART,
     ),
     "render": _source(
         "render",
-        "moana-graphics",
-        "moana-architecture",
+        "moanart-graphics",
+        "moanart-architecture",
         agents=("graphics-engineer", "architect"),
     ),
     "editing": _source(
-        "editing", "moana-python", "moana-architecture", agents=("python-engineer", "architect")
+        "editing", "moanart-python", "moanart-architecture", agents=("python-engineer", "architect")
     ),
     "project": _source(
-        "project", "moana-python", agents=("python-engineer", "architect"), extra=SEC
+        "project", "moanart-python", agents=("python-engineer", "architect"), extra=SEC
     ),
     "animation": _source(
         "animation",
-        "moana-graphics",
-        "moana-pixel-art",
+        "moanart-graphics",
+        "moanart-pixel-art",
         agents=("graphics-engineer", "pixel-artist"),
         extra=ART,
     ),
     "export": _source(
-        "export", "moana-graphics", "moana-python", agents=("graphics-engineer", "python-engineer")
+        "export",
+        "moanart-graphics",
+        "moanart-python",
+        agents=("graphics-engineer", "python-engineer"),
     ),
     "quality": _source(
         "quality",
-        "moana-pixel-art",
-        "moana-testing",
+        "moanart-pixel-art",
+        "moanart-testing",
         agents=("pixel-artist", "qa-engineer"),
         extra=ART,
     ),
     "api": _source(
-        "api", "moana-python", "moana-architecture", agents=("python-engineer", "architect")
+        "api", "moanart-python", "moanart-architecture", agents=("python-engineer", "architect")
     ),
-    "cli": _source("cli", "moana-python", agents=("python-engineer", "architect"), extra=SEC),
+    "cli": _source("cli", "moanart-python", agents=("python-engineer", "architect"), extra=SEC),
     "tests.visual": ModuleGuide(
-        ("tests/visual/",), ("tests/visual/",), ("moana-testing",), ("qa-engineer",), (TEST, ART)
+        ("tests/visual/",), ("tests/visual/",), ("moanart-testing",), ("qa-engineer",), (TEST, ART)
     ),
     "tests.integration": ModuleGuide(
         ("tests/integration/",),
         ("tests/integration/",),
-        ("moana-testing",),
+        ("moanart-testing",),
         ("qa-engineer",),
         (TEST,),
     ),
     "tests.security": ModuleGuide(
         ("tests/security/",),
         ("tests/security/",),
-        ("moana-testing",),
+        ("moanart-testing",),
         ("qa-engineer",),
         (TEST, SEC),
     ),
     "benchmarks": ModuleGuide(
         ("tests/benchmarks/",),
         ("tests/benchmarks/",),
-        ("moana-testing",),
+        ("moanart-testing",),
         ("qa-engineer", "python-engineer"),
         (TEST,),
     ),
     "docs": ModuleGuide(
         ("docs/",),
         ("tests/test_repository_tools.py",),
-        ("moana-issue-planning",),
+        ("moanart-issue-planning",),
         ("documentation",),
         (ARCH,),
     ),
     "agents": ModuleGuide(
         ("docs/guides/", ".agents/skills/", ".claude/"),
         ("tests/test_repository_tools.py",),
-        ("moana-issue-planning",),
+        ("moanart-issue-planning",),
         ("documentation",),
         (ARCH,),
     ),
     "examples": ModuleGuide(
         ("examples/",),
         ("tests/integration/",),
-        ("moana-pixel-art",),
+        ("moanart-pixel-art",),
         ("pixel-artist", "documentation"),
         (ART,),
     ),
     "tooling": ModuleGuide(
-        ("scripts/",), ("tests/",), ("moana-python", "moana-testing"), ("python-engineer",), (PY,)
+        ("scripts/",),
+        ("tests/",),
+        ("moanart-python", "moanart-testing"),
+        ("python-engineer",),
+        (PY,),
     ),
     "ci": ModuleGuide(
         (".github/workflows/",),
         ("tests/test_repository_tools.py",),
-        ("moana-testing",),
+        ("moanart-testing",),
         ("qa-engineer",),
         (TEST, SEC),
     ),
     "release": ModuleGuide(
         ("pyproject.toml", "CHANGELOG.md", "README.md"),
         ("scripts/check_wheel.py",),
-        ("moana-code-review", "moana-testing"),
+        ("moanart-code-review", "moanart-testing"),
         ("qa-engineer", "documentation"),
         (PY, SEC),
     ),
@@ -184,8 +191,8 @@ STOPWORDS_EXTRA: Final = frozenset({"o", "para", "por", "su", "un", "una", "y"})
 
 @cache
 def section_titles(root: Path = ROOT) -> dict[int, str]:
-    """Map MOANA.md section numbers to their headings."""
-    text = (root / "MOANA.md").read_text(encoding="utf-8")
+    """Map MOANART.md section numbers to their headings."""
+    text = (root / "MOANART.md").read_text(encoding="utf-8")
     return {int(number): title for number, title in re.findall(r"^## (\d+)\. (.+)$", text, re.M)}
 
 
@@ -223,7 +230,9 @@ def agent_guide(
     sections = sorted(
         {3, 25, *(number for rid in issue.requirements for number in requirements[rid].sections)}
     )
-    skills = _unique([skill for guide in guides for skill in guide.skills] + ["moana-code-review"])
+    skills = _unique(
+        [skill for guide in guides for skill in guide.skills] + ["moanart-code-review"]
+    )
     agents = _unique([agent for guide in guides for agent in guide.agents])
     standards = _unique([standard for guide in guides for standard in guide.standards])
     paths = _unique([path for guide in guides for path in guide.paths])
@@ -247,7 +256,7 @@ def agent_guide(
     reading = [
         "`CLAUDE.md` (Claude Code) o `AGENTS.md` (Codex) y "
         "[flujo de sesión](../guides/agent-workflow.md).",
-        "MOANA.md: "
+        "MOANART.md: "
         + "; ".join(f"§{number} {titles.get(number, '')}".rstrip() for number in sections)
         + ". Estas secciones son el contrato normativo; ante duda, prevalecen sobre este issue.",
         "[Contratos de módulos](../architecture/module-contracts.md) para: "
@@ -275,8 +284,8 @@ def agent_guide(
         "requirements": requirement_rows,
         "skills_claude": ", ".join(f"`{skill}`" for skill in skills),
         "skills_codex": ", ".join(f"`${skill}`" for skill in skills),
-        "agents_claude": ", ".join(f"`moana-{agent}`" for agent in agents),
-        "agents_codex": ", ".join(f"`moana_{agent.replace('-', '_')}`" for agent in agents),
+        "agents_claude": ", ".join(f"`moanart-{agent}`" for agent in agents),
+        "agents_codex": ", ".join(f"`moanart_{agent.replace('-', '_')}`" for agent in agents),
         "paths": ", ".join(f"`{path}`" for path in paths),
         "tests": ", ".join(f"`{path}`" for path in tests),
         "test_plan": test_rows,

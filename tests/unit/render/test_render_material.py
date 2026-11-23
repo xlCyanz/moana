@@ -2,7 +2,7 @@
 
 Pixel oracles are hand-written grids or the rules of ADR-030 restated here (the
 ``shade`` index ``clamp(ambient + level + offset)``, then ``+ texture offset`` and a
-second clamp), with seeded cells recomputed from MOANA.md section 14 with ``hashlib``.
+second clamp), with seeded cells recomputed from MOANART.md section 14 with ``hashlib``.
 ``budget-v8`` figures are computed by hand.
 """
 
@@ -18,14 +18,14 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from moana.api import inspect_document
-from moana.core import errors
-from moana.core.budget import RenderLimits
-from moana.core.coordinates import Box, Dimensions, Point
-from moana.core.materials import MATERIAL_PRESETS
-from moana.palette import RAMP_LUMINANCE_NOT_INCREASING
-from moana.render import estimate_cost, plan_budget, render
-from moana.render.budget import (
+from moanart.api import inspect_document
+from moanart.core import errors
+from moanart.core.budget import RenderLimits
+from moanart.core.coordinates import Box, Dimensions, Point
+from moanart.core.materials import MATERIAL_PRESETS
+from moanart.palette import RAMP_LUMINANCE_NOT_INCREASING
+from moanart.render import estimate_cost, plan_budget, render
+from moanart.render.budget import (
     ESTIMATOR_VERSION,
     MATERIAL_CELL_BYTES,
     MATERIAL_FIXED_BYTES,
@@ -38,9 +38,9 @@ from moana.render.budget import (
     selective_outline_cost,
     shade_later,
 )
-from moana.render.pipeline import _material_part, _outline_base, _outline_segment, _plan_masks
-from moana.schema import Document, MaterialOperation, SelectiveOutlineOperation, validate_document
-from moana.techniques import MaterialTexture, texture_cells
+from moanart.render.pipeline import _material_part, _outline_base, _outline_segment, _plan_masks
+from moanart.schema import Document, MaterialOperation, SelectiveOutlineOperation, validate_document
+from moanart.techniques import MaterialTexture, texture_cells
 
 ROOT = Path(__file__).resolve().parents[3]
 RGBA = tuple[int, int, int, int]
@@ -729,7 +729,7 @@ EXAMPLES = ["skin", "cloth", "metal", "wood", "stone"]
 
 @pytest.mark.parametrize("name", EXAMPLES)
 def test_material_examples_use_only_their_palette_and_record_provenance(name: str) -> None:
-    path = ROOT / "examples" / "specs" / f"material-{name}.moana.json"
+    path = ROOT / "examples" / "specs" / f"material-{name}.moanart.json"
     document = validate_document(json.loads(path.read_text(encoding="utf-8")))
     operation = document.layers[0].operations[0]
     assert isinstance(operation, MaterialOperation) and operation.preset == name
@@ -771,7 +771,7 @@ EXAMPLE_DIGESTS = {
 
 @pytest.mark.parametrize("name", EXAMPLES)
 def test_t2_recipe_golden_of_every_example(name: str) -> None:
-    path = ROOT / "examples" / "specs" / f"material-{name}.moana.json"
+    path = ROOT / "examples" / "specs" / f"material-{name}.moanart.json"
     document = validate_document(json.loads(path.read_text(encoding="utf-8")))
     assert hashlib.sha256(render(document).rgba).hexdigest() == EXAMPLE_DIGESTS[name]
 

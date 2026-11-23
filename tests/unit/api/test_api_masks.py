@@ -7,8 +7,8 @@ from pathlib import Path
 
 import pytest
 
-import moana.api
-from moana.api import (
+import moanart.api
+from moanart.api import (
     MaskSummary,
     RegionSummary,
     ResolvedRegion,
@@ -18,10 +18,10 @@ from moana.api import (
     render,
     resolve_region,
 )
-from moana.core.errors import ReferenceError
-from moana.schema import Document
+from moanart.core.errors import ReferenceError
+from moanart.schema import Document
 
-EXAMPLE = Path(__file__).resolve().parents[3] / "examples" / "specs" / "masked-eyes.moana.json"
+EXAMPLE = Path(__file__).resolve().parents[3] / "examples" / "specs" / "masked-eyes.moanart.json"
 
 
 def test_capabilities_list_masks_and_regions_as_available() -> None:
@@ -61,7 +61,7 @@ def test_ac2_resolve_region_through_the_facade() -> None:
     )
     with pytest.raises(ReferenceError):
         resolve_region(document, "nose")
-    assert "resolve_region" in moana.api.__all__
+    assert "resolve_region" in moanart.api.__all__
 
 
 def test_inspect_reports_masks_regions_and_layer_masks() -> None:

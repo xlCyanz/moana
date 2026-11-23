@@ -5,7 +5,7 @@ paths:
 
 # Testing
 
-Estándar: [docs/standards/testing.md](../../docs/standards/testing.md), MOANA.md §21. Skill: `moana-testing`. Subagente: `moana-qa-engineer`.
+Estándar: [docs/standards/testing.md](../../docs/standards/testing.md), MOANART.md §21. Skill: `moanart-testing`. Subagente: `moanart-qa-engineer`.
 
 - Organización: `tests/unit/` reglas locales; `tests/integration/` documento→render→export o tooling completo; `tests/visual/` goldens exactos (marker `visual`); fixtures en `tests/fixtures/`. Crea cada carpeta cuando exista su primer test real.
 - Oráculos independientes (máscaras a mano, fórmulas); nunca copies la salida de la implementación como expected.

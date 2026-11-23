@@ -13,10 +13,10 @@ from typing import Any
 import numpy as np
 import pytest
 
-from moana.core.budget import RenderLimits
-from moana.core.canvas import Canvas
-from moana.core.coordinates import Box, Dimensions, Point
-from moana.geometry import (
+from moanart.core.budget import RenderLimits
+from moanart.core.canvas import Canvas
+from moanart.core.coordinates import Box, Dimensions, Point
+from moanart.geometry import (
     FLOOD_FILL_BYTES_PER_PIXEL,
     Mask,
     flood_fill,
@@ -26,8 +26,8 @@ from moana.geometry import (
     rasterize_polygon,
     rasterize_rect,
 )
-from moana.render import estimate_cost
-from moana.schema import validate_document
+from moanart.render import estimate_cost
+from moanart.schema import validate_document
 
 SIDE = 512
 DIMS = Dimensions(SIDE, SIDE)

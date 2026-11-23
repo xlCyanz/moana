@@ -1,6 +1,6 @@
-"""Static ``moana`` command: exit codes, JSON stdout, no tracebacks (MOANA-012 T2, AC2).
+"""Static ``moanart`` command: exit codes, JSON stdout, no tracebacks (MOANA-012 T2, AC2).
 
-Expected exit codes come from MOANA.md section 13 (0 success, 2 invalid input, 3
+Expected exit codes come from MOANART.md section 13 (0 success, 2 invalid input, 3
 budget, 4 conflict, 5 I/O, 1 internal), written here by hand rather than read back
 from the error classes, so a drift in either side fails.
 """
@@ -22,13 +22,13 @@ from typing import Any, NoReturn
 import pytest
 from PIL import Image
 
-from moana.cli import AVAILABLE_COMMANDS, PLANNED_COMMANDS, build_parser, main
-from moana.cli import commands as cli_module
-from moana.cli.commands import EXIT_INTERRUPTED, EXIT_OUTPUT_CLOSED, USAGE_MESSAGE
-from moana.core import errors
+from moanart.cli import AVAILABLE_COMMANDS, PLANNED_COMMANDS, build_parser, main
+from moanart.cli import commands as cli_module
+from moanart.cli.commands import EXIT_INTERRUPTED, EXIT_OUTPUT_CLOSED, USAGE_MESSAGE
+from moanart.core import errors
 
 ROOT = Path(__file__).resolve().parents[3]
-EXAMPLE = ROOT / "examples" / "specs" / "minimal.moana.json"
+EXAMPLE = ROOT / "examples" / "specs" / "minimal.moanart.json"
 MINIMAL: dict[str, Any] = json.loads(EXAMPLE.read_text(encoding="utf-8"))
 
 type Run = Callable[..., tuple[int, dict[str, Any], str]]
@@ -198,13 +198,13 @@ def test_subcommand_help_and_version(capsys: pytest.CaptureFixture[str]) -> None
     assert main(["export", "--help"]) == 0
     assert "--overwrite" in capsys.readouterr().out
     assert main(["--version"]) == 0
-    assert capsys.readouterr().out.startswith("moana ")
+    assert capsys.readouterr().out.startswith("moanart ")
 
 
 def test_main_reads_sys_argv(
     monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    monkeypatch.setattr(sys, "argv", ["moana", "validate", str(EXAMPLE)])
+    monkeypatch.setattr(sys, "argv", ["moanart", "validate", str(EXAMPLE)])
     assert main() == 0
     assert json.loads(capsys.readouterr().out)["ok"] is True
 
@@ -212,16 +212,16 @@ def test_main_reads_sys_argv(
 def test_module_entry_point(
     monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    monkeypatch.setattr(sys, "argv", ["moana", "capabilities"])
+    monkeypatch.setattr(sys, "argv", ["moanart", "capabilities"])
     with pytest.raises(SystemExit) as caught:
-        runpy.run_module("moana.cli", run_name="__main__", alter_sys=True)
+        runpy.run_module("moanart.cli", run_name="__main__", alter_sys=True)
     assert caught.value.code == 0
     assert json.loads(capsys.readouterr().out)["command"] == "capabilities"
 
 
 def test_parser_is_static() -> None:
     parser = build_parser()
-    assert parser.prog == "moana"
+    assert parser.prog == "moanart"
 
 
 # --- failures ----------------------------------------------------------------------
@@ -260,7 +260,7 @@ def test_document_errors_map_to_exit_codes(
     status, payload, err = run(*arguments)
     assert (status, payload["ok"], payload["error"]["code"]) == (exit_code, False, code)
     assert payload["error"]["exit_code"] == exit_code
-    assert err.startswith(f"moana: error: {code}:")
+    assert err.startswith(f"moanart: error: {code}:")
     assert not (tmp_path / "o.png").exists()
 
 
@@ -320,7 +320,7 @@ def test_usage_errors_are_invalid_input(
         {"reason": "usage"},
         USAGE_MESSAGE,
     )
-    assert "usage: moana" in err
+    assert "usage: moanart" in err
     assert "error:" in err  # argparse's explanation goes to stderr only
     assert "invalid" not in json.dumps(payload).replace(USAGE_MESSAGE, "")
 
@@ -361,7 +361,7 @@ def test_wrong_extension_is_invalid_input(run: Run, tmp_path: Path) -> None:
 
 
 ERROR_EXIT_CODES = [
-    (errors.MoanaError, 1),
+    (errors.MoanArtError, 1),
     (errors.ValidationError, 2),
     (errors.OutOfBoundsError, 2),
     (errors.ReferenceError, 2),
@@ -376,7 +376,7 @@ ERROR_EXIT_CODES = [
 
 @pytest.mark.parametrize(("error", "exit_code"), ERROR_EXIT_CODES)
 def test_every_domain_error_maps_to_its_exit_code(
-    run: Run, monkeypatch: pytest.MonkeyPatch, error: type[errors.MoanaError], exit_code: int
+    run: Run, monkeypatch: pytest.MonkeyPatch, error: type[errors.MoanArtError], exit_code: int
 ) -> None:
     def failing(args: object) -> dict[str, object]:
         raise error("boom", context={"reason": "test", "bounds": (1, 2)})
@@ -433,7 +433,7 @@ def test_interrupt_exits_130_with_an_interrupted_error(
     payload = json.loads(captured.out)
     assert (payload["ok"], payload["command"]) == (False, command)
     assert (payload["error"]["code"], payload["error"]["exit_code"]) == ("INTERRUPTED", 130)
-    assert captured.err == "moana: interrupted\n"
+    assert captured.err == "moanart: interrupted\n"
 
 
 class BrokenStream(io.StringIO):
@@ -458,7 +458,7 @@ def test_closed_stdout_exits_with_the_documented_code(
     monkeypatch.setattr(sys, "stdout", BrokenStream())
     assert main(["validate", str(EXAMPLE)]) == EXIT_OUTPUT_CLOSED == 5
     assert capsys.readouterr().err == (
-        "moana: error: stdout is closed; the result was not delivered\n"
+        "moanart: error: stdout is closed; the result was not delivered\n"
     )
     # With a real descriptor, it is pointed at the null device before returning.
     with (tmp_path / "out.txt").open("w", encoding="utf-8") as handle:
@@ -479,7 +479,7 @@ def test_closed_pipe_in_a_real_process() -> None:
     os.close(reader)  # nobody will read: the first write fails with EPIPE
     environment = {key: value for key, value in os.environ.items() if key != "PYTHONPATH"}
     completed = subprocess.run(
-        [sys.executable, "-m", "moana.cli", "inspect", str(EXAMPLE)],
+        [sys.executable, "-m", "moanart.cli", "inspect", str(EXAMPLE)],
         stdout=writer,
         stderr=subprocess.PIPE,
         encoding="utf-8",

@@ -103,12 +103,12 @@ def test_claude_config_of_repository_is_valid() -> None:
 
 def test_claude_config_detects_drift(tmp_path: Path) -> None:
     copy_claude_layer(tmp_path)
-    wrapper = tmp_path / ".claude/skills/moana-python/SKILL.md"
+    wrapper = tmp_path / ".claude/skills/moanart-python/SKILL.md"
     wrapper.write_text(
         wrapper.read_text(encoding="utf-8").replace("description:", "description: Drift"),
         encoding="utf-8",
     )
-    reviewer = tmp_path / ".claude/agents/moana-architect.md"
+    reviewer = tmp_path / ".claude/agents/moanart-architect.md"
     reviewer.write_text(
         reviewer.read_text(encoding="utf-8").replace("tools: Read,", "tools: Edit, Read,"),
         encoding="utf-8",

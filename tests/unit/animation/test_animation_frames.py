@@ -1,7 +1,7 @@
 """Timeline evaluation and frame rendering (MOANA-022 AC1, AC2, T1, T2; ADR-032).
 
 The sprite is written by hand and every expected pixel comes from :func:`expected`,
-a hand-written oracle of MOANA.md sections 6, 10 and 17 (half-open boxes, Bayer 2x2
+a hand-written oracle of MOANART.md sections 6, 10 and 17 (half-open boxes, Bayer 2x2
 ``[[0, 2], [3, 1]]`` with colour B where the threshold is below ``coverage``), never
 from the renderer's own output.
 """
@@ -19,8 +19,8 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from moana import api, editing, layers
-from moana.animation import (
+from moanart import api, editing, layers
+from moanart.animation import (
     AnimationRender,
     evaluate_animation,
     evaluate_frame,
@@ -29,13 +29,13 @@ from moana.animation import (
     render_animation,
     render_frame,
 )
-from moana.animation import timeline as timeline_module
-from moana.core import errors
-from moana.core.budget import Deadline, RenderLimits
-from moana.core.coordinates import Point
-from moana.render import RenderResult, render
-from moana.render import pipeline as pipeline_module
-from moana.schema import (
+from moanart.animation import timeline as timeline_module
+from moanart.core import errors
+from moanart.core.budget import Deadline, RenderLimits
+from moanart.core.coordinates import Point
+from moanart.render import RenderResult, render
+from moanart.render import pipeline as pipeline_module
+from moanart.schema import (
     Document,
     ParseLimits,
     canonical_json,
@@ -199,7 +199,7 @@ def renders(monkeypatch: pytest.MonkeyPatch) -> list[str]:
         calls.append(str(frame_id))
         return original(document, frame_id, *args)
 
-    monkeypatch.setattr("moana.render.sequence._render_validated", spy)
+    monkeypatch.setattr("moanart.render.sequence._render_validated", spy)
     return calls
 
 
@@ -219,7 +219,7 @@ def paints(monkeypatch: pytest.MonkeyPatch) -> list[str]:
         return compose(*args, **kwargs)
 
     monkeypatch.setattr(pipeline_module, "_render_validated", spy_render)
-    monkeypatch.setattr("moana.render.pipeline.compose", spy_compose)
+    monkeypatch.setattr("moanart.render.pipeline.compose", spy_compose)
     return calls
 
 
@@ -334,7 +334,7 @@ def test_ac2_an_invalid_override_in_any_frame_renders_nothing(
         lambda: api.render(document, frame_id="f1"),
         lambda: evaluate_animation(document, "walk"),
     ):
-        with pytest.raises(errors.MoanaError) as raised:
+        with pytest.raises(errors.MoanArtError) as raised:
             request()
         assert raised.value.context["reason"] == reason
         assert raised.value.json_pointer == pointer
@@ -490,7 +490,7 @@ def test_t1_loop_count_never_multiplies_the_render(document: Document, renders: 
 
 
 def test_t1_frame_selection_errors(document: Document, renders: list[str]) -> None:
-    cases: list[tuple[object, type[errors.MoanaError] | type[TypeError], str | None]] = [
+    cases: list[tuple[object, type[errors.MoanArtError] | type[TypeError], str | None]] = [
         ([], errors.ValidationError, "empty_frames"),
         (["f0", "f0"], errors.ValidationError, "duplicate_frame"),
         (["open"], errors.ReferenceError, "unknown_frame"),  # another animation's frame
@@ -504,7 +504,7 @@ def test_t1_frame_selection_errors(document: Document, renders: list[str]) -> No
         with pytest.raises(kind) as raised:
             render_animation(document, "walk", frame_ids=frame_ids)  # type: ignore[arg-type]
         if reason is not None:
-            assert isinstance(raised.value, errors.MoanaError)
+            assert isinstance(raised.value, errors.MoanArtError)
             assert dict(raised.value.context) == {"field": "frame_ids", "reason": reason}
     assert renders == []
 
@@ -671,7 +671,7 @@ def test_t2_a_frame_without_overrides_does_not_call_the_editor(
         calls.append(kwargs["pointer"])
         return original(*args, **kwargs)
 
-    monkeypatch.setattr("moana.animation.timeline.apply_commands", spy)
+    monkeypatch.setattr("moanart.animation.timeline.apply_commands", spy)
     opened, shut = evaluate_animation(document, "blink")
     assert calls == ["/animations/1/frames/1/overrides"]
     static = json.loads(canonical_json(document))
@@ -728,7 +728,7 @@ def test_t2_dither_phase_is_anchored_and_stable_between_frames(document: Documen
 
 
 def test_t2_material_texture_is_identical_in_every_frame() -> None:
-    tree = json.loads((EXAMPLES / "material-skin.moana.json").read_text(encoding="utf-8"))
+    tree = json.loads((EXAMPLES / "material-skin.moanart.json").read_text(encoding="utf-8"))
     tree["palette"]["colors"].append({"id": "spark_color", "rgba": "#FFFFFFFF"})
     tree["layers"].append(
         {
@@ -804,7 +804,7 @@ def test_t2_editing_cannot_remove_an_animated_target(document: Document) -> None
 
 
 def test_t2_moving_a_textured_sprite_slides_its_texture() -> None:
-    tree = json.loads((EXAMPLES / "material-stone.moana.json").read_text(encoding="utf-8"))
+    tree = json.loads((EXAMPLES / "material-stone.moanart.json").read_text(encoding="utf-8"))
     material = next(
         op for layer in tree["layers"] for op in layer["operations"] if op["type"] == "material"
     )

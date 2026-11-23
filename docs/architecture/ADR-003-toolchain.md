@@ -1,6 +1,6 @@
 # ADR-003 — src layout, uv y controles comunes
 
-Estado: aceptado · 2026-11-16.
+Estado: aceptado · 2026-11-16. Ampliado por [ADR-041](decisions/ADR-041-rename-moanart.md): distribución `moanart`, import `moanart` y comando `moanart` desde 0.1.0rc2, sin alias del nombre anterior.
 
 ## Contexto
 

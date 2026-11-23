@@ -7,8 +7,8 @@ from pathlib import Path
 
 import pytest
 
-import moana.api
-from moana.api import (
+import moanart.api
+from moanart.api import (
     Document,
     EditBatch,
     EditConflict,
@@ -20,10 +20,10 @@ from moana.api import (
     load_document,
     load_edit_batch,
 )
-from moana.core import errors
+from moanart.core import errors
 
 ROOT = Path(__file__).resolve().parents[3]
-EXAMPLE = ROOT / "examples" / "specs" / "minimal.moana.json"
+EXAMPLE = ROOT / "examples" / "specs" / "minimal.moanart.json"
 BATCH = ROOT / "examples" / "specs" / "recolor.edit.json"
 
 
@@ -71,7 +71,7 @@ def test_conflict_is_exported_with_exit_code_4() -> None:
     with pytest.raises(EditConflict) as caught:
         edit_document(newer, BATCH)
     assert caught.value.exit_code == 4
-    assert moana.api.EditConflict is errors.EditConflict
+    assert moanart.api.EditConflict is errors.EditConflict
 
 
 def test_limits_bound_the_batch_read(tmp_path: Path) -> None:

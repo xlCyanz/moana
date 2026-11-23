@@ -1,4 +1,4 @@
-"""Per-cell randomness keyed by identity in ``moana.core.procedural`` (§14, MOANA-010)."""
+"""Per-cell randomness keyed by identity in ``moanart.core.procedural`` (§14, MOANA-010)."""
 
 from __future__ import annotations
 
@@ -6,8 +6,8 @@ import hashlib
 
 import pytest
 
-from moana.core.errors import ValidationError
-from moana.core.procedural import RNG_VERSION, cell_choice, cell_unit
+from moanart.core.errors import ValidationError
+from moanart.core.procedural import RNG_VERSION, cell_choice, cell_unit
 
 
 def _hand_unit(text: str) -> int:

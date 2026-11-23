@@ -1,4 +1,4 @@
-"""Cross-process and cross-platform determinism evidence (MOANA-029, MOANA.md section 14).
+"""Cross-process and cross-platform determinism evidence (MOANA-029, MOANART.md section 14).
 
 Three subcommands:
 
@@ -41,10 +41,10 @@ CORPUS_PATH: Final = FIXTURES / "corpus.json"
 EXPECTED_PATH: Final = FIXTURES / "expected.json"
 LOCK_PATH: Final = ROOT / "uv.lock"
 
-CORPUS_FORMAT: Final = "moana-determinism-corpus/1"
-EXPECTED_FORMAT: Final = "moana-determinism-expected/1"
-REPORT_FORMAT: Final = "moana-determinism-report/1"
-SUMMARY_FORMAT: Final = "moana-determinism-summary/1"
+CORPUS_FORMAT: Final = "moanart-determinism-corpus/1"
+EXPECTED_FORMAT: Final = "moanart-determinism-expected/1"
+REPORT_FORMAT: Final = "moanart-determinism-report/1"
+SUMMARY_FORMAT: Final = "moanart-determinism-summary/1"
 REPORT_NAME: Final = "determinism-report.json"
 
 HASH_SEEDS: Final = ("0", "1", "4242", "random")
@@ -109,7 +109,7 @@ def bytes_to_rows(width: int, height: int, rgba: bytes) -> list[list[str]]:
 
 
 def digest_of(width: int, height: int, rgba: bytes) -> str:
-    """Visual digest of MOANA.md section 14, recomputed with the standard library."""
+    """Visual digest of MOANART.md section 14, recomputed with the standard library."""
     data = width.to_bytes(4, "big") + height.to_bytes(4, "big") + rgba
     return "sha256:" + hashlib.sha256(data).hexdigest()
 
@@ -138,7 +138,7 @@ def serialise(value: Any, variant: str) -> bytes:
 
 @dataclass(frozen=True, slots=True)
 class Frame:
-    """A rendered frame (satisfies ``moana.export.RasterFrame``)."""
+    """A rendered frame (satisfies ``moanart.export.RasterFrame``)."""
 
     width: int
     height: int
@@ -146,8 +146,8 @@ class Frame:
 
 
 def _mask(spec: Mapping[str, Any], width: int, height: int) -> Any:
-    from moana.core import Box, Dimensions, Point
-    from moana.geometry import (
+    from moanart.core import Box, Dimensions, Point
+    from moanart.geometry import (
         rasterize_ellipse,
         rasterize_line,
         rasterize_pixel,
@@ -171,8 +171,8 @@ def _mask(spec: Mapping[str, Any], width: int, height: int) -> Any:
 
 
 def _node(spec: Mapping[str, Any], width: int, height: int) -> Any:
-    from moana.layers import Fill, Group, Layer
-    from moana.palette import Rgba
+    from moanart.layers import Fill, Group, Layer
+    from moanart.palette import Rgba
 
     visible = bool(spec.get("visible", True))
     opacity = int(spec.get("opacity", 255))
@@ -190,15 +190,15 @@ def _node(spec: Mapping[str, Any], width: int, height: int) -> Any:
 def render_case(case: Mapping[str, Any], variant: str = "canonical") -> tuple[Frame, list[str]]:
     """Render one corpus case; returns the frame and its warning pointers."""
     if case["kind"] == "document":
-        from moana.render import render
-        from moana.schema import validate_document
+        from moanart.render import render
+        from moanart.schema import validate_document
 
         result = render(validate_document(serialise(case["document"], variant)))
         warnings = [warning.json_pointer for warning in result.warnings]
         return Frame(result.width, result.height, result.rgba), warnings
     if case["kind"] == "tree":
-        from moana.core import Dimensions, RenderLimits
-        from moana.layers import LayerTree, compose
+        from moanart.core import Dimensions, RenderLimits
+        from moanart.layers import LayerTree, compose
 
         spec = json.loads(serialise(case["tree"], variant).decode("utf-8"))
         width, height = int(spec["width"]), int(spec["height"])
@@ -238,7 +238,7 @@ def _png_entry(data: bytes, mode: str = "RGBA") -> Json:
 
 
 def probe_case(case: Mapping[str, Any], variant: str, scratch: Path) -> Json:
-    from moana.export import encode_png, export_png
+    from moanart.export import encode_png, export_png
 
     frame, warnings = render_case(case, variant)
     entry: Json = {
@@ -257,7 +257,7 @@ def probe_case(case: Mapping[str, Any], variant: str, scratch: Path) -> Json:
     entry["png"]["file"] = file_entry
     document: Json = case["document"] if case["kind"] == "document" else {}
     if document and document["canvas"]["profile"] == "strict":
-        from moana.palette import Palette
+        from moanart.palette import Palette
 
         palette = Palette.from_mapping(document["palette"], profile="strict")
         indexed = encode_png(frame, mode="indexed", palette=palette)
@@ -267,7 +267,7 @@ def probe_case(case: Mapping[str, Any], variant: str, scratch: Path) -> Json:
 
 def probe(variant: str = "canonical", corpus_path: Path = CORPUS_PATH) -> Json:
     corpus = load_corpus(corpus_path)
-    with tempfile.TemporaryDirectory(prefix="moana-determinism-") as scratch:
+    with tempfile.TemporaryDirectory(prefix="moanart-determinism-") as scratch:
         return {
             name: probe_case({**case, "name": name}, variant, Path(scratch))
             for name, case in sorted(corpus["cases"].items())
@@ -283,8 +283,8 @@ def environment() -> Json:
     import PIL
     from PIL import features
 
-    import moana
-    from moana.render import ESTIMATOR_VERSION, RENDERER_BACKEND, RENDERER_VERSION
+    import moanart
+    from moanart.render import ESTIMATOR_VERSION, RENDERER_BACKEND, RENDERER_VERSION
 
     lock = hashlib.sha256(LOCK_PATH.read_bytes()).hexdigest() if LOCK_PATH.is_file() else None
     return {
@@ -293,7 +293,7 @@ def environment() -> Json:
         "machine": platform.machine(),
         "python": platform.python_version(),
         "implementation": platform.python_implementation(),
-        "moana": moana.__version__,
+        "moanart": moanart.__version__,
         "renderer_version": RENDERER_VERSION,
         "renderer_backend": RENDERER_BACKEND,
         "estimator_version": ESTIMATOR_VERSION,
@@ -371,7 +371,7 @@ def _bbox_and_count(
 
 
 def write_diagnostics(folder: Path, expected: Mapping[str, Any], actual: Mapping[str, Any]) -> Json:
-    """expected/actual/diff PNGs of one divergent case (MOANA.md section 21)."""
+    """expected/actual/diff PNGs of one divergent case (MOANART.md section 21)."""
     from PIL import Image
 
     folder.mkdir(parents=True, exist_ok=True)

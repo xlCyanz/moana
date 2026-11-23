@@ -2,7 +2,7 @@
 
 Oracles are built independently of the engine: the pointer of a planted duplicate is
 the path where the test planted it; the depth of a generated nesting is counted by the
-generator; MOANA.md section 20 fixes the limits (32 levels, 20 000 nodes, 8 MiB).
+generator; MOANART.md section 20 fixes the limits (32 levels, 20 000 nodes, 8 MiB).
 """
 
 from __future__ import annotations
@@ -16,10 +16,10 @@ import pytest
 from hypothesis import given
 from hypothesis import strategies as st
 
-from moana.api import load_document, render
-from moana.core.errors import MoanaError, ReferenceError, ValidationError
-from moana.project import load_project
-from moana.schema import Document
+from moanart.api import load_document, render
+from moanart.core.errors import MoanArtError, ReferenceError, ValidationError
+from moanart.project import load_project
+from moanart.schema import Document
 
 from .corpus import ROOT, SECRET, minimal_bytes, minimal_tree
 from .guards import (
@@ -77,7 +77,7 @@ def test_t1_node_count_and_size_are_checked_before_parsing() -> None:
 
 
 def test_t1_project_manifest_shape_is_checked_before_parsing(tmp_path: Path) -> None:
-    source = tmp_path / "deep.moana.json"
+    source = tmp_path / "deep.moanart.json"
     source.write_bytes(_nesting([False] * 40))
     with forbid(json, "loads"), forbid_effects(), pytest.raises(ValidationError) as caught:
         load_project(source)
@@ -193,7 +193,7 @@ def test_t1_property_arbitrary_bytes_fail_only_with_domain_errors(payload: bytes
     with forbid_effects():
         try:
             load_document(payload)
-        except MoanaError as error:
+        except MoanArtError as error:
             assert_clean_error(error, SECRET)
 
 
@@ -207,7 +207,7 @@ def test_t1_property_mutated_documents_fail_only_with_domain_errors(data: st.Dat
     with forbid_effects():
         try:
             document = load_document(bytes(original))
-        except MoanaError:
+        except MoanArtError:
             return
     assert isinstance(document, Document)
 
@@ -270,7 +270,7 @@ def test_t1_mask_reference_chain_beyond_depth_16_is_rejected() -> None:
     assert_clean_error(caught.value, SECRET)
     (detail,) = caught.value.details
     assert (detail.json_pointer, detail.context["reason"]) == ("/masks/0", "too_deep")
-    assert detail.context["maximum"] == 16  # MOANA.md section 11
+    assert detail.context["maximum"] == 16  # MOANART.md section 11
     accepted = chain[1:]  # 16 levels: the contract maximum loads
     load_document(_with_masks(accepted, layer_mask="m1"))
 
@@ -353,7 +353,7 @@ def _violations(path: Path) -> list[str]:
 
 
 def test_ac1_engine_has_no_evaluation_deserialisation_or_network_path() -> None:
-    sources = sorted((ROOT / "src/moana").rglob("*.py"))
+    sources = sorted((ROOT / "src/moanart").rglob("*.py"))
     assert sources
     violations = [item for path in sources for item in _violations(path)]
     assert violations == []

@@ -11,12 +11,12 @@ from typing import Any
 
 import pytest
 
-from moana import api
-from moana.animation import evaluate_animation
-from moana.core import BudgetExceeded, RenderLimits
-from moana.core.budget import DEFAULT_MAX_FRAME_PIXELS, DEFAULT_MAX_PIXEL_VISITS
-from moana.render import plan_frame
-from moana.schema import validate_document
+from moanart import api
+from moanart.animation import evaluate_animation
+from moanart.core import BudgetExceeded, RenderLimits
+from moanart.core.budget import DEFAULT_MAX_FRAME_PIXELS, DEFAULT_MAX_PIXEL_VISITS
+from moanart.render import plan_frame
+from moanart.schema import validate_document
 
 from . import adversarial
 from .corpus import canonical_bytes, static_document

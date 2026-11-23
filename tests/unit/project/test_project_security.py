@@ -20,8 +20,8 @@ from typing import Any
 import pytest
 from PIL import Image, ImageFile
 
-from moana.core.errors import BudgetExceeded, ReadError, ValidationError
-from moana.project import (
+from moanart.core.errors import BudgetExceeded, ReadError, ValidationError
+from moanart.project import (
     MANIFEST_NAME,
     Asset,
     Project,
@@ -30,7 +30,7 @@ from moana.project import (
     save_project,
     save_project_archive,
 )
-from moana.schema import Document
+from moanart.schema import Document
 
 from .conftest import PngFactory
 
@@ -84,7 +84,7 @@ def _unsafe_reason(error: pytest.ExceptionInfo[ValidationError]) -> object:
         ("assets\\escape.png", "invalid_name"),
         ("assets/a\x00.png", "invalid_name"),
         ("assets//x.png", "invalid_name"),
-        ("./project.moana.json", "invalid_name"),
+        ("./project.moanart.json", "invalid_name"),
         ("notes.txt", "unexpected_entry"),
         ("other/", "unexpected_entry"),
     ],
@@ -92,7 +92,7 @@ def _unsafe_reason(error: pytest.ExceptionInfo[ValidationError]) -> object:
 def test_t2_archive_names_are_rejected_before_extraction(
     tmp_path: Path, name: str, reason: str
 ) -> None:
-    archive = _zip(tmp_path / "evil.moana", [(MANIFEST_NAME, b"{}"), (name, b"x")])
+    archive = _zip(tmp_path / "evil.moanart", [(MANIFEST_NAME, b"{}"), (name, b"x")])
     before = _files(tmp_path)
     with pytest.raises(ValidationError) as caught:
         load_project(archive)
@@ -104,33 +104,33 @@ def test_t2_archive_names_are_rejected_before_extraction(
 
 
 def test_t2_symlink_entries_are_rejected(tmp_path: Path) -> None:
-    archive = _zip(tmp_path / "link.moana", [(_symlink_info(MANIFEST_NAME), b"/etc/passwd")])
+    archive = _zip(tmp_path / "link.moanart", [(_symlink_info(MANIFEST_NAME), b"/etc/passwd")])
     with pytest.raises(ValidationError) as caught:
         load_project(archive)
     assert _unsafe_reason(caught) == "symlink"
 
 
 def test_t2_duplicate_and_colliding_names_are_rejected(tmp_path: Path) -> None:
-    duplicate = _zip(tmp_path / "dup.moana", [(MANIFEST_NAME, b"{}"), (MANIFEST_NAME, b"{}")])
+    duplicate = _zip(tmp_path / "dup.moanart", [(MANIFEST_NAME, b"{}"), (MANIFEST_NAME, b"{}")])
     with pytest.raises(ValidationError) as caught:
         load_project(duplicate)
     assert _unsafe_reason(caught) == "duplicate_name"
     colliding = _zip(
-        tmp_path / "case.moana", [(MANIFEST_NAME, b"{}"), ("PROJECT.moana.json", b"{}")]
+        tmp_path / "case.moanart", [(MANIFEST_NAME, b"{}"), ("PROJECT.moanart.json", b"{}")]
     )
     with pytest.raises(ValidationError) as caught:
         load_project(colliding)
     assert _unsafe_reason(caught) == "name_collision"
     # NFC and NFD spellings of the same name also collide.
     nfc, nfd = "assets/\u00e9/", "assets/e\u0301/"
-    unicode = _zip(tmp_path / "nfc.moana", [(nfc, b""), (nfd, b"")])
+    unicode = _zip(tmp_path / "nfc.moanart", [(nfc, b""), (nfd, b"")])
     with pytest.raises(ValidationError) as caught:
         load_project(unicode)
     assert _unsafe_reason(caught) == "name_collision"
 
 
 def test_t2_excessive_expansion_ratio_is_rejected(tmp_path: Path) -> None:
-    bomb = _zip(tmp_path / "ratio.moana", [(MANIFEST_NAME, b" " * 200_000)])
+    bomb = _zip(tmp_path / "ratio.moanart", [(MANIFEST_NAME, b" " * 200_000)])
     info = zipfile.ZipFile(bomb).infolist()[0]
     assert info.file_size > 100 * info.compress_size  # the fixture really is a bomb
     with pytest.raises(ValidationError) as caught:
@@ -144,7 +144,7 @@ def test_t2_archive_budgets_are_checked_from_the_central_directory(
     entries: list[tuple[zipfile.ZipInfo | str, bytes]] = [
         (f"assets/{i:064x}.png", bytes(range(256))) for i in range(5)
     ]
-    archive = _zip(tmp_path / "many.moana", entries)
+    archive = _zip(tmp_path / "many.moanart", entries)
 
     def no_decompression(*_args: Any, **_kwargs: Any) -> Any:
         raise AssertionError("an entry was decompressed before the budget check")
@@ -175,7 +175,7 @@ def test_t2_encrypted_or_exotic_entries_are_rejected(tmp_path: Path, kind: str) 
     info = zipfile.ZipInfo(MANIFEST_NAME)
     if kind == "compression":
         info.compress_type = zipfile.ZIP_BZIP2
-    archive = _zip(tmp_path / "x.moana", [(info, b"{}")])
+    archive = _zip(tmp_path / "x.moanart", [(info, b"{}")])
     if kind == "encrypted":
         _flag_encrypted(archive)
     with pytest.raises(ValidationError) as caught:
@@ -203,7 +203,7 @@ def _with_zip64_locator(data: bytes) -> bytes:
 
 
 def test_t2_corrupt_archives_are_rejected(tmp_path: Path, project: Project) -> None:
-    good = tmp_path / "good.moana"
+    good = tmp_path / "good.moanart"
     save_project_archive(project, good)
     data = good.read_bytes()
     cases = {
@@ -224,7 +224,7 @@ def test_t2_corrupt_archives_are_rejected(tmp_path: Path, project: Project) -> N
         "zip64_locator": _with_zip64_locator(data),
     }
     for name, payload in cases.items():
-        broken = tmp_path / f"{name}.moana"
+        broken = tmp_path / f"{name}.moanart"
         broken.write_bytes(payload)
         with pytest.raises(ValidationError) as caught:
             load_project(broken)
@@ -232,7 +232,7 @@ def test_t2_corrupt_archives_are_rejected(tmp_path: Path, project: Project) -> N
 
 
 def test_t2_corrupt_entry_data_fails_its_crc(tmp_path: Path, document: Document) -> None:
-    archive = tmp_path / "crc.moana"
+    archive = tmp_path / "crc.moanart"
     save_project_archive(Project(document), archive)
     data = bytearray(archive.read_bytes())
     start = 30 + len(MANIFEST_NAME)  # first local header, then the manifest's data
@@ -244,18 +244,18 @@ def test_t2_corrupt_entry_data_fails_its_crc(tmp_path: Path, document: Document)
 
 
 def test_t2_archive_without_manifest_or_declared_file(tmp_path: Path, project: Project) -> None:
-    empty = _zip(tmp_path / "empty.moana", [("assets/", b"")])
+    empty = _zip(tmp_path / "empty.moanart", [("assets/", b"")])
     with pytest.raises(ValidationError) as caught:
         load_project(empty)
     assert caught.value.context["reason"] == "missing_entry"
     assert caught.value.context["file_name"] == MANIFEST_NAME
-    good = tmp_path / "good.moana"
+    good = tmp_path / "good.moanart"
     save_project_archive(project, good)
     with zipfile.ZipFile(good) as source:
         kept = [(info, source.read(info)) for info in source.infolist()]
     missing = [(info, data) for info, data in kept if not info.filename.startswith("assets/")]
     with pytest.raises(ValidationError) as caught:
-        load_project(_zip(tmp_path / "missing.moana", list(missing)))
+        load_project(_zip(tmp_path / "missing.moanart", list(missing)))
     assert caught.value.context["reason"] == "missing_entry"
 
 
@@ -266,7 +266,7 @@ def test_t2_dense_entries_are_stored_so_saved_archives_always_load(
     project = Project(document, (Asset.from_png("flat", flat),))
     raw = zlib.compress(flat, 9)
     assert len(raw) * 1 < len(flat)
-    archive = tmp_path / "dense.moana"
+    archive = tmp_path / "dense.moanart"
     save_project_archive(project, archive, limits=ProjectLimits(max_archive_ratio=2))
     loaded = load_project(archive, limits=ProjectLimits(max_archive_ratio=2))
     assert loaded == project
@@ -274,7 +274,7 @@ def test_t2_dense_entries_are_stored_so_saved_archives_always_load(
     assert zipfile.ZIP_STORED in stored.values()
     with pytest.raises(BudgetExceeded) as caught:
         save_project_archive(
-            project, tmp_path / "x.moana", limits=ProjectLimits(max_archive_entries=1)
+            project, tmp_path / "x.moanart", limits=ProjectLimits(max_archive_entries=1)
         )
     assert caught.value.context["resource"] == "archive_entries"
 

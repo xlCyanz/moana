@@ -6,7 +6,7 @@ transitively, and the cache never exceeds ``max_bytes``. T1: full render vs
 cached/incremental render for palette, mask, layer (visibility, opacity, order) and
 operation edits, and for animation frames; schema 1.0 has no groups, so ``render``
 never builds a ``Group`` and the group case (opacity, nesting) is covered at the
-``moana.layers.compose`` level with a recording ``LayerBuffers`` store. T2: LRU
+``moanart.layers.compose`` level with a recording ``LayerBuffers`` store. T2: LRU
 eviction by bytes, separation of
 renderer/backend/estimator versions, external mutation and budgets on hits.
 
@@ -29,15 +29,15 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from moana.animation import render_animation
-from moana.core.budget import Deadline, RenderLimits
-from moana.core.coordinates import Box, Dimensions
-from moana.core.errors import BudgetExceeded, ValidationError
-from moana.core.procedural import RNG_VERSION
-from moana.geometry import rasterize_rect
-from moana.layers import Fill, Group, Layer, LayerTree, compose
-from moana.palette import Palette, Rgba
-from moana.render import (
+from moanart.animation import render_animation
+from moanart.core.budget import Deadline, RenderLimits
+from moanart.core.coordinates import Box, Dimensions
+from moanart.core.errors import BudgetExceeded, ValidationError
+from moanart.core.procedural import RNG_VERSION
+from moanart.geometry import rasterize_rect
+from moanart.layers import Fill, Group, Layer, LayerTree, compose
+from moanart.palette import Palette, Rgba
+from moanart.render import (
     ENTRY_OVERHEAD_BYTES,
     ESTIMATOR_VERSION,
     MAX_CACHE_BYTES,
@@ -49,12 +49,12 @@ from moana.render import (
     render_admitted,
     render_sequence,
 )
-from moana.render import cache as cache_module
-from moana.render.cache import _document_prefix, _layer_key
-from moana.schema import Document, mask_dependencies, validate_document
+from moanart.render import cache as cache_module
+from moanart.render.cache import _document_prefix, _layer_key
+from moanart.schema import Document, mask_dependencies, validate_document
 
 ROOT = Path(__file__).resolve().parents[3]
-WALK = ROOT / "examples" / "corpus" / "adventurer-walk" / "adventurer-walk.moana.json"
+WALK = ROOT / "examples" / "corpus" / "adventurer-walk" / "adventurer-walk.moanart.json"
 WIDTH, HEIGHT = 16, 12
 ENTRY = WIDTH * HEIGHT * 4 + ENTRY_OVERHEAD_BYTES
 BIG = 1 << 20
@@ -606,7 +606,7 @@ def reference_key(doc: Document, layer_id: str) -> str:
     closure = sorted({name for mask_id in used for name in mask_dependencies(doc, mask_id)})
     by_id = {entry.id: entry for entry in doc.masks}
     content = {
-        "format": "moana-layer-cache/1",
+        "format": "moanart-layer-cache/1",
         "renderer": [RENDERER_VERSION, RENDERER_BACKEND, ESTIMATOR_VERSION, RNG_VERSION],
         "libraries": [f"numpy=={np.__version__}"],
         "canvas": [WIDTH, HEIGHT, "rgba"],

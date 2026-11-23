@@ -1,0 +1,4 @@
+interface:
+  display_name: "MoanArt · Issue Planning"
+  short_description: "Issues verificables, estados y trazabilidad"
+  default_prompt: "Usa $moanart-issue-planning para trabajar el issue asignado de MoanArt con contratos y verificaciones observables."

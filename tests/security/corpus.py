@@ -27,10 +27,10 @@ from typing import Any, Final, Literal
 
 from PIL import Image, ImageCms
 
-from moana.core.coordinates import Point
-from moana.core.errors import BudgetExceeded, MoanaError, ValidationError
-from moana.export import FramePixels, SheetFrame, encode_spritesheet
-from moana.project import MANIFEST_NAME
+from moanart.core.coordinates import Point
+from moanart.core.errors import BudgetExceeded, MoanArtError, ValidationError
+from moanart.export import FramePixels, SheetFrame, encode_spritesheet
+from moanart.project import MANIFEST_NAME
 
 __all__ = [
     "CORPUS",
@@ -49,8 +49,8 @@ __all__ = [
 ]
 
 ROOT: Final = Path(__file__).resolve().parents[2]
-MINIMAL: Final = ROOT / "examples/specs/minimal.moana.json"
-SECRET: Final = "moana-test-secret-7f3a"
+MINIMAL: Final = ROOT / "examples/specs/minimal.moanart.json"
+SECRET: Final = "moanart-test-secret-7f3a"
 """A marker planted in hostile names and values; no error may ever echo it."""
 
 type Target = Literal["document", "batch", "project", "asset", "spritesheet"]
@@ -59,7 +59,7 @@ _PNG_SIGNATURE: Final = b"\x89PNG\r\n\x1a\n"
 _CENTRAL: Final = b"PK\x01\x02"
 _CENTRAL_USIZE: Final = 24  # offset of the uncompressed size in a central record
 # ``zipfile`` turns ``os.sep`` into ``/`` when it reads a name, so on Windows a
-# backslash never reaches Moana: ``..\..\x`` arrives as ``../../x`` and ``C:\x`` as
+# backslash never reaches MoanArt: ``..\..\x`` arrives as ``../../x`` and ``C:\x`` as
 # ``C:/x``. Both are rejected on every platform, with the reason of what arrives.
 _BACKSLASH_TRAVERSAL: Final = "invalid_name" if os.sep == "/" else "parent_reference"
 _BACKSLASH_ABSOLUTE: Final = "invalid_name" if os.sep == "/" else "absolute_path"
@@ -73,7 +73,7 @@ class HostileCase:
     boundary: str
     target: Target
     build: Callable[[], bytes]
-    error: type[MoanaError]
+    error: type[MoanArtError]
     reason: str | None
     key: str = "reason"
     pointer: str | None = None
@@ -89,7 +89,7 @@ def minimal_bytes() -> bytes:
 
 
 def minimal_tree() -> dict[str, Any]:
-    """A fresh JSON tree of ``examples/specs/minimal.moana.json``."""
+    """A fresh JSON tree of ``examples/specs/minimal.moanart.json``."""
     tree = json.loads(minimal_bytes().decode("utf-8"))
     assert isinstance(tree, dict)
     return tree
@@ -468,7 +468,7 @@ _DOCUMENT_CASES: Final = (
         _REFS,
         "document",
         _operation_with(color=SECRET.replace("-", "_")),
-        MoanaError,
+        MoanArtError,
         None,
         pointer="/layers/0/operations/0/color",
     ),
@@ -751,7 +751,7 @@ _PROJECT_JSON_CASES: Final = (
         "manifest-duplicate-key",
         _JSON,
         "project",
-        lambda: b'{"kind":"moana-project","kind":"moana-project"}',
+        lambda: b'{"kind":"moanart-project","kind":"moanart-project"}',
         ValidationError,
         "duplicate_key",
     ),
@@ -759,7 +759,7 @@ _PROJECT_JSON_CASES: Final = (
         "manifest-overflowing-float",
         _JSON,
         "project",
-        lambda: b'{"kind":"moana-project","x":1e999}',
+        lambda: b'{"kind":"moanart-project","x":1e999}',
         ValidationError,
         "non_finite_number",
     ),

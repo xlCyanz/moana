@@ -8,10 +8,10 @@ from pathlib import Path
 
 import pytest
 
-from moana.api import render
-from moana.core.errors import ExportError, ReadError
-from moana.editing import History, HistoryLimits
-from moana.project import (
+from moanart.api import render
+from moanart.core.errors import ExportError, ReadError
+from moanart.editing import History, HistoryLimits
+from moanart.project import (
     DEFAULT_PROJECT_LIMITS,
     MANIFEST_NAME,
     Asset,
@@ -26,7 +26,7 @@ from moana.project import (
     save_project_archive,
     snapshot_path,
 )
-from moana.schema import Document, canonical_json, snapshot_digest
+from moanart.schema import Document, canonical_json, snapshot_digest
 
 from .conftest import BAND_IDS, BatchFactory, PngFactory
 
@@ -126,20 +126,20 @@ def test_ac1_loaded_history_keeps_navigating_and_editing(
 
 
 def test_ac1_archive_roundtrip_is_deterministic(tmp_path: Path, project: Project) -> None:
-    first = save_project_archive(project, tmp_path / "a.moana")
-    second = save_project_archive(project, tmp_path / "b.moana")
+    first = save_project_archive(project, tmp_path / "a.moanart")
+    second = save_project_archive(project, tmp_path / "b.moanart")
     assert first.sha256 == second.sha256
-    assert (tmp_path / "a.moana").read_bytes() == (tmp_path / "b.moana").read_bytes()
-    _assert_same_project(load_project(tmp_path / "a.moana"), project)
+    assert (tmp_path / "a.moanart").read_bytes() == (tmp_path / "b.moanart").read_bytes()
+    _assert_same_project(load_project(tmp_path / "a.moanart"), project)
 
 
 def test_t1_geometric_document_roundtrip(tmp_path: Path, document: Document) -> None:
-    report = save_document(document, tmp_path / "sprite.moana.json")
-    data = (tmp_path / "sprite.moana.json").read_bytes()
+    report = save_document(document, tmp_path / "sprite.moanart.json")
+    data = (tmp_path / "sprite.moanart.json").read_bytes()
     assert data == canonical_json(document)
     assert report.sha256 == hashlib.sha256(data).hexdigest()
-    assert report.written == ("sprite.moana.json",)
-    loaded = load_project(str(tmp_path / "sprite.moana.json"))
+    assert report.written == ("sprite.moanart.json",)
+    loaded = load_project(str(tmp_path / "sprite.moanart.json"))
     assert loaded == Project(document)
     assert render(loaded.document).rgba == render(document).rgba
 
@@ -147,12 +147,12 @@ def test_t1_geometric_document_roundtrip(tmp_path: Path, document: Document) -> 
 def test_t1_project_without_assets_or_history(tmp_path: Path, document: Document) -> None:
     save_project(Project(document), tmp_path / "plain")
     manifest = json.loads((tmp_path / "plain" / MANIFEST_NAME).read_text(encoding="utf-8"))
-    assert manifest["kind"] == "moana-project"
+    assert manifest["kind"] == "moanart-project"
     assert manifest["project_version"] == "1.0"
     assert manifest["assets"] == [] and manifest["history"] == []
     assert sorted(p.name for p in (tmp_path / "plain").iterdir()) == [MANIFEST_NAME]
     assert load_project(tmp_path / "plain") == Project(document)
-    archive = tmp_path / "plain.moana"
+    archive = tmp_path / "plain.moanart"
     save_project_archive(Project(document), archive)
     assert load_project(archive) == Project(document)
 
@@ -225,7 +225,7 @@ def test_t1_missing_project_is_a_read_error(tmp_path: Path) -> None:
     assert caught.value.context["reason"] == "not_found"
     assert caught.value.context["file_name"] == MANIFEST_NAME
     with pytest.raises(ReadError):
-        load_project(tmp_path / "absent.moana")
+        load_project(tmp_path / "absent.moanart")
 
 
 def test_t1_cursor_document_is_the_manifest_document(tmp_path: Path, project: Project) -> None:
@@ -256,8 +256,8 @@ def test_ac1_shaded_document_history_roundtrip(
     history = history.undo()
     project = Project(history.document, (Asset.from_png("orb_texture", png()),), history)
     save_project(project, tmp_path / "p")
-    save_project_archive(project, tmp_path / "p.moana")
-    for name in ("p", "p.moana"):
+    save_project_archive(project, tmp_path / "p.moanart")
+    for name in ("p", "p.moanart"):
         loaded = load_project(tmp_path / name)
         _assert_same_project(loaded, project)
         assert loaded.history is not None

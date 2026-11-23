@@ -20,12 +20,12 @@ from hypothesis import given
 from hypothesis import strategies as st
 from PIL import Image
 
-from moana.api import load_document
-from moana.core.coordinates import Point
-from moana.core.errors import BudgetExceeded, MoanaError, ValidationError
-from moana.editing import History
-from moana.export import FramePixels, SheetFrame, encode_spritesheet, load_spritesheet
-from moana.project import (
+from moanart.api import load_document
+from moanart.core.coordinates import Point
+from moanart.core.errors import BudgetExceeded, MoanArtError, ValidationError
+from moanart.editing import History
+from moanart.export import FramePixels, SheetFrame, encode_spritesheet, load_spritesheet
+from moanart.project import (
     MANIFEST_NAME,
     Asset,
     Project,
@@ -34,7 +34,7 @@ from moana.project import (
     save_project,
     save_project_archive,
 )
-from moana.schema import snapshot_digest
+from moanart.schema import snapshot_digest
 from tests.fixtures.migration.formats import OLDEST, TEST_ONLY_MIGRATIONS
 
 from .corpus import MINIMAL, chunk, png_declaring, tiny_png
@@ -84,7 +84,7 @@ def _flip_last_byte(path: Path) -> None:
 
 def _load_tampered(
     root: Path, source: Path | None = None, *, decoded_assets: bool = False
-) -> MoanaError:
+) -> MoanArtError:
     """Load a tampered project with no write allowed (nor any decode, unless stated).
 
     ``decoded_assets`` admits Pillow for files verified before the tampered one:
@@ -92,7 +92,7 @@ def _load_tampered(
     """
     before = tree_state(root)
     guard = forbid_writes() if decoded_assets else forbid_effects()
-    with guard, pytest.raises(MoanaError) as caught:
+    with guard, pytest.raises(MoanArtError) as caught:
         load_project(source or root)
     assert tree_state(root) == before  # loading is read-only, even when it fails
     return assert_clean_error(caught.value, root)
@@ -129,7 +129,7 @@ def test_t2_preserved_migration_original_is_verified(tmp_path: Path) -> None:
 
 
 def test_t2_tampered_archive_entry_fails_its_crc(tmp_path: Path) -> None:
-    source = tmp_path / "project.moana"
+    source = tmp_path / "project.moanart"
     save_project_archive(_project(), source)
     data = bytearray(source.read_bytes())
     with zipfile.ZipFile(io.BytesIO(bytes(data))) as handle:
@@ -195,7 +195,7 @@ def test_t2_property_any_flipped_byte_is_detected_or_harmless(
     original = _project()
     try:
         loaded = load_project(root)
-    except MoanaError as error:
+    except MoanArtError as error:
         assert_clean_error(error, root)
         return
     # A flip the checksums cannot see must not have changed any verified byte.
@@ -233,7 +233,7 @@ def test_t2_pixel_budget_is_checked_from_the_header() -> None:
 
 
 def test_t2_idat_expanding_beyond_the_header_decodes_only_declared_pixels() -> None:
-    """Moana does not inflate in Python; Pillow stops at the declared dimensions.
+    """MoanArt does not inflate in Python; Pillow stops at the declared dimensions.
 
     The guarantee is the decoded size (``len(asset.rgba) == 64``); the traced peak
     is only a sanity check, since Pillow's native buffers are invisible to it.
@@ -256,7 +256,7 @@ def test_t2_pillow_bomb_protection_stays_active_and_is_mapped(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     assert Image.MAX_IMAGE_PIXELS == PILLOW_LIMIT  # the engine never disables it
-    monkeypatch.setattr(Image, "MAX_IMAGE_PIXELS", 10)  # a host stricter than Moana
+    monkeypatch.setattr(Image, "MAX_IMAGE_PIXELS", 10)  # a host stricter than MoanArt
     with pytest.raises(ValidationError) as caught:
         Asset.from_png("strict", tiny_png(16, 16))  # 256 > 2 x 10: Pillow's bomb error
     assert caught.value.context["reason"] == "unreadable_image"

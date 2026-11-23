@@ -15,12 +15,12 @@ from typing import Any
 
 import pytest
 
-from moana.api import BackendSummary, capabilities, inspect_document, load_document, render
-from moana.cli import main
-from moana.geometry import TESTED_AGGDRAW_VERSIONS
+from moanart.api import BackendSummary, capabilities, inspect_document, load_document, render
+from moanart.cli import main
+from moanart.geometry import TESTED_AGGDRAW_VERSIONS
 
 ROOT = Path(__file__).resolve().parents[3]
-EXAMPLE = ROOT / "examples" / "specs" / "path-sail.moana.json"
+EXAMPLE = ROOT / "examples" / "specs" / "path-sail.moanart.json"
 
 
 def test_capabilities_with_the_tested_backend() -> None:

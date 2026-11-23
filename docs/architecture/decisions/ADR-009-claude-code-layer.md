@@ -1,6 +1,6 @@
 # ADR-009 — Capa de Claude Code sobre la infraestructura existente
 
-Estado: aceptado · 2026-11-17.
+Estado: aceptado · 2026-11-17. Ampliado por [ADR-041](ADR-041-rename-moanart.md): skills y subagentes `moanart-*`.
 
 ## Contexto
 
