@@ -75,7 +75,7 @@ Estado: 6/6 issues completados.
 
 Puerta de salida: Corpus revisado, seguridad, benchmarks y wheel limpio.
 
-Estado: 9/10 issues completados.
+Estado: 10/10 issues completados.
 
 - [MOANA-026](MOANA-026.md) — Crear informes de calidad gráfica (done)
 - [MOANA-027](MOANA-027.md) — Construir corpus artístico y rúbrica humana (done)
@@ -86,7 +86,7 @@ Estado: 9/10 issues completados.
 - [MOANA-034](MOANA-034.md) — Añadir ejemplos de tiles y escenarios modulares (done)
 - [MOANA-035](MOANA-035.md) — Preparar release y comprobar Definition of Done (done)
 - [MOANA-036](MOANA-036.md) — Índice incremental de nodos en la edición por batches (done)
-- [MOANA-037](MOANA-037.md) — Renombrado completo del proyecto a MoanArt (review)
+- [MOANA-037](MOANA-037.md) — Renombrado completo del proyecto a MoanArt (done)
 
 ## Siguiente paso
 

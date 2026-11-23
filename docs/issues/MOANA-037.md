@@ -8,7 +8,7 @@
 - Aliases históricos: Ninguno
 - Phase: P5
 - Priority: P1
-- Status: review
+- Status: done
 - Complexity: XL (relativa, no estimación de tiempo)
 - Dependencies: [MOANA-020](MOANA-020.md), [MOANA-021](MOANA-021.md), [MOANA-035](MOANA-035.md)
 - Related modules: core, schema, cli, api, project, export, quality, render, agents, docs, tooling, release, examples
@@ -45,15 +45,15 @@ No cambiar la semántica del render, del schema 1.0, de la edición ni de los pr
 
 ## Acceptance criteria
 
-- [ ] AC1: `pip install moanart` desde el wheel y el sdist limpios ofrece `import moanart`, el comando `moanart` y los mismos resultados (documentos, digests, RGBA, códigos de salida) que 0.1.0rc1 sobre los ejemplos, el corpus, los tiles y el tutorial
-- [ ] AC2: Ninguna superficie pública ni archivo del repositorio usa el nombre antiguo fuera de una lista de excepciones auditada (IDs MOANA-xxx, historial del CHANGELOG, ADR aceptados, release 0.1.0rc1 y las tablas de migración) que el checker de repositorio comprueba
-- [ ] AC3: Un proyecto y los manifiestos guardados con el nombre antiguo se migran de forma explícita y reversible a los nuevos identificadores, y cargarlos sin migrar falla con un error que indica la migración
+- [x] AC1: `pip install moanart` desde el wheel y el sdist limpios ofrece `import moanart`, el comando `moanart` y los mismos resultados (documentos, digests, RGBA, códigos de salida) que 0.1.0rc1 sobre los ejemplos, el corpus, los tiles y el tutorial
+- [x] AC2: Ninguna superficie pública ni archivo del repositorio usa el nombre antiguo fuera de una lista de excepciones auditada (IDs MOANA-xxx, historial del CHANGELOG, ADR aceptados, release 0.1.0rc1 y las tablas de migración) que el checker de repositorio comprueba
+- [x] AC3: Un proyecto y los manifiestos guardados con el nombre antiguo se migran de forma explícita y reversible a los nuevos identificadores, y cargarlos sin migrar falla con un error que indica la migración
 
 ## Required tests
 
-- [ ] T1: Prueba de repositorio que busca el nombre antiguo (sin distinguir mayúsculas) en rutas, código, docs y metadatos del wheel/sdist y falla fuera de la lista de excepciones
-- [ ] T2: Regresión de digests: el corpus, los tiles, el tutorial y los fixtures de determinismo producen los mismos `snapshot_digest` y RGBA que en 0.1.0rc1; la matriz CI y el job de determinismo verdes
-- [ ] T3: Migración de proyectos directorio, `.moana` ZIP y `.moana.json` y de manifiestos de spritesheet/rúbrica con el nombre antiguo, rechazo sin migrar y conservación del original; `check_wheel` instala `moanart` limpio
+- [x] T1: Prueba de repositorio que busca el nombre antiguo (sin distinguir mayúsculas) en rutas, código, docs y metadatos del wheel/sdist y falla fuera de la lista de excepciones
+- [x] T2: Regresión de digests: el corpus, los tiles, el tutorial y los fixtures de determinismo producen los mismos `snapshot_digest` y RGBA que en 0.1.0rc1; la matriz CI y el job de determinismo verdes
+- [x] T3: Migración de proyectos directorio, `.moana` ZIP y `.moana.json` y de manifiestos de spritesheet/rúbrica con el nombre antiguo, rechazo sin migrar y conservación del original; `check_wheel` instala `moanart` limpio
 
 ## Expected deliverables
 
@@ -71,7 +71,7 @@ Cumplir [MOANART.md §25](../../MOANART.md), todos los criterios AC y pruebas T;
 
 ## Guía para agentes de IA
 
-**Estado para agentes:** En revisión: sólo correcciones de la revisión; no añadir alcance.
+**Estado para agentes:** Completado; usar sólo como referencia del contrato entregado.
 
 ### 1. Preparación
 
@@ -151,6 +151,7 @@ Cumplir [MOANART.md §25](../../MOANART.md), todos los criterios AC y pruebas T;
 - Línea base del benchmark regenerada (moanart-benchmark/1, dde4ff8 con el renombrado sin commit): estático 29,7 ms, 16 frames 652,7 ms, pico 61,0 MiB; compare contra la anterior sólo marcó fases PNG sub-ms de chest/frog, que una repetición controlada devolvió a la línea base anterior (ruido). scripts/determinism.py report: ok contra expected.json. CHANGELOG 0.1.0rc2, RELEASE.md, MOANART.md §16 y cabecera, CLAUDE.md y AGENTS.md actualizados.
 - Fuera de alcance y sin cambios: IDs MOANA-xxx y MOA-xxx, tag v0.1.0rc1, repositorio remoto xlCyanz/moana y etiqueta moana de GitHub (scripts/github_sync.py); 0.1.0rc2 no se publica ni se sube a PyPI.
 - Revisión del subagente moana-python-engineer aplicada: manifiesto heredado con kind actual rechazado (inconsistent_legacy_manifest) en vez de quedar sin migrar; registro kind con un único paso y como mucho uno por proyecto; patrones del comprobador anclados (MOANA_HOME, MOANA-ENGINE, xlCyanz/moana_old, moana-projectx ya fallan) y líneas reales; migrate_rubric con copia profunda; JSON intermedio compacto en migrate_spritesheet_manifest; oráculo con artefactos reales de v0.1.0rc1.
+- Aprobado por el propietario el 2026-11-22 tras revisión; PR #85 hacia develop.
 - AC1: scripts/check_wheel.py construye wheel y sdist moanart-0.1.0rc2, los instala limpios en entornos separados y ejecuta import moanart, el comando moanart (CLI, tutorial de 18 pasos, migraciones y corpus con digests fijados); la comparación independiente contra el tag v0.1.0rc1 da documentos, digests, RGBA, PNG, salidas y códigos de salida idénticos sobre ejemplos, corpus, tiles y tutorial.
 - AC2: scripts/legacy_name.py (en check_repository y en la auditoría de wheel/sdist): ninguna ruta ni texto usa el nombre antiguo fuera de EXCEPTIONS, cada una con motivo y patrones que existen; tests/test_legacy_name.py.
 - AC3: tests/unit/project/test_project_rename.py (directorio, ZIP y sobre JSON de 0.1.0rc1: legacy_name al cargar, migrate_project con historial, assets y original conservados, identidad al repetir) y las pruebas t3 de tests/unit/export/test_export_spritesheet.py y tests/unit/quality/test_quality_rubric.py (rechazo legacy_name y migración pura a los bytes/registro actuales).

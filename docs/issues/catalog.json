@@ -2558,7 +2558,7 @@
       "id": "MOANA-037",
       "title": "Renombrado completo del proyecto a MoanArt",
       "phase": "P5",
-      "status": "review",
+      "status": "done",
       "priority": "P1",
       "dependencies": [
         "MOANA-020",
@@ -2628,7 +2628,8 @@
         "Equivalencia independiente rc1/rc2: el tag v0.1.0rc1 (paquete moana) y esta rama (moanart) sobre los 30 documentos de examples/ de rc1, sus 3 batches y un archivo inexistente dan los mismos snapshot_digest, RGBA, bytes PNG exportados a 2x, salidas JSON de validate/inspect/export/edit y códigos de salida; la única diferencia es la versión del paquete en la procedencia.",
         "Línea base del benchmark regenerada (moanart-benchmark/1, dde4ff8 con el renombrado sin commit): estático 29,7 ms, 16 frames 652,7 ms, pico 61,0 MiB; compare contra la anterior sólo marcó fases PNG sub-ms de chest/frog, que una repetición controlada devolvió a la línea base anterior (ruido). scripts/determinism.py report: ok contra expected.json. CHANGELOG 0.1.0rc2, RELEASE.md, MOANART.md §16 y cabecera, CLAUDE.md y AGENTS.md actualizados.",
         "Fuera de alcance y sin cambios: IDs MOANA-xxx y MOA-xxx, tag v0.1.0rc1, repositorio remoto xlCyanz/moana y etiqueta moana de GitHub (scripts/github_sync.py); 0.1.0rc2 no se publica ni se sube a PyPI.",
-        "Revisión del subagente moana-python-engineer aplicada: manifiesto heredado con kind actual rechazado (inconsistent_legacy_manifest) en vez de quedar sin migrar; registro kind con un único paso y como mucho uno por proyecto; patrones del comprobador anclados (MOANA_HOME, MOANA-ENGINE, xlCyanz/moana_old, moana-projectx ya fallan) y líneas reales; migrate_rubric con copia profunda; JSON intermedio compacto en migrate_spritesheet_manifest; oráculo con artefactos reales de v0.1.0rc1."
+        "Revisión del subagente moana-python-engineer aplicada: manifiesto heredado con kind actual rechazado (inconsistent_legacy_manifest) en vez de quedar sin migrar; registro kind con un único paso y como mucho uno por proyecto; patrones del comprobador anclados (MOANA_HOME, MOANA-ENGINE, xlCyanz/moana_old, moana-projectx ya fallan) y líneas reales; migrate_rubric con copia profunda; JSON intermedio compacto en migrate_spritesheet_manifest; oráculo con artefactos reales de v0.1.0rc1.",
+        "Aprobado por el propietario el 2026-11-22 tras revisión; PR #85 hacia develop."
       ],
       "acceptance_evidence": {
         "AC1": "scripts/check_wheel.py construye wheel y sdist moanart-0.1.0rc2, los instala limpios en entornos separados y ejecuta import moanart, el comando moanart (CLI, tutorial de 18 pasos, migraciones y corpus con digests fijados); la comparación independiente contra el tag v0.1.0rc1 da documentos, digests, RGBA, PNG, salidas y códigos de salida idénticos sobre ejemplos, corpus, tiles y tutorial.",
