@@ -16,8 +16,8 @@ from typing import Any
 
 import pytest
 
-from moana.render import render
-from moana.schema import canonical_json, validate_document
+from moanart.render import render
+from moanart.schema import canonical_json, validate_document
 
 SCENE: dict[str, Any] = {
     "schema_version": "1.0",
@@ -100,8 +100,8 @@ SCENE: dict[str, Any] = {
 
 PROBE = """
 import hashlib, json, sys
-from moana.render import render
-from moana.schema import validate_document
+from moanart.render import render
+from moanart.schema import validate_document
 result = render(validate_document(sys.stdin.buffer.read()))
 print(json.dumps({
     "digest": result.digest,

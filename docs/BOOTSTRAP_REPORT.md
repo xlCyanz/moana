@@ -1,6 +1,6 @@
 # Preparación de infraestructura y entorno IA
 
-Fecha: **2026-11-17**, America/Santo_Domingo. Refinamiento del repositorio existente; se conservan el commit 9388c57, la rama codex/initialize-moana y origin xlCyanz/moana. Esta tarea no crea commits ni hace push. El motor gráfico sigue sin implementar: src/moana contiene sólo __init__.py y py.typed.
+Fecha: **2026-11-17**, America/Santo_Domingo. Refinamiento del repositorio existente; se conservan el commit 9388c57, la rama codex/initialize-moanart y origin xlCyanz/moana. Esta tarea no crea commits ni hace push. El motor gráfico sigue sin implementar: src/moanart contiene sólo __init__.py y py.typed.
 
 ## Cambios entregados
 
@@ -54,11 +54,11 @@ Fallos encontrados y resueltos: lectura de texto dependiente del locale en Windo
 
 ## Codex
 
-Se reutilizaron las instrucciones oficiales de openai-docs y skill-creator; no se instalaron paquetes de skills de terceros ni herramientas globales. Las siete skills son moana-architecture, moana-python, moana-pixel-art, moana-graphics, moana-testing, moana-issue-planning y moana-code-review. Las dos últimas sustituyen los nombres locales anteriores, sin duplicar instrucciones.
+Se reutilizaron las instrucciones oficiales de openai-docs y skill-creator; no se instalaron paquetes de skills de terceros ni herramientas globales. Las siete skills son moanart-architecture, moanart-python, moanart-pixel-art, moanart-graphics, moanart-testing, moanart-issue-planning y moanart-code-review. Las dos últimas sustituyen los nombres locales anteriores, sin duplicar instrucciones.
 
 La consulta nativa skills/list de codex-cli 0.169.0-alpha.11.1, con cwd del proyecto y forceReload, devolvió las siete con enabled=true, scope=repo y cero errores. Evidencia filtrada: artifacts/codex-skills.json. El primer intento no pudo abrir la base SQLite personal bajo sandbox; la consulta se completó con acceso autorizado. No creó chats ni ejecutó inferencia.
 
-Roles preparados: architect, python_engineer, graphics_engineer, pixel_artist, test_engineer, documentation_writer, reviewer e issue_planner, con prefijo moana_. Se validan sus TOML y se heredan modelo/permisos. La comprobación nativa de configuración acepta las claves agents; no se afirma que estos ocho perfiles se hayan cargado o ejecutado en la conversación. Se usó delegación independiente para auditoría/documentación y se integró y validó el resultado desde el agente principal.
+Roles preparados: architect, python_engineer, graphics_engineer, pixel_artist, test_engineer, documentation_writer, reviewer e issue_planner, con prefijo moanart_. Se validan sus TOML y se heredan modelo/permisos. La comprobación nativa de configuración acepta las claves agents; no se afirma que estos ocho perfiles se hayan cargado o ejecutado en la conversación. Se usó delegación independiente para auditoría/documentación y se integró y validó el resultado desde el agente principal.
 
 AGENTS.md raíz es suficiente por ahora: no hay instrucciones distintas por directorio que justifiquen archivos anidados. No se configuran hooks de ciclo de vida de Codex ni automatizaciones periódicas de la app; la automatización verificable usa Git, scripts y CI. [Auditoría detallada](CODEX.md).
 
@@ -75,7 +75,7 @@ AGENTS.md raíz es suficiente por ahora: no hay instrucciones distintas por dire
 
 **36 issues**: prioridades P0=7, P1=25, P2=4, P3=0. No se inventan mejoras opcionales para rellenar P3. Estados: done=1 (infraestructura histórica), ready=1, blocked=34; ningún issue de implementación está completado.
 
-Se conservan las seis fases existentes para respetar sus dependencias; las ocho áreas sugeridas están representadas dentro de ellas. No se crean carpetas temáticas vacías. Los 40 requisitos cubren las 25 secciones de MOANA.md y tienen issues asociados. Esa es cobertura de planificación, no de funcionalidad implementada.
+Se conservan las seis fases existentes para respetar sus dependencias; las ocho áreas sugeridas están representadas dentro de ellas. No se crean carpetas temáticas vacías. Los 40 requisitos cubren las 25 secciones de MOANART.md y tienen issues asociados. Esa es cobertura de planificación, no de funcionalidad implementada.
 
 El validador rechaza IDs duplicados, aliases repetidos, referencias inexistentes, ciclos, inversión de fase, estados activos con dependencias incompletas y cierres sin evidencia por criterio/prueba. El [mapa](issues/dependency-map.md) contiene bloqueantes, dependientes, orden topológico, niveles paralelizables y ruta crítica estructural por número de nodos; no estima duración. El [roadmap](issues/roadmap.md) y la [trazabilidad](issues/traceability.md) se derivan del mismo catálogo.
 
@@ -83,7 +83,7 @@ El validador rechaza IDs duplicados, aliases repetidos, referencias inexistentes
 
 Pillow es el adaptador de imagen/export; NumPy opera buffers con propiedad explícita; AggDraw queda acotado a paths futuros; Pydantic valida datos estrictos. El núcleo no ejecuta código ni consume modelos generativos. El diseño mantiene documento declarativo, IDs estables, edición local, renderer determinista y disco en fronteras.
 
-MOANA.md 0.1.1-draft aclara cuatro contratos antes de implementarlos: polígonos even-odd autointersectados no se descartan por área algebraica cero; batches comparan revisión y digest del snapshot para distinguir ramas; ProjectManifest envuelve documento/assets/historial; assets inmutables y publicación atómica sin sobrescritura evitan carreras. Los issues afectados incluyen pruebas de esos casos. [ADR-007](architecture/decisions/ADR-007-contract-clarifications.md).
+MOANART.md 0.1.1-draft aclara cuatro contratos antes de implementarlos: polígonos even-odd autointersectados no se descartan por área algebraica cero; batches comparan revisión y digest del snapshot para distinguir ramas; ProjectManifest envuelve documento/assets/historial; assets inmutables y publicación atómica sin sobrescritura evitan carreras. Los issues afectados incluyen pruebas de esos casos. [ADR-007](architecture/decisions/ADR-007-contract-clarifications.md).
 
 El build del gate usa Hatchling fijado por el lock mediante uv build --no-build-isolation. El comando estándar uv build también forma parte de la verificación requerida. No se añade un segundo gestor de dependencias. Python 3.12.16 es la versión local reproducible; CI prueba las líneas 3.12–3.14 en tres plataformas.
 
@@ -97,4 +97,4 @@ La licencia de distribución sigue pendiente del propietario y se trata en MOANA
 
 ## Siguiente paso
 
-Implementar [MOANA-001 — tipos, coordenadas, errores y límites](issues/MOANA-001.md): usar su alcance y pruebas, cargar moana-python/architecture/testing según corresponda y completar evidencia antes de cambiar su estado a done. La publicación de estos cambios y una nueva ejecución GitHub Actions requieren una solicitud que incluya el push.
+Implementar [MOANA-001 — tipos, coordenadas, errores y límites](issues/MOANA-001.md): usar su alcance y pruebas, cargar moanart-python/architecture/testing según corresponda y completar evidencia antes de cambiar su estado a done. La publicación de estos cambios y una nueva ejecución GitHub Actions requieren una solicitud que incluya el push.

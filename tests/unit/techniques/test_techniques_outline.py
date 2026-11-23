@@ -1,4 +1,4 @@
-"""AC1/T1/T2 (MOANA-014): outer and inner outlines of masks (MOANA.md section 8, ADR-027).
+"""AC1/T1/T2 (MOANA-014): outer and inner outlines of masks (MOANART.md section 8, ADR-027).
 
 Expected pixels are written by hand (rings, holes, canvas corners) or computed from
 section 8 with Python sets: outer = ``{p : 0 < d(p, mask) <= w}`` with the Chebyshev
@@ -16,11 +16,11 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from moana.core.coordinates import Box, Dimensions
-from moana.core.errors import ValidationError
-from moana.geometry import Mask
-from moana.geometry.mask import _restore
-from moana.techniques import MAX_OUTLINE_WIDTH, OUTLINE_SIDES, outline_mask
+from moanart.core.coordinates import Box, Dimensions
+from moanart.core.errors import ValidationError
+from moanart.geometry import Mask
+from moanart.geometry.mask import _restore
+from moanart.techniques import MAX_OUTLINE_WIDTH, OUTLINE_SIDES, outline_mask
 
 Pixels = frozenset[tuple[int, int]]
 

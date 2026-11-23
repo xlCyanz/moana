@@ -24,11 +24,11 @@ from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 from PIL import Image
 
-from moana.core.budget import RenderLimits
-from moana.core.coordinates import Point
-from moana.core.errors import BudgetExceeded, ExportError, UnsupportedOperation, ValidationError
-from moana.core.limits import GeometryLimits
-from moana.export import (
+from moanart.core.budget import RenderLimits
+from moanart.core.coordinates import Point
+from moanart.core.errors import BudgetExceeded, ExportError, UnsupportedOperation, ValidationError
+from moanart.core.limits import GeometryLimits
+from moanart.export import (
     APNG_MEDIA_TYPE,
     STILL_IMAGE_WARNING,
     WEBP_MEDIA_TYPE,
@@ -39,9 +39,9 @@ from moana.export import (
     export_capabilities,
     export_webp,
 )
-from moana.export import _frames as frames_module
-from moana.export import animated as animated_module
-from moana.export import codecs as codecs_module
+from moanart.export import _frames as frames_module
+from moanart.export import animated as animated_module
+from moanart.export import codecs as codecs_module
 
 RGBA = tuple[int, int, int, int]
 WEBP_FIXED = 24 * 1024 * 1024
@@ -380,9 +380,9 @@ def test_an_absent_codec_is_unsupported_and_writes_nothing(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path, kind: str
 ) -> None:
     if kind == "webp":
-        monkeypatch.setattr("moana.export.codecs.features.check_module", lambda name: False)
+        monkeypatch.setattr("moanart.export.codecs.features.check_module", lambda name: False)
     else:
-        monkeypatch.setattr("moana.export.codecs.features.check_codec", lambda name: False)
+        monkeypatch.setattr("moanart.export.codecs.features.check_codec", lambda name: False)
     (tmp_path / "keep.txt").write_bytes(b"x")
     before = sorted(path.name for path in tmp_path.iterdir())
 
@@ -438,7 +438,7 @@ def test_budget_is_checked_before_any_pixel_is_read(
     def no_pixels(*_: object, **__: object) -> None:
         raise AssertionError("pixels read before the budget check")
 
-    monkeypatch.setattr("moana.export._frames.np.frombuffer", no_pixels)
+    monkeypatch.setattr("moanart.export._frames.np.frombuffer", no_pixels)
     with pytest.raises(BudgetExceeded) as caught:
         ENCODERS[kind](frames, limits=RenderLimits(max_buffer_bytes=bytes_limit))
     assert caught.value.context == {
@@ -579,7 +579,7 @@ def test_webp_encoder_failure_is_an_export_error(monkeypatch: pytest.MonkeyPatch
     probed = CAPS.status("webp")  # the probe would also see the broken save
     monkeypatch.setattr(animated_module, "require_codec", lambda name: probed)
 
-    monkeypatch.setattr("moana.export.animated.Image.Image.save", broken)
+    monkeypatch.setattr("moanart.export.animated.Image.Image.save", broken)
     with pytest.raises(ExportError) as caught:
         encode_webp([GOOD, solid("b", BLUE)])
     assert caught.value.context == {"reason": "encoder_failed"}
@@ -615,7 +615,7 @@ def test_verification_failures_never_return_bytes(
 
     probed = CAPS.status(cast(Any, kind))  # the probe would also see the broken decoder
     monkeypatch.setattr(animated_module, "require_codec", lambda name: probed)
-    monkeypatch.setattr("moana.export._frames.Image.open", broken)
+    monkeypatch.setattr("moanart.export._frames.Image.open", broken)
     with pytest.raises(ExportError) as unreadable:
         ENCODERS[kind](frames)
     assert unreadable.value.context == {"reason": f"unreadable_{kind}"}
@@ -709,9 +709,9 @@ def test_invalid_destinations_and_failed_encodes_write_nothing(tmp_path: Path, k
 def test_animated_module_imports_only_core_and_export() -> None:
     tree = ast.parse(Path(animated_module.__file__).read_text(encoding="utf-8"))
     modules = {node.module for node in ast.walk(tree) if isinstance(node, ast.ImportFrom)}
-    internal = {name for name in modules if name and name.startswith("moana")}
+    internal = {name for name in modules if name and name.startswith("moanart")}
     assert all(
-        name.startswith(("moana.core", "moana.palette", "moana.export")) for name in internal
+        name.startswith(("moanart.core", "moanart.palette", "moanart.export")) for name in internal
     )
 
 

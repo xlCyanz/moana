@@ -58,7 +58,7 @@ No construir un servicio aislado ni tratar el timeout cooperativo como límite d
 
 ## Definition of Done
 
-Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adjuntar evidencia por ID, pasar el gate y revisar el resultado. Dependencias completadas y [ciclo de vida](../guides/issue-lifecycle.md) respetado.
+Cumplir [MOANART.md §25](../../MOANART.md), todos los criterios AC y pruebas T; adjuntar evidencia por ID, pasar el gate y revisar el resultado. Dependencias completadas y [ciclo de vida](../guides/issue-lifecycle.md) respetado.
 
 ## Risks and notes
 
@@ -78,13 +78,13 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 ### 2. Lectura obligatoria (en orden)
 
 1. `CLAUDE.md` (Claude Code) o `AGENTS.md` (Codex) y [flujo de sesión](../guides/agent-workflow.md).
-2. MOANA.md: §3 Arquitectura modular; §20 Seguridad y validación; §22 Rendimiento y optimización; §25 Definition of Done. Estas secciones son el contrato normativo; ante duda, prevalecen sobre este issue.
+2. MOANART.md: §3 Arquitectura modular; §20 Seguridad y validación; §22 Rendimiento y optimización; §25 Definition of Done. Estas secciones son el contrato normativo; ante duda, prevalecen sobre este issue.
 3. [Contratos de módulos](../architecture/module-contracts.md) para: `core`, `render`.
 4. Estándares: [python](../../docs/standards/python.md), [architecture](../../docs/standards/architecture.md), [testing](../../docs/standards/testing.md).
 5. Issues de dependencia ([MOANA-001](MOANA-001.md), [MOANA-002](MOANA-002.md)): leer su sección Evidence para conocer las APIs ya entregadas; no reimplementarlas.
 6. ADR en `docs/architecture/` que mencionen los módulos afectados.
 
-### 3. Requisitos de MOANA.md cubiertos
+### 3. Requisitos de MOANART.md cubiertos
 
 | ID | Requisito | Secciones | Verificación exigida |
 | --- | --- | --- | --- |
@@ -95,12 +95,12 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 | Host | Skills a cargar | Revisión especializada |
 | --- | --- | --- |
-| Claude Code | `moana-python`, `moana-graphics`, `moana-architecture`, `moana-code-review` | `moana-python-engineer`, `moana-architect`, `moana-graphics-engineer` (sólo lectura; el agente principal integra) |
-| Codex | `$moana-python`, `$moana-graphics`, `$moana-architecture`, `$moana-code-review` | `moana_python_engineer`, `moana_architect`, `moana_graphics_engineer` |
+| Claude Code | `moanart-python`, `moanart-graphics`, `moanart-architecture`, `moanart-code-review` | `moanart-python-engineer`, `moanart-architect`, `moanart-graphics-engineer` (sólo lectura; el agente principal integra) |
+| Codex | `$moanart-python`, `$moanart-graphics`, `$moanart-architecture`, `$moanart-code-review` | `moanart_python_engineer`, `moanart_architect`, `moanart_graphics_engineer` |
 
 ### 5. Archivos
 
-- Código o documentos a crear/modificar: `src/moana/core/`, `src/moana/render/`.
+- Código o documentos a crear/modificar: `src/moanart/core/`, `src/moanart/render/`.
 - Pruebas: `tests/unit/core/`, `tests/unit/render/`.
 - No crear módulos ni carpetas sin comportamiento real. No tocar otros módulos salvo exportaciones imprescindibles, justificadas en el PR.
 
@@ -108,16 +108,16 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 - T1: Instrumentar allocators falsos para comprobar ausencia de reservas al rechazar
 - T2: Casos de coordenadas enormes, capas profundas, muchos frames y overflow de productos
-- Oráculos independientes (cálculo a mano o fórmula de MOANA.md); nunca copiar la salida de la implementación como expected.
+- Oráculos independientes (cálculo a mano o fórmula de MOANART.md); nunca copiar la salida de la implementación como expected.
 - Incluir casos negativos con el error de dominio esperado y casos borde (vacío, mínimo, máximo, fuera de rango).
 
 ### 7. Procedimiento
 
 1. Escribir las pruebas de los criterios AC y T antes o junto con la implementación.
-2. Implementar sólo **Scope**; respetar **Out of scope** y las dependencias permitidas de MOANA.md §3.
+2. Implementar sólo **Scope**; respetar **Out of scope** y las dependencias permitidas de MOANART.md §3.
 3. Validación de módulo: `uv run pytest tests/unit/core/ tests/unit/render/ -q` y `uv run mypy src/`.
 4. Validación completa: `uv run python scripts/validate.py` y `uv run python scripts/check_wheel.py`.
-5. Revisión: subagentes listados y skill `moana-code-review`; corregir hallazgos críticos y altos.
+5. Revisión: subagentes listados y skill `moanart-code-review`; corregir hallazgos críticos y altos.
 6. Si hay salida raster: mostrar el PNG a 1x y ampliado por vecino más cercano; si cambia un golden, presentar expected/actual/diff y justificar.
 
 ### 8. Cierre
@@ -136,10 +136,10 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Evidence
 
-- Implementación: src/moana/core/budget.py (RenderLimits, Deadline), src/moana/render/{__init__,budget}.py (estimador budget-v1, plan_budget); decisión ADR-012; MOANA.md 0.1.4-draft.
+- Implementación: src/moanart/core/budget.py (RenderLimits, Deadline), src/moanart/render/{__init__,budget}.py (estimador budget-v1, plan_budget); decisión ADR-012; MOANART.md 0.1.4-draft.
 - uv run python scripts/validate.py: lock, ruff, format, mypy estricto, check_repository, pytest y build verdes; core/budget.py y render/budget.py con 100 % de ramas cubiertas.
-- uv run python scripts/check_wheel.py: wheel aislado incluye moana/render/budget.py.
-- Revisión por subagentes moana-python-engineer y moana-architect (incluye preguntas gráficas de cotas de raster/composición): corregidos tipado de la prueba de arquitectura, exhaustividad con assert_never, rechazo de conteos antes de costear, checkpoints cada 256 operaciones, validación de clock/stage, MAX_FRAMES=256 (§17) y ADR con temporales por filas/tiles, puerta única de límites y prohibición de host_override desde la petición.
+- uv run python scripts/check_wheel.py: wheel aislado incluye moanart/render/budget.py.
+- Revisión por subagentes moanart-python-engineer y moanart-architect (incluye preguntas gráficas de cotas de raster/composición): corregidos tipado de la prueba de arquitectura, exhaustividad con assert_never, rechazo de conteos antes de costear, checkpoints cada 256 operaciones, validación de clock/stage, MAX_FRAMES=256 (§17) y ADR con temporales por filas/tiles, puerta única de límites y prohibición de host_override desde la petición.
 - Aprobado por el propietario el 2026-11-17 tras revisión; PR #41 hacia develop.
 - AC1: tests/unit/render/test_render_budget.py::test_rejection_happens_without_allocating_raster_buffers (numpy.empty/zeros/ones/full/*_like/ndarray y PIL.Image.new sustituidos por allocators falsos: cero llamadas; pico tracemalloc < 1 MiB rechazando 2048×2048 × 4 frames), ::test_counts_are_rejected_before_costing_operations y ::test_budget_modules_do_not_load_raster_libraries.
 - AC2: test_render_budget.py::test_one_unit_over_a_limit_reports_resource_limit_and_estimate (pixel_visits, buffer_bytes, frame_pixels, operations, layers con resource/limit/estimated y pointer) y ::test_request_exactly_at_each_limit_is_admitted (85 376 visitas y 724 352 bytes calculados a mano); ::test_many_frames_accumulate_until_the_frame_budget admite exactamente 16 777 216 píxeles.

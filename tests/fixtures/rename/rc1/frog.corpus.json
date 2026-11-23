@@ -1,0 +1,114 @@
+{
+  "format": "moana-corpus-entry/1",
+  "id": "frog",
+  "category": "creature",
+  "document": "frog.moana.json",
+  "animation_id": null,
+  "brief": {
+    "subject": "Rana sentada de frente con ojos saltones, manchas en el lomo y vientre claro.",
+    "size": [
+      32,
+      27
+    ],
+    "palette_intent": "9 colores: rampa verde de 4 pasos, rampa crema de 2 para el vientre, blanco de ojo, boca granate y tinta.",
+    "light": "Luz desde el noroeste aplicada con `shade` por bandas (frente, media luna iluminada amplia y lado en sombra), brillos en los abultamientos de los ojos y contorno selectivo más claro arriba a la izquierda.",
+    "constraints": [
+      "Volumen por bandas con dirección de luz, no por oscurecimiento concéntrico.",
+      "Pliegues de las patas dibujados simétricos en verde oscuro, sin contorno automático.",
+      "Regiones para piel, vientre y ojos."
+    ]
+  },
+  "provenance": {
+    "author": "Agente de IA de programación (Claude Code) bajo la dirección del usuario del repositorio",
+    "authored_by": "ai_agent",
+    "method": "Creado por un agente de IA mediante operaciones de Moana (formas, máscaras, regiones, paleta y técnicas del motor) en un documento JSON; sin modelo de imagen y sin calcar arte externo. El archivo .moana.json es la única fuente.",
+    "date": "2026-11-19",
+    "licence": "MIT (LICENSE del repositorio), decidida por el propietario el 2026-11-20. Sin assets ni derechos de terceros.",
+    "third_party_assets": [],
+    "seed": 4049,
+    "renderer_version": "render-v1",
+    "estimator_version": "budget-v8",
+    "vector_backend": null
+  },
+  "render": {
+    "digest": "sha256:bbb8d0a53be7a6e9d5bd677090d541e03b440f001cbabc7f480e988a05932122",
+    "frame_digests": null
+  },
+  "quality": {
+    "rule_set": "quality-v1",
+    "passed_hard_checks": true,
+    "warnings": {},
+    "report_digest": "sha256:43ccd646091a50d5450ebc0ad98036505abc3455ffebb32269c94542cf2bab84",
+    "config": "default",
+    "suppressions": []
+  },
+  "agent_inspection": {
+    "notice": "Notas de inspección visual de un agente de IA (a 1× y a 8× por vecino más cercano); no son una revisión humana.",
+    "notation": "Coordenadas (x, y) sobre la imagen a 1×; cajas [x0, y0, x1, y1) semiabiertas.",
+    "date": "2026-11-19",
+    "passes": [
+      "Pasada 1 (1× y 8×): el vientre tocaba el borde inferior con dos píxeles oscuros aislados y la forma, sin patas, era un bloque; se añadieron patas y un pliegue con `outline`.",
+      "Pasada 2 (1× y 8×, tras la revisión de pixel art): el pliegue automático hacía ruido en las filas 20-22; se sustituyó por pliegues simétricos de frog_0 (línea (5, 21)-(9, 21) con (10, 20) y línea (22, 21)-(26, 21) con (21, 20)). El brillo de mejilla pasó a los abultamientos ([8, 5, 12, 6) y [19, 5, 23, 6)), la media luna iluminada se ensanchó, hay tres manchas en el lomo, brillos en las pupilas en (10, 7) y (21, 7) y el vientre baja a [10, 16, 22, 23). La base `belly_floor` [10, 22, 22, 23) se pintó en frog_0 en lugar de tinta: con tinta duplicaba el contorno inferior. Sin advertencias."
+    ]
+  },
+  "rubric": {
+    "format": "moana-rubric/1",
+    "categories": {
+      "legibility": {
+        "status": "pending_human_review",
+        "score": null,
+        "justification": null
+      },
+      "silhouette": {
+        "status": "pending_human_review",
+        "score": null,
+        "justification": null
+      },
+      "clusters": {
+        "status": "pending_human_review",
+        "score": null,
+        "justification": null
+      },
+      "palette": {
+        "status": "pending_human_review",
+        "score": null,
+        "justification": null
+      },
+      "light_material": {
+        "status": "pending_human_review",
+        "score": null,
+        "justification": null
+      }
+    },
+    "human_review": null,
+    "agent_assessment": {
+      "notice": "AI agent assessment: not a human review and never an approval; it does not count towards the professional rule.",
+      "assessor_kind": "ai_agent",
+      "agent": "Claude Code (agente de IA de programación)",
+      "date": "2026-11-19",
+      "scores": {
+        "legibility": {
+          "score": 4,
+          "justification": "Ojos, boca, manchas y vientre identifican una rana a 1×."
+        },
+        "silhouette": {
+          "score": 4,
+          "justification": "Dos abultamientos oculares y patas laterales dan una silueta característica."
+        },
+        "clusters": {
+          "score": 4,
+          "justification": "Bandas continuas y pliegues limpios, sin singletons."
+        },
+        "palette": {
+          "score": 4,
+          "justification": "Rampa verde ordenada con un acento cálido en la boca."
+        },
+        "light_material": {
+          "score": 4,
+          "justification": "La media luna iluminada y los brillos dan volumen; el vientre sigue casi plano."
+        }
+      }
+    },
+    "professional": false
+  }
+}

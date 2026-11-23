@@ -1,6 +1,6 @@
 # Estándares de testing
 
-La [estrategia general](../TESTING.md) y [MOANA.md §21](../../MOANA.md) son la referencia. En infraestructura se verifican bibliotecas y tooling; eso no equivale a probar un renderer de Moana.
+La [estrategia general](../TESTING.md) y [MOANART.md §21](../../MOANART.md) son la referencia. En infraestructura se verifican bibliotecas y tooling; eso no equivale a probar un renderer de MoanArt.
 
 ## Elegir el nivel de prueba
 
@@ -30,4 +30,4 @@ Los tests de edición comprueban estructura/IDs preservados, atomicidad y confli
 
 La cobertura numérica ayuda a localizar caminos sin ejercicio; el paquete inicial de una constante no necesita un umbral artificial. Incorporar al crecer el motor pruebas de ramas críticas y casos negativos, sin perseguir un porcentaje mediante pruebas que repitan la implementación.
 
-Los benchmarks siguen MOANA.md §22 y no se mezclan con aserciones temporales inestables de PR. Fijar corpus y versiones, separar I/O y render, medir 5 warmups/30 muestras y repetir una regresión antes de atribuirla al cambio.
+Los benchmarks siguen MOANART.md §22 y no se mezclan con aserciones temporales inestables de PR. Fijar corpus y versiones, separar I/O y render, medir 5 warmups/30 muestras y repetir una regresión antes de atribuirla al cambio.

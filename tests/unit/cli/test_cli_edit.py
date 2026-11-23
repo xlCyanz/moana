@@ -1,6 +1,6 @@
-"""``moana edit DOC BATCH``: one JSON object, exit codes 0/2/4/5 (MOANA-018, ADR-024).
+"""``moanart edit DOC BATCH``: one JSON object, exit codes 0/2/4/5 (MOANA-018, ADR-024).
 
-Exit codes are written by hand from MOANA.md section 13, not read from the classes.
+Exit codes are written by hand from MOANART.md section 13, not read from the classes.
 """
 
 from __future__ import annotations
@@ -9,10 +9,10 @@ import json
 from pathlib import Path
 from typing import Any
 
-from moana.cli import main
+from moanart.cli import main
 
 ROOT = Path(__file__).resolve().parents[3]
-EXAMPLE = ROOT / "examples" / "specs" / "minimal.moana.json"
+EXAMPLE = ROOT / "examples" / "specs" / "minimal.moanart.json"
 BATCH = ROOT / "examples" / "specs" / "recolor.edit.json"
 
 
@@ -43,7 +43,7 @@ def test_edit_success_prints_the_new_revision_and_document(capsys: Any, tmp_path
     assert edit["snapshot_digest"] != edit["base_snapshot"]
     # The printed document validates on its own and is the next base.
     code, payload, _ = run(
-        capsys, "validate", write(tmp_path / "next.moana.json", edit["document"])
+        capsys, "validate", write(tmp_path / "next.moanart.json", edit["document"])
     )
     assert (code, payload["document"]["snapshot_digest"]) == (0, edit["snapshot_digest"])
 
@@ -91,11 +91,11 @@ def test_edit_missing_batch_exits_with_5(capsys: Any, tmp_path: Path) -> None:
 
 def test_edit_writes_no_files(capsys: Any, tmp_path: Path, monkeypatch: Any) -> None:
     monkeypatch.chdir(tmp_path)
-    (tmp_path / "doc.moana.json").write_bytes(EXAMPLE.read_bytes())
+    (tmp_path / "doc.moanart.json").write_bytes(EXAMPLE.read_bytes())
     (tmp_path / "batch.edit.json").write_bytes(BATCH.read_bytes())
     before = sorted(p.name for p in tmp_path.iterdir())
     snapshot = {name: (tmp_path / name).read_bytes() for name in before}
-    code, payload, _ = run(capsys, "edit", "doc.moana.json", "batch.edit.json")
+    code, payload, _ = run(capsys, "edit", "doc.moanart.json", "batch.edit.json")
     assert (code, payload["edit"]["revision"]) == (0, 1)
     assert sorted(p.name for p in tmp_path.iterdir()) == before
     assert {name: (tmp_path / name).read_bytes() for name in before} == snapshot

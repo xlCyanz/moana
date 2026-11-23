@@ -1,4 +1,4 @@
-"""Points, dimensions and half-open boxes (MOANA.md section 5).
+"""Points, dimensions and half-open boxes (MOANART.md section 5).
 
 Oracles are independent of the implementation: hand-computed boxes and, for the
 intersection properties, explicit pixel sets enumerated from the half-open rule.
@@ -11,11 +11,11 @@ import pytest
 from hypothesis import given
 from hypothesis import strategies as st
 
-from moana.core import (
+from moanart.core import (
     MAX_COORDINATE,
     Box,
     Dimensions,
-    MoanaError,
+    MoanArtError,
     Point,
     ValidationError,
 )
@@ -137,7 +137,7 @@ def test_values_are_immutable_and_hashable() -> None:
 
 
 def test_errors_are_domain_errors() -> None:
-    with pytest.raises(MoanaError):
+    with pytest.raises(MoanArtError):
         Point(True, 0)
 
 
@@ -228,7 +228,7 @@ def test_huge_box_clips_to_largest_canvas() -> None:
 
 
 def test_require_int_rejects_inverted_bounds_as_programming_error() -> None:
-    from moana.core import require_int
+    from moanart.core import require_int
 
     with pytest.raises(ValueError, match="invalid bounds"):
         require_int(5, "field", minimum=10, maximum=0)

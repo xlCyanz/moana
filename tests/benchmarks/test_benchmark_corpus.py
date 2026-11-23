@@ -10,9 +10,9 @@ from typing import Any
 
 import pytest
 
-from moana import api
-from moana.animation import evaluate_animation
-from moana.schema import validate_document
+from moanart import api
+from moanart.animation import evaluate_animation
+from moanart.schema import validate_document
 
 from . import corpus
 

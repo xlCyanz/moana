@@ -9,11 +9,11 @@ into its own fresh virtual environment with only the runtime dependencies pinned
 ``uv.lock`` (hash-checked, no development tools; offline from the uv cache when
 possible, otherwise downloaded from the package index); the sdist is built in isolation
 with the build backend pinned by the lock. In each environment the probe imports the
-package, then the installed ``moana`` command validates the normative example and
+package, then the installed ``moanart`` command validates the normative example and
 exports it as a 128 x 128 PNG from a directory outside the repository whose paths
 contain spaces (MOANA-012 AC1). It then runs the ``sh`` blocks of
 ``docs/guides/ai-workflows.md`` in order through :mod:`scripts.tutorial` with the
-installed ``moana`` and the venv interpreter in isolated mode, checking every
+installed ``moanart`` and the venv interpreter in isolated mode, checking every
 documented exit code and the recolored pixels (MOANA-033 T1), and
 :mod:`scripts.install_smoke` migrates a legacy copy with the original preserved and
 renders a copy of the corpus against its pinned digests (MOANA-035 T1). The wheel run
@@ -38,10 +38,11 @@ from typing import Final
 if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+from scripts.legacy_name import legacy_name_errors
 from scripts.tutorial import INPUTS, check_outputs, command_runner, parse_steps, run_steps
 from scripts.validate import ROOT, tool_environment, uv_executable
 
-EXAMPLE: Final = "examples/specs/minimal.moana.json"
+EXAMPLE: Final = "examples/specs/minimal.moanart.json"
 EDIT_EXAMPLE: Final = "examples/specs/recolor.edit.json"
 SMOKE: Final = "scripts/install_smoke.py"
 CORPUS: Final = "examples/corpus"
@@ -113,9 +114,9 @@ SDIST_REQUIRED: Final = (
     "CHANGELOG.md",
     "pyproject.toml",
     "uv.lock",
-    "src/moana/__init__.py",
-    "src/moana/py.typed",
-    "schemas/moana-document-1.0.schema.json",
+    "src/moanart/__init__.py",
+    "src/moanart/py.typed",
+    "schemas/moanart-document-1.0.schema.json",
     "docs/RELEASE.md",
     EXAMPLE,
     EDIT_EXAMPLE,
@@ -152,14 +153,14 @@ def run_cli(
     )
     if completed.returncode != exit_code:
         raise RuntimeError(
-            f"moana {arguments[0]} exited {completed.returncode}\n"
+            f"moanart {arguments[0]} exited {completed.returncode}\n"
             f"--- stdout ---\n{completed.stdout}\n--- stderr ---\n{completed.stderr}"
         )
     payload = json.loads(completed.stdout)
     if not isinstance(payload, dict) or payload.get("ok") is not (exit_code == 0):
         ok = payload.get("ok") if isinstance(payload, dict) else None
         raise RuntimeError(
-            f"moana {arguments[0]}: unexpected ok={ok} (expected exit {exit_code}): "
+            f"moanart {arguments[0]}: unexpected ok={ok} (expected exit {exit_code}): "
             f"{completed.stdout}"
         )
     return payload
@@ -168,13 +169,13 @@ def run_cli(
 def check_cli(python: Path, root: Path, source: Path) -> None:
     """AC1: the installed command validates the example and exports a 128 x 128 PNG."""
     scripts = python.parent
-    command = scripts / ("moana.exe" if os.name == "nt" else "moana")
+    command = scripts / ("moanart.exe" if os.name == "nt" else "moanart")
     if not command.is_file():
-        raise RuntimeError("the installation did not provide the moana console script")
+        raise RuntimeError("the installation did not provide the moanart console script")
     work = root / "work dir"
     (work / "input files").mkdir(parents=True)
     (work / "output files").mkdir()
-    document = Path("input files") / "mini sprite.moana.json"
+    document = Path("input files") / "mini sprite.moanart.json"
     shutil.copyfile(source / EXAMPLE, work / document)
     output = Path("output files") / "mini sprite.png"
     validated = run_cli(command, ["validate", str(document)], work)
@@ -210,7 +211,7 @@ def check_tutorial(python: Path, command: Path, root: Path, source: Path) -> Non
     outcomes = run_steps(
         parse_steps((source / GUIDE).read_text(encoding="utf-8")),
         work,
-        moana=command_runner([str(command)], environment),
+        moanart=command_runner([str(command)], environment),
         python=[str(python), "-I"],
         environment=environment,
     )
@@ -223,7 +224,7 @@ def check_smoke(python: Path, root: Path, source: Path) -> None:
     """MOANA-035 T1: migrations and corpus from copies, with the installed package only."""
     work = root / "migration work"
     work.mkdir()
-    document = work / "current sprite.moana.json"
+    document = work / "current sprite.moanart.json"
     shutil.copyfile(source / EXAMPLE, document)
     corpus = root / "corpus copy"
     shutil.copytree(source / CORPUS, corpus)
@@ -254,7 +255,8 @@ def sdist_member_errors(name: str) -> list[str]:
 
 
 def audit_sdist(sdist: Path) -> list[str]:
-    """Errors of the sdist contents: forbidden members, missing files, licence metadata."""
+    """Errors of the sdist contents: forbidden members, missing files, licence metadata
+    and occurrences of the old name outside the audited exceptions (ADR-041)."""
     with tarfile.open(sdist, "r:gz") as archive:
         members = archive.getmembers()
         roots = {PurePosixPath(member.name).parts[0] for member in members}
@@ -280,18 +282,32 @@ def audit_sdist(sdist: Path) -> list[str]:
             metadata = stream.read().decode("utf-8") if stream is not None else ""
             if LICENSE_EXPRESSION not in metadata.splitlines():
                 errors.append(f"sdist PKG-INFO lacks {LICENSE_EXPRESSION!r}")
+        files: dict[str, bytes] = {}
+        for name, member in inside.items():
+            stream = archive.extractfile(member) if member.isfile() else None
+            if stream is not None:
+                files[name] = stream.read()
+        errors.extend(f"sdist: {error}" for error in legacy_name_errors(files))
+        errors.extend(f"sdist: {error}" for error in legacy_name_errors({prefix: b""}))
     return errors
 
 
 def audit_wheel(wheel: Path) -> list[str]:
-    """Errors of the wheel licence metadata (PEP 639) and members outside the package."""
+    """Errors of the wheel licence metadata (PEP 639), members outside the package and
+    occurrences of the old name outside the audited exceptions (ADR-041)."""
     with zipfile.ZipFile(wheel) as archive:
         names = archive.namelist()
         metadata_name = next((n for n in names if n.endswith(".dist-info/METADATA")), None)
         if metadata_name is None:
             return ["wheel has no METADATA"]
         metadata = archive.read(metadata_name).decode("utf-8")
-    errors = []
+        # Package files are matched against the exceptions by their repository path.
+        files = {
+            (f"src/{name}" if name.startswith("moanart/") else name): archive.read(name)
+            for name in names
+            if not name.endswith("/")
+        }
+    errors = [f"wheel: {error}" for error in legacy_name_errors(files)]
     if LICENSE_EXPRESSION not in metadata.splitlines():
         errors.append(f"wheel METADATA lacks {LICENSE_EXPRESSION!r}")
     if not any(name.endswith(".dist-info/licenses/LICENSE") for name in names):
@@ -299,7 +315,7 @@ def audit_wheel(wheel: Path) -> list[str]:
     errors.extend(
         f"unexpected wheel member: {name}"
         for name in names
-        if not name.startswith(("moana/", "moana_pixel_engine-"))
+        if not name.startswith(("moanart/", "moanart-"))
     )
     return errors
 
@@ -363,16 +379,16 @@ def export_lock(uv: str, destination: Path, *, build: bool = False) -> Path:
 def probe(python: Path, cwd: Path, label: str) -> None:
     """Import the installed package and check its metadata and public files."""
     code = (
-        "import sys, moana, moana.core; from importlib.metadata import metadata, version; "
+        "import sys, moanart, moanart.core; from importlib.metadata import metadata, version; "
         "from importlib.resources import files; "
-        "assert version('moana-pixel-engine') == moana.__version__; "
-        "assert metadata('moana-pixel-engine')['License-Expression'] == 'MIT'; "
-        "assert moana.core.Box(0, 0, 1, 1).area == 1; "
-        "import moana.palette; assert moana.palette.Rgba.parse('#000000FF').a == 255; "
-        "missing = [p for p in sys.argv[1:] if not files('moana').joinpath(p).is_file()]; "
+        "assert version('moanart') == moanart.__version__; "
+        "assert metadata('moanart')['License-Expression'] == 'MIT'; "
+        "assert moanart.core.Box(0, 0, 1, 1).area == 1; "
+        "import moanart.palette; assert moanart.palette.Rgba.parse('#000000FF').a == 255; "
+        "missing = [p for p in sys.argv[1:] if not files('moanart').joinpath(p).is_file()]; "
         "assert not missing, missing; "
-        "import moana.api, moana.cli; assert callable(moana.api.apply_edit); "
-        f"print('Isolated {label} OK:', moana.__version__)"
+        "import moanart.api, moanart.cli; assert callable(moanart.api.apply_edit); "
+        f"print('Isolated {label} OK:', moanart.__version__)"
     )
     subprocess.run([str(python), "-I", "-c", code, *PACKAGE_FILES], cwd=cwd, check=True)
 
@@ -425,7 +441,7 @@ def main() -> int:
         raise RuntimeError("Artifact audit failed:\n" + "\n".join(errors))
     print(f"Artifact audit OK: {sdist.name}, {wheel.name}", flush=True)
     uv = uv_executable()
-    with tempfile.TemporaryDirectory(prefix="moana-wheel-") as temporary:
+    with tempfile.TemporaryDirectory(prefix="moanart-wheel-") as temporary:
         root = Path(temporary)
         runtime = export_lock(uv, root / "runtime-requirements.txt")
         build = export_lock(uv, root / "build-constraints.txt", build=True)

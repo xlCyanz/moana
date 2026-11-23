@@ -3,10 +3,10 @@
 T2: every JSON example of ``examples/tutorial`` validates with the current schema and
 the recolor by ID changes only the pixels of the intended region, keeping IDs and
 untouched properties. The guide's ``sh`` blocks are parsed and run in order by
-``scripts.tutorial`` (``moana`` through the real CLI entry point in process,
+``scripts.tutorial`` (``moanart`` through the real CLI entry point in process,
 ``python`` in an isolated subprocess) from a scratch copy, so the documented
 commands, paths and exit codes cannot drift. T1 (clean wheel) runs the same steps
-from ``scripts/check_wheel.py`` with the installed ``moana`` and venv interpreter.
+from ``scripts/check_wheel.py`` with the installed ``moanart`` and venv interpreter.
 
 The expected pixels come from the document geometry by hand: ``liquid_fill`` is the
 half-open box ``[5, 9, 11, 14)`` (6 x 5 = 30 pixels) and ``liquid_shine``, drawn on
@@ -26,14 +26,14 @@ from typing import Any
 import pytest
 from PIL import Image
 
-from moana import api
-from moana.cli import main
-from moana.core.errors import EditConflict, ReferenceError
-from moana.schema import normalize_document
+from moanart import api
+from moanart.cli import main
+from moanart.core.errors import EditConflict, ReferenceError
+from moanart.schema import normalize_document
 from scripts.tutorial import (
     GUIDE,
     GuideError,
-    MoanaRunner,
+    MoanArtRunner,
     Outcome,
     Step,
     StepFailed,
@@ -48,11 +48,11 @@ from scripts.tutorial import (
 
 ROOT = Path(__file__).resolve().parents[3]
 TUTORIAL = ROOT / "examples" / "tutorial"
-DOCUMENT = TUTORIAL / "potion.moana.json"
+DOCUMENT = TUTORIAL / "potion.moanart.json"
 RECOLOR = TUTORIAL / "potion-recolor.edit.json"
 TYPO = TUTORIAL / "potion-typo.edit.json"
 FLOW = TUTORIAL / "potion_flow.py"
-SCHEMA = ROOT / "schemas" / "moana-document-1.0.schema.json"
+SCHEMA = ROOT / "schemas" / "moanart-document-1.0.schema.json"
 
 LIQUID = {(x, y) for x in range(5, 11) for y in range(9, 14)}
 SHINE = {(6, 10), (6, 11)}
@@ -69,7 +69,7 @@ def workspace(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     return tmp_path
 
 
-def _in_process(capsys: pytest.CaptureFixture[str], workspace: Path) -> MoanaRunner:
+def _in_process(capsys: pytest.CaptureFixture[str], workspace: Path) -> MoanArtRunner:
     def run(arguments: Sequence[str], cwd: Path) -> tuple[int, str, str]:
         assert cwd == workspace == Path.cwd()  # relative paths resolve against cwd
         capsys.readouterr()
@@ -125,13 +125,13 @@ def test_guide_shell_blocks_run_as_documented(
 ) -> None:
     """AC1/T2: the documented commands reproduce creation, inspection and recolor."""
     steps = guide_steps()
-    moana_commands = {step.arguments[0] for step in steps if step.program == "moana"}
-    assert moana_commands == {"capabilities", "validate", "inspect", "export", "edit"}
+    moanart_commands = {step.arguments[0] for step in steps if step.program == "moanart"}
+    assert moanart_commands == {"capabilities", "validate", "inspect", "export", "edit"}
     inputs = _digests(workspace)
     outcomes = run_steps(
         steps,
         workspace,
-        moana=_in_process(capsys, workspace),
+        moanart=_in_process(capsys, workspace),
         python=[sys.executable, "-I"],
     )
     assert [outcome.step for outcome in outcomes] == steps
@@ -141,7 +141,7 @@ def test_guide_shell_blocks_run_as_documented(
     out = workspace / "artifacts" / "tutorial"
     edit = json.loads((out / "potion-edit.json").read_text(encoding="utf-8"))["edit"]
     assert (edit["revision"], edit["affected_ids"]) == (1, ["liquid_fill"])
-    saved = api.load_document(out / "potion-r1.moana.json")
+    saved = api.load_document(out / "potion-r1.moanart.json")
     assert saved.revision == 1
 
     with Image.open(out / "potion-1x.png") as master, Image.open(out / "potion-4x.png") as big:
@@ -201,19 +201,19 @@ def test_guide_paths_and_python_excerpt_exist() -> None:
 @pytest.mark.parametrize(
     "line",
     [
-        "moana validate a.json | cat",
-        "moana validate a.json && moana inspect a.json",
-        "moana validate a.json ; ls",
-        "moana validate a.json >> out.json",
-        "moana validate a.json 2> err.txt",
-        "moana validate < a.json",
-        "moana validate a.json > one.json two.json",
-        "moana validate a.json > a.json > b.json",
-        "moana validate $HOME/a.json",
-        "moana validate *.json",
-        "moana validate `ls`",
-        "moana validate a.json \\",
-        "moana validate a.json # a comment",
+        "moanart validate a.json | cat",
+        "moanart validate a.json && moanart inspect a.json",
+        "moanart validate a.json ; ls",
+        "moanart validate a.json >> out.json",
+        "moanart validate a.json 2> err.txt",
+        "moanart validate < a.json",
+        "moanart validate a.json > one.json two.json",
+        "moanart validate a.json > a.json > b.json",
+        "moanart validate $HOME/a.json",
+        "moanart validate *.json",
+        "moanart validate `ls`",
+        "moanart validate a.json \\",
+        "moanart validate a.json # a comment",
         "mkdir out",
         "mkdir -p a b",
         "rm -rf out",
@@ -226,10 +226,10 @@ def test_parser_rejects_unsupported_shell(line: str) -> None:
 
 
 def test_parser_reads_redirect_and_exit_code() -> None:
-    step = parse_step("moana edit a.json b.json > out/edit.json  # exit 4")
+    step = parse_step("moanart edit a.json b.json > out/edit.json  # exit 4")
     assert step == Step(
-        "moana edit a.json b.json > out/edit.json",
-        "moana",
+        "moanart edit a.json b.json > out/edit.json",
+        "moanart",
         ("edit", "a.json", "b.json"),
         "out/edit.json",
         4,
@@ -239,13 +239,13 @@ def test_parser_reads_redirect_and_exit_code() -> None:
 
 def test_unknown_block_language_and_wrong_exit_fail(tmp_path: Path) -> None:
     with pytest.raises(GuideError, match="bash"):
-        code_blocks("```bash\nmoana capabilities\n```\n")
+        code_blocks("```bash\nmoanart capabilities\n```\n")
     with pytest.raises(GuideError):
-        code_blocks("```\nmoana capabilities\n```\n")
+        code_blocks("```\nmoanart capabilities\n```\n")
     step = parse_step("python -c pass  # exit 3")
     with pytest.raises(StepFailed, match="exited 0, documented 3"):
         run_steps(
-            [step], tmp_path, moana=lambda arguments, cwd: (0, "", ""), python=[sys.executable]
+            [step], tmp_path, moanart=lambda arguments, cwd: (0, "", ""), python=[sys.executable]
         )
 
 
@@ -312,8 +312,8 @@ def test_documented_failures_are_atomic() -> None:
     assert api.snapshot_digest(document) == api.load_edit_batch(RECOLOR).base_snapshot
 
 
-def test_python_flow_reports_moana_errors(workspace: Path) -> None:
-    """potion_flow.py prints a Moana error as JSON and exits with its CLI code."""
+def test_python_flow_reports_moanart_errors(workspace: Path) -> None:
+    """potion_flow.py prints a MoanArt error as JSON and exits with its CLI code."""
     tutorial = workspace / "examples" / "tutorial"
     (tutorial / "potion-recolor.edit.json").write_bytes(TYPO.read_bytes())
     completed = subprocess.run(

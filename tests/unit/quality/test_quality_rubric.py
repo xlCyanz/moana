@@ -13,14 +13,15 @@ from typing import Any
 
 import pytest
 
-from moana.core.errors import ValidationError
-from moana.quality import (
+from moanart.core.errors import UnsupportedVersion, ValidationError
+from moanart.quality import (
     AGENT_NOTICE,
     ANIMATION_CATEGORIES,
     MIN_PROFESSIONAL_SCORE,
     RUBRIC_CATEGORIES,
     STATIC_CATEGORIES,
     applicable_categories,
+    migrate_rubric,
     parse_rubric,
 )
 
@@ -29,7 +30,7 @@ FINGERPRINT = "sha256:" + "0" * 64
 
 def pending(animated: bool = False) -> dict[str, Any]:
     return {
-        "format": "moana-rubric/1",
+        "format": "moanart-rubric/1",
         "categories": {
             name: {"status": "pending_human_review", "score": None, "justification": None}
             for name in applicable_categories(animated=animated)
@@ -185,7 +186,7 @@ def mutate(path: tuple[str, ...], value: object, base: dict[str, Any]) -> dict[s
 @pytest.mark.parametrize(
     ("path", "value", "expected"),
     [
-        (("format",), "moana-rubric/2", ("/format", "invalid_value")),
+        (("format",), "moanart-rubric/2", ("/format", "invalid_value")),
         (("professional",), 1, ("/professional", "invalid_type")),
         (("professional",), "true", ("/professional", "invalid_type")),
         (("categories",), [], ("/categories", "invalid_type")),
@@ -360,3 +361,53 @@ def test_records_are_frozen() -> None:
     rubric = parse_rubric(reviewed(), animated=False, passed_hard_checks=True)
     with pytest.raises(AttributeError):
         rubric.professional = True  # type: ignore[misc]
+
+
+# MOANA-037 T3: rubric records written by 0.1.0rc1, before the rename (ADR-041).
+def legacy(record: dict[str, Any]) -> dict[str, Any]:
+    assert record["format"] == "moanart-rubric/1"
+    return {**record, "format": "moana-rubric/1"}
+
+
+@pytest.mark.parametrize("animated", [False, True])
+def test_t3_legacy_rubric_is_rejected_then_migrated(animated: bool) -> None:
+    record = legacy(reviewed(animated=animated))
+    original = copy.deepcopy(record)
+    with pytest.raises(UnsupportedVersion) as error:
+        parse_rubric(record, animated=animated, passed_hard_checks=True)
+    assert error.value.context == {
+        "field": "/format",
+        "reason": "legacy_name",
+        "replacement": "moanart-rubric/1",
+    }
+    assert "migrate_rubric" in error.value.message
+    migrated = migrate_rubric(record)
+    assert record == original
+    assert migrated == reviewed(animated=animated)
+    rubric = parse_rubric(migrated, animated=animated, passed_hard_checks=True)
+    assert rubric == parse_rubric(
+        reviewed(animated=animated), animated=animated, passed_hard_checks=True
+    )
+
+
+@pytest.mark.parametrize("record", [pending(), {"format": "other"}, [], None])
+def test_t3_only_legacy_rubrics_migrate(record: object) -> None:
+    with pytest.raises(ValidationError) as error:
+        migrate_rubric(record)
+    assert error.value.context["reason"] == "not_legacy"
+
+
+def test_t3_real_rc1_rubric_migrates_and_parses() -> None:
+    import json
+    from pathlib import Path
+
+    entry = json.loads(
+        (Path(__file__).resolve().parents[2] / "fixtures/rename/rc1/frog.corpus.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    record = entry["rubric"]
+    with pytest.raises(UnsupportedVersion):
+        parse_rubric(record, animated=False, passed_hard_checks=True)
+    rubric = parse_rubric(migrate_rubric(record), animated=False, passed_hard_checks=True)
+    assert rubric.professional is False  # no human review: still pending after the rename

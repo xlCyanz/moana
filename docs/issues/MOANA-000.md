@@ -58,7 +58,7 @@ No implementar canvas, rasterizador, API gráfica ni publicar repositorio/paquet
 
 ## Definition of Done
 
-Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adjuntar evidencia por ID, pasar el gate y revisar el resultado. Dependencias completadas y [ciclo de vida](../guides/issue-lifecycle.md) respetado.
+Cumplir [MOANART.md §25](../../MOANART.md), todos los criterios AC y pruebas T; adjuntar evidencia por ID, pasar el gate y revisar el resultado. Dependencias completadas y [ciclo de vida](../guides/issue-lifecycle.md) respetado.
 
 ## Risks and notes
 
@@ -78,13 +78,13 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 ### 2. Lectura obligatoria (en orden)
 
 1. `CLAUDE.md` (Claude Code) o `AGENTS.md` (Codex) y [flujo de sesión](../guides/agent-workflow.md).
-2. MOANA.md: §1 Visión y objetivos; §2 Alcance funcional y no funcional; §3 Arquitectura modular; §4 Stack tecnológico; §13 API pública de Python; §21 Testing y regresiones visuales; §23 Roadmap por fases; §24 Criterios de aceptación; §25 Definition of Done. Estas secciones son el contrato normativo; ante duda, prevalecen sobre este issue.
+2. MOANART.md: §1 Visión y objetivos; §2 Alcance funcional y no funcional; §3 Arquitectura modular; §4 Stack tecnológico; §13 API pública de Python; §21 Testing y regresiones visuales; §23 Roadmap por fases; §24 Criterios de aceptación; §25 Definition of Done. Estas secciones son el contrato normativo; ante duda, prevalecen sobre este issue.
 3. [Contratos de módulos](../architecture/module-contracts.md) para: `tooling`, `docs`, `agents`.
 4. Estándares: [python](../../docs/standards/python.md), [architecture](../../docs/standards/architecture.md).
 5. Issues de dependencia (ninguna): leer su sección Evidence para conocer las APIs ya entregadas; no reimplementarlas.
 6. ADR en `docs/architecture/` que mencionen los módulos afectados.
 
-### 3. Requisitos de MOANA.md cubiertos
+### 3. Requisitos de MOANART.md cubiertos
 
 | ID | Requisito | Secciones | Verificación exigida |
 | --- | --- | --- | --- |
@@ -102,8 +102,8 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 | Host | Skills a cargar | Revisión especializada |
 | --- | --- | --- |
-| Claude Code | `moana-python`, `moana-testing`, `moana-issue-planning`, `moana-code-review` | `moana-python-engineer`, `moana-documentation` (sólo lectura; el agente principal integra) |
-| Codex | `$moana-python`, `$moana-testing`, `$moana-issue-planning`, `$moana-code-review` | `moana_python_engineer`, `moana_documentation` |
+| Claude Code | `moanart-python`, `moanart-testing`, `moanart-issue-planning`, `moanart-code-review` | `moanart-python-engineer`, `moanart-documentation` (sólo lectura; el agente principal integra) |
+| Codex | `$moanart-python`, `$moanart-testing`, `$moanart-issue-planning`, `$moanart-code-review` | `moanart_python_engineer`, `moanart_documentation` |
 
 ### 5. Archivos
 
@@ -115,16 +115,16 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 - T1: Ejecutar lint, formato, tipos, smoke de bibliotecas y comprobación del backlog
 - T2: Construir wheel/sdist, instalar wheel fuera de src y validar las siete skills con el validador disponible
-- Oráculos independientes (cálculo a mano o fórmula de MOANA.md); nunca copiar la salida de la implementación como expected.
+- Oráculos independientes (cálculo a mano o fórmula de MOANART.md); nunca copiar la salida de la implementación como expected.
 - Incluir casos negativos con el error de dominio esperado y casos borde (vacío, mínimo, máximo, fuera de rango).
 
 ### 7. Procedimiento
 
 1. Escribir las pruebas de los criterios AC y T antes o junto con la implementación.
-2. Implementar sólo **Scope**; respetar **Out of scope** y las dependencias permitidas de MOANA.md §3.
+2. Implementar sólo **Scope**; respetar **Out of scope** y las dependencias permitidas de MOANART.md §3.
 3. Validación de módulo: `uv run pytest tests/ tests/test_repository_tools.py -q` y `uv run mypy src/`.
 4. Validación completa: `uv run python scripts/validate.py` y `uv run python scripts/check_wheel.py`.
-5. Revisión: subagentes listados y skill `moana-code-review`; corregir hallazgos críticos y altos.
+5. Revisión: subagentes listados y skill `moanart-code-review`; corregir hallazgos críticos y altos.
 6. Si hay salida raster: mostrar el PNG a 1x y ampliado por vecino más cercano; si cambia un golden, presentar expected/actual/diff y justificar.
 
 ### 8. Cierre

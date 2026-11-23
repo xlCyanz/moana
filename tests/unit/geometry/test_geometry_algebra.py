@@ -1,4 +1,4 @@
-"""T1 (MOANA-013): binary set algebra of canvas masks (MOANA.md section 11, ADR-022).
+"""T1 (MOANA-013): binary set algebra of canvas masks (MOANART.md section 11, ADR-022).
 
 Oracles are Python sets of ``(x, y)`` pixels written by hand; masks are built from
 raw bits (``_restore``), never from the algebra under test. Fixtures hold 1, 8 and
@@ -14,8 +14,8 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from moana.core.coordinates import Box, Dimensions
-from moana.geometry import (
+from moanart.core.coordinates import Box, Dimensions
+from moanart.geometry import (
     MASK_OPERATORS,
     Mask,
     MaskBuilder,
@@ -24,7 +24,7 @@ from moana.geometry import (
     combined_box,
     rasterize_rect,
 )
-from moana.geometry.mask import _restore
+from moanart.geometry.mask import _restore
 
 Pixels = frozenset[tuple[int, int]]
 DIMS = Dimensions(16, 16)

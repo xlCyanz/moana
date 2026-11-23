@@ -1,12 +1,12 @@
-"""Modular tiles and scenes from instanced Moana documents (MOANA-034).
+"""Modular tiles and scenes from instanced MoanArt documents (MOANA-034).
 
-A *layout* (``examples/tiles/<scene>.layout.json``, format ``moana-tile-layout/1``)
+A *layout* (``examples/tiles/<scene>.layout.json``, format ``moanart-tile-layout/1``)
 names editable source documents (16 x 16 tiles and props that share one palette), the
 *variants* of each source (``none``, ``mirror_x`` or ``mirror_y``), a grid of tile
 variants and prop placements by pivot. The scene document is derived from them: each
 placement becomes one layer whose operations, masks and regions are the source's,
 with IDs prefixed by the instance (``tile_r3_c2-lip_1``, ``prop_sign-board``) and the
-geometry moved and mirrored with :func:`moana.geometry.transform_box`. Nothing new
+geometry moved and mirrored with :func:`moanart.geometry.transform_box`. Nothing new
 enters the document format: no instancing node, tile map or engine; the scene is an
 ordinary schema 1.0 document that renders, validates and edits by ID like any other.
 
@@ -14,7 +14,7 @@ Rules that keep the seams invisible (README of ``examples/tiles``):
 
 * every ``dither`` keeps the *pattern origin* of the layout: textures belong to the
   canvas, not to the tile, so they are never mirrored and their phase only depends on
-  canvas coordinates (MOANA.md section 10). A placement must start at the pattern
+  canvas coordinates (MOANART.md section 10). A placement must start at the pattern
   origin modulo every dither period of its source; a tile side must be a multiple of
   every period of its sources;
 * each tile declares the material profile of its four edges (``edges``), read in
@@ -25,7 +25,7 @@ Subcommands (none touches anything but the paths below):
 
 ``check``
     Load and validate every layout, rebuild its scene and compare it byte for byte
-    with the versioned ``<scene>.moana.json``. Exit code 1 on any difference.
+    with the versioned ``<scene>.moanart.json``. Exit code 1 on any difference.
 ``build``
     Rewrite the versioned scene documents from their layouts.
 ``preview [--out DIR]``
@@ -48,18 +48,18 @@ import numpy as np
 from pydantic import BaseModel, ConfigDict, Field
 from pydantic import ValidationError as PydanticValidationError
 
-from moana.api import Document, export_png, load_document, render
-from moana.core.coordinates import Box, Point
-from moana.core.errors import MoanaError
-from moana.core.limits import MAX_LAYERS, MAX_MASKS, MAX_OPERATIONS, MAX_REGIONS
-from moana.export import SheetFrame, export_spritesheet
-from moana.export.spritesheet import FramePixels
-from moana.geometry import Transform, transform_box
+from moanart.api import Document, export_png, load_document, render
+from moanart.core.coordinates import Box, Point
+from moanart.core.errors import MoanArtError
+from moanart.core.limits import MAX_LAYERS, MAX_MASKS, MAX_OPERATIONS, MAX_REGIONS
+from moanart.export import SheetFrame, export_spritesheet
+from moanart.export.spritesheet import FramePixels
+from moanart.geometry import Transform, transform_box
 
 ROOT: Final = Path(__file__).resolve().parents[1]
 TILES_DIR: Final = ROOT / "examples" / "tiles"
 PREVIEW_DIR: Final = ROOT / "artifacts" / "tiles"
-LAYOUT_FORMAT: Final = "moana-tile-layout/1"
+LAYOUT_FORMAT: Final = "moanart-tile-layout/1"
 TRANSFORMS: Final = ("none", "mirror_x", "mirror_y")
 SIDES: Final = ("n", "e", "s", "w")
 SHAPE_OPERATIONS: Final = frozenset({"rect", "ellipse", "pixel", "line"})
@@ -120,7 +120,7 @@ class _PropEntry(_Entry):
 class _LayoutEntry(_Entry):
     format: str
     id: _Name
-    scene: Annotated[str, Field(pattern=r"^[a-z0-9][a-z0-9-]*\.moana\.json$")]
+    scene: Annotated[str, Field(pattern=r"^[a-z0-9][a-z0-9-]*\.moanart\.json$")]
     document_id: _Name
     seed: Annotated[int, Field(ge=0)]
     tile_size: _Pair
@@ -328,7 +328,7 @@ def _load_source(folder: Path, entry: _SourceEntry, tile_size: tuple[int, int]) 
     tree = _read_json(confined(folder, entry.path), MAX_SOURCE_BYTES)
     try:
         document = load_document(copy.deepcopy(tree))
-    except MoanaError as error:
+    except MoanArtError as error:
         raise LayoutError(f"source {entry.id} is invalid: {error}", "invalid_source") from None
     _check_source_document(entry.id, document)
     if entry.kind == "tile" and set(entry.edges) != set(SIDES):
@@ -718,7 +718,7 @@ def check(root: Path = TILES_DIR) -> list[str]:
             layout = load_layout(path)
             expected = format_document(build_scene(layout))
             load_document(json.loads(expected))
-        except (LayoutError, MoanaError) as error:
+        except (LayoutError, MoanArtError) as error:
             errors.append(f"{path.name}: {error}")
             continue
         actual = (

@@ -1,12 +1,12 @@
-"""RenderLimits and the cooperative Deadline (MOANA.md section 20)."""
+"""RenderLimits and the cooperative Deadline (MOANART.md section 20)."""
 
 import pickle
 from typing import Any
 
 import pytest
 
-from moana.core import errors
-from moana.core.budget import (
+from moanart.core import errors
+from moanart.core.budget import (
     DEFAULT_MAX_BUFFER_BYTES,
     DEFAULT_MAX_FRAME_PIXELS,
     DEFAULT_MAX_PIXEL_VISITS,
@@ -14,7 +14,7 @@ from moana.core.budget import (
     Deadline,
     RenderLimits,
 )
-from moana.core.limits import MAX_LAYERS, MAX_OPERATIONS, GeometryLimits
+from moanart.core.limits import MAX_LAYERS, MAX_OPERATIONS, GeometryLimits
 
 
 def test_defaults_match_section_20() -> None:

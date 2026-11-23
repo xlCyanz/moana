@@ -1,7 +1,7 @@
-"""moana.core stays at the bottom of the dependency table (MOANA.md section 3, ADR-013).
+"""moanart.core stays at the bottom of the dependency table (MOANART.md section 3, ADR-013).
 
 Only the adapter modules may import a graphics library: ``canvas`` (NumPy) and
-``pillow_adapter`` (NumPy and Pillow). ``import moana.core`` loads neither.
+``pillow_adapter`` (NumPy and Pillow). ``import moanart.core`` loads neither.
 """
 
 import ast
@@ -9,9 +9,9 @@ import subprocess
 import sys
 from pathlib import Path
 
-CORE = Path(__file__).resolve().parents[3] / "src/moana/core"
+CORE = Path(__file__).resolve().parents[3] / "src/moanart/core"
 ADAPTER_IMPORTS = {"canvas.py": {"numpy"}, "pillow_adapter.py": {"numpy", "PIL"}}
-ADAPTER_MODULES = {"moana.core.canvas", "moana.core.pillow_adapter"}
+ADAPTER_MODULES = {"moanart.core.canvas", "moanart.core.pillow_adapter"}
 
 
 def test_core_imports_only_stdlib_and_itself() -> None:
@@ -30,7 +30,7 @@ def test_core_imports_only_stdlib_and_itself() -> None:
                 assert (
                     root in sys.stdlib_module_names
                     or root in allowed
-                    or name.startswith("moana.core")
+                    or name.startswith("moanart.core")
                 ), f"{path.name} imports {name}"
 
 
@@ -51,7 +51,7 @@ def test_only_adapters_import_adapter_modules() -> None:
 
 def test_importing_core_loads_no_graphics_library() -> None:
     probe = (
-        "import sys, moana.core; "
+        "import sys, moanart.core; "
         "heavy = {'numpy', 'PIL', 'aggdraw', 'pydantic'}; "
         "print(sorted(m for m in sys.modules if m.split('.')[0] in heavy))"
     )

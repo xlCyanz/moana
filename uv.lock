@@ -411,7 +411,7 @@ wheels = [
 ]
 
 [[package]]
-name = "moana-pixel-engine"
+name = "moanart"
 source = { editable = "." }
 dependencies = [
     { name = "aggdraw" },

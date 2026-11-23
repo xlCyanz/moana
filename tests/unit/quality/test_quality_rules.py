@@ -10,9 +10,9 @@ from collections import deque
 
 import pytest
 
-from moana.core.coordinates import Box, Dimensions
-from moana.geometry import Mask, rasterize_rect
-from moana.quality import (
+from moanart.core.coordinates import Box, Dimensions
+from moanart.geometry import Mask, rasterize_rect
+from moanart.quality import (
     EXPLANATIONS,
     HARD_RULES,
     REPORT_NOTICE,

@@ -58,7 +58,7 @@ No cuantización silenciosa ni equiparar GIF al maestro RGBA.
 
 ## Definition of Done
 
-Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adjuntar evidencia por ID, pasar el gate y revisar el resultado. Dependencias completadas y [ciclo de vida](../guides/issue-lifecycle.md) respetado.
+Cumplir [MOANART.md §25](../../MOANART.md), todos los criterios AC y pruebas T; adjuntar evidencia por ID, pasar el gate y revisar el resultado. Dependencias completadas y [ciclo de vida](../guides/issue-lifecycle.md) respetado.
 
 ## Risks and notes
 
@@ -78,13 +78,13 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 ### 2. Lectura obligatoria (en orden)
 
 1. `CLAUDE.md` (Claude Code) o `AGENTS.md` (Codex) y [flujo de sesión](../guides/agent-workflow.md).
-2. MOANA.md: §3 Arquitectura modular; §18 Exportación PNG, GIF y formatos adicionales; §25 Definition of Done. Estas secciones son el contrato normativo; ante duda, prevalecen sobre este issue.
+2. MOANART.md: §3 Arquitectura modular; §18 Exportación PNG, GIF y formatos adicionales; §25 Definition of Done. Estas secciones son el contrato normativo; ante duda, prevalecen sobre este issue.
 3. [Contratos de módulos](../architecture/module-contracts.md) para: `export`, `animation`.
 4. Estándares: [python](../../docs/standards/python.md), [architecture](../../docs/standards/architecture.md), [testing](../../docs/standards/testing.md), [pixel-art](../../docs/standards/pixel-art.md).
 5. Issues de dependencia ([MOANA-022](MOANA-022.md), [MOANA-005](MOANA-005.md), [MOANA-011](MOANA-011.md)): leer su sección Evidence para conocer las APIs ya entregadas; no reimplementarlas.
 6. ADR en `docs/architecture/` que mencionen los módulos afectados.
 
-### 3. Requisitos de MOANA.md cubiertos
+### 3. Requisitos de MOANART.md cubiertos
 
 | ID | Requisito | Secciones | Verificación exigida |
 | --- | --- | --- | --- |
@@ -94,12 +94,12 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 | Host | Skills a cargar | Revisión especializada |
 | --- | --- | --- |
-| Claude Code | `moana-graphics`, `moana-python`, `moana-pixel-art`, `moana-code-review` | `moana-graphics-engineer`, `moana-python-engineer`, `moana-pixel-artist` (sólo lectura; el agente principal integra) |
-| Codex | `$moana-graphics`, `$moana-python`, `$moana-pixel-art`, `$moana-code-review` | `moana_graphics_engineer`, `moana_python_engineer`, `moana_pixel_artist` |
+| Claude Code | `moanart-graphics`, `moanart-python`, `moanart-pixel-art`, `moanart-code-review` | `moanart-graphics-engineer`, `moanart-python-engineer`, `moanart-pixel-artist` (sólo lectura; el agente principal integra) |
+| Codex | `$moanart-graphics`, `$moanart-python`, `$moanart-pixel-art`, `$moanart-code-review` | `moanart_graphics_engineer`, `moanart_python_engineer`, `moanart_pixel_artist` |
 
 ### 5. Archivos
 
-- Código o documentos a crear/modificar: `src/moana/export/`, `src/moana/animation/`.
+- Código o documentos a crear/modificar: `src/moanart/export/`, `src/moanart/animation/`.
 - Pruebas: `tests/unit/export/`, `tests/unit/animation/`.
 - No crear módulos ni carpetas sin comportamiento real. No tocar otros módulos salvo exportaciones imprescindibles, justificadas en el PR.
 
@@ -107,16 +107,16 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 - T1: Paleta llena, 255 colores más transparente, alpha intermedio y disposal
 - T2: Frames duplicados fusionados, loop, duraciones cortas y decode acumulado en Pillow
-- Oráculos independientes (cálculo a mano o fórmula de MOANA.md); nunca copiar la salida de la implementación como expected.
+- Oráculos independientes (cálculo a mano o fórmula de MOANART.md); nunca copiar la salida de la implementación como expected.
 - Incluir casos negativos con el error de dominio esperado y casos borde (vacío, mínimo, máximo, fuera de rango).
 
 ### 7. Procedimiento
 
 1. Escribir las pruebas de los criterios AC y T antes o junto con la implementación.
-2. Implementar sólo **Scope**; respetar **Out of scope** y las dependencias permitidas de MOANA.md §3.
+2. Implementar sólo **Scope**; respetar **Out of scope** y las dependencias permitidas de MOANART.md §3.
 3. Validación de módulo: `uv run pytest tests/unit/export/ tests/unit/animation/ -q` y `uv run mypy src/`.
 4. Validación completa: `uv run python scripts/validate.py` y `uv run python scripts/check_wheel.py`.
-5. Revisión: subagentes listados y skill `moana-code-review`; corregir hallazgos críticos y altos.
+5. Revisión: subagentes listados y skill `moanart-code-review`; corregir hallazgos críticos y altos.
 6. Si hay salida raster: mostrar el PNG a 1x y ampliado por vecino más cercano; si cambia un golden, presentar expected/actual/diff y justificar.
 
 ### 8. Cierre
@@ -135,13 +135,13 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Evidence
 
-- moana.export.gif (ADR-034): encode_gif/export_gif sobre el protocolo SpriteFrame (moana.animation.FrameRender lo cumple; el pivote se ignora). Paleta compartida ≤ 256 sin cuantizar: derivada (transparente en el índice 0 si hace falta y opacos ordenados por (r, g, b)) o Palette declarada (orden declarado; transparente añadido si falta); 256 opacos + transparencia es too_many_colors.
+- moanart.export.gif (ADR-034): encode_gif/export_gif sobre el protocolo SpriteFrame (moanart.animation.FrameRender lo cumple; el pivote se ignora). Paleta compartida ≤ 256 sin cuantizar: derivada (transparente en el índice 0 si hace falta y opacos ordenados por (r, g, b)) o Palette declarada (orden declarado; transparente añadido si falta); 256 opacos + transparencia es too_many_colors.
 - Alfa: 0 → índice transparente, 255 opaco; alfa intermedio es partial_alpha salvo background opaco explícito, aplanado con (c·a + b·(255 − a) + 127) // 255 y pérdida alpha_flattened. Duraciones: exact (por defecto) rechaza no múltiplos de 10 ms; round = max(10, 10·⌊(d + 5)/10⌋) con pérdida duration_rounded; aviso estructurado GifWarning short_delay por frame < 20 ms.
-- Disposal background (2) por defecto con frames completos; none (1) rechaza frames que mostrarían el anterior, también en la costura del bucle (disposal_reveals_previous). loop_count en Moana = reproducciones totales (0 infinito): NETSCAPE 0, N−1 o ausente para N = 1 (MOANA.md §17).
-- Contenedor GIF89a escrito por Moana (tabla global única, índice de fondo = transparente, sin fusionar frames, sin recortes); Pillow sólo comprime LZW cada plano de índices y su salida se analiza estrictamente (encoder_layout). Verificación decodificando con Pillow: timelines equivalentes tras fusionar frames iguales consecutivos (timeline_mismatch) y bucle (loop_mismatch); bytes idénticos para la misma entrada.
-- Presupuesto antes de leer píxeles: frames ≤ 256 (len), Σ píxeles de frame, lado, área y buffer_bytes = 48·A + 4·n·A (pico RSS medido por la revisión de gráficos por debajo del presupuesto); escritura atómica sin sobrescribir por defecto. Comprobación de frames compartida con spritesheet en moana.export._frames.
-- Documentación: ADR-034, MOANA.md 0.1.22-draft (§17 bucle, §18 GIF), module-contracts, sección «GIF animado» en docs/standards/pixel-art.md (duraciones, alfa, paleta, escala previa, disposal). Test determinista para el tramo de selective_outline tapado por un tramo posterior (render/pipeline.py:277).
-- Revisiones de agente: gráficos (aprobado; contenedor contrastado con ffmpeg y giftext), python (aprobado con observaciones aplicadas) y pixel-art (aprobado con menores aplicados); revisión artística humana PENDIENTE. Gate local macOS: scripts/validate.py verde con src/moana al 100 %, check_wheel OK, mypy --platform win32 OK, pre-commit OK; matriz pendiente en main.
+- Disposal background (2) por defecto con frames completos; none (1) rechaza frames que mostrarían el anterior, también en la costura del bucle (disposal_reveals_previous). loop_count en MoanArt = reproducciones totales (0 infinito): NETSCAPE 0, N−1 o ausente para N = 1 (MOANART.md §17).
+- Contenedor GIF89a escrito por MoanArt (tabla global única, índice de fondo = transparente, sin fusionar frames, sin recortes); Pillow sólo comprime LZW cada plano de índices y su salida se analiza estrictamente (encoder_layout). Verificación decodificando con Pillow: timelines equivalentes tras fusionar frames iguales consecutivos (timeline_mismatch) y bucle (loop_mismatch); bytes idénticos para la misma entrada.
+- Presupuesto antes de leer píxeles: frames ≤ 256 (len), Σ píxeles de frame, lado, área y buffer_bytes = 48·A + 4·n·A (pico RSS medido por la revisión de gráficos por debajo del presupuesto); escritura atómica sin sobrescribir por defecto. Comprobación de frames compartida con spritesheet en moanart.export._frames.
+- Documentación: ADR-034, MOANART.md 0.1.22-draft (§17 bucle, §18 GIF), module-contracts, sección «GIF animado» en docs/standards/pixel-art.md (duraciones, alfa, paleta, escala previa, disposal). Test determinista para el tramo de selective_outline tapado por un tramo posterior (render/pipeline.py:277).
+- Revisiones de agente: gráficos (aprobado; contenedor contrastado con ffmpeg y giftext), python (aprobado con observaciones aplicadas) y pixel-art (aprobado con menores aplicados); revisión artística humana PENDIENTE. Gate local macOS: scripts/validate.py verde con src/moanart al 100 %, check_wheel OK, mypy --platform win32 OK, pre-commit OK; matriz pendiente en main.
 - Aprobado por el propietario el 2026-11-17 tras revisión; PR #64 hacia develop.
 - AC1: tests/integration/test_gif_animation.py::test_bouncing_slime_gif_decodes_to_the_rendered_timeline (frames decodificados = RGBA renderizado, 150/100/120/100 ms, bucle infinito, bytes idénticos); tests/unit/export/test_export_gif.py::test_accumulated_decode_equals_every_target_frame, ::test_decoded_timeline_equals_the_target y ::test_none_disposal_timeline_equals_the_target (hypothesis).
 - AC2: tests/unit/export/test_export_gif.py::test_losses_need_explicit_acceptance, ::test_colours_beyond_the_table_are_never_quantised, ::test_partial_alpha_is_rejected_without_background, ::test_short_durations_and_rounding_policy, ::test_flatten_background_is_reported_for_reproduction.

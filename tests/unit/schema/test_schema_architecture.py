@@ -1,11 +1,11 @@
-"""moana.schema depends only on core and Pydantic and never executes document content."""
+"""moanart.schema depends only on core and Pydantic and never executes document content."""
 
 import ast
 import subprocess
 import sys
 from pathlib import Path
 
-SCHEMA = Path(__file__).resolve().parents[3] / "src/moana/schema"
+SCHEMA = Path(__file__).resolve().parents[3] / "src/moanart/schema"
 ALLOWED_THIRD_PARTY = {"pydantic", "pydantic_core"}
 FORBIDDEN_CALLS = {"eval", "exec", "compile", "__import__"}
 FORBIDDEN_MODULES = {"pickle", "importlib", "subprocess", "socket", "urllib", "os", "shutil"}
@@ -29,7 +29,7 @@ def test_schema_imports_follow_dependency_table() -> None:
             assert (
                 root in sys.stdlib_module_names
                 or root in ALLOWED_THIRD_PARTY
-                or name.startswith(("moana.core", "moana.schema"))
+                or name.startswith(("moanart.core", "moanart.schema"))
             ), f"{path.name} imports {name}"
 
 
@@ -42,7 +42,7 @@ def test_schema_never_evaluates_code() -> None:
 
 def test_importing_schema_loads_no_graphics_library() -> None:
     probe = (
-        "import sys, moana.schema; "
+        "import sys, moanart.schema; "
         "heavy = {'numpy', 'PIL', 'aggdraw'}; "
         "print(sorted(m for m in sys.modules if m.split('.')[0] in heavy))"
     )

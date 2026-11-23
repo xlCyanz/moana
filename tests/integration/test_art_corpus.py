@@ -2,7 +2,7 @@
 
 * T1: every example renders deterministically to the digests pinned in its record,
   and a localized edit by region (recolouring the adventurer's shirt with
-  :func:`moana.api.apply_edit`) changes exactly the visible shirt pixels: the oracle
+  :func:`moanart.api.apply_edit`) changes exactly the visible shirt pixels: the oracle
   is built from the literal boxes of the shirt operations (minus the boxes painted
   over them), and the expected/actual/diff files are written the way the visual
   harness writes them.
@@ -29,9 +29,9 @@ from typing import Any
 import numpy as np
 import pytest
 
-from moana.api import apply_edit, evaluate_quality, render, snapshot_digest
-from moana.quality import QualityConfig, QualityReport, parse_rubric
-from moana.render import render_with_regions
+from moanart.api import apply_edit, evaluate_quality, render, snapshot_digest
+from moanart.quality import QualityConfig, QualityReport, parse_rubric
+from moanart.render import render_with_regions
 from scripts import corpus
 from scripts.corpus import (
     CATEGORIES,
@@ -95,7 +95,7 @@ def test_localized_shirt_recolour_stays_inside_the_shirt_region(tmp_path: Path) 
     edited = apply_edit(document, batch)
     after = np.frombuffer(render(edited).rgba, dtype=np.uint8).reshape(before.shape)
 
-    # Oracle from the literal boxes of adventurer.moana.json: torso_fill [8,13,16,19)
+    # Oracle from the literal boxes of adventurer.moanart.json: torso_fill [8,13,16,19)
     # and sleeve_left [5,14,7,17), minus what later operations paint over them
     # (torso_light [8,14,9,18), torso_shade [14,13,16,19), collar [11,13,13,14),
     # sleeve_left_light [5,14,6,16)).
@@ -228,7 +228,7 @@ TAMPERED: dict[str, tuple[Mutation, str]] = {
     "seed_drift": (_set(("provenance", "seed"), 1), "provenance seed"),
     "missing_render": (_delete("render"), "missing render block"),
     "missing_quality": (_delete("quality"), "missing quality block"),
-    "bad_format": (_set(("format",), "moana-corpus-entry/0"), "format must be"),
+    "bad_format": (_set(("format",), "moanart-corpus-entry/0"), "format must be"),
     "bad_id": (_set(("id",), "toad"), "id the folder name"),
     "bad_category": (_set(("category",), "vehicle"), "unknown category"),
     "brief_keys": (_set(("brief",), {"subject": "frog"}), "brief must have exactly"),

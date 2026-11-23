@@ -1,4 +1,4 @@
-"""T1 (MOANA-014): bounded Chebyshev dilation and erosion (MOANA.md section 8, ADR-027).
+"""T1 (MOANA-014): bounded Chebyshev dilation and erosion (MOANART.md section 8, ADR-027).
 
 Oracles are Python sets of ``(x, y)`` pixels: hand-written masks for the fixtures and
 the literal definitions (``max(|dx|, |dy|) <= r``, exterior transparent) for the
@@ -17,12 +17,12 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from moana.core.coordinates import Box, Dimensions, grown_box
-from moana.core.errors import ValidationError
-from moana.core.limits import MAX_MORPHOLOGY_RADIUS
-from moana.core.morphology import MORPHOLOGY_FIXED_BYTES, morphology_bytes
-from moana.geometry import Mask, dilate, erode
-from moana.geometry.mask import _restore
+from moanart.core.coordinates import Box, Dimensions, grown_box
+from moanart.core.errors import ValidationError
+from moanart.core.limits import MAX_MORPHOLOGY_RADIUS
+from moanart.core.morphology import MORPHOLOGY_FIXED_BYTES, morphology_bytes
+from moanart.geometry import Mask, dilate, erode
+from moanart.geometry.mask import _restore
 
 Pixels = frozenset[tuple[int, int]]
 

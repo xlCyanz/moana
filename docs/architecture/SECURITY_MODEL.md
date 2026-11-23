@@ -1,6 +1,6 @@
 # Modelo de amenazas
 
-El núcleo opera sobre documentos no confiables; la aplicación anfitriona autoriza los paths de entrada/salida. Ningún documento concede permisos. Contrato normativo: MOANA.md §20.
+El núcleo opera sobre documentos no confiables; la aplicación anfitriona autoriza los paths de entrada/salida. Ningún documento concede permisos. Contrato normativo: MOANART.md §20.
 
 Los nombres que elige el llamador deben codificarse en UTF-8 estricto en todas las plataformas, y los nombres de entradas ZIP se validan sobre el nombre almacenado (NUL y barra invertida son `invalid_name`): [ADR-039](decisions/ADR-039-ci-matrix-portability.md).
 

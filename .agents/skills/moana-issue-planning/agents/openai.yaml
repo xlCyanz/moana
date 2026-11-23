@@ -1,4 +1,0 @@
-interface:
-  display_name: "Moana · Issue Planning"
-  short_description: "Issues verificables, estados y trazabilidad"
-  default_prompt: "Usa $moana-issue-planning para trabajar el issue asignado de Moana con contratos y verificaciones observables."

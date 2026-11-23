@@ -1,6 +1,6 @@
 # ADR-006 — Identidad y ciclo de vida del backlog
 
-Estado: aceptado · 2026-11-17.
+Estado: aceptado · 2026-11-17. Ampliado por [ADR-041](ADR-041-rename-moanart.md): los IDs `MOANA-xxx` y `MOA-xxx` no cambian con el renombrado a MoanArt y la etiqueta remota del backlog se conserva.
 
 ## Contexto
 

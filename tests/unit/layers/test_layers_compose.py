@@ -10,12 +10,12 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from moana.core.budget import DEFAULT_RENDER_LIMITS, Deadline, RenderLimits
-from moana.core.coordinates import Box, Dimensions, Point
-from moana.core.errors import BudgetExceeded, ValidationError
-from moana.core.limits import GeometryLimits
-from moana.geometry import Mask, rasterize_ellipse, rasterize_pixel, rasterize_rect
-from moana.layers import (
+from moanart.core.budget import DEFAULT_RENDER_LIMITS, Deadline, RenderLimits
+from moanart.core.coordinates import Box, Dimensions, Point
+from moanart.core.errors import BudgetExceeded, ValidationError
+from moanart.core.limits import GeometryLimits
+from moanart.geometry import Mask, rasterize_ellipse, rasterize_pixel, rasterize_rect
+from moanart.layers import (
     COMPOSITE_TEMP_BYTES_PER_PIXEL,
     DeferredMask,
     Fill,
@@ -26,14 +26,14 @@ from moana.layers import (
     composition_cost,
     tile_pixels,
 )
-from moana.layers import composite as composite_module
-from moana.palette import Rgba
+from moanart.layers import composite as composite_module
+from moanart.palette import Rgba
 
 LIMITS = DEFAULT_RENDER_LIMITS
 RGBA = tuple[int, int, int, int]
 
 
-# --- Independent scalar oracle written from MOANA.md section 11 ------------------
+# --- Independent scalar oracle written from MOANART.md section 11 ------------------
 
 
 def _round_half_up(n: int, d: int) -> int:

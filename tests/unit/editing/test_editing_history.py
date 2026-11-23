@@ -1,4 +1,4 @@
-"""Immutable edit history of MOANA.md section 15 (MOANA-019 AC1, AC2, T1, T2; ADR-026).
+"""Immutable edit history of MOANART.md section 15 (MOANA-019 AC1, AC2, T1, T2; ADR-026).
 
 Every expected document is a hand-written edit of the literal ``FIXTURE`` tree and
 every expected RGBA buffer is built pixel by pixel here, never taken from the
@@ -20,9 +20,9 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from moana.core import errors
-from moana.core.limits import MAX_HISTORY_BYTES, MAX_HISTORY_SNAPSHOTS
-from moana.editing import (
+from moanart.core import errors
+from moanart.core.limits import MAX_HISTORY_BYTES, MAX_HISTORY_SNAPSHOTS
+from moanart.editing import (
     DEFAULT_HISTORY_LIMITS,
     History,
     HistoryLimits,
@@ -30,9 +30,9 @@ from moana.editing import (
     canonical_batch,
     parse_edit_batch,
 )
-from moana.editing.history import _canonical_json
-from moana.render import render
-from moana.schema import (
+from moanart.editing.history import _canonical_json
+from moanart.render import render
+from moanart.schema import (
     Document,
     canonical_json,
     normalize_document,
@@ -522,7 +522,7 @@ def test_canonical_batch_uses_the_canonical_document_encoding() -> None:
     tree = copy.deepcopy(FIXTURE)
     tree["layers"][0]["name"] = "Ñandú ✓"  # non-ASCII stays UTF-8, never escaped
     documents = [validate_document(tree)]
-    for path in sorted(SPECS.glob("*.moana.json")):
+    for path in sorted(SPECS.glob("*.moanart.json")):
         documents.append(validate_document(path.read_bytes()))
     for document in documents:
         assert _canonical_json(normalize_document(document)) == canonical_json(document)

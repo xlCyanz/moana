@@ -1,4 +1,4 @@
-"""moana.geometry imports only stdlib, NumPy and moana.core (MOANA.md section 3)."""
+"""moanart.geometry imports only stdlib, NumPy and moanart.core (MOANART.md section 3)."""
 
 from __future__ import annotations
 
@@ -7,7 +7,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-GEOMETRY = Path(__file__).resolve().parents[3] / "src/moana/geometry"
+GEOMETRY = Path(__file__).resolve().parents[3] / "src/moanart/geometry"
 
 
 def _imports(path: Path) -> list[str]:
@@ -29,14 +29,14 @@ def test_geometry_imports_only_stdlib_numpy_core_and_itself() -> None:
             assert (
                 root in sys.stdlib_module_names
                 or root == "numpy"
-                or name.startswith(("moana.core", "moana.geometry"))
+                or name.startswith(("moanart.core", "moanart.geometry"))
             ), f"{path.name} imports {name}"
-            assert name != "moana.core.pillow_adapter", f"{path.name} imports Pillow"
+            assert name != "moanart.core.pillow_adapter", f"{path.name} imports Pillow"
 
 
 def test_importing_geometry_loads_neither_pillow_nor_pydantic() -> None:
     probe = (
-        "import sys, moana.geometry; "
+        "import sys, moanart.geometry; "
         "heavy = {'PIL', 'aggdraw', 'pydantic'}; "
         "print(sorted(m for m in sys.modules if m.split('.')[0] in heavy))"
     )

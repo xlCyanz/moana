@@ -1,4 +1,4 @@
-"""Hand-written oracles for the integer rasterisers of MOANA.md section 6 (MOANA-006).
+"""Hand-written oracles for the integer rasterisers of MOANART.md section 6 (MOANA-006).
 
 Expected masks are literal grids or point lists derived by hand from the normative
 rules; ``#`` marks a pixel of the mask. Property tests compare the row-span
@@ -16,10 +16,10 @@ import pytest
 from hypothesis import given
 from hypothesis import strategies as st
 
-from moana.core.coordinates import Box, Dimensions, Point
-from moana.core.errors import ValidationError
-from moana.core.limits import MAX_VERTICES
-from moana.geometry import (
+from moanart.core.coordinates import Box, Dimensions, Point
+from moanart.core.errors import ValidationError
+from moanart.core.limits import MAX_VERTICES
+from moanart.geometry import (
     Mask,
     rasterize_ellipse,
     rasterize_line,

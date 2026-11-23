@@ -1,7 +1,7 @@
 """Art corpus tooling: audit records and build review views (MOANA-027, ADR-037).
 
 Each example lives in ``examples/corpus/<slug>/``: the editable source
-``<slug>.moana.json``, the record ``<slug>.corpus.json`` (brief, provenance, pinned
+``<slug>.moanart.json``, the record ``<slug>.corpus.json`` (brief, provenance, pinned
 render and quality facts, agent inspection notes and the human rubric) and the
 reviewed previews under ``previews/``. Two subcommands:
 
@@ -10,7 +10,7 @@ reviewed previews under ``previews/``. Two subcommands:
     and estimator versions, vector backend, no third-party assets, no URLs), the
     pinned render digests and quality outcome (hard checks must pass; the recorded
     warnings must equal the real ones, so none is hidden), the previews on disk, the
-    rubric (:func:`moana.quality.parse_rubric`: ``professional`` only with a human
+    rubric (:func:`moanart.quality.parse_rubric`: ``professional`` only with a human
     review scoring every applicable category at least 4) and, when a human review
     exists, that its ``render_fingerprint`` still matches the render (otherwise the
     art changed after the review). Records with a repeated JSON key are rejected.
@@ -21,7 +21,7 @@ reviewed previews under ``previews/``. Two subcommands:
     update a record after a reviewed source change.
 
 Previews are compared and rewritten only through the visual harness
-(``tests/visual/test_corpus_previews.py``; ``MOANA_UPDATE_GOLDENS=1`` locally, never
+(``tests/visual/test_corpus_previews.py``; ``MOANART_UPDATE_GOLDENS=1`` locally, never
 in CI). Nothing here writes a file.
 """
 
@@ -41,13 +41,13 @@ from typing import Any, Final
 import numpy as np
 import numpy.typing as npt
 
-from moana.api import Document, capabilities, evaluate_quality, load_document, render
-from moana.core.errors import MoanaError
-from moana.quality import QualityReport, parse_rubric
+from moanart.api import Document, capabilities, evaluate_quality, load_document, render
+from moanart.core.errors import MoanArtError
+from moanart.quality import QualityReport, parse_rubric
 
 ROOT: Final = Path(__file__).resolve().parents[1]
 CORPUS_DIR: Final = ROOT / "examples" / "corpus"
-ENTRY_FORMAT: Final = "moana-corpus-entry/1"
+ENTRY_FORMAT: Final = "moanart-corpus-entry/1"
 CATEGORIES: Final = ("character", "creature", "object", "tile", "animation")
 PREVIEW_SCALE: Final = 4
 BRIEF_KEYS: Final = ("subject", "size", "palette_intent", "light", "constraints")
@@ -122,7 +122,7 @@ def load_entries(root: Path = CORPUS_DIR) -> list[Entry]:
     entries = []
     for folder in sorted(path for path in root.iterdir() if path.is_dir()):
         record = load_record(folder / f"{folder.name}.corpus.json")
-        document = load_document(folder / f"{folder.name}.moana.json")
+        document = load_document(folder / f"{folder.name}.moanart.json")
         entries.append(Entry(folder, record, document))
     return entries
 
@@ -170,7 +170,7 @@ def _neighbours(x: int, y: int, width: int, height: int) -> Iterator[tuple[int, 
 def cluster_labels(image: RGBA) -> tuple[npt.NDArray[np.int32], list[int]]:
     """8-connected clusters of equal RGBA (labels from 0, -1 transparent) and areas.
 
-    Same definition as the artistic cluster rules of ``moana.quality``
+    Same definition as the artistic cluster rules of ``moanart.quality``
     (``cluster_connectivity`` 8): the tests compare the singleton count with the
     quality report's ``singletons`` metric.
     """
@@ -370,7 +370,7 @@ def audit(entry: Entry) -> list[str]:
             animated=animated,
             passed_hard_checks=bool(now["quality"]["passed_hard_checks"]),
         )
-    except MoanaError as error:
+    except MoanArtError as error:
         errors.append(f"{entry.slug}: rubric {dict(error.context)}: {error}")
     review = record.get("rubric", {}).get("human_review")
     if isinstance(review, dict) and review.get("render_fingerprint") != now["render_fingerprint"]:

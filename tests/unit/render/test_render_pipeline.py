@@ -1,6 +1,6 @@
 """Render orchestrator: hand scenes, errors, budgets, cancellation (MOANA-010, ADR-018).
 
-Expected pixels are computed by hand from MOANA.md sections 6 and 11; digests are
+Expected pixels are computed by hand from MOANART.md sections 6 and 11; digests are
 recomputed here from section 14 with ``hashlib``, never copied from a render.
 """
 
@@ -18,18 +18,18 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-import moana
-from moana.core.budget import Deadline, RenderLimits
-from moana.core.errors import (
+import moanart
+from moanart.core.budget import Deadline, RenderLimits
+from moanart.core.errors import (
     BudgetExceeded,
     OutOfBoundsError,
     ReferenceError,
     UnsupportedOperation,
     ValidationError,
 )
-from moana.core.limits import GeometryLimits
-from moana.core.procedural import RNG_VERSION
-from moana.render import (
+from moanart.core.limits import GeometryLimits
+from moanart.core.procedural import RNG_VERSION
+from moanart.render import (
     RENDERABLE_OPERATION_TYPES,
     RENDERER_VERSION,
     Provenance,
@@ -38,8 +38,8 @@ from moana.render import (
     plan_budget,
     render,
 )
-from moana.render import pipeline as pipeline_module
-from moana.schema import (
+from moanart.render import pipeline as pipeline_module
+from moanart.schema import (
     SUPPORTED_OPERATION_TYPES,
     Document,
     canonical_json,
@@ -160,7 +160,7 @@ def test_every_primitive_in_a_strict_scene() -> None:
 
 
 def test_minimal_example_document() -> None:
-    source = pathlib.Path(__file__).resolve().parents[3] / "examples/specs/minimal.moana.json"
+    source = pathlib.Path(__file__).resolve().parents[3] / "examples/specs/minimal.moanart.json"
     doc = validate_document(source.read_bytes())
     result = render(doc)
     cloth = (0x36, 0xAF, 0xA5, 0xFF)
@@ -179,7 +179,7 @@ def test_minimal_example_document() -> None:
         estimator_version="budget-v8",
         rng_version=RNG_VERSION,
     )
-    assert result.provenance.moana_version == moana.__version__
+    assert result.provenance.moanart_version == moanart.__version__
     assert result.warnings == ()
 
 

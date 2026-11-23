@@ -1,4 +1,4 @@
-"""Schema 1.0 payload of ``outline`` (MOANA-014, MOANA.md sections 8 and 12, ADR-027)."""
+"""Schema 1.0 payload of ``outline`` (MOANA-014, MOANART.md sections 8 and 12, ADR-027)."""
 
 from __future__ import annotations
 
@@ -7,9 +7,9 @@ from typing import Any
 
 import pytest
 
-from moana.core import errors
-from moana.core.limits import MAX_MORPHOLOGY_RADIUS
-from moana.schema import (
+from moanart.core import errors
+from moanart.core.limits import MAX_MORPHOLOGY_RADIUS
+from moanart.schema import (
     OPERATION_MEMBERS,
     PLANNED_OPERATION_TYPES,
     SUPPORTED_OPERATION_TYPES,
@@ -20,7 +20,7 @@ from moana.schema import (
     normalize_document,
     validate_document,
 )
-from moana.techniques import MAX_OUTLINE_WIDTH
+from moanart.techniques import MAX_OUTLINE_WIDTH
 
 POINTER = "/layers/0/operations/1"
 

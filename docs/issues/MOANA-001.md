@@ -25,7 +25,7 @@ Proveer tipos y errores que expresen las reglas exactas de límites.
 
 ## Scope
 
-Crear moana/core con contratos inmutables de coordenadas, cajas, dimensiones, límites y jerarquía de errores utilizada por todos los módulos.
+Crear moanart/core con contratos inmutables de coordenadas, cajas, dimensiones, límites y jerarquía de errores utilizada por todos los módulos.
 
 ## Out of scope
 
@@ -33,7 +33,7 @@ No reservar buffers ni dibujar; no crear aún modelos de documento.
 
 ## Technical requirements
 
-- Aplicar cajas semiabiertas, enteros sin bool y top-left según MOANA.md §5
+- Aplicar cajas semiabiertas, enteros sin bool y top-left según MOANART.md §5
 - Separar datos de límites de su aplicación; códigos de error estables sin imports de capas superiores
 
 ## Proposed implementation
@@ -53,12 +53,12 @@ No reservar buffers ni dibujar; no crear aún modelos de documento.
 
 ## Expected deliverables
 
-- Tipos Point/Box/Dimensions, configuración de límites y jerarquía de errores en moana/core.
+- Tipos Point/Box/Dimensions, configuración de límites y jerarquía de errores en moanart/core.
 - Fixtures de bordes y propiedades de intersección; documentación de cajas vacías y errores.
 
 ## Definition of Done
 
-Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adjuntar evidencia por ID, pasar el gate y revisar el resultado. Dependencias completadas y [ciclo de vida](../guides/issue-lifecycle.md) respetado.
+Cumplir [MOANART.md §25](../../MOANART.md), todos los criterios AC y pruebas T; adjuntar evidencia por ID, pasar el gate y revisar el resultado. Dependencias completadas y [ciclo de vida](../guides/issue-lifecycle.md) respetado.
 
 ## Risks and notes
 
@@ -78,13 +78,13 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 ### 2. Lectura obligatoria (en orden)
 
 1. `CLAUDE.md` (Claude Code) o `AGENTS.md` (Codex) y [flujo de sesión](../guides/agent-workflow.md).
-2. MOANA.md: §3 Arquitectura modular; §5 Motor de lienzo y píxeles; §20 Seguridad y validación; §25 Definition of Done. Estas secciones son el contrato normativo; ante duda, prevalecen sobre este issue.
+2. MOANART.md: §3 Arquitectura modular; §5 Motor de lienzo y píxeles; §20 Seguridad y validación; §25 Definition of Done. Estas secciones son el contrato normativo; ante duda, prevalecen sobre este issue.
 3. [Contratos de módulos](../architecture/module-contracts.md) para: `core`.
 4. Estándares: [python](../../docs/standards/python.md), [architecture](../../docs/standards/architecture.md), [testing](../../docs/standards/testing.md).
 5. Issues de dependencia ([MOANA-000](MOANA-000.md)): leer su sección Evidence para conocer las APIs ya entregadas; no reimplementarlas.
 6. ADR en `docs/architecture/` que mencionen los módulos afectados.
 
-### 3. Requisitos de MOANA.md cubiertos
+### 3. Requisitos de MOANART.md cubiertos
 
 | ID | Requisito | Secciones | Verificación exigida |
 | --- | --- | --- | --- |
@@ -96,12 +96,12 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 | Host | Skills a cargar | Revisión especializada |
 | --- | --- | --- |
-| Claude Code | `moana-python`, `moana-graphics`, `moana-code-review` | `moana-python-engineer`, `moana-architect` (sólo lectura; el agente principal integra) |
-| Codex | `$moana-python`, `$moana-graphics`, `$moana-code-review` | `moana_python_engineer`, `moana_architect` |
+| Claude Code | `moanart-python`, `moanart-graphics`, `moanart-code-review` | `moanart-python-engineer`, `moanart-architect` (sólo lectura; el agente principal integra) |
+| Codex | `$moanart-python`, `$moanart-graphics`, `$moanart-code-review` | `moanart_python_engineer`, `moanart_architect` |
 
 ### 5. Archivos
 
-- Código o documentos a crear/modificar: `src/moana/core/`.
+- Código o documentos a crear/modificar: `src/moanart/core/`.
 - Pruebas: `tests/unit/core/`.
 - No crear módulos ni carpetas sin comportamiento real. No tocar otros módulos salvo exportaciones imprescindibles, justificadas en el PR.
 
@@ -109,16 +109,16 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 - T1: Parametrizar extremos de rango, cajas negativas, bordes y tamaños 1/128/2048
 - T2: Propiedades de intersección: conmutatividad, contención y ausencia de expansión
-- Oráculos independientes (cálculo a mano o fórmula de MOANA.md); nunca copiar la salida de la implementación como expected.
+- Oráculos independientes (cálculo a mano o fórmula de MOANART.md); nunca copiar la salida de la implementación como expected.
 - Incluir casos negativos con el error de dominio esperado y casos borde (vacío, mínimo, máximo, fuera de rango).
 
 ### 7. Procedimiento
 
 1. Escribir las pruebas de los criterios AC y T antes o junto con la implementación.
-2. Implementar sólo **Scope**; respetar **Out of scope** y las dependencias permitidas de MOANA.md §3.
+2. Implementar sólo **Scope**; respetar **Out of scope** y las dependencias permitidas de MOANART.md §3.
 3. Validación de módulo: `uv run pytest tests/unit/core/ -q` y `uv run mypy src/`.
 4. Validación completa: `uv run python scripts/validate.py` y `uv run python scripts/check_wheel.py`.
-5. Revisión: subagentes listados y skill `moana-code-review`; corregir hallazgos críticos y altos.
+5. Revisión: subagentes listados y skill `moanart-code-review`; corregir hallazgos críticos y altos.
 6. Si hay salida raster: mostrar el PNG a 1x y ampliado por vecino más cercano; si cambia un golden, presentar expected/actual/diff y justificar.
 
 ### 8. Cierre
@@ -137,12 +137,12 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Evidence
 
-- Implementación: src/moana/core/{__init__,coordinates,errors,limits}.py; decisión ADR-010.
+- Implementación: src/moanart/core/{__init__,coordinates,errors,limits}.py; decisión ADR-010.
 - uv run python scripts/validate.py: ruff, mypy estricto, check_repository y pytest verdes; core 100 % de ramas cubiertas.
-- uv run python scripts/check_wheel.py: wheel aislado importa moana.core.
-- Revisión por subagentes moana-python-engineer y moana-architect; hallazgos alto/medios corregidos (borde excluido +1, errores picklables con json_pointer, GeometryLimits, ADR).
+- uv run python scripts/check_wheel.py: wheel aislado importa moanart.core.
+- Revisión por subagentes moanart-python-engineer y moanart-architect; hallazgos alto/medios corregidos (borde excluido +1, errores picklables con json_pointer, GeometryLimits, ADR).
 - Aprobado por el propietario el 2026-11-17 tras revisión; PR hacia develop.
 - AC1: tests/unit/core/test_core_coordinates.py::test_dimensions_out_of_range_fail, ::test_only_real_python_ints_are_coordinates y ::test_empty_or_inverted_box_fail: dimensión 0, bool/float/str/NumPy y cajas invertidas lanzan ValidationError (code VALIDATION_ERROR, context field/reason).
-- AC2: Semántica en src/moana/core/coordinates.py, docs/architecture/module-contracts.md (core), ADR-010 y MOANA.md §5; tests ::test_unit_box_contains_exactly_one_pixel, ::test_canvas_box_and_clipping, ::test_intersection_of_touching_boxes_is_none; test_core_architecture.py prueba que core no importa NumPy/Pillow.
+- AC2: Semántica en src/moanart/core/coordinates.py, docs/architecture/module-contracts.md (core), ADR-010 y MOANART.md §5; tests ::test_unit_box_contains_exactly_one_pixel, ::test_canvas_box_and_clipping, ::test_intersection_of_touching_boxes_is_none; test_core_architecture.py prueba que core no importa NumPy/Pillow.
 - T1: test_core_coordinates.py: tamaños 1/128/2048 y 2048×1, coordenadas ±1 048 576 y ±1 048 577, cajas negativas, bordes semiabiertos, rangos de esquinas y clip de caja máxima; test_core_limits.py: límites reducidos y píxeles en lienzos 1×1 y 2048.
 - T2: test_core_coordinates.py con Hypothesis: intersección contra oráculo de conjuntos de píxeles (rango pequeño y cerca del máximo), conmutatividad, contención, no expansión, idempotencia y clip contra conjunto del lienzo.

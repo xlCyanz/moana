@@ -1,4 +1,4 @@
-"""Project values, limits and module boundaries of moana.project (ADR-029)."""
+"""Project values, limits and module boundaries of moanart.project (ADR-029)."""
 
 from __future__ import annotations
 
@@ -9,15 +9,15 @@ from typing import Any
 
 import pytest
 
-from moana.core.errors import BudgetExceeded, ValidationError
-from moana.core.limits import MAX_ASSET_PIXELS, MAX_PROJECT_ASSETS
-from moana.editing import History
-from moana.project import Asset, Project, ProjectLimits, encode_project, load_project
-from moana.schema import Document
+from moanart.core.errors import BudgetExceeded, ValidationError
+from moanart.core.limits import MAX_ASSET_PIXELS, MAX_PROJECT_ASSETS
+from moanart.editing import History
+from moanart.project import Asset, Project, ProjectLimits, encode_project, load_project
+from moanart.schema import Document
 
 from .conftest import BatchFactory, PngFactory
 
-SRC = Path(__file__).resolve().parents[3] / "src/moana"
+SRC = Path(__file__).resolve().parents[3] / "src/moanart"
 PROJECT = SRC / "project"
 ALLOWED_THIRD_PARTY = {"pydantic", "pydantic_core", "PIL"}
 
@@ -39,9 +39,11 @@ def test_project_imports_only_core_schema_editing_and_pillow() -> None:
             assert (
                 root in sys.stdlib_module_names
                 or root in ALLOWED_THIRD_PARTY
-                or name.startswith(("moana.core", "moana.schema", "moana.editing", "moana.project"))
+                or name.startswith(
+                    ("moanart.core", "moanart.schema", "moanart.editing", "moanart.project")
+                )
             ), f"{path.name} imports {name}"
-            assert not name.startswith("moana.schema._"), f"{path.name} imports {name}"
+            assert not name.startswith("moanart.schema._"), f"{path.name} imports {name}"
 
 
 def test_lower_modules_never_import_project() -> None:
@@ -51,8 +53,8 @@ def test_lower_modules_never_import_project() -> None:
             continue
         relative = path.relative_to(SRC).parts
         if relative[0] in ("api", "cli"):
-            continue  # the facade and the CLI sit above project (MOANA.md section 3)
-        assert not any(name.startswith("moana.project") for name in _imports(path)), path
+            continue  # the facade and the CLI sit above project (MOANART.md section 3)
+        assert not any(name.startswith("moanart.project") for name in _imports(path)), path
         checked += 1
     assert checked > 20
 

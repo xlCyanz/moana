@@ -31,7 +31,7 @@ def test_body_rewrites_issue_and_relative_links() -> None:
     markdown = (
         "# MOANA-002 — Title\n\n> Generado por `scripts/planning.py`; editar.\n\n"
         "Deps: [MOANA-001](MOANA-001.md), [old](MOA-001.md), [unknown](MOANA-099.md)\n"
-        "[spec](../../MOANA.md) [ctx](../architecture/module-contracts.md#core) "
+        "[spec](../../MOANART.md) [ctx](../architecture/module-contracts.md#core) "
         "[web](https://example.com) Closes #<número>"
     )
     body = github_body(
@@ -45,7 +45,7 @@ def test_body_rewrites_issue_and_relative_links() -> None:
     assert "Sincronizado desde" in body and "Generado por" not in body
     assert body.count("https://github.com/owner/repo/issues/7") == 2
     assert "https://github.com/owner/repo/blob/main/docs/issues/MOANA-099.md" in body
-    assert "https://github.com/owner/repo/blob/main/MOANA.md" in body
+    assert "https://github.com/owner/repo/blob/main/MOANART.md" in body
     assert "blob/main/docs/architecture/module-contracts.md#core" in body
     assert "[web](https://example.com)" in body
     assert "Closes #8" in body
@@ -191,7 +191,7 @@ def _desired(**changes: Any) -> dict[str, Any]:
     payload: dict[str, Any] = {
         "title": "MOANA-001 — t",
         "body": "Body\n",
-        "labels": ["moana", "status:done"],
+        "labels": ["moanart", "status:done"],
         "milestone": 2,
         "state": "closed",
         "state_reason": "completed",
@@ -203,7 +203,7 @@ def _current(**changes: Any) -> dict[str, Any]:
     item: dict[str, Any] = {
         "title": "MOANA-001 — t",
         "body": "Body\r\n",
-        "labels": [{"name": "status:done"}, {"name": "moana"}],
+        "labels": [{"name": "status:done"}, {"name": "moanart"}],
         "milestone": {"number": 2},
         "state": "closed",
         "state_reason": "completed",
@@ -223,7 +223,7 @@ def test_unchanged_issue_needs_no_write() -> None:
     [
         (_current(title="old"), {"title": "MOANA-001 — t"}),
         (_current(body="Old"), {"body": "Body\n"}),
-        (_current(labels=[{"name": "moana"}]), {"labels": ["moana", "status:done"]}),
+        (_current(labels=[{"name": "moanart"}]), {"labels": ["moanart", "status:done"]}),
         (_current(milestone=None), {"milestone": 2}),
         (
             _current(state="open", state_reason=None),

@@ -1,7 +1,7 @@
 """Modular tiles and the meadow scene of ``examples/tiles`` (MOANA-034).
 
 Oracles are independent of ``scripts/tiles.py``: ``numpy`` tiling and flips, the
-Bayer 2 x 2 threshold of MOANA.md section 10 evaluated on canvas coordinates,
+Bayer 2 x 2 threshold of MOANART.md section 10 evaluated on canvas coordinates,
 material classes read from palette IDs, boxes computed by hand from the documented
 pivots, and the atlas pasted back with plain array slicing.
 """
@@ -19,7 +19,7 @@ import numpy.typing as npt
 import pytest
 from PIL import Image
 
-from moana.api import (
+from moanart.api import (
     Document,
     apply_edit,
     evaluate_quality,
@@ -28,8 +28,8 @@ from moana.api import (
     render,
     snapshot_digest,
 )
-from moana.export import SheetFrame, export_spritesheet, load_spritesheet
-from moana.render import render_with_regions
+from moanart.export import SheetFrame, export_spritesheet, load_spritesheet
+from moanart.render import render_with_regions
 from scripts.tiles import (
     ATLAS_COLUMNS,
     MAX_SOURCE_BYTES,
@@ -149,7 +149,7 @@ def test_the_scene_cells_are_the_tiles_translated_by_whole_tiles() -> None:
 
 def _assert_canvas_phase(tree: dict[str, Any], origin: tuple[int, int] = (0, 0)) -> RGBA:
     """Keep only the dithers of ``tree`` and check every painted pixel against the
-    Bayer 2 x 2 threshold of MOANA.md section 10 on canvas coordinates."""
+    Bayer 2 x 2 threshold of MOANART.md section 10 on canvas coordinates."""
     tree = copy.deepcopy(tree)
     colour_a, colour_b = set(), set()
     for layer in tree["layers"]:
@@ -323,12 +323,12 @@ def test_prop_with_a_texture_must_keep_the_dither_phase() -> None:
 def _write_layout(
     folder: Path, source: dict[str, Any], border: tuple[str, ...] = ("fill",), **changes: Any
 ) -> Path:
-    (folder / "tile.moana.json").write_text(json.dumps(source), encoding="utf-8")
+    (folder / "tile.moanart.json").write_text(json.dumps(source), encoding="utf-8")
     size = source["canvas"]["width"]
     layout = {
-        "format": "moana-tile-layout/1",
+        "format": "moanart-tile-layout/1",
         "id": "mini",
-        "scene": "mini.moana.json",
+        "scene": "mini.moanart.json",
         "document_id": "scene_mini",
         "seed": 1,
         "tile_size": [size, size],
@@ -337,7 +337,7 @@ def _write_layout(
             {
                 "id": "t",
                 "kind": "tile",
-                "path": "tile.moana.json",
+                "path": "tile.moanart.json",
                 "pivot": [0, 0],
                 "edges": {side: f"grass*{size}" for side in "nesw"},
                 "border_operations": border,
@@ -390,7 +390,7 @@ def _dither(size: int, origin: list[int]) -> dict[str, Any]:
             {},
             "unsupported_operation",
         ),
-        (8, [], {"format": "moana-tile-layout/9"}, "unknown_format"),
+        (8, [], {"format": "moanart-tile-layout/9"}, "unknown_format"),
         (8, [], {"tile_size": [16, 16]}, "size"),
         (
             8,
@@ -403,7 +403,7 @@ def _dither(size: int, origin: list[int]) -> dict[str, Any]:
         (8, [], {"sources": 5}, "invalid_layout"),
         (8, [], {"seed": "1"}, "invalid_layout"),
         (8, [], {"grid": [["t", 3]]}, "invalid_layout"),
-        (8, [], {"scene": "../mini.moana.json"}, "invalid_layout"),
+        (8, [], {"scene": "../mini.moanart.json"}, "invalid_layout"),
         (8, [], {"extra": True}, "invalid_layout"),
         (
             8,
@@ -466,18 +466,18 @@ def _with_source_entry(layout_path: Path, **entry: Any) -> None:
 @pytest.mark.parametrize(
     ("relative", "reason"),
     [
-        ("../tile.moana.json", "path_escape"),
-        ("tiles/../../tile.moana.json", "path_escape"),
+        ("../tile.moanart.json", "path_escape"),
+        ("tiles/../../tile.moanart.json", "path_escape"),
         ("/etc/passwd", "path_escape"),
-        ("C:/tile.moana.json", "path_escape"),
-        ("missing.moana.json", "not_found"),
+        ("C:/tile.moanart.json", "path_escape"),
+        ("missing.moanart.json", "not_found"),
     ],
 )
 def test_source_paths_stay_in_the_layout_folder(tmp_path: Path, relative: str, reason: str) -> None:
     folder = tmp_path / "layout"
     folder.mkdir()
     path = _write_layout(folder, _mini_source(8, []))
-    (tmp_path / "tile.moana.json").write_text("{}", encoding="utf-8")
+    (tmp_path / "tile.moanart.json").write_text("{}", encoding="utf-8")
     _with_source_entry(path, path=relative)
     with pytest.raises(LayoutError) as caught:
         load_layout(path)
@@ -488,13 +488,13 @@ def test_a_symlink_cannot_escape_the_layout_folder(tmp_path: Path) -> None:
     folder = tmp_path / "layout"
     folder.mkdir()
     path = _write_layout(folder, _mini_source(8, []))
-    outside = tmp_path / "outside.moana.json"
+    outside = tmp_path / "outside.moanart.json"
     outside.write_text(json.dumps(_mini_source(8, [])), encoding="utf-8")
     try:
-        (folder / "link.moana.json").symlink_to(outside)
+        (folder / "link.moanart.json").symlink_to(outside)
     except OSError:
         pytest.skip("symlinks are not available")
-    _with_source_entry(path, path="link.moana.json")
+    _with_source_entry(path, path="link.moanart.json")
     with pytest.raises(LayoutError) as caught:
         load_layout(path)
     assert caught.value.reason == "path_escape"
@@ -502,29 +502,29 @@ def test_a_symlink_cannot_escape_the_layout_folder(tmp_path: Path) -> None:
 
 def test_oversized_and_invalid_sources_are_rejected_before_use(tmp_path: Path) -> None:
     path = _write_layout(tmp_path, _mini_source(8, []))
-    big = tmp_path / "big.moana.json"
+    big = tmp_path / "big.moanart.json"
     big.write_text(" " * (MAX_SOURCE_BYTES + 1), encoding="utf-8")
-    _with_source_entry(path, path="big.moana.json")
+    _with_source_entry(path, path="big.moanart.json")
     with pytest.raises(LayoutError) as caught:
         load_layout(path)
     assert caught.value.reason == "too_large"
 
     bad = _mini_source(8, [])
     bad["seed"] = -1
-    (tmp_path / "bad.moana.json").write_text(json.dumps(bad), encoding="utf-8")
-    _with_source_entry(path, path="bad.moana.json")
+    (tmp_path / "bad.moanart.json").write_text(json.dumps(bad), encoding="utf-8")
+    _with_source_entry(path, path="bad.moanart.json")
     with pytest.raises(LayoutError) as caught:
         load_layout(path)
     assert caught.value.reason == "invalid_source"
     assert check(tmp_path)[0].startswith("mini.layout.json: source t is invalid")
 
-    (tmp_path / "text.moana.json").write_text("not json", encoding="utf-8")
-    _with_source_entry(path, path="text.moana.json")
+    (tmp_path / "text.moanart.json").write_text("not json", encoding="utf-8")
+    _with_source_entry(path, path="text.moanart.json")
     with pytest.raises(LayoutError) as caught:
         load_layout(path)
     assert caught.value.reason == "not_json"
 
-    _with_source_entry(path, path="tile.moana.json", border_operations=["fill", "nothing"])
+    _with_source_entry(path, path="tile.moanart.json", border_operations=["fill", "nothing"])
     with pytest.raises(LayoutError) as caught:
         load_layout(path)
     assert caught.value.reason == "unknown_id"
@@ -534,11 +534,11 @@ def test_sources_must_share_one_palette(tmp_path: Path) -> None:
     tree = _mini_source(8, [])
     other = copy.deepcopy(tree)
     other["palette"]["colors"][0]["rgba"] = "#000000FF"
-    (tmp_path / "other.moana.json").write_text(json.dumps(other), encoding="utf-8")
+    (tmp_path / "other.moanart.json").write_text(json.dumps(other), encoding="utf-8")
     second = {
         "id": "u",
         "kind": "tile",
-        "path": "other.moana.json",
+        "path": "other.moanart.json",
         "pivot": [0, 0],
         "edges": {side: "grass*8" for side in "nesw"},
         "border_operations": ["fill"],
@@ -555,7 +555,7 @@ def test_sources_must_share_one_palette(tmp_path: Path) -> None:
 def test_check_reports_a_stale_scene_and_build_regenerates_it(tmp_path: Path) -> None:
     path = _write_layout(tmp_path, _mini_source(8, [_dither(2, [0, 0])]))
     assert check(tmp_path) == [
-        "mini.layout.json: mini.moana.json is stale; run scripts/tiles.py build"
+        "mini.layout.json: mini.moanart.json is stale; run scripts/tiles.py build"
     ]
     layout = load_layout(path)
     layout.scene_path.write_text(format_document(build_scene(layout)), encoding="utf-8")

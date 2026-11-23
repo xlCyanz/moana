@@ -2,7 +2,7 @@
 
 Two oracles written apart from the incremental index:
 
-* :func:`moana.editing._tree.index_nodes`, the full rebuild the editor ran before
+* :func:`moanart.editing._tree.index_nodes`, the full rebuild the editor ran before
   every command, recomputed from the working tree after every command;
 * :class:`RebuildingIndex`, the editor as it was before ADR-040: every lookup
   rebuilds the index from the tree and palette membership scans the palette, and
@@ -23,9 +23,9 @@ import pytest
 from hypothesis import event, given, settings
 from hypothesis import strategies as st
 
-from moana.animation import evaluate_animation, render_animation
-from moana.core.errors import MoanaError
-from moana.editing import (
+from moanart.animation import evaluate_animation, render_animation
+from moanart.core.errors import MoanArtError
+from moanart.editing import (
     SetColor,
     Translate,
     apply,
@@ -33,7 +33,7 @@ from moana.editing import (
     apply_commands,
     parse_edit_batch,
 )
-from moana.editing._tree import (
+from moanart.editing._tree import (
     OPERATION_MEMBERS,
     JsonObject,
     Node,
@@ -41,8 +41,8 @@ from moana.editing._tree import (
     index_nodes,
     node_members,
 )
-from moana.render import render
-from moana.schema import (
+from moanart.render import render
+from moanart.schema import (
     Document,
     canonical_json,
     normalize_document,
@@ -57,10 +57,11 @@ ROOT = Path(__file__).resolve().parents[3]
 EXAMPLES = ROOT / "examples"
 DOCUMENT_PATHS = sorted(
     [
-        *(EXAMPLES / "specs").glob("*.moana.json"),
-        *(EXAMPLES / "corpus").glob("*/*.moana.json"),
-        EXAMPLES / "tiles" / "meadow.moana.json",
-        EXAMPLES / "tutorial" / "potion.moana.json",
+        *(EXAMPLES / "specs").glob("*.moanart.json"),
+        *(EXAMPLES / "corpus").glob("*/*.moanart.json"),
+        *(EXAMPLES / "desk").glob("*.moanart.json"),
+        EXAMPLES / "tiles" / "meadow.moanart.json",
+        EXAMPLES / "tutorial" / "potion.moanart.json",
     ]
 )
 EDIT_PATHS = sorted(EXAMPLES.rglob("*.edit.json"))
@@ -136,7 +137,7 @@ def verifying(original: Apply, log: list[str]) -> Apply:
     def call(work: apply._Work, command: object, pointer: str) -> tuple[str, ...]:
         try:
             result = original(work, command, pointer)
-        except MoanaError:
+        except MoanArtError:
             log.append(f"{type(command).__name__}:failed")
             raise
         else:
@@ -148,7 +149,7 @@ def verifying(original: Apply, log: list[str]) -> Apply:
     return call
 
 
-def error_key(error: MoanaError) -> tuple[object, ...]:
+def error_key(error: MoanArtError) -> tuple[object, ...]:
     return (
         type(error),
         error.code,
@@ -168,7 +169,7 @@ def outcome(run: Callable[[], Any], *, reference: bool, log: list[str] | None = 
             patch.setattr(apply, "_apply", verifying(apply._apply, [] if log is None else log))
         try:
             return run()
-        except MoanaError as error:
+        except MoanArtError as error:
             return ("error", *error_key(error))
 
 
@@ -362,7 +363,7 @@ def test_t1_index_matches_a_fresh_rebuild_after_every_command(data: st.DataObjec
         event(entry)
 
 
-ORB = "specs/shaded-orb.moana.json"
+ORB = "specs/shaded-orb.moanart.json"
 SHADE = index_nodes(normalize_document(DOCUMENTS[ORB]))["orb_shading"].value
 
 STRUCTURAL: list[tuple[str, Tree]] = [
@@ -376,8 +377,8 @@ STRUCTURAL: list[tuple[str, Tree]] = [
             "operation": renamed(SHADE, "_copy"),
         },
     ),
-    ("specs/material-wood.moana.json", {"type": "remove", "target_id": "wood_outline"}),
-    ("specs/minimal.moana.json", {"type": "remove", "target_id": "body"}),
+    ("specs/material-wood.moanart.json", {"type": "remove", "target_id": "wood_outline"}),
+    ("specs/minimal.moanart.json", {"type": "remove", "target_id": "body"}),
     (ORB, {"type": "reorder", "target_id": "orb_outline", "after_id": None}),
     (
         ORB,
@@ -388,11 +389,11 @@ STRUCTURAL: list[tuple[str, Tree]] = [
         },
     ),
     (
-        "specs/material-wood.moana.json",
+        "specs/material-wood.moanart.json",
         {"type": "set_parameters", "target_id": "wood_material", "parameters": {"density": 32}},
     ),
     (
-        "specs/masked-eyes.moana.json",
+        "specs/masked-eyes.moanart.json",
         {"type": "set_geometry", "target_id": "eye_left_shape", "geometry": {"box": [4, 6, 8, 9]}},
     ),
 ]

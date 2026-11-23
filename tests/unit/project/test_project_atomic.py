@@ -12,9 +12,9 @@ from typing import Any
 
 import pytest
 
-from moana.core.errors import ExportError, ReadError, ValidationError
-from moana.export.atomic import commit_bytes
-from moana.project import (
+from moanart.core.errors import ExportError, ReadError, ValidationError
+from moanart.export.atomic import commit_bytes
+from moanart.project import (
     MANIFEST_NAME,
     Asset,
     Project,
@@ -24,7 +24,7 @@ from moana.project import (
     save_project,
     save_project_archive,
 )
-from moana.schema import Document, canonical_json
+from moanart.schema import Document, canonical_json
 
 from .conftest import PngFactory, make_batch
 
@@ -281,7 +281,7 @@ def test_t1_archive_failure_keeps_the_previous_archive(
     project: Project,
     stage: str,
 ) -> None:
-    target = tmp_path / "p.moana"
+    target = tmp_path / "p.moanart"
     if stage != "link":
         save_project_archive(Project(document), target)
     before = target.read_bytes() if target.exists() else None
@@ -296,14 +296,14 @@ def test_t1_archive_failure_keeps_the_previous_archive(
 def test_t1_single_file_saves_never_overwrite_implicitly(
     tmp_path: Path, document: Document, project: Project
 ) -> None:
-    target = tmp_path / "doc.moana.json"
+    target = tmp_path / "doc.moanart.json"
     save_document(document, target)
     with pytest.raises(ExportError) as caught:
         save_document(document, target)
     assert caught.value.context["reason"] == "exists"
     save_document(document, target, overwrite=True)
     with pytest.raises(ExportError) as missing:
-        save_project_archive(project, tmp_path / "absent" / "p.moana")
+        save_project_archive(project, tmp_path / "absent" / "p.moanart")
     assert missing.value.context["reason"] == "missing_directory"
     (tmp_path / "folder").mkdir()
     for overwrite in (False, True):
@@ -314,7 +314,7 @@ def test_t1_single_file_saves_never_overwrite_implicitly(
         save_document({}, target)  # type: ignore[arg-type]
 
 
-# --- parity with moana.export.atomic (ADR-019) ---------------------------------------
+# --- parity with moanart.export.atomic (ADR-019) ---------------------------------------
 
 
 class _WindowsNoLinks(OSError):
@@ -365,7 +365,7 @@ def test_t1_atomic_write_errors_match_export_atomic(
     data = canonical_json(document)
     contexts: list[dict[str, object]] = []
     for writer in ("export", "project"):
-        target = tmp_path / writer / "doc.moana.json"
+        target = tmp_path / writer / "doc.moanart.json"
         target.parent.mkdir()
         replacement = _raising(error, only_temporary=function == "open")
         with monkeypatch.context() as patch:
@@ -393,11 +393,11 @@ def test_t1_eexist_for_the_same_file_is_success(
 
     monkeypatch.setattr(os, "link", link_then_lost_reply)
     if save == "document":
-        save_document(project.document, tmp_path / "d.moana.json")
+        save_document(project.document, tmp_path / "d.moanart.json")
     else:
         save_project(project, tmp_path / "p")
     monkeypatch.undo()
-    loaded = load_project(tmp_path / ("d.moana.json" if save == "document" else "p"))
+    loaded = load_project(tmp_path / ("d.moanart.json" if save == "document" else "p"))
     assert loaded.document == project.document
     assert _leftovers(tmp_path) == []
 
@@ -476,7 +476,7 @@ def test_t1_temporary_file_creation_failures(
 ) -> None:
     monkeypatch.setattr(os, "open", _raising(FileExistsError(17, "x"), only_temporary=True))
     with pytest.raises(ExportError) as caught:
-        save_document(document, tmp_path / "d.moana.json")
+        save_document(document, tmp_path / "d.moanart.json")
     assert caught.value.context["reason"] == "io_error"
     assert "errno" not in caught.value.context
 
@@ -534,9 +534,9 @@ def test_t1_caller_path_links_are_followed(
     real.mkdir()
     _symlink(tmp_path / "alias", real)
     save_project(project, tmp_path / "alias" / "p")
-    save_project_archive(project, tmp_path / "alias" / "p.moana")
+    save_project_archive(project, tmp_path / "alias" / "p.moanart")
     assert load_project(tmp_path / "alias" / "p") == project
-    assert load_project(real / "p.moana") == project
+    assert load_project(real / "p.moanart") == project
     _symlink(tmp_path / "linked-project", real / "p")
     assert load_project(tmp_path / "linked-project") == project
 
@@ -611,7 +611,7 @@ def test_t1_unreadable_ancestor_is_permission_denied_without_the_path(
     locked.chmod(0)
     try:
         calls: tuple[Callable[[], object], ...] = (
-            lambda: save_document(document, locked / "sub" / "d.moana.json"),
+            lambda: save_document(document, locked / "sub" / "d.moanart.json"),
             lambda: save_project(Project(document), locked / "sub" / "p"),
         )
         for call in calls:
@@ -632,7 +632,7 @@ def test_t1_inspection_failures_of_the_destination(
 
     def failing(error: OSError, original: Callable[..., Any]) -> Callable[..., Any]:
         def call(path: Any, *args: Any, **kwargs: Any) -> Any:
-            if Path(path).name == "d.moana.json":
+            if Path(path).name == "d.moanart.json":
                 raise error
             return original(path, *args, **kwargs)
 
@@ -646,9 +646,9 @@ def test_t1_inspection_failures_of_the_destination(
             patch.setattr(os, "stat", failing(error, real_stat))
             patch.setattr(os, "lstat", failing(error, real_lstat))
             with pytest.raises(ExportError) as caught:
-                save_document(document, tmp_path / "d.moana.json")
+                save_document(document, tmp_path / "d.moanart.json")
         assert caught.value.context["reason"] == reason
-        assert caught.value.context["file_name"] == "d.moana.json"
+        assert caught.value.context["file_name"] == "d.moanart.json"
 
 
 # --- caller paths and reads ----------------------------------------------------------
@@ -688,7 +688,7 @@ def test_temporary_file_errors_carry_errno(
 ) -> None:
     monkeypatch.setattr(os, "open", _raising(PermissionError(13, "x"), only_temporary=True))
     with pytest.raises(ExportError) as caught:
-        save_document(document, tmp_path / "d.moana.json")
+        save_document(document, tmp_path / "d.moanart.json")
     assert caught.value.context["errno"] == "EACCES"
 
 
@@ -793,10 +793,10 @@ def test_missing_project_directory_is_not_found(
 def test_read_failures_after_open_are_io_errors(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, document: Document
 ) -> None:
-    save_document(document, tmp_path / "d.moana.json")
+    save_document(document, tmp_path / "d.moanart.json")
     monkeypatch.setattr(os, "read", _fail)
     with pytest.raises(ReadError) as caught:
-        load_project(tmp_path / "d.moana.json")
+        load_project(tmp_path / "d.moanart.json")
     assert caught.value.context["reason"] == "io_error"
 
 

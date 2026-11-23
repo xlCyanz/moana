@@ -17,10 +17,10 @@ from typing import Any
 
 import pytest
 
-from moana.animation import AnimationRender, FrameRender, render_animation, render_frame
-from moana.core.budget import RenderLimits
-from moana.render import admit_sequence, plan_frame
-from moana.schema import Document, normalize_document, validate_document
+from moanart.animation import AnimationRender, FrameRender, render_animation, render_frame
+from moanart.core.budget import RenderLimits
+from moanart.render import admit_sequence, plan_frame
+from moanart.schema import Document, normalize_document, validate_document
 
 FRAMES = 256
 OPERATIONS = 2000

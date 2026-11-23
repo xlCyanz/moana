@@ -1,0 +1,127 @@
+{
+  "schema_version": "1.0",
+  "base_revision": 1,
+  "base_snapshot": "sha256:a2e95043e603219c97025f7e775bb54e51be693c752e4cd23b222afa915eaa32",
+  "commands": [
+    {
+      "type": "set_geometry",
+      "target_id": "overhang_front_deep",
+      "geometry": {
+        "points": [
+          [
+            81,
+            183
+          ],
+          [
+            325,
+            305
+          ],
+          [
+            325,
+            307
+          ],
+          [
+            81,
+            185
+          ]
+        ]
+      }
+    },
+    {
+      "type": "set_geometry",
+      "target_id": "overhang_front_dark",
+      "geometry": {
+        "points": [
+          [
+            81,
+            185
+          ],
+          [
+            325,
+            307
+          ],
+          [
+            325,
+            311
+          ],
+          [
+            81,
+            189
+          ]
+        ]
+      }
+    },
+    {
+      "type": "set_geometry",
+      "target_id": "overhang_front_soft",
+      "geometry": {
+        "points": [
+          [
+            81,
+            189
+          ],
+          [
+            325,
+            311
+          ],
+          [
+            325,
+            317
+          ],
+          [
+            81,
+            195
+          ]
+        ]
+      }
+    },
+    {
+      "type": "set_geometry",
+      "target_id": "overhang_side_deep",
+      "geometry": {
+        "points": [
+          [
+            325,
+            305
+          ],
+          [
+            431,
+            252
+          ],
+          [
+            431,
+            255
+          ],
+          [
+            325,
+            308
+          ]
+        ]
+      }
+    },
+    {
+      "type": "set_geometry",
+      "target_id": "overhang_side_dark",
+      "geometry": {
+        "points": [
+          [
+            325,
+            308
+          ],
+          [
+            431,
+            255
+          ],
+          [
+            431,
+            262
+          ],
+          [
+            325,
+            315
+          ]
+        ]
+      }
+    }
+  ]
+}

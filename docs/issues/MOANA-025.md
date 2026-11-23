@@ -58,7 +58,7 @@ No WebP lossy por defecto ni dependencia obligatoria de encoders ausentes.
 
 ## Definition of Done
 
-Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adjuntar evidencia por ID, pasar el gate y revisar el resultado. Dependencias completadas y [ciclo de vida](../guides/issue-lifecycle.md) respetado.
+Cumplir [MOANART.md §25](../../MOANART.md), todos los criterios AC y pruebas T; adjuntar evidencia por ID, pasar el gate y revisar el resultado. Dependencias completadas y [ciclo de vida](../guides/issue-lifecycle.md) respetado.
 
 ## Risks and notes
 
@@ -78,13 +78,13 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 ### 2. Lectura obligatoria (en orden)
 
 1. `CLAUDE.md` (Claude Code) o `AGENTS.md` (Codex) y [flujo de sesión](../guides/agent-workflow.md).
-2. MOANA.md: §3 Arquitectura modular; §18 Exportación PNG, GIF y formatos adicionales; §25 Definition of Done. Estas secciones son el contrato normativo; ante duda, prevalecen sobre este issue.
+2. MOANART.md: §3 Arquitectura modular; §18 Exportación PNG, GIF y formatos adicionales; §25 Definition of Done. Estas secciones son el contrato normativo; ante duda, prevalecen sobre este issue.
 3. [Contratos de módulos](../architecture/module-contracts.md) para: `export`.
 4. Estándares: [python](../../docs/standards/python.md), [architecture](../../docs/standards/architecture.md), [testing](../../docs/standards/testing.md).
 5. Issues de dependencia ([MOANA-022](MOANA-022.md), [MOANA-011](MOANA-011.md)): leer su sección Evidence para conocer las APIs ya entregadas; no reimplementarlas.
 6. ADR en `docs/architecture/` que mencionen los módulos afectados.
 
-### 3. Requisitos de MOANA.md cubiertos
+### 3. Requisitos de MOANART.md cubiertos
 
 | ID | Requisito | Secciones | Verificación exigida |
 | --- | --- | --- | --- |
@@ -94,12 +94,12 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 | Host | Skills a cargar | Revisión especializada |
 | --- | --- | --- |
-| Claude Code | `moana-graphics`, `moana-python`, `moana-code-review` | `moana-graphics-engineer`, `moana-python-engineer` (sólo lectura; el agente principal integra) |
-| Codex | `$moana-graphics`, `$moana-python`, `$moana-code-review` | `moana_graphics_engineer`, `moana_python_engineer` |
+| Claude Code | `moanart-graphics`, `moanart-python`, `moanart-code-review` | `moanart-graphics-engineer`, `moanart-python-engineer` (sólo lectura; el agente principal integra) |
+| Codex | `$moanart-graphics`, `$moanart-python`, `$moanart-code-review` | `moanart_graphics_engineer`, `moanart_python_engineer` |
 
 ### 5. Archivos
 
-- Código o documentos a crear/modificar: `src/moana/export/`.
+- Código o documentos a crear/modificar: `src/moanart/export/`.
 - Pruebas: `tests/unit/export/`.
 - No crear módulos ni carpetas sin comportamiento real. No tocar otros módulos salvo exportaciones imprescindibles, justificadas en el PR.
 
@@ -107,16 +107,16 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 - T1: Pruebas condicionadas a capacidades con skip explicado y reporte del build
 - T2: Mock de codec ausente y casos multi-frame, alfa parcial y duración
-- Oráculos independientes (cálculo a mano o fórmula de MOANA.md); nunca copiar la salida de la implementación como expected.
+- Oráculos independientes (cálculo a mano o fórmula de MOANART.md); nunca copiar la salida de la implementación como expected.
 - Incluir casos negativos con el error de dominio esperado y casos borde (vacío, mínimo, máximo, fuera de rango).
 
 ### 7. Procedimiento
 
 1. Escribir las pruebas de los criterios AC y T antes o junto con la implementación.
-2. Implementar sólo **Scope**; respetar **Out of scope** y las dependencias permitidas de MOANA.md §3.
+2. Implementar sólo **Scope**; respetar **Out of scope** y las dependencias permitidas de MOANART.md §3.
 3. Validación de módulo: `uv run pytest tests/unit/export/ -q` y `uv run mypy src/`.
 4. Validación completa: `uv run python scripts/validate.py` y `uv run python scripts/check_wheel.py`.
-5. Revisión: subagentes listados y skill `moana-code-review`; corregir hallazgos críticos y altos.
+5. Revisión: subagentes listados y skill `moanart-code-review`; corregir hallazgos críticos y altos.
 6. Si hay salida raster: mostrar el PNG a 1x y ampliado por vecino más cercano; si cambia un golden, presentar expected/actual/diff y justificar.
 
 ### 8. Cierre
@@ -135,13 +135,13 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Evidence
 
-- moana.export.codecs: export_capabilities()/codec_status() comprueban en tiempo de ejecución, sin caché ni estado global, cada formato (png, gif, apng, webp): codec presente (PIL.features) y roundtrip mínimo en memoria con alfa parcial, varios frames y bucle; reason missing o roundtrip_failed (cualquier excepción de la sonda se informa, nunca rompe). La matriz de este build (macOS, Pillow 13.0.0, zlib 1.3.1.zlib-ng, libwebp 1.6.0: los cuatro disponibles) consta en ADR-035; moana.api.capabilities y `moana capabilities` publican export_codecs (export_formats se conserva).
-- moana.export.animated (ADR-035): encode_apng/export_apng y encode_webp/export_webp sólo lossless (sin opción lossy) sobre el protocolo SpriteFrame; el codec se exige (UnsupportedOperation codec_unavailable con formato, codec y versión de Pillow) antes de leer frames y de crear temporal o destino, sin sustituir formato. APNG usa extensión .png y media type image/apng; WebP .webp.
-- APNG con contenedor escrito por Moana (IHDR RGBA8, acTL, fcTL por frame completo con dispose NONE y blend SOURCE, retardos ms/1000 exactos, IDAT/fdAT con un único contador de secuencia; Pillow sólo comprime); WebP lossless con opciones fijas (method 4, exact) compartidas con la sonda; frames iguales fusionados por libwebp verificados como timeline equivalente y una sola imagen distinta guardada como VP8L fija (detección por chunks RIFF) con AnimationWarning still_image y stored_durations_ms/stored_loop_count None.
+- moanart.export.codecs: export_capabilities()/codec_status() comprueban en tiempo de ejecución, sin caché ni estado global, cada formato (png, gif, apng, webp): codec presente (PIL.features) y roundtrip mínimo en memoria con alfa parcial, varios frames y bucle; reason missing o roundtrip_failed (cualquier excepción de la sonda se informa, nunca rompe). La matriz de este build (macOS, Pillow 13.0.0, zlib 1.3.1.zlib-ng, libwebp 1.6.0: los cuatro disponibles) consta en ADR-035; moanart.api.capabilities y `moanart capabilities` publican export_codecs (export_formats se conserva).
+- moanart.export.animated (ADR-035): encode_apng/export_apng y encode_webp/export_webp sólo lossless (sin opción lossy) sobre el protocolo SpriteFrame; el codec se exige (UnsupportedOperation codec_unavailable con formato, codec y versión de Pillow) antes de leer frames y de crear temporal o destino, sin sustituir formato. APNG usa extensión .png y media type image/apng; WebP .webp.
+- APNG con contenedor escrito por MoanArt (IHDR RGBA8, acTL, fcTL por frame completo con dispose NONE y blend SOURCE, retardos ms/1000 exactos, IDAT/fdAT con un único contador de secuencia; Pillow sólo comprime); WebP lossless con opciones fijas (method 4, exact) compartidas con la sonda; frames iguales fusionados por libwebp verificados como timeline equivalente y una sola imagen distinta guardada como VP8L fija (detección por chunks RIFF) con AnimationWarning still_image y stored_durations_ms/stored_loop_count None.
 - loop_count = reproducciones totales (0 infinito), escrito tal cual en num_plays de APNG y ANIM de WebP; verificación decodificando con Pillow (frames normalizados, milisegundos exactos, bucle) antes del commit atómico; bytes idénticos con las mismas versiones de codec, que el informe registra.
-- Presupuesto antes de leer píxeles con buffer_bytes = C + F·A + O·n·A calibrado con RSS real en subprocesos (APNG 0/48/12; WebP 24 MiB/64/32, porque tracemalloc no ve la memoria nativa de libwebp); test de RSS en subproceso. Helpers compartidos con GIF en moana.export._frames (bytes de GIF idénticos tras el refactor, comprobado por la revisión de gráficos).
-- Documentación: ADR-035, MOANA.md 0.1.23-draft (§13 export_codecs, §18), module-contracts, sección «APNG y WebP» en docs/standards/pixel-art.md.
-- Revisiones de agente: gráficos (APNG contrastado con ffprobe/ffmpeg y WebP con webpinfo/dwebp; presupuesto WebP corregido) y python (sondas robustas, avisos estructurados, detección RIFF y errores sin eco) con cambios aplicados. Gate local macOS: scripts/validate.py verde con src/moana al 100 %, check_wheel OK, mypy --platform win32 OK, pre-commit OK; matriz pendiente en main (RSS no medido en Linux ni Windows).
+- Presupuesto antes de leer píxeles con buffer_bytes = C + F·A + O·n·A calibrado con RSS real en subprocesos (APNG 0/48/12; WebP 24 MiB/64/32, porque tracemalloc no ve la memoria nativa de libwebp); test de RSS en subproceso. Helpers compartidos con GIF en moanart.export._frames (bytes de GIF idénticos tras el refactor, comprobado por la revisión de gráficos).
+- Documentación: ADR-035, MOANART.md 0.1.23-draft (§13 export_codecs, §18), module-contracts, sección «APNG y WebP» en docs/standards/pixel-art.md.
+- Revisiones de agente: gráficos (APNG contrastado con ffprobe/ffmpeg y WebP con webpinfo/dwebp; presupuesto WebP corregido) y python (sondas robustas, avisos estructurados, detección RIFF y errores sin eco) con cambios aplicados. Gate local macOS: scripts/validate.py verde con src/moanart al 100 %, check_wheel OK, mypy --platform win32 OK, pre-commit OK; matriz pendiente en main (RSS no medido en Linux ni Windows).
 - Aprobado por el propietario el 2026-11-17 tras revisión; PR #65 hacia develop.
 - AC1: tests/unit/export/test_export_animated.py::test_multi_frame_partial_alpha_and_durations_roundtrip_exactly[apng|webp], ::test_decoded_timeline_equals_the_target (hypothesis), ::test_apng_container_is_full_frame_with_exact_delays, ::test_webp_stores_exact_milliseconds_and_the_loop, ::test_loop_count_is_total_plays; tests/integration/test_animated_export.py::test_bouncing_slime_decodes_to_the_rendered_timeline[apng|webp].
 - AC2: tests/unit/export/test_export_animated.py::test_an_absent_codec_is_unsupported_and_writes_nothing[apng|webp] (directorio sin cambios y frames sin leer), ::test_a_failing_probe_is_unsupported_too; tests/unit/export/test_export_codecs.py::test_a_missing_webp_module_is_reported_and_refused.

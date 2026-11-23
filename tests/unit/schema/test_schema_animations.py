@@ -1,7 +1,7 @@
 """Schema 1.0 grammar of ``animations`` (MOANA-022 T1, T2; ADR-032).
 
 Every tree below is written by hand; expected pointers, reasons and limits come from
-MOANA.md section 17 and ADR-032, never from the validator's own output.
+MOANART.md section 17 and ADR-032, never from the validator's own output.
 """
 
 from __future__ import annotations
@@ -12,9 +12,9 @@ from typing import Any
 
 import pytest
 
-from moana.core import errors
-from moana.core.coordinates import MAX_COORDINATE, Point
-from moana.core.limits import (
+from moanart.core import errors
+from moanart.core.coordinates import MAX_COORDINATE, Point
+from moanart.core.limits import (
     MAX_ANIMATION_DURATION_MS,
     MAX_ANIMATION_FRAMES,
     MAX_ANIMATIONS,
@@ -23,7 +23,7 @@ from moana.core.limits import (
     MAX_LOOP_COUNT,
     MIN_FRAME_DURATION_MS,
 )
-from moana.schema import (
+from moanart.schema import (
     MAX_OVERRIDE_SHIFT,
     PLANNED_COLLECTIONS,
     SUPPORTED_COLLECTIONS,
@@ -90,7 +90,7 @@ def frame(index: int, **members: object) -> Tree:
 
 
 def problems(tree: Tree) -> list[tuple[str | None, str, object]]:
-    with pytest.raises(errors.MoanaError) as raised:
+    with pytest.raises(errors.MoanArtError) as raised:
         validate_document(tree)
     return [
         (detail.json_pointer, detail.code, detail.context.get("reason"))

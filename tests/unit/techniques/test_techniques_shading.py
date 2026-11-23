@@ -15,11 +15,11 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from moana.core.coordinates import Box
-from moana.core.errors import ValidationError
-from moana.geometry import Mask
-from moana.geometry.mask import _restore
-from moana.techniques import (
+from moanart.core.coordinates import Box
+from moanart.core.errors import ValidationError
+from moanart.geometry import Mask
+from moanart.geometry.mask import _restore
+from moanart.techniques import (
     COSINE,
     EXPOSURE_SCALE,
     FACINGS,

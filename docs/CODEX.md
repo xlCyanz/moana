@@ -9,14 +9,14 @@ Observación local: **2026-11-17**, proyecto existente en macOS arm64. No se con
 | Agentes | Herramientas de colaboración presentes en esta sesión | Ocho roles TOML; heredan modelo/herramientas/permisos |
 | Feature flags CLI | `hooks` stable=true; `multi_agent` deprecated=true; `multi_agent_v2` stable=false | No activar flags experimentales/deprecated por suposición |
 | Proyecto Codex | `[agents]` con enabled y máximo de 3 subagentes | Estructura verificable; no demuestra carga activa en esta conversación |
-| Git | Rama codex/initialize-moana; commit 9388c57 | Origin xlCyanz/moana; esta tarea conserva los cambios locales sin commit/push |
+| Git | Rama codex/initialize-moanart; commit 9388c57 | Origin xlCyanz/moana; esta tarea conserva los cambios locales sin commit/push |
 | Git hooks | pre-commit instalado en `.git/hooks/pre-commit` | Ejecuta tools del venv; no requiere uv global |
 | GitHub CLI | `gh` está instalado | Consultas de runs y logs autorizadas por lectura; no se cambió configuración remota |
 | GitHub Actions | Workflow y plantillas reales en `.github/` | Quality de 9388c57 observado: fallo Windows por locale; corrección local pendiente de nueva ejecución remota |
 | Plugins externos | GitHub y OpenAI Developers aparecen disponibles para instalar, no conectados como herramientas de esta sesión | No necesarios para preparar el repo local; no se afirma integración activa |
 | Automatizaciones | Gate local, hooks Git, workflow y Dependabot de acciones | No se crearon recordatorios ni tareas periódicas de la app |
 
-Los roles son `moana_architect`, `moana_python_engineer`, `moana_graphics_engineer`, `moana_pixel_artist`, `moana_test_engineer`, `moana_reviewer` `moana_issue_planner` y `moana_documentation_writer`. Se registran como archivos de proyecto según la documentación oficial. No se verificó inferencia bajo estos perfiles TOML; su descubrimiento depende de la confianza del proyecto y de la superficie que abra la sesión. Se delegaron tareas independientes de auditoría/documentación en esta preparación; la integración y los checks finales corresponden al agente principal. No se crearon otros chats.
+Los roles son `moanart_architect`, `moanart_python_engineer`, `moanart_graphics_engineer`, `moanart_pixel_artist`, `moanart_test_engineer`, `moanart_reviewer` `moanart_issue_planner` y `moanart_documentation_writer`. Se registran como archivos de proyecto según la documentación oficial. No se verificó inferencia bajo estos perfiles TOML; su descubrimiento depende de la confianza del proyecto y de la superficie que abra la sesión. Se delegaron tareas independientes de auditoría/documentación en esta preparación; la integración y los checks finales corresponden al agente principal. No se crearon otros chats.
 
 La consulta nativa `skills/list` del app-server confirmó las siete skills de `.agents/skills` en este checkout, con recarga forzada. La evidencia filtrada está en `artifacts/codex-skills.json` (artefacto local ignorado). El resultado del app-server no garantiza que una conversación ya abierta recargue su catálogo de herramientas. `agents/openai.yaml` describe la skill en la UI; no configura un subagente. Los roles están separados bajo `.codex/agents/`.
 

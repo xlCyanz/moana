@@ -1,4 +1,4 @@
-"""Benchmark corpus of MOANA.md section 22, built programmatically (MOANA-031).
+"""Benchmark corpus of MOANART.md section 22, built programmatically (MOANA-031).
 
 * ``static``: a 128x128 strict document with exactly 32 layers and 500 ``rect``
   operations (20 layers of 16 rects and 12 of 15), 16 opaque palette colours.
@@ -10,7 +10,7 @@
   real-art cases that are timed as they are.
 
 The generator is pure integer arithmetic; it never calls the engine. Documents are
-returned as JSON trees; the runner validates them through :mod:`moana.schema`.
+returned as JSON trees; the runner validates them through :mod:`moanart.schema`.
 """
 
 from __future__ import annotations
@@ -147,7 +147,7 @@ def animation_document() -> Json:
 
 def example_document(slug: str) -> Json:
     """One reviewed MOANA-027 example as stored in the repository."""
-    path = EXAMPLES / slug / f"{slug}.moana.json"
+    path = EXAMPLES / slug / f"{slug}.moanart.json"
     value: Json = json.loads(path.read_text(encoding="utf-8"))
     return value
 

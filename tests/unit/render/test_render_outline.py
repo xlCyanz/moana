@@ -14,17 +14,17 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from moana.api import inspect_document
-from moana.core import errors
-from moana.core.budget import RenderLimits
-from moana.core.coordinates import Dimensions
-from moana.core.limits import MAX_MORPHOLOGY_RADIUS
-from moana.core.morphology import MORPHOLOGY_FIXED_BYTES
-from moana.editing import History, apply_batch
-from moana.render import ESTIMATOR_VERSION, estimate_cost, plan_budget, render
-from moana.render.budget import OUTLINE_PASSES, fill_count, mask_estimates, outline_cost
-from moana.render.pipeline import _outline, _plan_masks
-from moana.schema import Document, OutlineOperation, snapshot_digest, validate_document
+from moanart.api import inspect_document
+from moanart.core import errors
+from moanart.core.budget import RenderLimits
+from moanart.core.coordinates import Dimensions
+from moanart.core.limits import MAX_MORPHOLOGY_RADIUS
+from moanart.core.morphology import MORPHOLOGY_FIXED_BYTES
+from moanart.editing import History, apply_batch
+from moanart.render import ESTIMATOR_VERSION, estimate_cost, plan_budget, render
+from moanart.render.budget import OUTLINE_PASSES, fill_count, mask_estimates, outline_cost
+from moanart.render.pipeline import _outline, _plan_masks
+from moanart.schema import Document, OutlineOperation, snapshot_digest, validate_document
 
 RGBA = tuple[int, int, int, int]
 CLEAR: RGBA = (0, 0, 0, 0)

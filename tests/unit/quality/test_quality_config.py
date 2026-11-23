@@ -8,8 +8,8 @@ import json
 
 import pytest
 
-from moana.core.errors import ValidationError
-from moana.quality import (
+from moanart.core.errors import ValidationError
+from moanart.quality import (
     DEFAULT_RULES,
     HARD_RULES,
     MAX_QUALITY_REGIONS,

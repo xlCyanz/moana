@@ -2,7 +2,7 @@
 
 Reading a project never extracts to disk: these tests arm the write tripwire, and for
 budget cases also forbid ``zipfile.ZipFile.open`` (no entry may be decompressed
-before the central directory is fully accepted). The limits are those of MOANA.md
+before the central directory is fully accepted). The limits are those of MOANART.md
 section 16 and ``ProjectLimits``; hostile names are generated, never copied from an
 engine message.
 """
@@ -19,8 +19,8 @@ import pytest
 from hypothesis import given
 from hypothesis import strategies as st
 
-from moana.core.errors import BudgetExceeded, MoanaError, ValidationError
-from moana.project import MANIFEST_NAME, ProjectLimits, load_project
+from moanart.core.errors import BudgetExceeded, MoanArtError, ValidationError
+from moanart.project import MANIFEST_NAME, ProjectLimits, load_project
 
 from .corpus import SECRET, archive, asset_name, symlink_entry, with_central_size
 from .guards import (
@@ -43,7 +43,7 @@ def _no_decompression() -> AbstractContextManager[None]:
     return forbid(zipfile.ZipFile, "open")
 
 
-def _load_hostile(source: Path, limits: ProjectLimits | None = None) -> MoanaError:
+def _load_hostile(source: Path, limits: ProjectLimits | None = None) -> MoanArtError:
     root = source.parent
     before = tree_state(root)
     chosen = ProjectLimits() if limits is None else limits
@@ -80,7 +80,7 @@ def test_t1_property_traversal_names_are_refused_before_extraction(
     entries = [(name, b"payload"), (MANIFEST_NAME, b"{}")]
     if not first:
         entries.reverse()
-    source = root / "evil.moana"
+    source = root / "evil.moanart"
     source.write_bytes(archive(entries))
     error = _load_hostile(source)
     assert isinstance(error, ValidationError)
@@ -96,7 +96,7 @@ def test_t1_property_traversal_names_are_refused_before_extraction(
 
 
 def test_t1_symlink_entry_is_refused_even_with_a_layout_name(tmp_path: Path) -> None:
-    source = tmp_path / "link.moana"
+    source = tmp_path / "link.moanart"
     source.write_bytes(
         archive([(MANIFEST_NAME, b"{}"), (symlink_entry(asset_name()), b"/etc/passwd")])
     )
@@ -111,7 +111,7 @@ def test_t1_symlink_entry_is_refused_even_with_a_layout_name(tmp_path: Path) -> 
 def test_t1_expanded_total_is_budgeted_before_any_entry_is_decompressed(tmp_path: Path) -> None:
     payload = bytes(range(256)) * 16  # 4096 bytes that deflate poorly (ratio < 100)
     names = [asset_name(digit) for digit in "0123"]
-    source = tmp_path / "wide.moana"
+    source = tmp_path / "wide.moanart"
     source.write_bytes(archive([(MANIFEST_NAME, b"{}"), *((n, payload) for n in names)]))
     limits = ProjectLimits(max_archive_expanded_bytes=3 * 4096)  # 2 + 4 x 4096 declared
     with _no_decompression():
@@ -125,7 +125,7 @@ def test_t1_expanded_total_is_budgeted_before_any_entry_is_decompressed(tmp_path
 def test_t1_declared_ratio_bomb_is_refused_before_decompression(tmp_path: Path, ratio: int) -> None:
     data = archive([(MANIFEST_NAME, b"{}"), (asset_name(), b"z" * 10)])
     # compressed (stored) size 10: declaring 10·ratio bytes exceeds 100:1 when ratio > 100
-    source = tmp_path / "bomb.moana"
+    source = tmp_path / "bomb.moanart"
     source.write_bytes(with_central_size(data, 1, min(10 * ratio, 2**32 - 2)))
     with _no_decompression():
         error = _load_hostile(source)
@@ -135,7 +135,7 @@ def test_t1_declared_ratio_bomb_is_refused_before_decompression(tmp_path: Path, 
 
 def test_t1_entry_count_is_budgeted_from_the_end_record(tmp_path: Path) -> None:
     entries = [(f"assets/{index:064x}.png", b"") for index in range(9)]
-    source = tmp_path / "many.moana"
+    source = tmp_path / "many.moanart"
     source.write_bytes(archive([(MANIFEST_NAME, b"{}"), *entries]))
     with _no_decompression():
         error = _load_hostile(source, ProjectLimits(max_archive_entries=9))
@@ -177,7 +177,7 @@ def _sparse(path: Path, head: bytes, size: int) -> None:
 def test_t2_oversized_sources_are_read_only_up_to_their_bound(
     tmp_path: Path, head: bytes, limits: ProjectLimits, bound: int, resource: str | None
 ) -> None:
-    source = tmp_path / "huge.moana"
+    source = tmp_path / "huge.moanart"
     _sparse(source, head, 64 * 1024 * 1024)  # 64 MiB on disk, sparse: no real IO
     total = [0]
     with _counted_reads(total):

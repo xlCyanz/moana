@@ -9,9 +9,9 @@ from typing import Any
 
 import pytest
 
-from moana.core import MAX_RAMP_ENTRIES, ValidationError
-from moana.core import errors as core_errors
-from moana.palette import (
+from moanart.core import MAX_RAMP_ENTRIES, ValidationError
+from moanart.core import errors as core_errors
+from moanart.palette import (
     RAMP_LUMINANCE_NOT_INCREASING,
     RAMP_PARTIAL_ALPHA_STEP,
     RAMP_TRANSPARENT_STEP,
@@ -54,7 +54,7 @@ def mapping(n: int, *, alpha: str = "FF") -> dict[str, Any]:
     }
 
 
-def reasons(error: core_errors.MoanaError) -> list[tuple[str | None, str]]:
+def reasons(error: core_errors.MoanArtError) -> list[tuple[str | None, str]]:
     return [(d.json_pointer, str(d.context["reason"])) for d in error.details]
 
 

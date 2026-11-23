@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import pytest
 
-from moana.core.coordinates import Box, Dimensions, Point
-from moana.core.errors import ValidationError
-from moana.geometry import rasterize_ellipse, rasterize_rect, select_cells
+from moanart.core.coordinates import Box, Dimensions, Point
+from moanart.core.errors import ValidationError
+from moanart.geometry import rasterize_ellipse, rasterize_rect, select_cells
 
 CANVAS = Dimensions(20, 12)
 

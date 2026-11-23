@@ -1,4 +1,4 @@
-"""moana.animation respects MOANA.md section 3: core, schema, editing and render only."""
+"""moanart.animation respects MOANART.md section 3: core, schema, editing and render only."""
 
 from __future__ import annotations
 
@@ -7,17 +7,23 @@ import sys
 from collections.abc import Iterator
 from pathlib import Path
 
-SRC = Path(__file__).resolve().parents[3] / "src/moana"
+SRC = Path(__file__).resolve().parents[3] / "src/moanart"
 ANIMATION = SRC / "animation"
-ALLOWED = ("moana.core", "moana.schema", "moana.editing", "moana.render", "moana.animation")
+ALLOWED = (
+    "moanart.core",
+    "moanart.schema",
+    "moanart.editing",
+    "moanart.render",
+    "moanart.animation",
+)
 
 
 def imported_modules(path: Path) -> Iterator[str]:
-    """Every module a file imports; ``from moana import x`` yields ``moana.x``."""
+    """Every module a file imports; ``from moanart import x`` yields ``moanart.x``."""
     for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
         if isinstance(node, ast.ImportFrom) and node.module:
-            if node.module == "moana":
-                yield from (f"moana.{alias.name}" for alias in node.names)
+            if node.module == "moanart":
+                yield from (f"moanart.{alias.name}" for alias in node.names)
             else:
                 yield node.module
         elif isinstance(node, ast.Import):
@@ -32,7 +38,7 @@ def test_animation_imports_only_allowed_modules_and_public_names() -> None:
             root = name.split(".")[0]
             assert root in sys.stdlib_module_names or name.startswith(ALLOWED), name
             # Only public package APIs of the lower modules (no private submodules).
-            if not name.startswith("moana.animation") and root == "moana":
+            if not name.startswith("moanart.animation") and root == "moanart":
                 assert "._" not in name, name
 
 
@@ -41,7 +47,7 @@ def test_no_lower_module_imports_animation() -> None:
         if path.is_relative_to(ANIMATION) or path.is_relative_to(SRC / "api"):
             continue
         for name in imported_modules(path):
-            assert not name.startswith("moana.animation"), f"{path.name} imports {name}"
+            assert not name.startswith("moanart.animation"), f"{path.name} imports {name}"
 
 
 def test_no_eval_exec_pickle_or_dynamic_import() -> None:

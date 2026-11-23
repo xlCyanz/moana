@@ -1,6 +1,6 @@
 # Ciclo de vida de issues
 
-La fuente editable es [catalog.json](../issues/catalog.json); [requirements.json](../requirements.json) define requisitos y secciones de MOANA.md. Los Markdown, índices, roadmap y mapa se generan mediante `scripts/planning.py`. No mantener dos descripciones manuales del mismo trabajo.
+La fuente editable es [catalog.json](../issues/catalog.json); [requirements.json](../requirements.json) define requisitos y secciones de MOANART.md. Los Markdown, índices, roadmap y mapa se generan mediante `scripts/planning.py`. No mantener dos descripciones manuales del mismo trabajo.
 
 ## Identidad y metadatos
 
@@ -69,7 +69,7 @@ El catálogo es la fuente de verdad; GitHub es un espejo regenerable. `scripts/g
 
 - **Issues**: título `MOANA-xxx — título`; cuerpo igual al documento generado, con la sección «Guía para agentes de IA» y enlaces convertidos a issues y archivos de `main`. Los issues `done` se cierran como completados. La correspondencia ID → número queda en [github-map.json](../issues/github-map.json).
 - **Milestones**: uno por fase (`P0 — Inicialización` … `P5 — Evaluación y release`), con su puerta de salida; se cierran cuando todos sus issues están `done`.
-- **Labels**: `moana`, `phase:Px`, `priority:Px`, `complexity:S|M|L|XL`, `status:<estado>` y `module:<módulo>`.
+- **Labels**: `moanart`, `phase:Px`, `priority:Px`, `complexity:S|M|L|XL`, `status:<estado>` y `module:<módulo>`.
 - **Dependencias**: relaciones nativas «blocked by» de GitHub, una por arista del DAG.
 
 No editar issues, labels ni dependencias directamente en GitHub: la siguiente sincronización los sobrescribe. Para cambiar alcance o estado, editar el catálogo, regenerar y sincronizar.

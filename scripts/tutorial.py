@@ -3,11 +3,11 @@
 ``docs/guides/ai-workflows.md`` is the single source of the tutorial commands: its
 ``sh`` blocks are parsed into an ordered list of :class:`Step` values and run from a
 directory laid out like the repository root. ``tests/unit/api/test_tutorial.py``
-runs them with the development environment (``moana`` in process) and
-``scripts/check_wheel.py`` with the installed wheel (``moana`` executable and the
+runs them with the development environment (``moanart`` in process) and
+``scripts/check_wheel.py`` with the installed wheel (``moanart`` executable and the
 venv interpreter in isolated mode), so the guide cannot drift from either.
 
-The grammar is deliberately tiny: one command per line, ``moana``, ``python`` or
+The grammar is deliberately tiny: one command per line, ``moanart``, ``python`` or
 ``mkdir -p DIR``, an optional ``> FILE`` stdout redirect and an optional trailing
 ``# exit N`` (expected exit code, default 0). Anything else (pipes, chaining, other
 redirects, variables, globs, continuations, other fenced block languages) is a
@@ -27,16 +27,16 @@ from typing import Final
 ROOT: Final = Path(__file__).resolve().parents[1]
 GUIDE: Final = ROOT / "docs" / "guides" / "ai-workflows.md"
 INPUTS: Final = (
-    "examples/tutorial/potion.moana.json",
+    "examples/tutorial/potion.moanart.json",
     "examples/tutorial/potion-recolor.edit.json",
     "examples/tutorial/potion-typo.edit.json",
     "examples/tutorial/potion_flow.py",
-    "examples/specs/minimal.moana.json",
+    "examples/specs/minimal.moanart.json",
 )
 """Repository files the guide's commands read; copy them into the run directory."""
 OUTPUT_DIR: Final = "artifacts/tutorial"
 ALLOWED_LANGUAGES: Final = frozenset({"sh", "json", "python"})
-PROGRAMS: Final = frozenset({"moana", "python", "mkdir"})
+PROGRAMS: Final = frozenset({"moanart", "python", "mkdir"})
 FORBIDDEN_TOKENS: Final = frozenset({"|", ">>", "2>", "&&", "||", ";", "<", "&"})
 FORBIDDEN_CHARACTERS: Final = ("$", "*", "`")
 TIMEOUT: Final = 300
@@ -80,8 +80,8 @@ class Outcome:
     stderr: str
 
 
-type MoanaRunner = Callable[[Sequence[str], Path], tuple[int, str, str]]
-"""Runs ``moana ARGS`` in a directory and returns ``(exit code, stdout, stderr)``."""
+type MoanArtRunner = Callable[[Sequence[str], Path], tuple[int, str, str]]
+"""Runs ``moanart ARGS`` in a directory and returns ``(exit code, stdout, stderr)``."""
 
 
 def code_blocks(text: str) -> list[tuple[str, str]]:
@@ -151,8 +151,8 @@ def prepare(destination: Path) -> None:
 
 def command_runner(
     command: Sequence[str], environment: Mapping[str, str] | None = None
-) -> MoanaRunner:
-    """A :data:`MoanaRunner` that runs ``command`` (e.g. the installed ``moana``)."""
+) -> MoanArtRunner:
+    """A :data:`MoanArtRunner` that runs ``command`` (e.g. the installed ``moanart``)."""
 
     def run(arguments: Sequence[str], cwd: Path) -> tuple[int, str, str]:
         completed = subprocess.run(
@@ -173,7 +173,7 @@ def run_steps(
     steps: Sequence[Step],
     cwd: Path,
     *,
-    moana: MoanaRunner,
+    moanart: MoanArtRunner,
     python: Sequence[str],
     environment: Mapping[str, str] | None = None,
 ) -> list[Outcome]:
@@ -189,7 +189,7 @@ def run_steps(
             (cwd / step.arguments[1]).mkdir(parents=True, exist_ok=True)
             outcome = Outcome(step, 0, "", "")
         else:
-            runner = moana if step.program == "moana" else python_runner
+            runner = moanart if step.program == "moanart" else python_runner
             code, stdout, stderr = runner(step.arguments, cwd)
             outcome = Outcome(step, code, stdout, stderr)
         if outcome.exit_code != step.exit_code:

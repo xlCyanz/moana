@@ -58,7 +58,7 @@ No inventar aprobaciones humanas ni generar ejemplos finales con un modelo visua
 
 ## Definition of Done
 
-Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adjuntar evidencia por ID, pasar el gate y revisar el resultado. Dependencias completadas y [ciclo de vida](../guides/issue-lifecycle.md) respetado.
+Cumplir [MOANART.md §25](../../MOANART.md), todos los criterios AC y pruebas T; adjuntar evidencia por ID, pasar el gate y revisar el resultado. Dependencias completadas y [ciclo de vida](../guides/issue-lifecycle.md) respetado.
 
 ## Risks and notes
 
@@ -78,13 +78,13 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 ### 2. Lectura obligatoria (en orden)
 
 1. `CLAUDE.md` (Claude Code) o `AGENTS.md` (Codex) y [flujo de sesión](../guides/agent-workflow.md).
-2. MOANA.md: §1 Visión y objetivos; §3 Arquitectura modular; §7 Técnicas profesionales de Pixel Art; §13 API pública de Python; §15 Edición no destructiva; §19 Control de calidad gráfico; §21 Testing y regresiones visuales; §25 Definition of Done. Estas secciones son el contrato normativo; ante duda, prevalecen sobre este issue.
+2. MOANART.md: §1 Visión y objetivos; §3 Arquitectura modular; §7 Técnicas profesionales de Pixel Art; §13 API pública de Python; §15 Edición no destructiva; §19 Control de calidad gráfico; §21 Testing y regresiones visuales; §25 Definition of Done. Estas secciones son el contrato normativo; ante duda, prevalecen sobre este issue.
 3. [Contratos de módulos](../architecture/module-contracts.md) para: `examples`, `quality`.
 4. Estándares: [pixel-art](../../docs/standards/pixel-art.md), [python](../../docs/standards/python.md), [architecture](../../docs/standards/architecture.md), [testing](../../docs/standards/testing.md).
 5. Issues de dependencia ([MOANA-017](MOANA-017.md), [MOANA-022](MOANA-022.md), [MOANA-026](MOANA-026.md), [MOANA-028](MOANA-028.md)): leer su sección Evidence para conocer las APIs ya entregadas; no reimplementarlas.
 6. ADR en `docs/architecture/` que mencionen los módulos afectados.
 
-### 3. Requisitos de MOANA.md cubiertos
+### 3. Requisitos de MOANART.md cubiertos
 
 | ID | Requisito | Secciones | Verificación exigida |
 | --- | --- | --- | --- |
@@ -96,12 +96,12 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 | Host | Skills a cargar | Revisión especializada |
 | --- | --- | --- |
-| Claude Code | `moana-pixel-art`, `moana-testing`, `moana-code-review` | `moana-pixel-artist`, `moana-documentation`, `moana-qa-engineer` (sólo lectura; el agente principal integra) |
-| Codex | `$moana-pixel-art`, `$moana-testing`, `$moana-code-review` | `moana_pixel_artist`, `moana_documentation`, `moana_qa_engineer` |
+| Claude Code | `moanart-pixel-art`, `moanart-testing`, `moanart-code-review` | `moanart-pixel-artist`, `moanart-documentation`, `moanart-qa-engineer` (sólo lectura; el agente principal integra) |
+| Codex | `$moanart-pixel-art`, `$moanart-testing`, `$moanart-code-review` | `moanart_pixel_artist`, `moanart_documentation`, `moanart_qa_engineer` |
 
 ### 5. Archivos
 
-- Código o documentos a crear/modificar: `examples/`, `src/moana/quality/`.
+- Código o documentos a crear/modificar: `examples/`, `src/moanart/quality/`.
 - Pruebas: `tests/integration/`, `tests/unit/quality/`.
 - No crear módulos ni carpetas sin comportamiento real. No tocar otros módulos salvo exportaciones imprescindibles, justificadas en el PR.
 
@@ -109,16 +109,16 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 - T1: Render de todo el corpus y cambio localizado por región con diff
 - T2: Inspección visual documentada, estabilidad de animación y auditoría de procedencia
-- Oráculos independientes (cálculo a mano o fórmula de MOANA.md); nunca copiar la salida de la implementación como expected.
+- Oráculos independientes (cálculo a mano o fórmula de MOANART.md); nunca copiar la salida de la implementación como expected.
 - Incluir casos negativos con el error de dominio esperado y casos borde (vacío, mínimo, máximo, fuera de rango).
 
 ### 7. Procedimiento
 
 1. Escribir las pruebas de los criterios AC y T antes o junto con la implementación.
-2. Implementar sólo **Scope**; respetar **Out of scope** y las dependencias permitidas de MOANA.md §3.
+2. Implementar sólo **Scope**; respetar **Out of scope** y las dependencias permitidas de MOANART.md §3.
 3. Validación de módulo: `uv run pytest tests/integration/ tests/unit/quality/ -q` y `uv run mypy src/`.
 4. Validación completa: `uv run python scripts/validate.py` y `uv run python scripts/check_wheel.py`.
-5. Revisión: subagentes listados y skill `moana-code-review`; corregir hallazgos críticos y altos.
+5. Revisión: subagentes listados y skill `moanart-code-review`; corregir hallazgos críticos y altos.
 6. Si hay salida raster: mostrar el PNG a 1x y ampliado por vecino más cercano; si cambia un golden, presentar expected/actual/diff y justificar.
 
 ### 8. Cierre
@@ -137,11 +137,11 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Evidence
 
-- Corpus artístico de referencia en examples/corpus/<slug>/ (ADR-037): adventurer (personaje 24×32), frog (criatura 32×27), chest (objeto 32×28), stone-tile (tile 16×16 sin costuras) y adventurer-walk (animación de 6 frames a 120 ms); paleta strict y luz NW en todos. Cada ejemplo: documento .moana.json (única fuente), registro .corpus.json (moana-corpus-entry/1) con brief, procedencia (creado por un agente de IA mediante operaciones de Moana; licencia PENDIENTE de decisión del propietario), digests de render fijados, informe de calidad, inspección del agente y rúbrica; previews 1×, 4×, silueta y clusters (más 3×3 del tile y tira de la animación) como goldens del harness visual.
-- Rúbrica moana-rubric/1 validada por moana.quality.parse_rubric: categorías legibilidad, silueta, clusters, paleta, luz/material y continuidad temporal en animaciones; cada una pending_human_review o reviewed (1–5); professional sólo con hard checks superados, human_review (reviewer_kind human, render_fingerprint del render revisado) y todas las puntuaciones ≥ 4; agent_assessment etiquetado como no humano y nunca cuenta.
+- Corpus artístico de referencia en examples/corpus/<slug>/ (ADR-037): adventurer (personaje 24×32), frog (criatura 32×27), chest (objeto 32×28), stone-tile (tile 16×16 sin costuras) y adventurer-walk (animación de 6 frames a 120 ms); paleta strict y luz NW en todos. Cada ejemplo: documento .moanart.json (única fuente), registro .corpus.json (moanart-corpus-entry/1) con brief, procedencia (creado por un agente de IA mediante operaciones de MoanArt; licencia PENDIENTE de decisión del propietario), digests de render fijados, informe de calidad, inspección del agente y rúbrica; previews 1×, 4×, silueta y clusters (más 3×3 del tile y tira de la animación) como goldens del harness visual.
+- Rúbrica moanart-rubric/1 validada por moanart.quality.parse_rubric: categorías legibilidad, silueta, clusters, paleta, luz/material y continuidad temporal en animaciones; cada una pending_human_review o reviewed (1–5); professional sólo con hard checks superados, human_review (reviewer_kind human, render_fingerprint del render revisado) y todas las puntuaciones ≥ 4; agent_assessment etiquetado como no humano y nunca cuenta.
 - scripts/corpus.py check/facts sin escritura: audita procedencia, versiones de renderer/estimador/semilla, digests, hard checks, categorías y huella del render revisado (un cambio de arte tras una revisión humana falla la auditoría); rechaza claves JSON duplicadas.
 - Los cinco ejemplos superan los hard checks con 0 advertencias y sin supresiones. Revisiones de agente: pixel-art (piernas separadas, ciclo de 6 frames con contrapeso, ruido de la rana, biseles del cofre a favor de la luz NW, periodo del tile), QA (invariante de rúbrica, ramas de auditoría parametrizadas) y documentación (licencia explícitamente pendiente, autoría de agente) aplicadas. Revisión artística humana PENDIENTE: ningún ejemplo es profesional.
-- Documentación: MOANA.md 0.1.25-draft (§19), ADR-037, module-contracts, examples/corpus/README.md, tests/visual/README.md. Gate local macOS: scripts/validate.py 3273 passed con src/moana al 100 %, corpus check OK, check_wheel OK, mypy --platform win32 OK, pre-commit OK; matriz pendiente en main. Seguimiento propuesto: reglas de clusters por frame en quality (fuera de alcance).
+- Documentación: MOANART.md 0.1.25-draft (§19), ADR-037, module-contracts, examples/corpus/README.md, tests/visual/README.md. Gate local macOS: scripts/validate.py 3273 passed con src/moanart al 100 %, corpus check OK, check_wheel OK, mypy --platform win32 OK, pre-commit OK; matriz pendiente en main. Seguimiento propuesto: reglas de clusters por frame en quality (fuera de alcance).
 - Aprobado por el propietario el 2026-11-17 tras revisión; PR #67 hacia develop.
 - AC1: tests/integration/test_art_corpus.py::test_five_categories_pass_hard_checks_and_show_every_warning (cinco categorías, hard checks superados, advertencias registradas iguales a las reales, sin supresiones), ::test_check_requires_the_five_categories, ::test_provenance_audit_passes; scripts/corpus.py check → «Corpus OK: 5 examples, 5 pending human review».
 - AC2: tests/unit/quality/test_quality_rubric.py::test_professional_without_human_review_is_rejected, ::test_agent_assessment_never_makes_an_example_professional, ::test_one_low_score_blocks_professional, ::test_failed_hard_checks_block_professional, ::test_fixture_human_review_makes_a_professional_example, ::test_malformed_reviews_are_rejected; tests/integration/test_art_corpus.py::test_real_records_satisfy_the_rubric_invariant, ::test_real_corpus_is_pending_until_reviewed.

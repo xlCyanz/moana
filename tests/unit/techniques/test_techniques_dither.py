@@ -1,7 +1,7 @@
-"""Ordered Bayer dithering of ``moana.techniques`` (MOANA-016, MOANA.md section 10).
+"""Ordered Bayer dithering of ``moanart.techniques`` (MOANA-016, MOANART.md section 10).
 
 Oracles are independent of the implementation: the threshold matrices are written
-out literally from MOANA.md section 10 and every expected pixel is computed here with
+out literally from MOANART.md section 10 and every expected pixel is computed here with
 Python's floor modulo over those literals, never from the module under test.
 """
 
@@ -17,16 +17,16 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from moana.core.coordinates import Box, Dimensions, Point
-from moana.core.errors import ValidationError
-from moana.geometry import (
+from moanart.core.coordinates import Box, Dimensions, Point
+from moanart.core.errors import ValidationError
+from moanart.geometry import (
     Mask,
     combine_masks,
     rasterize_ellipse,
     rasterize_polygon,
     rasterize_rect,
 )
-from moana.techniques import (
+from moanart.techniques import (
     BAYER_2X2,
     BAYER_4X4,
     DITHER_PARTS,
@@ -38,9 +38,9 @@ from moana.techniques import (
     split_dither,
 )
 
-TECHNIQUES = Path(__file__).resolve().parents[3] / "src/moana/techniques"
+TECHNIQUES = Path(__file__).resolve().parents[3] / "src/moanart/techniques"
 
-# Literal oracles from MOANA.md section 10 (row index first).
+# Literal oracles from MOANART.md section 10 (row index first).
 SPEC_2 = [[0, 2], [3, 1]]
 SPEC_4 = [[0, 8, 2, 10], [12, 4, 14, 6], [3, 11, 1, 9], [15, 7, 13, 5]]
 SPEC = {2: SPEC_2, 4: SPEC_4}
@@ -297,22 +297,22 @@ def _imports(path: Path) -> list[str]:
 
 
 def test_techniques_imports_only_core_geometry_palette_and_stdlib() -> None:
-    """MOANA.md section 3: techniques depends on core, geometry and palette."""
+    """MOANART.md section 3: techniques depends on core, geometry and palette."""
     paths = sorted(TECHNIQUES.glob("*.py"))
     assert paths
-    allowed = ("moana.core", "moana.geometry", "moana.palette", "moana.techniques")
+    allowed = ("moanart.core", "moanart.geometry", "moanart.palette", "moanart.techniques")
     for path in paths:
         for name in _imports(path):
             root = name.split(".")[0]
             assert root in sys.stdlib_module_names or name.startswith(allowed), (
                 f"{path.name} imports {name}"
             )
-            assert name != "moana.core.pillow_adapter"
+            assert name != "moanart.core.pillow_adapter"
 
 
 def test_importing_techniques_loads_neither_pillow_nor_pydantic() -> None:
     probe = (
-        "import sys, moana.techniques; "
+        "import sys, moanart.techniques; "
         "heavy = {'PIL', 'aggdraw', 'pydantic'}; "
         "print(sorted(heavy & {name.split('.')[0] for name in sys.modules}))"
     )

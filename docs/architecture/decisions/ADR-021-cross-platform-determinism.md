@@ -1,6 +1,6 @@
 # ADR-021 — Contrato de determinismo entre procesos y plataformas
 
-Estado: aceptado · 2026-11-17 · Issue: [MOANA-029](../../issues/MOANA-029.md). Aplica [ADR-018](ADR-018-render-pipeline.md) (render y digest), [ADR-019](ADR-019-png-export.md) (PNG) y [ADR-008](ADR-008-portable-tooling.md) (matriz de CI); no sustituye ninguno.
+Estado: aceptado · 2026-11-17 · Issue: [MOANA-029](../../issues/MOANA-029.md). Aplica [ADR-018](ADR-018-render-pipeline.md) (render y digest), [ADR-019](ADR-019-png-export.md) (PNG) y [ADR-008](ADR-008-portable-tooling.md) (matriz de CI); no sustituye ninguno. Ampliado por [ADR-041](ADR-041-rename-moanart.md): formatos `moanart-determinism-*/1`; el manifiesto revisado de píxeles no cambia.
 
 ## Contexto
 

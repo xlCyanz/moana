@@ -58,7 +58,7 @@ No afirmar portabilidad de backend AggDraw fuera de combinaciones realmente veri
 
 ## Definition of Done
 
-Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adjuntar evidencia por ID, pasar el gate y revisar el resultado. Dependencias completadas y [ciclo de vida](../guides/issue-lifecycle.md) respetado.
+Cumplir [MOANART.md §25](../../MOANART.md), todos los criterios AC y pruebas T; adjuntar evidencia por ID, pasar el gate y revisar el resultado. Dependencias completadas y [ciclo de vida](../guides/issue-lifecycle.md) respetado.
 
 ## Risks and notes
 
@@ -78,13 +78,13 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 ### 2. Lectura obligatoria (en orden)
 
 1. `CLAUDE.md` (Claude Code) o `AGENTS.md` (Codex) y [flujo de sesión](../guides/agent-workflow.md).
-2. MOANA.md: §3 Arquitectura modular; §14 Renderizado y determinismo; §21 Testing y regresiones visuales; §25 Definition of Done. Estas secciones son el contrato normativo; ante duda, prevalecen sobre este issue.
+2. MOANART.md: §3 Arquitectura modular; §14 Renderizado y determinismo; §21 Testing y regresiones visuales; §25 Definition of Done. Estas secciones son el contrato normativo; ante duda, prevalecen sobre este issue.
 3. [Contratos de módulos](../architecture/module-contracts.md) para: `ci`, `tests.integration`.
 4. Estándares: [testing](../../docs/standards/testing.md), [security](../../docs/standards/security.md).
 5. Issues de dependencia ([MOANA-010](MOANA-010.md), [MOANA-011](MOANA-011.md), [MOANA-028](MOANA-028.md)): leer su sección Evidence para conocer las APIs ya entregadas; no reimplementarlas.
 6. ADR en `docs/architecture/` que mencionen los módulos afectados.
 
-### 3. Requisitos de MOANA.md cubiertos
+### 3. Requisitos de MOANART.md cubiertos
 
 | ID | Requisito | Secciones | Verificación exigida |
 | --- | --- | --- | --- |
@@ -96,8 +96,8 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 | Host | Skills a cargar | Revisión especializada |
 | --- | --- | --- |
-| Claude Code | `moana-testing`, `moana-code-review` | `moana-qa-engineer` (sólo lectura; el agente principal integra) |
-| Codex | `$moana-testing`, `$moana-code-review` | `moana_qa_engineer` |
+| Claude Code | `moanart-testing`, `moanart-code-review` | `moanart-qa-engineer` (sólo lectura; el agente principal integra) |
+| Codex | `$moanart-testing`, `$moanart-code-review` | `moanart_qa_engineer` |
 
 ### 5. Archivos
 
@@ -109,16 +109,16 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 - T1: Fixtures de diagonales, alpha, grupos, transparencias y clipping
 - T2: Subprocesos con semillas distintas, orden de claves y export/decode frente a RGBA maestro
-- Oráculos independientes (cálculo a mano o fórmula de MOANA.md); nunca copiar la salida de la implementación como expected.
+- Oráculos independientes (cálculo a mano o fórmula de MOANART.md); nunca copiar la salida de la implementación como expected.
 - Incluir casos negativos con el error de dominio esperado y casos borde (vacío, mínimo, máximo, fuera de rango).
 
 ### 7. Procedimiento
 
 1. Escribir las pruebas de los criterios AC y T antes o junto con la implementación.
-2. Implementar sólo **Scope**; respetar **Out of scope** y las dependencias permitidas de MOANA.md §3.
+2. Implementar sólo **Scope**; respetar **Out of scope** y las dependencias permitidas de MOANART.md §3.
 3. Validación de módulo: `uv run pytest tests/test_repository_tools.py tests/integration/ -q` y `uv run mypy src/`.
 4. Validación completa: `uv run python scripts/validate.py` y `uv run python scripts/check_wheel.py`.
-5. Revisión: subagentes listados y skill `moana-code-review`; corregir hallazgos críticos y altos.
+5. Revisión: subagentes listados y skill `moanart-code-review`; corregir hallazgos críticos y altos.
 6. Si hay salida raster: mostrar el PNG a 1x y ampliado por vecino más cercano; si cambia un golden, presentar expected/actual/diff y justificar.
 
 ### 8. Cierre
@@ -137,13 +137,13 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 ## Evidence
 
-- tests/fixtures/determinism/: corpus fijo de seis casos (diagonales con línea de empate escrita al revés, alfa, grupos aislados vía moana.layers, transparencias, clipping con línea no diagonal recortada y empate exacto .5 de round_half_up) y manifiesto RGBA revisado generado desde un oráculo independiente del renderer (máscaras a mano §6/ADR-015 y fórmula escalar §11), nunca desde un render.
+- tests/fixtures/determinism/: corpus fijo de seis casos (diagonales con línea de empate escrita al revés, alfa, grupos aislados vía moanart.layers, transparencias, clipping con línea no diagonal recortada y empate exacto .5 de round_half_up) y manifiesto RGBA revisado generado desde un oráculo independiente del renderer (máscaras a mano §6/ADR-015 y fórmula escalar §11), nunca desde un render.
 - scripts/determinism.py: probe (render, PNG RGBA en memoria, export_png a archivo, indexado en casos strict; decodificación con modo exigido), report (4 PYTHONHASHSEED × 3 serializaciones contra el manifiesto, entorno/lock/codec, expected/actual/diff al divergir, informe error si una sonda falla) y compare (sólo stdlib; exige los informes esperados, sin duplicados de sistema/Python y con Darwin, Linux y Windows; divergencia de píxeles falla, bytes PNG distintos con el mismo codec avisan; nunca reescribe el manifiesto).
 - .github/workflows/ci.yml: paso de informe en verify (diagnostics-<os>-<py>/determinism) y job determinism (needs verify, sólo lectura, acciones fijadas por SHA, download-artifact v8.0.2 verificado con git ls-remote) que compara los 9 informes; triggers sin cambios (matriz sólo en main, decisión del usuario).
 - ADR-021 (docs/architecture/decisions/ADR-021-cross-platform-determinism.md): entre plataformas se garantizan píxeles decodificados (digest §14); bytes PNG sólo con el mismo codec (ADR-019). Contratos de módulos, índice de ADR, guía de desarrollo, AGENTS.md y CLAUDE.md actualizados.
 - Evidencia entre plataformas: sólo local en macOS arm64 / Python 3.12 (Pillow 13.0.0, zlib-ng 1.3.1); la matriz Linux/macOS/Windows × 3.12/3.13/3.14 queda pendiente de la ejecución del workflow Quality en main.
 - Gate: scripts/validate.py verde; scripts/determinism.py al 100 % de líneas y ramas con sus tests; mypy también con --platform win32.
-- Revisión: moana-qa-engineer (cambios menores, aplicados: cobertura de plataformas y duplicados en compare, informe de error por sonda fallida, ramas negativas, test de workflow con shlex) y moana-graphics-engineer (valores recalculados a mano correctos; cambios aplicados: empate .5, orden lexicográfico de Bresenham, línea no diagonal recortada, modo PNG exigido al decodificar, aviso de bytes dentro del mismo codec, redacción de ADR-021).
+- Revisión: moanart-qa-engineer (cambios menores, aplicados: cobertura de plataformas y duplicados en compare, informe de error por sonda fallida, ramas negativas, test de workflow con shlex) y moanart-graphics-engineer (valores recalculados a mano correctos; cambios aplicados: empate .5, orden lexicográfico de Bresenham, línea no diagonal recortada, modo PNG exigido al decodificar, aviso de bytes dentro del mismo codec, redacción de ADR-021).
 - Aprobado por el propietario el 2026-11-17 tras revisión; PR #50 hacia develop.
 - AC1: Job determinism de .github/workflows/ci.yml (--expected-reports 9 --expected-platforms Darwin,Linux,Windows; pendiente de la primera ejecución en main); tests/integration/test_cross_platform_determinism.py::test_ac1_compare_accepts_the_full_matrix, ::test_ac2_compare_rejects_duplicate_and_missing_platforms y ::test_ac1_t2_fresh_processes_seeds_and_key_orders_agree (local macOS); tests/test_repository_tools.py::test_ci_publishes_and_compares_determinism_reports.
 - AC2: tests/integration/test_cross_platform_determinism.py::test_ac2_pixel_divergence_writes_diagnostics_and_keeps_the_manifest (expected/actual/diff, píxeles distintos y bbox, manifiesto intacto), ::test_ac2_failing_probe_still_writes_an_error_report, ::test_ac2_compare_separates_codec_from_pixel_differences, ::test_ac2_compare_warns_when_bytes_differ_within_one_codec y el resto de test_ac2_*; tests/test_repository_tools.py::test_ci_actions_are_pinned_and_permissions_minimal.

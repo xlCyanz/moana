@@ -1,6 +1,6 @@
 """Animation → GIF → decode: the bouncing slime keeps every frame and time (MOANA-024, AC1).
 
-``moana.animation.FrameRender`` is passed to the exporter as is (structural
+``moanart.animation.FrameRender`` is passed to the exporter as is (structural
 ``SpriteFrame``); the GIF is decoded with Pillow directly, frame by frame.
 """
 
@@ -11,12 +11,12 @@ from pathlib import Path
 
 from PIL import Image
 
-from moana.animation import render_animation
-from moana.export import export_gif
-from moana.schema import validate_document
+from moanart.animation import render_animation
+from moanart.export import export_gif
+from moanart.schema import validate_document
 
 ROOT = Path(__file__).resolve().parents[2]
-SLIME = ROOT / "examples/specs/bouncing-slime.moana.json"
+SLIME = ROOT / "examples/specs/bouncing-slime.moanart.json"
 
 
 def normalised_rgba(image: Image.Image) -> bytes:

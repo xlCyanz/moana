@@ -1,1 +1,1 @@
-"""Adversarial suite of the threat model (MOANA-030, MOANA.md sections 20-21)."""
+"""Adversarial suite of the threat model (MOANA-030, MOANART.md sections 20-21)."""

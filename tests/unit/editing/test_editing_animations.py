@@ -10,9 +10,9 @@ from typing import Any
 
 import pytest
 
-from moana.core import errors
-from moana.editing import apply_batch
-from moana.schema import Document, snapshot_digest, validate_document
+from moanart.core import errors
+from moanart.editing import apply_batch
+from moanart.schema import Document, snapshot_digest, validate_document
 
 TREE: dict[str, Any] = {
     "schema_version": "1.0",

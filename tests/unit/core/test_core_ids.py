@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from moana.core import (
+from moanart.core import (
     ID_PATTERN,
     RGBA_HEX_PATTERN,
     ValidationError,
@@ -12,8 +12,8 @@ from moana.core import (
     is_id,
     is_rgba_hex,
 )
-from moana.schema.models import ID_PATTERN as SCHEMA_ID_PATTERN
-from moana.schema.models import RGBA_PATTERN as SCHEMA_RGBA_PATTERN
+from moanart.schema.models import ID_PATTERN as SCHEMA_ID_PATTERN
+from moanart.schema.models import RGBA_PATTERN as SCHEMA_RGBA_PATTERN
 
 
 class Sneaky(str):

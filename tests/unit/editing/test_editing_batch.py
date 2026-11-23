@@ -7,9 +7,9 @@ from typing import Any
 
 import pytest
 
-from moana.core import errors
-from moana.core.limits import MAX_EDIT_COMMANDS
-from moana.editing import (
+from moanart.core import errors
+from moanart.core.limits import MAX_EDIT_COMMANDS
+from moanart.editing import (
     COMMAND_TYPES,
     MAX_TRANSLATION,
     EditBatch,
@@ -18,7 +18,7 @@ from moana.editing import (
     SetColor,
     parse_edit_batch,
 )
-from moana.schema import ParseLimits
+from moanart.schema import ParseLimits
 
 SNAPSHOT = "sha256:" + "0" * 64
 

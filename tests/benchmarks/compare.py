@@ -1,4 +1,4 @@
-"""Comparison of two benchmark reports (MOANA-031, MOANA.md section 22).
+"""Comparison of two benchmark reports (MOANA-031, MOANART.md section 22).
 
 Reports are comparable only with the same format, corpus digest, renderer version,
 renderer backend, estimator version, warmups, samples, cases and phases per case.
@@ -45,7 +45,7 @@ def _is_number(value: Any) -> bool:
 
 
 def malformed(report: Any) -> str | None:
-    """Why ``report`` cannot be read as a ``moana-benchmark`` report (``None``: fine)."""
+    """Why ``report`` cannot be read as a ``moanart-benchmark`` report (``None``: fine)."""
     if not isinstance(report, Mapping):
         return "malformed: the report is not a JSON object"
     for key, kind in (("method", Mapping), ("environment", Mapping), ("cases", Mapping)):
@@ -185,6 +185,6 @@ def comparison_text(result: Mapping[str, Any]) -> str:
         )
     lines.append(
         f"Informational: a rise over {REGRESSION_THRESHOLD_PCT} % is investigated "
-        "with a controlled repeat (MOANA.md section 22); this is not a gate."
+        "with a controlled repeat (MOANART.md section 22); this is not a gate."
     )
     return "\n".join(lines) + "\n"

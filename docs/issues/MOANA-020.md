@@ -25,7 +25,7 @@ Guardar/cargar documentos y assets de forma confinada, íntegra y atómica.
 
 ## Scope
 
-Crear formato .moana.json, proyecto directorio y contenedor ZIP opcional con assets declarados, hashes y escritura atómica.
+Crear formato .moanart.json, proyecto directorio y contenedor ZIP opcional con assets declarados, hashes y escritura atómica.
 
 ## Out of scope
 
@@ -60,7 +60,7 @@ No soporte PSD/Aseprite ni assets remotos o ejecutables.
 
 ## Definition of Done
 
-Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adjuntar evidencia por ID, pasar el gate y revisar el resultado. Dependencias completadas y [ciclo de vida](../guides/issue-lifecycle.md) respetado.
+Cumplir [MOANART.md §25](../../MOANART.md), todos los criterios AC y pruebas T; adjuntar evidencia por ID, pasar el gate y revisar el resultado. Dependencias completadas y [ciclo de vida](../guides/issue-lifecycle.md) respetado.
 
 ## Risks and notes
 
@@ -81,13 +81,13 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 ### 2. Lectura obligatoria (en orden)
 
 1. `CLAUDE.md` (Claude Code) o `AGENTS.md` (Codex) y [flujo de sesión](../guides/agent-workflow.md).
-2. MOANA.md: §3 Arquitectura modular; §16 Formato de proyectos; §20 Seguridad y validación; §25 Definition of Done. Estas secciones son el contrato normativo; ante duda, prevalecen sobre este issue.
+2. MOANART.md: §3 Arquitectura modular; §16 Formato de proyectos; §20 Seguridad y validación; §25 Definition of Done. Estas secciones son el contrato normativo; ante duda, prevalecen sobre este issue.
 3. [Contratos de módulos](../architecture/module-contracts.md) para: `project`.
 4. Estándares: [python](../../docs/standards/python.md), [architecture](../../docs/standards/architecture.md), [testing](../../docs/standards/testing.md), [security](../../docs/standards/security.md).
 5. Issues de dependencia ([MOANA-018](MOANA-018.md), [MOANA-019](MOANA-019.md), [MOANA-011](MOANA-011.md)): leer su sección Evidence para conocer las APIs ya entregadas; no reimplementarlas.
 6. ADR en `docs/architecture/` que mencionen los módulos afectados.
 
-### 3. Requisitos de MOANA.md cubiertos
+### 3. Requisitos de MOANART.md cubiertos
 
 | ID | Requisito | Secciones | Verificación exigida |
 | --- | --- | --- | --- |
@@ -98,12 +98,12 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 
 | Host | Skills a cargar | Revisión especializada |
 | --- | --- | --- |
-| Claude Code | `moana-python`, `moana-code-review` | `moana-python-engineer`, `moana-architect` (sólo lectura; el agente principal integra) |
-| Codex | `$moana-python`, `$moana-code-review` | `moana_python_engineer`, `moana_architect` |
+| Claude Code | `moanart-python`, `moanart-code-review` | `moanart-python-engineer`, `moanart-architect` (sólo lectura; el agente principal integra) |
+| Codex | `$moanart-python`, `$moanart-code-review` | `moanart_python_engineer`, `moanart_architect` |
 
 ### 5. Archivos
 
-- Código o documentos a crear/modificar: `src/moana/project/`.
+- Código o documentos a crear/modificar: `src/moanart/project/`.
 - Pruebas: `tests/unit/project/`.
 - No crear módulos ni carpetas sin comportamiento real. No tocar otros módulos salvo exportaciones imprescindibles, justificadas en el PR.
 
@@ -112,44 +112,44 @@ Cumplir [MOANA.md §25](../../MOANA.md), todos los criterios AC y pruebas T; adj
 - T1: Roundtrip proyecto geométrico y con PNG; fallo simulado de disco
 - T2: ZIP con ../, rutas absolutas, symlink, nombres en colisión, ratio excesivo y bomba de imagen
 - T3: Fallo después de escribir nuevos assets conserva manifiesto y assets previos; el envelope rechaza campos extra sin alterar el schema de Document.
-- Oráculos independientes (cálculo a mano o fórmula de MOANA.md); nunca copiar la salida de la implementación como expected.
+- Oráculos independientes (cálculo a mano o fórmula de MOANART.md); nunca copiar la salida de la implementación como expected.
 - Incluir casos negativos con el error de dominio esperado y casos borde (vacío, mínimo, máximo, fuera de rango).
 
 ### 7. Procedimiento
 
 1. Escribir las pruebas de los criterios AC y T antes o junto con la implementación.
-2. Implementar sólo **Scope**; respetar **Out of scope** y las dependencias permitidas de MOANA.md §3.
+2. Implementar sólo **Scope**; respetar **Out of scope** y las dependencias permitidas de MOANART.md §3.
 3. Validación de módulo: `uv run pytest tests/unit/project/ -q` y `uv run mypy src/`.
 4. Validación completa: `uv run python scripts/validate.py` y `uv run python scripts/check_wheel.py`.
-5. Revisión: subagentes listados y skill `moana-code-review`; corregir hallazgos críticos y altos.
+5. Revisión: subagentes listados y skill `moanart-code-review`; corregir hallazgos críticos y altos.
 6. Si hay salida raster: mostrar el PNG a 1x y ampliado por vecino más cercano; si cambia un golden, presentar expected/actual/diff y justificar.
 
 ### 8. Cierre
 
 1. En `docs/issues/catalog.json`, para este issue: `status` → `review` (o `done` tras aprobación); completar `acceptance_evidence` (AC1, AC2), `test_evidence` (T1, T2, T3) y `evidence` con rutas concretas de tests y archivos.
-2. Issues que desbloquea ([MOANA-021](MOANA-021.md), [MOANA-030](MOANA-030.md), [MOANA-033](MOANA-033.md), [MOANA-034](MOANA-034.md)): si todas sus dependencias quedan `done`, pasarlos a `ready` con `blocking_reason: null`.
+2. Issues que desbloquea ([MOANA-021](MOANA-021.md), [MOANA-030](MOANA-030.md), [MOANA-033](MOANA-033.md), [MOANA-034](MOANA-034.md), [MOANA-037](MOANA-037.md)): si todas sus dependencias quedan `done`, pasarlos a `ready` con `blocking_reason: null`.
 3. Ejecutar `uv run python scripts/planning.py` y `uv run python -m scripts.check_repository`.
 4. Abrir PR hacia `develop` enlazando este issue de GitHub (`Closes #<número>`), con comandos ejecutados y evidencia por AC/T. El CI completo corre al integrar `develop` en `main`.
 5. Commit y push sólo con autorización del usuario. No declarar CI remoto ni aprobación artística humana sin evidencia.
 
 ### 9. Prohibido en este issue
 
-- Implementar alcance de otros issues, incluidos los que desbloquea ([MOANA-021](MOANA-021.md), [MOANA-030](MOANA-030.md), [MOANA-033](MOANA-033.md), [MOANA-034](MOANA-034.md)).
+- Implementar alcance de otros issues, incluidos los que desbloquea ([MOANA-021](MOANA-021.md), [MOANA-030](MOANA-030.md), [MOANA-033](MOANA-033.md), [MOANA-034](MOANA-034.md), [MOANA-037](MOANA-037.md)).
 - Actualizar goldens automáticamente, desactivar checks, editar `uv.lock` a mano o añadir dependencias sin motivo técnico registrado.
 - `eval`/`exec`/`pickle`, red o estado global mutable en el núcleo; lecturas de texto sin `encoding="utf-8"`.
 
 ## Evidence
 
-- Módulo moana.project (ADR-029): Project, Asset.from_png, save_project (directorio), save_project_archive (.moana ZIP), save_document (.moana.json), load_project, encode_project, ProjectLimits (sólo se pueden bajar) y SaveReport; depende sólo de core, schema (API pública, incluida document_ids), editing, Pydantic y Pillow encapsulado; nada inferior lo importa (test AST con rglob). Sin fachada ni CLI (MOANA.md §13 no los prevé).
+- Módulo moanart.project (ADR-029): Project, Asset.from_png, save_project (directorio), save_project_archive (.moanart ZIP), save_document (.moanart.json), load_project, encode_project, ProjectLimits (sólo se pueden bajar) y SaveReport; depende sólo de core, schema (API pública, incluida document_ids), editing, Pydantic y Pillow encapsulado; nada inferior lo importa (test AST con rglob). Sin fachada ni CLI (MOANART.md §13 no los prevé).
 - Sobre ProjectManifest {kind, project_version 1.0, document, assets, history} estricto, congelado y separado de Document (JSON Schema de Document intacto); lector propio acotado (bytes, profundidad, nodos, claves duplicadas, números no finitos); un documento plano se valida con el lector de schema.
 - Almacén inmutable por hash: assets/<sha256>.png, history/snapshots/<digest>.json y history/batches/<sha256>.json escritos antes de confirmar el manifiesto; el guardado comprueba antes de escribir todo lo que la carga comprobará (forma canónica del documento, snapshots, batches, manifiesto, historial), de modo que lo guardado siempre carga con los mismos límites.
 - Escritura atómica (temporal O_EXCL, fsync, os.replace/os.link, fsync de directorios con aborto en fallo) con la misma tabla de razones que export.atomic (no_replace_unavailable, permission_denied, invalid_name; test de paridad); en POSIX toda E/S va por descriptores de directorio O_DIRECTORY|O_NOFOLLOW (cierra el TOCTOU por symlink intermedio; fallback documentado en Windows); errores sin rutas sensibles.
 - ZIP inspeccionado sin extraer: EOCD estricto (sin comentario ni ZIP64, directorio central acotado), cifrado, compresión exótica, symlinks, rutas absolutas/unidad/traversal/barra invertida, duplicados y colisiones NFC+casefold, ratio ≤ 100:1, expansión ≤ 256 MiB, ≤ 256 entradas y 64 MiB; escritura determinista con la misma zlib (identidad estable = hash del manifiesto).
-- Assets PNG RGBA de 8 bits: longitud y SHA-256 exactos, IHDR ≤ 2048 por eje y presupuesto de píxeles antes de Pillow; APNG, ICC, PNG truncado (IEND) y DecompressionBombError rechazados como errores de dominio; IDAT CRC no verificado por Moana (riesgo bajo aceptado: el SHA-256 va antes).
+- Assets PNG RGBA de 8 bits: longitud y SHA-256 exactos, IHDR ≤ 2048 por eje y presupuesto de píxeles antes de Pillow; APNG, ICC, PNG truncado (IEND) y DecompressionBombError rechazados como errores de dominio; IDAT CRC no verificado por MoanArt (riesgo bajo aceptado: el SHA-256 va antes).
 - Historial: entradas {snapshot, parent, batch, redo} reconstruidas reaplicando cada batch y con el constructor validado de History; convergencia rechazada como en ADR-026 §4; HistoryLimits es configuración del anfitrión que carga; cubre documentos con shade (affected_ids con IDs de banda). IDs de assets distintos de schema.document_ids (incluidas bandas).
-- Diez límites nuevos en moana.core.limits (MAX_PROJECT_*, MAX_ASSET_*, MAX_ARCHIVE_*). ADR-029 con notas de cabecera en ADR-010, ADR-024 y ADR-026; MOANA.md 0.1.17-draft (§16); contratos de módulos, índice de ADR, overview, README, AGENTS.md y CLAUDE.md actualizados. Seguimientos: causa raíz de documentos cuya forma canónica supera el límite (schema/History), módulo común de escritura atómica, recolección de huérfanos, previews, migraciones y fachada/CLI.
-- Gate sobre develop 4265cdf (MOANA-015 incluido): scripts/validate.py (2318 passed, src/moana al 100 % de líneas y ramas) y scripts/check_wheel.py verdes; mypy también con --platform win32; generate_schema --check al día. Evidencia de plataforma: local macOS; la rama Windows sin dir_fd sólo se prueba forzando el fallback; matriz pendiente en main.
-- Revisión: moana-architect (cambios requeridos, aplicados: document_ids de schema, paridad con export.atomic, determinismo del ZIP acotado, clases de error, superficie pública documentada), moana-python-engineer con foco en seguridad (cambios requeridos, aplicados: ruta filtrada en PermissionError, directorio central acotado, ZIP64 y comentario rechazados, TOCTOU de escritura con dir_fd, Pillow, números no finitos, criterio único de symlinks) y moana-qa-engineer (cambios requeridos, aplicados: guardados que no recargaban, fallos de disco paso a paso con assets e historial, orden de fsync, propiedad Hypothesis de roundtrip, bordes exactos).
+- Diez límites nuevos en moanart.core.limits (MAX_PROJECT_*, MAX_ASSET_*, MAX_ARCHIVE_*). ADR-029 con notas de cabecera en ADR-010, ADR-024 y ADR-026; MOANART.md 0.1.17-draft (§16); contratos de módulos, índice de ADR, overview, README, AGENTS.md y CLAUDE.md actualizados. Seguimientos: causa raíz de documentos cuya forma canónica supera el límite (schema/History), módulo común de escritura atómica, recolección de huérfanos, previews, migraciones y fachada/CLI.
+- Gate sobre develop 4265cdf (MOANA-015 incluido): scripts/validate.py (2318 passed, src/moanart al 100 % de líneas y ramas) y scripts/check_wheel.py verdes; mypy también con --platform win32; generate_schema --check al día. Evidencia de plataforma: local macOS; la rama Windows sin dir_fd sólo se prueba forzando el fallback; matriz pendiente en main.
+- Revisión: moanart-architect (cambios requeridos, aplicados: document_ids de schema, paridad con export.atomic, determinismo del ZIP acotado, clases de error, superficie pública documentada), moanart-python-engineer con foco en seguridad (cambios requeridos, aplicados: ruta filtrada en PermissionError, directorio central acotado, ZIP64 y comentario rechazados, TOCTOU de escritura con dir_fd, Pillow, números no finitos, criterio único de symlinks) y moanart-qa-engineer (cambios requeridos, aplicados: guardados que no recargaban, fallos de disco paso a paso con assets e historial, orden de fsync, propiedad Hypothesis de roundtrip, bordes exactos).
 - Aprobado por el propietario el 2026-11-17 tras revisión; PR #59 hacia develop.
 - AC1: tests/unit/project/test_project_roundtrip.py::test_ac1_directory_roundtrip_preserves_ids_revisions_history_and_rgba, ::test_ac1_history_limits_are_the_loader_configuration, ::test_ac1_loaded_history_keeps_navigating_and_editing, ::test_ac1_archive_roundtrip_is_deterministic, ::test_ac1_shaded_document_history_roundtrip.
 - AC2: tests/unit/project/test_project_security.py::test_ac2_asset_path_outside_the_layout_is_rejected, ::test_ac2_wrong_checksum_never_loads_partially, ::test_ac2_longer_asset_file_is_a_checksum_mismatch, ::test_ac2_linked_assets_never_leave_the_root, ::test_ac2_special_files_are_not_read, ::test_ac2_asset_ids_are_unique_and_distinct_from_document_ids, ::test_ac2_asset_id_of_a_shade_band_is_an_id_collision.

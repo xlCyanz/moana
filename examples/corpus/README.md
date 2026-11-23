@@ -1,6 +1,6 @@
-# Corpus artístico de Moana (MOANA-027)
+# Corpus artístico de MoanArt (MOANA-027)
 
-Primer corpus de MOANA.md §19: cinco ejemplos propios, uno por categoría, con fuente editable, procedencia, previews e informe de calidad. El formato y las reglas están en [ADR-037](../../docs/architecture/decisions/ADR-037-art-corpus-rubric.md).
+Primer corpus de MOANART.md §19: cinco ejemplos propios, uno por categoría, con fuente editable, procedencia, previews e informe de calidad. El formato y las reglas están en [ADR-037](../../docs/architecture/decisions/ADR-037-art-corpus-rubric.md).
 
 **Rúbrica: los cinco ejemplos están pendientes de revisión humana y ninguno es «profesional».** Las puntuaciones y notas marcadas como de agente, aquí y en los registros, son la opinión de un agente de IA: no cuentan como revisión humana ni como aprobación.
 
@@ -10,15 +10,15 @@ Notación: coordenadas `(x, y)` sobre la imagen a 1×, con origen arriba a la iz
 
 | Ejemplo | Categoría | Lienzo | Colores (usados/declarados) | Técnicas | Hard checks | Advertencias | Rúbrica |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| [adventurer](adventurer/adventurer.moana.json) | personaje | 24 × 32 | 17/17 | rectángulos por parte, contorno 4-conexo de tinta, sombras y luces manuales, 8 regiones | superados | ninguna | pendiente de revisión humana |
-| [frog](frog/frog.moana.json) | criatura | 32 × 27 | 9/9 | elipses, `shade` por bandas, `selective_outline`, pliegues y brillos manuales | superados | ninguna | pendiente de revisión humana |
-| [chest](chest/chest.moana.json) | objeto | 32 × 28 | 11/13 | material `wood` v1 (densidad 15), biseles por tabla, `shade` plano y por bandas, `selective_outline` | superados | ninguna | pendiente de revisión humana |
-| [stone-tile](stone-tile/stone-tile.moana.json) | tile | 16 × 16 | 5/5 | rectángulos; sillares partidos en el borde para repetir sin costura | superados | ninguna | pendiente de revisión humana |
-| [adventurer-walk](adventurer-walk/adventurer-walk.moana.json) | animación | 24 × 32, 6 frames | 17/17 | timeline `walk` con overrides `translate`, bucle infinito, 6 × 120 ms | superados (también en cada frame) | ninguna (sin `temporal_flicker`, tampoco en la costura del bucle) | pendiente de revisión humana |
+| [adventurer](adventurer/adventurer.moanart.json) | personaje | 24 × 32 | 17/17 | rectángulos por parte, contorno 4-conexo de tinta, sombras y luces manuales, 8 regiones | superados | ninguna | pendiente de revisión humana |
+| [frog](frog/frog.moanart.json) | criatura | 32 × 27 | 9/9 | elipses, `shade` por bandas, `selective_outline`, pliegues y brillos manuales | superados | ninguna | pendiente de revisión humana |
+| [chest](chest/chest.moanart.json) | objeto | 32 × 28 | 11/13 | material `wood` v1 (densidad 15), biseles por tabla, `shade` plano y por bandas, `selective_outline` | superados | ninguna | pendiente de revisión humana |
+| [stone-tile](stone-tile/stone-tile.moanart.json) | tile | 16 × 16 | 5/5 | rectángulos; sillares partidos en el borde para repetir sin costura | superados | ninguna | pendiente de revisión humana |
+| [adventurer-walk](adventurer-walk/adventurer-walk.moanart.json) | animación | 24 × 32, 6 frames | 17/17 | timeline `walk` con overrides `translate`, bucle infinito, 6 × 120 ms | superados (también en cada frame) | ninguna (sin `temporal_flicker`, tampoco en la costura del bucle) | pendiente de revisión humana |
 
 El cofre declara 13 colores y usa 11: `wood_4` y `metal_0` son extremos de rampa que conservan los índices del sombreado (`ambient` y desplazamientos) y quedan disponibles para editar la luz.
 
-Advertencias: el informe por defecto de `moana.api.evaluate_quality` (reglas `quality-v1`) no da ninguna advertencia para estos ejemplos y no se usa ninguna supresión (`suppressions: []` en cada registro). Si una edición futura produce advertencias, se anotan por regla en `quality.warnings` del registro y en esta tabla; la prueba exige que coincidan con el informe real. Las reglas artísticas de `quality-v1` sólo analizan la imagen fija; para la animación, `tests/integration/test_art_corpus.py` comprueba además que ningún frame tenga singletons.
+Advertencias: el informe por defecto de `moanart.api.evaluate_quality` (reglas `quality-v1`) no da ninguna advertencia para estos ejemplos y no se usa ninguna supresión (`suppressions: []` en cada registro). Si una edición futura produce advertencias, se anotan por regla en `quality.warnings` del registro y en esta tabla; la prueba exige que coincidan con el informe real. Las reglas artísticas de `quality-v1` sólo analizan la imagen fija; para la animación, `tests/integration/test_art_corpus.py` comprueba además que ningún frame tenga singletons.
 
 Tile: un tile único siempre se repite de forma visible en áreas grandes. Este rompe el periodo de 8 filas con un sillar corto en la tercera hilada y un musgo de 3 px, pero para suelos o muros extensos hacen falta variantes.
 
@@ -40,7 +40,7 @@ El tile añade [la repetición 3 × 3 a 4×](stone-tile/previews/stone-tile-tile
 
 ## Registro de cada ejemplo
 
-`<slug>.corpus.json` (`moana-corpus-entry/1`) contiene:
+`<slug>.corpus.json` (`moanart-corpus-entry/1`) contiene:
 
 - `brief`: tema, tamaño, intención de paleta, luz y restricciones.
 - `provenance`: autor, `authored_by: "ai_agent"`, método, fecha 2026-11-19, licencia, `third_party_assets: []`, semilla, `renderer_version`, `estimator_version` y `vector_backend`.
@@ -49,7 +49,7 @@ El tile añade [la repetición 3 × 3 a 4×](stone-tile/previews/stone-tile-tile
 - `agent_inspection`: dos pasadas de inspección a 1× y a 8× por vecino más cercano, marcadas como de agente.
 - `rubric`.
 
-Procedencia: cada ejemplo lo creó un agente de IA de programación, bajo la dirección del usuario del repositorio, mediante operaciones de Moana (formas, máscaras, regiones, paleta y técnicas del motor) escritas en el documento JSON. No se usó ningún modelo de imagen, no se calcó arte externo y no hay assets de terceros. El archivo `<slug>.moana.json` es la única fuente: los scripts auxiliares que usó el agente para escribirlo no se versionan, y cualquier cambio se hace sobre el documento (a mano, con `moana edit` o con `moana.api.apply_edit`).
+Procedencia: cada ejemplo lo creó un agente de IA de programación, bajo la dirección del usuario del repositorio, mediante operaciones de MoanArt (formas, máscaras, regiones, paleta y técnicas del motor) escritas en el documento JSON. No se usó ningún modelo de imagen, no se calcó arte externo y no hay assets de terceros. El archivo `<slug>.moanart.json` es la única fuente: los scripts auxiliares que usó el agente para escribirlo no se versionan, y cualquier cambio se hace sobre el documento (a mano, con `moanart edit` o con `moanart.api.apply_edit`).
 
 Licencia: **MIT** ([LICENSE](../../LICENSE)), decidida por el propietario del repositorio el 2026-11-20 para código, documentación, ejemplos y corpus; cada registro la declara en `provenance.licence`. La revisión artística humana sigue **PENDIENTE**: la licencia no aprueba el arte.
 
@@ -67,10 +67,10 @@ Cada fuente declara regiones semánticas para editar una parte sin tocar las dem
 
 ## Cómo se cambia el arte de un ejemplo
 
-1. Editar `<slug>.moana.json` y revisar el resultado a 1× y ampliado.
+1. Editar `<slug>.moanart.json` y revisar el resultado a 1× y ampliado.
 2. Ejecutar `uv run python scripts/corpus.py facts` y copiar en el registro `render.digest`, `render.frame_digests` (animación), los campos de `quality` y las versiones de `provenance` que hayan cambiado.
 3. Ejecutar `uv run pytest tests/integration/test_art_corpus.py`: `test_corpus_renders_to_its_pinned_digests` compara el render con los digests del registro, así que no hay digests duplicados en la prueba. Si se tocó la camisa de la aventurera, revisar también las cajas literales del oráculo de `test_localized_shirt_recolour_stays_inside_the_shirt_region`.
-4. Regenerar las previews con el flujo local del harness: `MOANA_UPDATE_GOLDENS=1 uv run pytest tests/visual/test_corpus_previews.py -k <slug>` (falla a propósito; nunca en CI). Después, ejecutar la prueba otra vez sin la variable.
+4. Regenerar las previews con el flujo local del harness: `MOANART_UPDATE_GOLDENS=1 uv run pytest tests/visual/test_corpus_previews.py -k <slug>` (falla a propósito; nunca en CI). Después, ejecutar la prueba otra vez sin la variable.
 5. Revisar `artifacts/visual/corpus__<slug>__<vista>/` (expected, actual y diff) y mostrar expected/actual/diff en el PR.
 6. Añadir una pasada a `agent_inspection.passes` si la hizo un agente.
 7. Si el ejemplo tenía revisión humana, `scripts/corpus.py check` falla con «the art changed after the human review; review it again», porque su `render_fingerprint` ya no coincide. Una persona debe revisarlo de nuevo (pasos 1–7 de la sección anterior); no basta con copiar la huella nueva.

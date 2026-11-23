@@ -29,7 +29,7 @@ if __package__ in {None, ""}:
 
 from scripts.planning import PHASE_GATES, ROOT, Issue, generated_documents, load_catalog
 
-BACKLOG_LABEL = "moana"
+BACKLOG_LABEL = "moana"  # remote label, not renamed (ADR-041)
 MAP_PATH = "docs/issues/github-map.json"
 ISSUE_LINK = re.compile(r"^(MOANA-\d{3}|MOA-\d{3})\.md$")
 MARKDOWN_LINK = re.compile(r"\[([^\]\n]*)\]\(([^)\s]+)\)")
